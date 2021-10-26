@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pipenv-setup = "==3.1.1"
+sphinx = "==4.2.0"
+sphinx-click = "==3.0.1"
+furo = "==2021.10.9"
+
+[packages]
+riocli = {path = "."}
+click-spinner = "==0.1.10"
+click-help-colors = "==0.9.1"
+click-repl = "==0.2.0"
+click = "==8.0.1"
+rapyuta-io = "==0.32.0"
+pyyaml = "==5.4.1"
+click-completion = "==0.5.2"
+argparse = "==1.4.0"
+
+[requires]
+python_version = "3"

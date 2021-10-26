@@ -1,0 +1,9 @@
+<div id="breadcrumbNav">
+    <ol id="breadcrumb">
+        <li><a href="{{ pathto(master_doc) }}">{{ _('Docs') }}</a></li>
+        {% for doc in parents %}
+        <li><a href="{{ doc.link|e }}">{{ doc.title }}</a> &raquo;</li>
+        {% endfor %}
+        <li>{{ title }}</li>
+    </ol>
+</div>

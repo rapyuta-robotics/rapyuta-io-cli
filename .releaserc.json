@@ -1,0 +1,37 @@
+{
+    "branches": ["main"],
+    "plugins": [
+        [
+            "@semantic-release/commit-analyzer",
+            {
+                "preset": "angular",
+                "releaseRules": [
+                    {"type": "docs", "scope": "README", "release": "patch"},
+                    {"type": "release", "release": "minor"},
+                    {"scope": "no-release", "release": false}
+                ]
+            }
+        ],
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/changelog",
+            {
+                "changelogFile": "CHANGELOG.md"
+            }
+        ],
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "scripts/bump-version.sh ${nextRelease.version}"
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": ["CHANGELOG.md", "riocli/bootstrap.py"],
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+            }
+        ],
+        "@semantic-release/github"
+    ]
+}

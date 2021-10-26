@@ -1,0 +1,252 @@
+html {
+    padding: 0;
+    margin: 0;
+}
+
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Lato', sans-serif;
+    color: #666666;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    color: #E11A27;
+    text-decoration: none;
+}
+
+p {
+    line-height: 1.6;
+}
+
+table {
+    line-height: 1.6;
+}
+
+code {
+    line-height: 1.6;
+}
+
+td {
+    vertical-align: text-top;
+}
+
+img {
+    max-width: 100%;
+}
+
+#breadcrumbNav {
+    display: flex;
+}
+
+#toggleNav {
+    font-size: 14px;
+    font-family: inherit;
+}
+
+#breadcrumb {
+    list-style: none;
+    padding: 0;
+}
+
+#breadcrumb li {
+    display: inline-block;
+}
+
+#breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+}
+
+#breadcrumb a:hover {
+    color: #E11A27;
+}
+
+#breadcrumb li + li:before {
+    padding: 8px;
+    color: black;
+    content: "/\00a0";
+}
+
+#header {
+    width: 100%;
+    padding: 15px 0;
+}
+
+#sidebar {
+    background-color: #F7F7F7;
+    font-size: 13px;
+    width: 300px;
+    padding: 20px 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+@media only screen and (max-width: 800px) {
+    #sidebar {
+        width: 220px;
+    }
+}
+
+#sidebar ul {
+    list-style: none;
+    padding: 0 0 0 20px;
+    margin: 0;
+}
+
+#sidebar a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 10px 0;
+}
+
+#sidebar .topicGroupHead {
+    color: #444444;
+    text-transform: uppercase;
+    cursor: default;
+}
+
+#sidebar a.active, #sidebar a:hover {
+    margin-right: 0 !important;
+    background-color: #FFFFFF;
+    border-left: 5px solid #E11A27;
+}
+
+#sidebar > ul > li > a.active, #sidebar > ul > li > a:hover {
+    padding: 10px 0 10px 15px;
+    margin-left: -20px !important;
+}
+
+#sidebar > ul > li > ul > li > a.active, #sidebar > ul > li > ul > li > a:hover {
+    padding: 10px 0 10px 35px;
+    margin-left: -40px !important;
+}
+
+#headerInner {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 20px;
+    margin: 0 auto;
+}
+
+#headerLogo {
+    height: 50px;
+}
+
+@media only screen and (max-width: 340px) {
+    #headerLogo {
+        height: auto;
+        width: 100%;
+    }
+}
+
+#container {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 1400px;
+    padding: 20px;
+    margin: 0 auto;
+}
+
+#pageContainer {
+    display: flex;
+    padding: 20px 0;
+    align-items: flex-start;
+}
+
+#pageContents {
+    margin-left: 15px;
+    border-left: 2px solid #F7F7F7;
+    padding: 0 20px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+@media only screen and (max-width: 560px) {
+    #pageContainer {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    #pageContents {
+        margin-left: 0;
+        padding: 0;
+        border-left: 0;
+    }
+}
+
+.conum[data-value] {
+    display: inline-block;
+    color: white !important;
+    background-color: #c00;
+    -webkit-border-radius: 100px;
+    border-radius: 100px;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    font-family: 'Lato', sans-serif;
+    font-style: normal;
+    font-weight: bold;
+}
+
+.conum[data-value]:after {
+    content: attr(data-value);
+}
+
+.conum[data-value] + b {
+    display: none;
+}
+
+.content {
+    margin-bottom: 1.25em;
+    background: white;
+    display: block;
+}
+
+.literalblock pre, .literalblock pre[class], .listingblock pre, .listingblock pre[class] {
+    border: 0;
+    background-color: #F7F7F7;
+    border-radius: 4px;
+    padding: 1.5em 2.5em;
+    word-wrap: break-word;
+    color: #404040;
+    font-size: 14px;
+    font-family: monospace;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+#toc {
+    background-color: #F7F7F7;
+    padding: 20px 0;
+    margin-top: 10px;
+}
+
+#toc ul {
+    list-style: none;
+    line-height: 1.6;
+    padding: 0 0 0 30px;
+    margin: 0;
+}

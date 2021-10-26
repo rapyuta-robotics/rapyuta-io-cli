@@ -1,0 +1,28 @@
+name: Upload to PyPi
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  upload:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Twine
+        run: pip3 install twine
+
+      - name: Upload Wheel
+        run: |
+          python setup.py bdist
+          twine upload \
+            --repository ${{ secrets.TWINE_REPOSITORY }} \
+            --non-interactive \
+            --skip-existing \
+            --verbose \
+            dist/*
+        env:
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_REPOSITORY: ${{ secrets.TWINE_REPOSITORY }}
