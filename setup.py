@@ -25,6 +25,7 @@ setup(
     version=version,
     description="Rapyuta.io CLI Python command line application.",
     long_description=long_descr,
+    long_description_content_type='text/markdown',
     author="Rapyuta Robotics",
     author_email="opensource@rapyuta-robotics.com",
     url="http://docs.rapyuta.io",
