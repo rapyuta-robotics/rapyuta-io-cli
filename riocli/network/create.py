@@ -17,6 +17,7 @@ import click
 
 from riocli.network.native_network import create_native_network
 from riocli.network.routed_network import create_routed_network
+from riocli.device.util import name_to_guid as device_name_to_guid
 
 
 @click.command('create')
@@ -25,7 +26,7 @@ from riocli.network.routed_network import create_routed_network
               type=click.Choice(['routed', 'native']), default='routed')
 @click.option('--ros', help='Version of ROS',
               type=click.Choice(['kinetic', 'melodic', 'noetic']), default='melodic')
-@click.option('--device', help='Device ID of the Device where Network will run (device only)')
+@click.option('--device', 'device_name', help='Device ID of the Device where Network will run (device only)')
 @click.option('--limit', help='Resource Limit for Network (cloud only) '
                               '[x_small is only available for Native Network]',
               type=click.Choice(['x_small', 'small', 'medium', 'large']), default='small')
@@ -33,6 +34,7 @@ from riocli.network.routed_network import create_routed_network
               help='Network Interface on which Network will listen (device only)')
 @click.option('--restart-policy', help='Restart policy for the Network (device only)',
               type=click.Choice(['always', 'no', 'on-failure']), default='always')
+@device_name_to_guid
 def create_network(name: str, network: str, **kwargs: typing.Any) -> None:
     """
     Create a new network

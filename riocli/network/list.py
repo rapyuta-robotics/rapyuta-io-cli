@@ -65,4 +65,4 @@ def _display_network_list(
         if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
             continue
         click.secho('{:29} {:<15} {:8} {:8} {:20}'.
-                   format(network.guid, network.name, network.runtime, network_type, phase))
+                    format(network.guid, network.name, network.runtime, network_type, phase))

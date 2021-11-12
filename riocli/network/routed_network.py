@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
+
 import click
 from click_spinner import spinner
 from rapyuta_io import ROSDistro
@@ -20,8 +22,8 @@ from rapyuta_io.clients.routed_network import RoutedNetworkLimits, Parameters
 from riocli.config import new_client
 
 
-def create_routed_network(name: str, ros: str, device: str = None, network_interface: str = None,
-                          limit: str = None, restart_policy: str = None) -> None:
+def create_routed_network(name: str, ros: str, device_guid: str = None, network_interface: str = None,
+                          limit: str = None, restart_policy: str = None, **kwargs: typing.Any) -> None:
     client = new_client()
     ros_distro = ROSDistro(ros)
     limit = getattr(RoutedNetworkLimits, limit.upper())
@@ -29,7 +31,8 @@ def create_routed_network(name: str, ros: str, device: str = None, network_inter
         restart_policy = RestartPolicy(restart_policy)
 
     with spinner():
-        if device:
+        if device_guid:
+            device = client.get_device(device_id=device_guid)
             client.create_device_routed_network(name=name, ros_distro=ros_distro, shared=False,
                                                 device=device,
                                                 network_interface=network_interface,
