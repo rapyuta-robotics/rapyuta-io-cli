@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
+
 import click
 from click_spinner import spinner
 from rapyuta_io.clients.native_network import NativeNetwork, Parameters, NativeNetworkLimits
@@ -19,22 +21,23 @@ from rapyuta_io.clients.package import Runtime, ROSDistro
 from riocli.config import new_client
 
 
-def create_native_network(name: str, ros: str, device: str = None, network_interface: str = None,
-                          limit: str = None, restart_policy: str = None) -> None:
+def create_native_network(name: str, ros: str, device_guid: str = None, network_interface: str = None,
+                          limit: str = None, restart_policy: str = None, **kwargs: typing.Any) -> None:
     client = new_client()
 
     ros_distro = ROSDistro(ros)
     runtime = Runtime.CLOUD
-    if device:
-        # TODO: Update the SDK for support of Device Native Network
-        click.secho('Native Network on device is not supported yet (in the CLI)!', fg='red')
-        exit(1)
 
-    parameters = None
     if limit is not None:
         limit = getattr(NativeNetworkLimits, limit.upper())
-        parameters = Parameters(limit)
 
+    device = None
+    if device_guid:
+        runtime = Runtime.DEVICE
+        device = client.get_device(device_id=device_guid)
+
+    parameters = Parameters(limits=limit, device=device, network_interface=network_interface,
+                            restart_policy=restart_policy)
     with spinner():
         client.create_native_network(NativeNetwork(name, runtime=runtime,
                                                    ros_distro=ros_distro,
