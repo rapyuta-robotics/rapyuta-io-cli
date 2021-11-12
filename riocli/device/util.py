@@ -115,9 +115,9 @@ def is_remote_path(src, devices=[]):
         parts = src.split(":")
         if len(parts) == 2:
             if is_valid_uuid(parts[0]):
-                return parts[0], Path(parts[1]).absolute()
+                return parts[0], Path(parts[1]).absolute().as_posix()
             else:
                 for device in devices:
                     if device.name == parts[0]:
-                        return device.uuid, Path(parts[1]).absolute()
+                        return device.uuid, Path(parts[1]).absolute().as_posix()
     return None, src
