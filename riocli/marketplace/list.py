@@ -14,36 +14,27 @@
 import json
 
 import click
-from rapyuta_io.utils import RestClient
+from riocli.marketplace.util import api_call
 from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.config import Configuration
 
-_LIST_URL_FMT = '{}/marketplace/products'
+_LIST_URL_FMT = 'marketplace/products'
 
 
 @click.command('list')
-@click.option('--format', '-f', 'format_type', default='table',
-              type=click.Choice(['json', 'yaml', 'table'], case_sensitive=False))
-def list_marketplace(format_type: str) -> None:
+def list_marketplace() -> None:
     """
     List the marketplace packages
     """
     try:
-        config = Configuration()
-        catalog_host = config.data['catalog_host']
-        url = _LIST_URL_FMT.format(catalog_host)
-        headers = config.get_auth_header()
-        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
-        if response.status_code != 200:
-            raise Exception('Something went wrong!')
-        packages = json.loads(response.text)
-        display_marketplace_list(packages=packages, format_type=format_type, show_header=True)
+        packages = api_call(_LIST_URL_FMT, HttpMethod.GET)
+        display_marketplace_list(packages=packages, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
+        exit(1)
 
 
-def display_marketplace_list(packages: list, format_type: str, show_header: bool = True):
+def display_marketplace_list(packages: list, show_header: bool = True) -> None:
     if show_header:
         click.secho('{:35} {:<35} {:<24} {:40}'.format('RRN', 'Name', 'Publisher', 'Categories'), fg='yellow')
 
