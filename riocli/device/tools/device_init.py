@@ -40,12 +40,15 @@ def device_init(device_name: str, device_guid: str) -> None:
 
 def _setup_device(device_guid: str) -> None:
     run_on_device(device_guid=device_guid, command=[
-        'apt', 'install', '-y', 'socat',
+        'os=$(uname', '|', 'tr', '"[:upper:]"', '"[:lower:]")'
+        '&&', 'var_arch=$(uname -m);', 'if [ "$var_arch" = "x86_64" ];', 'then arch="amd64";',
+        'elif [ "$var_arch" = "armv7l" ];', 'then arch="armv7";', 'else arch="arm32";', 'fi',
+        '&&', 'apt', 'install', '-y', 'socat',
         # TODO: Install piping-tunnel during onboarding itself
         '&&', 'curl', '-sLO',
-        'https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-linux-amd64.deb',
-        '&&', 'dpkg', '-i', 'piping-tunnel-0.10.1-linux-amd64.deb',
-        '&&', 'rm', 'piping-tunnel-0.10.1-linux-amd64.deb',
+        'https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-${os}-${arch}.deb',
+        '&&', 'dpkg', '-i', 'piping-tunnel-0.10.1-${os}-${arch}.deb',
+        '&&', 'rm', 'piping-tunnel-0.10.1-${os}-${arch}.deb',
         '&&', 'mkdir', '-p', '/root/.ssh',
         '&&', '/root/.ssh/authorized_keys'
     ])
@@ -57,8 +60,19 @@ def _setup_local() -> None:
     tunnel = os.path.join(path, 'piping-tunnel')
     if os.path.isfile(tunnel):
         return
-
-    # TODO: Add support for non-linux and non-amd64 machines
+    os_name = run_bash('uname').lower()
+    arch = find_arch_from_uname()
     run_bash("""/bin/bash -c 'mkdir -p {}'""".format(path))
-    run_bash("""/bin/bash -c 'pushd {} && curl -SLO https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-linux-amd64.tar.gz && tar xf piping-tunnel-0.10.1-linux-amd64.tar.gz && rm CHANGELOG.md LICENSE piping-tunnel-0.10.1-linux-amd64.tar.gz README.md && popd'
-    """.format(path))
+    run_bash(
+        f"""/bin/bash -c 'pushd {path} && curl -SLO https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-{os_name}-{arch}.tar.gz && tar xf piping-tunnel-0.10.1-{os_name}-{arch}.tar.gz && rm CHANGELOG.md LICENSE piping-tunnel-0.10.1-{os_name}-{arch}.tar.gz README.md && popd'
+    """)
+
+
+def find_arch_from_uname() -> str:
+    arch = run_bash('uname -m')
+    if arch == 'x86_64':
+        return 'amd64'
+    elif arch == 'armv7l':
+        return 'armv7'
+    else:
+        return 'arm64'
