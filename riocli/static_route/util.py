@@ -53,8 +53,7 @@ def get_static_route_name(client: Client, guid: str) -> str:
 def find_static_route_guid(client: Client, name: str) -> str:
     routes = client.get_all_static_routes()
     for route in routes:
-        prefix = route.urlPrefix.split("-")[0]
-        if prefix == name or route.urlString == name:
+        if route.urlPrefix == name or route.urlString == name:
             return route.guid
 
     click.secho("Static route not found", fg='red')
@@ -62,7 +61,7 @@ def find_static_route_guid(client: Client, name: str) -> str:
 
 
 def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
-    header = '{:<36} {:<15} {:25} {:36} {:32}'.format(
+    header = '{:<36} {:<25} {:36} {:36} {:32}'.format(
         'Static Route ID',
         'Name',
         'Full URL',
@@ -72,6 +71,6 @@ def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
     click.echo(click.style(header, fg='yellow'))
     for route in routes:
         click.secho(
-            '{:<36} {:<15} {:25} {:36} {:32}'.
-            format(route.guid, route.urlPrefix.split("-")[0], route.urlString, route.creator,
+            '{:<36} {:<25} {:36} {:36} {:32}'.
+            format(route.guid, route.urlPrefix, route.urlString, route.creator,
                    route.CreatedAt))
