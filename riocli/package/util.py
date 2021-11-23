@@ -58,6 +58,10 @@ def get_package_name(client: Client, guid: str) -> str:
 
 def find_package_guid(client: Client, name: str, version: str = None) -> str:
     packages = client.get_all_packages(name=name, version=version)
+    if len(packages) == 0:
+        click.secho("package not found", fg='red')
+        exit(1)
+
     if len(packages) == 1:
         return packages[0].packageId
 
