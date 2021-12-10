@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-import typing
 from rapyuta_io.clients import Device
 
 from riocli.config import new_client
@@ -39,18 +38,10 @@ def inspect_device(format_type: str, device_name: str, device_guid: str) -> None
 
 
 def make_device_inspectable(device: Device) -> dict:
-    blacklist_attr = ['deviceId', 'config_variables']
-    device_data = remove_non_inspecting_attributes(device, blacklist_attr)
-    return device_data
+    data = {}
+    for key, val in device.items():
+        if key.startswith('_') or key in ['deviceId']:
+            continue
+        data[key] = val
 
-
-def remove_non_inspecting_attributes(device: Device, blacklist: typing.List[str]) -> dict:
-    device_response = dict(device)
-    for key in device_response.keys():
-        if key.startswith('_') or key in blacklist:
-            if key == 'config_variables':
-                for config_var in device_response['config_variables']:
-                    config_var.pop('id')
-            else:
-                device_response.pop(key)
-    return device_response
+    return data
