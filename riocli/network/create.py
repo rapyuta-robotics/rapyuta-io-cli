@@ -24,7 +24,7 @@ from riocli.network.routed_network import create_routed_network
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native']), default='routed')
 @click.option('--ros', help='Version of ROS',
-              type=click.Choice(['kinetic', 'melodic', 'neotic']), default='melodic')
+              type=click.Choice(['kinetic', 'melodic', 'noetic']), default='melodic')
 @click.option('--device', help='Device ID of the Device where Network will run (device only)')
 @click.option('--limit', help='Resource Limit for Network (cloud only) '
                               '[x_small is only available for Native Network]',
