@@ -23,15 +23,18 @@ exclude_patterns = []
 todo_include_todos = False
 
 html_theme = 'furo'
-html_logo = 'logo.png'
 html_favicon = 'favicon.ico'
 html_static_path = ['_static']
+html_theme_options = {
+    "light_logo": "logo-light-mode.png",
+    "dark_logo": "logo-dark-mode.png",
+}
 html_css_files = ['css/rio-sphinx.css']
 html_js_files = ['js/rio-sphinx.js']
 htmlhelp_basename = 'RIOdoc'
 man_pages = [
     (master_doc, 'cli', u'Rapyuta IO CLI',
-    [author], 1)
+     [author], 1)
 ]
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
