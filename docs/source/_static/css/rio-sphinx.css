@@ -31,3 +31,7 @@ dl.py.method > dd {
 .sidebar-tree label {
     display: none;
 }
+
+.sidebar-logo {
+    padding: 1rem;
+}
