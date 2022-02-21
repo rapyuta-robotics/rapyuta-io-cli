@@ -14,6 +14,7 @@ riocli = {path = "."}
 click-spinner = "==0.1.10"
 click-help-colors = "==0.9.1"
 click-repl = "==0.2.0"
+click-plugins = "==1.1.1"
 click = "==8.0.1"
 rapyuta-io = "==0.32.0"
 pyyaml = "==5.4.1"
