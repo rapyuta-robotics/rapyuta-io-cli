@@ -33,6 +33,12 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             exit(1)
 
         name = kwargs.pop('device_name')
+
+        # device_name is not specified
+        if name is None:
+            f(**kwargs)
+            return
+
         guid = None
 
         if is_valid_uuid(name):
