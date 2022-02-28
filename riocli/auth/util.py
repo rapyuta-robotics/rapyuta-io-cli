@@ -56,7 +56,3 @@ def get_token(email: str, password: str) -> str:
     except Exception as e:
         click.secho(e, fg='red')
         exit(1)
-
-
-def read_config():
-    pass

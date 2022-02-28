@@ -17,18 +17,12 @@ from riocli.auth.login import select_project
 from riocli.auth.util import get_token
 from riocli.config import Configuration
 
-_STAGING_ENVIRONMENT_HOSTS = {
-    "v11": ("https://v11catalog.apps.okd4v2.okd4beta.rapyuta.io", "https://v11apiserver.apps.okd4v2.okd4beta.rapyuta.io", "https://v11rip.apps.okd4v2.okd4beta.rapyuta.io"),
-    "v12": ("https://v12catalog.apps.okd4v2.okd4beta.rapyuta.io", "https://v12apiserver.apps.okd4v2.okd4beta.rapyuta.io", "https://v12rip.apps.okd4v2.okd4beta.rapyuta.io"),
-    "v13": ("https://v13catalog.apps.okd4v2.okd4beta.rapyuta.io", "https://v13apiserver.apps.okd4v2.okd4beta.rapyuta.io", "https://v13rip.apps.okd4v2.okd4beta.rapyuta.io"),
-    "v14": ("https://v14catalog.apps.okd4v2.okd4beta.rapyuta.io", "https://v14apiserver.apps.okd4v2.okd4beta.rapyuta.io", "https://v14rip.apps.okd4v2.okd4beta.rapyuta.io"),
-    "v15": ("https://v15catalog.apps.okd4v2.okd4beta.rapyuta.io", "https://v15apiserver.apps.okd4v2.okd4beta.rapyuta.io", "https://v15rip.apps.okd4v2.okd4beta.rapyuta.io"),
-    "qa":  ("https://qacatalog.apps.okd4v2.okd4beta.rapyuta.io",  "https://qaapiserver.apps.okd4v2.okd4beta.rapyuta.io",  "https://qarip.apps.okd4v2.okd4beta.rapyuta.io")
-}
+_STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
+_NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa"]
 
 
 @click.command('environment', hidden=True)
-@click.argument('name', type=click.Choice(['ga', 'qa', 'v11', 'v12', 'v13', 'v14', 'v15']))
+@click.argument('name', type=str)
 def environment(name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use)
@@ -42,11 +36,7 @@ def environment(name: str):
         config.data.pop('core_api_host', None)
         config.data.pop('rip_host', None)
     else:
-        catalog, core, rip = _STAGING_ENVIRONMENT_HOSTS.get(name)
-        config.data['environment'] = name
-        config.data['catalog_host'] = catalog
-        config.data['core_api_host'] = core
-        config.data['rip_host'] = rip
+        _configure_environment(config, name)
 
     config.data.pop('project_id', None)
     email = config.data.get('email_id', None)
@@ -57,3 +47,26 @@ def environment(name: str):
 
     select_project(config)
     config.save()
+
+
+def _validate_environment(name: str) -> bool:
+    valid = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
+    if not valid:
+        click.secho('Invalid staging environment!', fg='red')
+        exit(1)
+
+
+def _configure_environment(config: Configuration, name: str) -> None:
+    _validate_environment(name)
+
+    # Named Staging environments don't have hyphen in the name. Ephemeral environments do.
+    name = name+'-' if name.startswith('pr') else name
+
+    catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
+    core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
+    rip = 'https://{}rip.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
+
+    config.data['environment'] = name
+    config.data['catalog_host'] = catalog
+    config.data['core_api_host'] = core
+    config.data['rip_host'] = rip
