@@ -18,7 +18,9 @@ __version__ = "0.2.0"
 import click
 import rapyuta_io.version
 from click_help_colors import HelpColorsGroup
+from click_plugins import with_plugins
 from click_repl import register_repl
+from pkg_resources import iter_entry_points
 
 from riocli.auth import auth
 from riocli.build import build
@@ -34,6 +36,7 @@ from riocli.secret import secret
 from riocli.static_route import static_route
 
 
+@with_plugins(iter_entry_points('riocli.plugins'))
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,

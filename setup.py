@@ -37,6 +37,7 @@ setup(
         "click-completion==0.5.2",
         "click-help-colors==0.9.1",
         "click-repl==0.2.0",
+        "click-plugins==1.1.1",
         "click-spinner==0.1.10",
         "concurrencytest==0.1.2",
         "enum34==1.1.6",

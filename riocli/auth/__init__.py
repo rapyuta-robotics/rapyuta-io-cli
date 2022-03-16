@@ -15,20 +15,21 @@ import click
 from click_help_colors import HelpColorsGroup
 from rapyuta_io import Client
 
-from riocli.auth.util import read_config
 from riocli.auth.login import login
 from riocli.auth.logout import logout
 from riocli.auth.refresh_token import refresh_token
-from riocli.auth.status import status
 from riocli.auth.staging import environment
+from riocli.auth.status import status
+from riocli.auth.token import token
+from riocli.auth.util import read_config
 from riocli.config import new_client
 
 
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def auth():
     """
@@ -45,4 +46,5 @@ auth.add_command(login)
 auth.add_command(logout)
 auth.add_command(status)
 auth.add_command(refresh_token)
+auth.add_command(token)
 auth.add_command(environment)
