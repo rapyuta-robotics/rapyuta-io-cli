@@ -1,3 +1,17 @@
+# [0.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.2.0...v0.3.0) (2022-03-24)
+
+
+### Bug Fixes
+
+* **device:** disable yamux switch for tunnel ([2c97119](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2c971197413c2444dd2af1819be6becf68420e04))
+* **network:** makes device flag optional ([c9d8305](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c9d8305002a8ce07d57ecff6759d07d421550736))
+
+
+### Features
+
+* added initial support for plugins ([c513315](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c5133151a33e0c4e368048ef2d57de3551ebac5f))
+* **auth:** adds support for ephemeral environments ([71187ab](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/71187ab95d0d0c06bfb3a933aca7b3c04b7f998b))
+
 # [0.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.1.1...v0.2.0) (2021-12-27)
 
 
