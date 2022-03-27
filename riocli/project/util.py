@@ -15,9 +15,10 @@ import functools
 import typing
 
 import click
-from rapyuta_io import Client
+from rapyuta_io import Client, Project
 
 from riocli.config import new_client
+from riocli.utils.selector import show_selection
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -46,12 +47,27 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
 
 def find_project_guid(client: Client, name: str) -> str:
     projects = client.list_projects()
+    matches = []
     for project in projects:
         if project.name == name:
-            return project.guid
+            matches.append(project)
 
-    click.secho("project not found", fg='red')
-    exit(1)
+    if len(projects) == 0:
+        click.secho("project not found", fg='red')
+        exit(1)
+
+    if len(projects) == 1:
+        return project.guid
+
+    return resolve_conflict(matches)
+
+
+def resolve_conflict(matches: typing.List[Project]) -> str:
+    options = {}
+    for project in matches:
+        options[project.name] = project.guid
+
+    return show_selection(options, header='All these Projects were found with the same name')
 
 
 def get_project_name(client: Client, guid: str) -> str:

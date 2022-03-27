@@ -36,9 +36,9 @@ def list_project() -> None:
 def _display_project_list(projects: typing.List[Project], show_header: bool = True) -> None:
     if show_header:
         click.secho('{:40} {:<25} {:<27} {:40}'.
-                    format('Project ID', 'Project Name', 'Created At', 'Creator'),
+                    format('Project ID', 'Project Name', 'Created At', 'Creator', 'Organization ID'),
                     fg='yellow')
 
     for project in projects:
-        click.secho('{:40} {:<25} {:<24} {:40}'.format(project.guid, project.name,
-                                                      project.created_at, project.creator))
+        click.secho('{:40} {:<25} {:<24} {:40} {:40}'.format(project.guid, project.name,
+                                                      project.created_at, project.creator, project.organization.guid))
