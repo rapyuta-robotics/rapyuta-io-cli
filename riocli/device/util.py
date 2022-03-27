@@ -83,8 +83,9 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
             exit(1)
 
         device_guid = kwargs.get('device_guid')
+        page = kwargs.get('page', 1)
         device = client.get_device(device_id=device_guid)
-        requests = device.list_uploaded_files_for_device()
+        requests = device.list_uploaded_files_for_device(page_number=page, page_size=10, paginate=True)
 
         file_name = kwargs.pop('file_name')
 

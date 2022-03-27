@@ -37,13 +37,14 @@ def device_uploads() -> None:
 
 
 @device_uploads.command('list')
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @name_to_guid
-def list_uploads(device_name: str, device_guid: str) -> None:
+def list_uploads(device_name: str, device_guid: str, page: int) -> None:
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
-        uploads = device.list_uploaded_files_for_device()
+        uploads = device.list_uploaded_files_for_device(page_number=page, page_size=10, paginate=True)
         _display_upload_list(uploads=uploads, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -83,11 +84,12 @@ def create_upload(
 
 
 @device_uploads.command('status')
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @click.argument('file-name', type=str)
 @name_to_guid
 @name_to_request_id
-def upload_status(device_name: str, device_guid: str, file_name: str, request_id: str):
+def upload_status(device_name: str, device_guid: str, file_name: str, request_id: str, page: int):
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -99,11 +101,12 @@ def upload_status(device_name: str, device_guid: str, file_name: str, request_id
 
 
 @device_uploads.command('delete')
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @click.argument('file-name', type=str)
 @name_to_guid
 @name_to_request_id
-def delete_upload(device_name: str, device_guid: str, file_name: str, request_id: str):
+def delete_upload(device_name: str, device_guid: str, file_name: str, request_id: str, page: int):
     try:
         client = new_client()
         with spinner():
@@ -116,11 +119,12 @@ def delete_upload(device_name: str, device_guid: str, file_name: str, request_id
 
 
 @device_uploads.command('download')
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @click.argument('file-name', type=str)
 @name_to_guid
 @name_to_request_id
-def download_log(device_name: str, device_guid: str, file_name: str, request_id: str):
+def download_log(device_name: str, device_guid: str, file_name: str, request_id: str, page: int):
     try:
         client = new_client()
         with spinner():
@@ -133,11 +137,12 @@ def download_log(device_name: str, device_guid: str, file_name: str, request_id:
 
 
 @device_uploads.command('cancel')
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @click.argument('file-name', type=str)
 @name_to_guid
 @name_to_request_id
-def cancel_upload(device_name: str, device_guid: str, file_name: str, request_id: str):
+def cancel_upload(device_name: str, device_guid: str, file_name: str, request_id: str, page: int):
     try:
         client = new_client()
         with spinner():
@@ -151,11 +156,12 @@ def cancel_upload(device_name: str, device_guid: str, file_name: str, request_id
 
 @device_uploads.command('share')
 @click.option('--expiry', help='Flag to set the expiry date for the Shared URL [default: 7 days]', default=7)
+@click.option('--page', default=1, help='Page number')
 @click.argument('device-name', type=str)
 @click.argument('file-name', type=str)
 @name_to_guid
 @name_to_request_id
-def shared_url(device_name: str, device_guid: str, file_name: str, request_id: str, expiry: int) -> None:
+def shared_url(device_name: str, device_guid: str, file_name: str, request_id: str, expiry: int, page: int) -> None:
     try:
         client = new_client()
         with spinner():
