@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project, get_token
-from riocli.config import Configuration
+from riocli.utils.context import get_root_context
 
 
 @click.command(
@@ -27,26 +27,26 @@ from riocli.config import Configuration
               help='Email of the Rapyuta.io account')
 @click.option('--password', prompt='Password', hide_input=True,
               help='Password for the Rapyuta.io account')
-def login(email: str, password: str):
+@click.pass_context
+def login(ctx: click.Context, email: str, password: str):
     """
     Log into the Rapyuta.io account using the CLI. This is required to use most of the
     functionalities of the CLI.
     """
 
-    config = Configuration()
-    config.data['email_id'] = email
-    config.data['password'] = password
-
-    config.data['auth_token'] = get_token(email, password)
+    ctx = get_root_context(ctx)
+    ctx.obj.data['email_id'] = email
+    ctx.obj.data['password'] = password
+    ctx.obj.data['auth_token'] = get_token(email, password)
 
     # Save if the file does not already exist
-    if not config.exists:
+    if not ctx.obj.exists:
         click.echo('Logged in successfully!')
-        config.save()
+        ctx.obj.save()
     else:
         click.echo("[Warning] rio already has a config file present")
         click.confirm('Do you want to override the config', abort=True)
 
-    select_project(config)
-    config.save()
+    select_project(ctx.obj)
+    ctx.obj.save()
     click.echo('Logged in successfully!')

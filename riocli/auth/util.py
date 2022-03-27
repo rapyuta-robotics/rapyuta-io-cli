@@ -36,6 +36,7 @@ def select_project(config: Configuration) -> str:
 
     choice = show_selection(project_map, header='Select the project to activate')
     config.data['project_id'] = choice
+    config.data['project_name'] = project_map[choice]
 
 
 def get_token(email: str, password: str) -> str:

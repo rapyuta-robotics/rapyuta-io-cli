@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2022 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,25 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
-
-from riocli.config import Configuration
+from click import Context
 
 
-@click.command()
-@click.pass_context
-def logout(ctx: click.Context):
+def get_root_context(ctx: Context) -> Context:
     """
-    Log out from the Rapyuta.io account using the CLI.
+    get_root_context figures out the top-level Context from the given context by walking down the linked-list.
+
+    https://click.palletsprojects.com/en/8.0.x/complex/#contexts
     """
+    while True:
+        if ctx.parent is None:
+            return ctx
 
-    if not ctx.obj.exists:
-        return
-
-    ctx.obj.data.pop('auth_token', None)
-    ctx.obj.data.pop('password', None)
-    ctx.obj.data.pop('email_id', None)
-    ctx.obj.data.pop('project_id', None)
-    ctx.obj.save()
-
-    click.secho('Logged out successfully!', fg='green')
+        ctx = ctx.parent
