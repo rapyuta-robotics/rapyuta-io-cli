@@ -17,15 +17,15 @@ from riocli.config import Configuration
 
 
 @click.command()
-def status():
+@click.pass_context
+def status(ctx: click.Context):
     """
     Shows the Login status of the CLI
     """
 
-    config = Configuration()
-    if not config.exists:
+    if not ctx.obj.exists:
         click.secho('Logged out 🔒', fg='red')
         exit(1)
 
-    if 'auth_token' in config.data:
+    if 'auth_token' in ctx.obj.data:
         click.secho('Logged in 🎉', fg='green')
