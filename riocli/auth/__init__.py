@@ -21,7 +21,6 @@ from riocli.auth.refresh_token import refresh_token
 from riocli.auth.staging import environment
 from riocli.auth.status import status
 from riocli.auth.token import token
-from riocli.auth.util import read_config
 from riocli.config import new_client
 
 
