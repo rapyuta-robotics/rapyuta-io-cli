@@ -49,7 +49,11 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             name = get_device_name(client, guid)
 
         if guid is None:
-            guid = find_device_guid(client, name)
+            try:
+                guid = find_device_guid(client, name)
+            except Exception as e:
+                click.secho(str(e), fg='red')
+                exit(1)
 
         kwargs['device_name'] = name
         kwargs['device_guid'] = guid
@@ -69,8 +73,7 @@ def find_device_guid(client: Client, name: str) -> str:
         if device.name == name:
             return device.uuid
 
-    click.secho("device not found", fg='red')
-    exit(1)
+    raise DeviceNotFound()
 
 
 def name_to_request_id(f: typing.Callable) -> typing.Callable:
@@ -127,3 +130,8 @@ def is_remote_path(src, devices=[]):
                     if device.name == parts[0]:
                         return device.uuid, Path(parts[1]).absolute().as_posix()
     return None, src
+
+class DeviceNotFound(Exception):
+    def __init__(self, message='device not found'):
+        self.message = message
+        super().__init__(self.message)

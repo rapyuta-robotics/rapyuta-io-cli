@@ -1,0 +1,9 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "cloud-routed-network"
+spec:
+  runtime: "Cloud"
+  type: "Routed"
+  rosDistro: "melodic"
+  resourceLimits: "Small"

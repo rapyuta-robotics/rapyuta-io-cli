@@ -1,0 +1,19 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "docker-build"
+spec:
+  recipe: "Docker"
+  architecture: "amd64"
+  git:
+    repository: "https://github.com/rapyuta-robotics/io_tutorial.git"
+    # gitRef: "master"
+    # secret: "secret-guid"
+  # dockerfile: "Dockerfile"
+  # pullSecret: "secret-guid"
+  # contextDir: "talker/talker"
+  # pushRepository: "rrdockerhub/test"
+  # pushSecret: "secret-guid"
+  # tagName: "tag-name"
+  # triggerName: "trigger-name"
+  # webhookURL: "http://webhook.url"
