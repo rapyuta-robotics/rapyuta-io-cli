@@ -87,6 +87,10 @@ def find_network_name(
     if network_type in [None, 'native']:
         native = find_native_network_name(client, name)
 
+    if not routed and not native:
+        click.secho("Network not found", fg='red')
+        exit(1)
+
     return resolve_conflict(routed, native, network_type)
 
 
