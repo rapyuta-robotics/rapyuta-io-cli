@@ -20,23 +20,31 @@ from rapyuta_io.utils import UnauthorizedError
 
 from riocli.config import Configuration
 from riocli.utils.selector import show_selection
+from riocli.project.util import find_project_guid
 
 
-def select_project(config: Configuration) -> str:
+def select_project(config: Configuration, project: str = None) -> None:
     """
     Launches the project selection prompt by listing all the projects.
     Sets the choice in the given configuration.
     """
     client = config.new_client(with_project=False)
-    projects = client.list_projects()
 
+    project_guid = None
+    if project:
+        project_guid = project if project.startswith('project-') else find_project_guid(client, project)
+
+    projects = client.list_projects()
     project_map = dict()
+
     for project in projects:
         project_map[project.guid] = project.name
 
-    choice = show_selection(project_map, header='Select the project to activate')
-    config.data['project_id'] = choice
-    config.data['project_name'] = project_map[choice]
+    if not project_guid:
+        project_guid = show_selection(project_map, header='Select the project to activate')
+
+    config.data['project_id'] = project_guid
+    config.data['project_name'] = project_map[project_guid]
 
 
 def get_token(email: str, password: str) -> str:
