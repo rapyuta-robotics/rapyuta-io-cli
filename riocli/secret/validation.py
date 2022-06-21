@@ -17,18 +17,19 @@ def validate(data, custom_formats={}):
 
 def validate___definitions_secret(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Secret'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/secretSpec'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Secret'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/secretSpec'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['apiVersion', 'kind', 'metadata', 'spec']):
-            raise JsonSchemaValueException("data must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Secret'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/secretSpec'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
+            raise JsonSchemaValueException("data must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Secret'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/secretSpec'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
         data_keys = set(data.keys())
         if "apiVersion" in data_keys:
             data_keys.remove("apiVersion")
             data__apiVersion = data["apiVersion"]
             if data__apiVersion != "apiextensions.rapyuta.io/v1":
-                raise JsonSchemaValueException("data.apiVersion must be same as const definition: apiextensions.rapyuta.io/v1", value=data__apiVersion, name="data.apiVersion", definition={'const': 'apiextensions.rapyuta.io/v1'}, rule='const')
+                raise JsonSchemaValueException("data.apiVersion must be same as const definition: apiextensions.rapyuta.io/v1", value=data__apiVersion, name="data.apiVersion", definition={'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, rule='const')
+        else: data["apiVersion"] = 'apiextensions.rapyuta.io/v1'
         if "kind" in data_keys:
             data_keys.remove("kind")
             data__kind = data["kind"]
@@ -46,168 +47,190 @@ def validate___definitions_secret(data, custom_formats={}):
 
 def validate___definitions_secretspec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'$ref': '#/definitions/secretType'}, 'gitAuthMethod': {'$ref': '#/definitions/gitAuthMethod'}}, 'required': ['type'], 'allOf': [{'if': {'properties': {'type': {'const': 'Docker'}}}, 'then': {'properties': {'registry': {'type': 'string'}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'email': {'type': 'string'}}, 'required': ['registry', 'username', 'password', 'email']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'Basic'}}}, 'then': {'properties': {'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'Token'}}}, 'then': {'properties': {'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'SSH'}}}, 'then': {'properties': {'privateKey': {'type': 'string'}}, 'required': ['privateKey']}}]}, rule='type')
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "type" in data_keys:
-                data_keys.remove("type")
-                data__type = data["type"]
-                if data__type != "Docker":
-                    raise JsonSchemaValueException("data.type must be same as const definition: Docker", value=data__type, name="data.type", definition={'const': 'Docker'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['registry', 'username', 'password', 'email']):
-                raise JsonSchemaValueException("data must contain ['registry', 'username', 'password', 'email'] properties", value=data, name="data", definition={'properties': {'registry': {'type': 'string'}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'email': {'type': 'string'}}, 'required': ['registry', 'username', 'password', 'email']}, rule='required')
-            data_keys = set(data.keys())
-            if "registry" in data_keys:
-                data_keys.remove("registry")
-                data__registry = data["registry"]
-                if not isinstance(data__registry, (str)):
-                    raise JsonSchemaValueException("data.registry must be string", value=data__registry, name="data.registry", definition={'type': 'string'}, rule='type')
-            if "username" in data_keys:
-                data_keys.remove("username")
-                data__username = data["username"]
-                if not isinstance(data__username, (str)):
-                    raise JsonSchemaValueException("data.username must be string", value=data__username, name="data.username", definition={'type': 'string'}, rule='type')
-            if "password" in data_keys:
-                data_keys.remove("password")
-                data__password = data["password"]
-                if not isinstance(data__password, (str)):
-                    raise JsonSchemaValueException("data.password must be string", value=data__password, name="data.password", definition={'type': 'string'}, rule='type')
-            if "email" in data_keys:
-                data_keys.remove("email")
-                data__email = data["email"]
-                if not isinstance(data__email, (str)):
-                    raise JsonSchemaValueException("data.email must be string", value=data__email, name="data.email", definition={'type': 'string'}, rule='type')
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "type" in data_keys:
-                data_keys.remove("type")
-                data__type = data["type"]
-                if data__type != "Git":
-                    raise JsonSchemaValueException("data.type must be same as const definition: Git", value=data__type, name="data.type", definition={'const': 'Git'}, rule='const')
-            if "gitAuthMethod" in data_keys:
-                data_keys.remove("gitAuthMethod")
-                data__gitAuthMethod = data["gitAuthMethod"]
-                if data__gitAuthMethod != "Basic":
-                    raise JsonSchemaValueException("data.gitAuthMethod must be same as const definition: Basic", value=data__gitAuthMethod, name="data.gitAuthMethod", definition={'const': 'Basic'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['username', 'password']):
-                raise JsonSchemaValueException("data must contain ['username', 'password'] properties", value=data, name="data", definition={'properties': {'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}, rule='required')
-            data_keys = set(data.keys())
-            if "username" in data_keys:
-                data_keys.remove("username")
-                data__username = data["username"]
-                if not isinstance(data__username, (str)):
-                    raise JsonSchemaValueException("data.username must be string", value=data__username, name="data.username", definition={'type': 'string'}, rule='type')
-            if "password" in data_keys:
-                data_keys.remove("password")
-                data__password = data["password"]
-                if not isinstance(data__password, (str)):
-                    raise JsonSchemaValueException("data.password must be string", value=data__password, name="data.password", definition={'type': 'string'}, rule='type')
-            if "caCert" in data_keys:
-                data_keys.remove("caCert")
-                data__caCert = data["caCert"]
-                if not isinstance(data__caCert, (str)):
-                    raise JsonSchemaValueException("data.caCert must be string", value=data__caCert, name="data.caCert", definition={'type': 'string'}, rule='type')
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "type" in data_keys:
-                data_keys.remove("type")
-                data__type = data["type"]
-                if data__type != "Git":
-                    raise JsonSchemaValueException("data.type must be same as const definition: Git", value=data__type, name="data.type", definition={'const': 'Git'}, rule='const')
-            if "gitAuthMethod" in data_keys:
-                data_keys.remove("gitAuthMethod")
-                data__gitAuthMethod = data["gitAuthMethod"]
-                if data__gitAuthMethod != "Token":
-                    raise JsonSchemaValueException("data.gitAuthMethod must be same as const definition: Token", value=data__gitAuthMethod, name="data.gitAuthMethod", definition={'const': 'Token'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['token']):
-                raise JsonSchemaValueException("data must contain ['token'] properties", value=data, name="data", definition={'properties': {'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}, rule='required')
-            data_keys = set(data.keys())
-            if "token" in data_keys:
-                data_keys.remove("token")
-                data__token = data["token"]
-                if not isinstance(data__token, (str)):
-                    raise JsonSchemaValueException("data.token must be string", value=data__token, name="data.token", definition={'type': 'string'}, rule='type')
-            if "caCert" in data_keys:
-                data_keys.remove("caCert")
-                data__caCert = data["caCert"]
-                if not isinstance(data__caCert, (str)):
-                    raise JsonSchemaValueException("data.caCert must be string", value=data__caCert, name="data.caCert", definition={'type': 'string'}, rule='type')
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "type" in data_keys:
-                data_keys.remove("type")
-                data__type = data["type"]
-                if data__type != "Git":
-                    raise JsonSchemaValueException("data.type must be same as const definition: Git", value=data__type, name="data.type", definition={'const': 'Git'}, rule='const')
-            if "gitAuthMethod" in data_keys:
-                data_keys.remove("gitAuthMethod")
-                data__gitAuthMethod = data["gitAuthMethod"]
-                if data__gitAuthMethod != "SSH":
-                    raise JsonSchemaValueException("data.gitAuthMethod must be same as const definition: SSH", value=data__gitAuthMethod, name="data.gitAuthMethod", definition={'const': 'SSH'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['privateKey']):
-                raise JsonSchemaValueException("data must contain ['privateKey'] properties", value=data, name="data", definition={'properties': {'privateKey': {'type': 'string'}}, 'required': ['privateKey']}, rule='required')
-            data_keys = set(data.keys())
-            if "privateKey" in data_keys:
-                data_keys.remove("privateKey")
-                data__privateKey = data["privateKey"]
-                if not isinstance(data__privateKey, (str)):
-                    raise JsonSchemaValueException("data.privateKey must be string", value=data__privateKey, name="data.privateKey", definition={'type': 'string'}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'Docker', 'enum': ['Docker', 'Git']}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['Docker']}, 'docker': {'type': 'object', '$ref': '#/definitions/docker', 'required': None}}}, {'properties': {'type': {'enum': ['Git']}, 'git': {'type': 'object', '$ref': '#/definitions/git'}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['type']):
-            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'$ref': '#/definitions/secretType'}, 'gitAuthMethod': {'$ref': '#/definitions/gitAuthMethod'}}, 'required': ['type'], 'allOf': [{'if': {'properties': {'type': {'const': 'Docker'}}}, 'then': {'properties': {'registry': {'type': 'string'}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'email': {'type': 'string'}}, 'required': ['registry', 'username', 'password', 'email']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'Basic'}}}, 'then': {'properties': {'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'Token'}}}, 'then': {'properties': {'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}}, {'if': {'properties': {'type': {'const': 'Git'}, 'gitAuthMethod': {'const': 'SSH'}}}, 'then': {'properties': {'privateKey': {'type': 'string'}}, 'required': ['privateKey']}}]}, rule='required')
+            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'Docker', 'enum': ['Docker', 'Git']}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['Docker']}, 'docker': {'type': 'object', '$ref': '#/definitions/docker', 'required': None}}}, {'properties': {'type': {'enum': ['Git']}, 'git': {'type': 'object', '$ref': '#/definitions/git'}}}]}}}, rule='required')
+        if "type" in data:
+            data_one_of_count1 = 0
+            if data_one_of_count1 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_keys = set(data.keys())
+                        if "type" in data_keys:
+                            data_keys.remove("type")
+                            data__type = data["type"]
+                            if data__type not in ['Docker']:
+                                raise JsonSchemaValueException("data.type must be one of ['Docker']", value=data__type, name="data.type", definition={'enum': ['Docker']}, rule='enum')
+                        if "docker" in data_keys:
+                            data_keys.remove("docker")
+                            data__docker = data["docker"]
+                            validate___definitions_docker(data__docker, custom_formats)
+                    data_one_of_count1 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count1 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_keys = set(data.keys())
+                        if "type" in data_keys:
+                            data_keys.remove("type")
+                            data__type = data["type"]
+                            if data__type not in ['Git']:
+                                raise JsonSchemaValueException("data.type must be one of ['Git']", value=data__type, name="data.type", definition={'enum': ['Git']}, rule='enum')
+                        if "git" in data_keys:
+                            data_keys.remove("git")
+                            data__git = data["git"]
+                            validate___definitions_git(data__git, custom_formats)
+                    data_one_of_count1 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count1 != 1:
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'type': {'enum': ['Docker']}, 'docker': {'type': 'object', '$ref': '#/definitions/docker', 'required': None}}}, {'properties': {'type': {'enum': ['Git']}, 'git': {'type': 'object', '$ref': '#/definitions/git'}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "type" in data_keys:
             data_keys.remove("type")
             data__type = data["type"]
-            validate___definitions_secrettype(data__type, custom_formats)
-        if "gitAuthMethod" in data_keys:
-            data_keys.remove("gitAuthMethod")
-            data__gitAuthMethod = data["gitAuthMethod"]
-            validate___definitions_gitauthmethod(data__gitAuthMethod, custom_formats)
+            if not isinstance(data__type, (str)):
+                raise JsonSchemaValueException("data.type must be string", value=data__type, name="data.type", definition={'type': 'string', 'default': 'Docker', 'enum': ['Docker', 'Git']}, rule='type')
+            if data__type not in ['Docker', 'Git']:
+                raise JsonSchemaValueException("data.type must be one of ['Docker', 'Git']", value=data__type, name="data.type", definition={'type': 'string', 'default': 'Docker', 'enum': ['Docker', 'Git']}, rule='enum')
+        else: data["type"] = 'Docker'
     return data
 
-def validate___definitions_gitauthmethod(data, custom_formats={}):
-    if data not in ['Basic', 'Token', 'SSH']:
-        raise JsonSchemaValueException("data must be one of ['Basic', 'Token', 'SSH']", value=data, name="data", definition={'enum': ['Basic', 'Token', 'SSH']}, rule='enum')
+def validate___definitions_git(data, custom_formats={}):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'authMethod': {'type': 'string', 'default': 'HTTP/S Basic Auth', 'enum': ['HTTP/S Basic Auth', 'HTTP/S Token Auth', 'SSH Auth']}}, 'dependencies': {'authMethod': {'oneOf': [{'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Basic Auth']}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}, {'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Token Auth']}, 'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}, {'properties': {'authMethod': {'type': 'string', 'enum': ['SSH Auth']}, 'privateKey': {'type': 'string'}}, 'required': ['privateKey']}]}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        if "authMethod" in data:
+            data_one_of_count2 = 0
+            if data_one_of_count2 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_len = len(data)
+                        if not all(prop in data for prop in ['username', 'password']):
+                            raise JsonSchemaValueException("data must contain ['username', 'password'] properties", value=data, name="data", definition={'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Basic Auth']}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}, rule='required')
+                        data_keys = set(data.keys())
+                        if "authMethod" in data_keys:
+                            data_keys.remove("authMethod")
+                            data__authMethod = data["authMethod"]
+                            if not isinstance(data__authMethod, (str)):
+                                raise JsonSchemaValueException("data.authMethod must be string", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['HTTP/S Basic Auth']}, rule='type')
+                            if data__authMethod not in ['HTTP/S Basic Auth']:
+                                raise JsonSchemaValueException("data.authMethod must be one of ['HTTP/S Basic Auth']", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['HTTP/S Basic Auth']}, rule='enum')
+                        if "username" in data_keys:
+                            data_keys.remove("username")
+                            data__username = data["username"]
+                            if not isinstance(data__username, (str)):
+                                raise JsonSchemaValueException("data.username must be string", value=data__username, name="data.username", definition={'type': 'string'}, rule='type')
+                        if "password" in data_keys:
+                            data_keys.remove("password")
+                            data__password = data["password"]
+                            if not isinstance(data__password, (str)):
+                                raise JsonSchemaValueException("data.password must be string", value=data__password, name="data.password", definition={'type': 'string'}, rule='type')
+                        if "caCert" in data_keys:
+                            data_keys.remove("caCert")
+                            data__caCert = data["caCert"]
+                            if not isinstance(data__caCert, (str)):
+                                raise JsonSchemaValueException("data.caCert must be string", value=data__caCert, name="data.caCert", definition={'type': 'string'}, rule='type')
+                    data_one_of_count2 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count2 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_len = len(data)
+                        if not all(prop in data for prop in ['token']):
+                            raise JsonSchemaValueException("data must contain ['token'] properties", value=data, name="data", definition={'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Token Auth']}, 'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}, rule='required')
+                        data_keys = set(data.keys())
+                        if "authMethod" in data_keys:
+                            data_keys.remove("authMethod")
+                            data__authMethod = data["authMethod"]
+                            if not isinstance(data__authMethod, (str)):
+                                raise JsonSchemaValueException("data.authMethod must be string", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['HTTP/S Token Auth']}, rule='type')
+                            if data__authMethod not in ['HTTP/S Token Auth']:
+                                raise JsonSchemaValueException("data.authMethod must be one of ['HTTP/S Token Auth']", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['HTTP/S Token Auth']}, rule='enum')
+                        if "token" in data_keys:
+                            data_keys.remove("token")
+                            data__token = data["token"]
+                            if not isinstance(data__token, (str)):
+                                raise JsonSchemaValueException("data.token must be string", value=data__token, name="data.token", definition={'type': 'string'}, rule='type')
+                        if "caCert" in data_keys:
+                            data_keys.remove("caCert")
+                            data__caCert = data["caCert"]
+                            if not isinstance(data__caCert, (str)):
+                                raise JsonSchemaValueException("data.caCert must be string", value=data__caCert, name="data.caCert", definition={'type': 'string'}, rule='type')
+                    data_one_of_count2 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count2 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_len = len(data)
+                        if not all(prop in data for prop in ['privateKey']):
+                            raise JsonSchemaValueException("data must contain ['privateKey'] properties", value=data, name="data", definition={'properties': {'authMethod': {'type': 'string', 'enum': ['SSH Auth']}, 'privateKey': {'type': 'string'}}, 'required': ['privateKey']}, rule='required')
+                        data_keys = set(data.keys())
+                        if "authMethod" in data_keys:
+                            data_keys.remove("authMethod")
+                            data__authMethod = data["authMethod"]
+                            if not isinstance(data__authMethod, (str)):
+                                raise JsonSchemaValueException("data.authMethod must be string", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['SSH Auth']}, rule='type')
+                            if data__authMethod not in ['SSH Auth']:
+                                raise JsonSchemaValueException("data.authMethod must be one of ['SSH Auth']", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'enum': ['SSH Auth']}, rule='enum')
+                        if "privateKey" in data_keys:
+                            data_keys.remove("privateKey")
+                            data__privateKey = data["privateKey"]
+                            if not isinstance(data__privateKey, (str)):
+                                raise JsonSchemaValueException("data.privateKey must be string", value=data__privateKey, name="data.privateKey", definition={'type': 'string'}, rule='type')
+                    data_one_of_count2 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count2 != 1:
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Basic Auth']}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['username', 'password']}, {'properties': {'authMethod': {'type': 'string', 'enum': ['HTTP/S Token Auth']}, 'token': {'type': 'string'}, 'caCert': {'type': 'string'}}, 'required': ['token']}, {'properties': {'authMethod': {'type': 'string', 'enum': ['SSH Auth']}, 'privateKey': {'type': 'string'}}, 'required': ['privateKey']}]}, rule='oneOf')
+        data_keys = set(data.keys())
+        if "authMethod" in data_keys:
+            data_keys.remove("authMethod")
+            data__authMethod = data["authMethod"]
+            if not isinstance(data__authMethod, (str)):
+                raise JsonSchemaValueException("data.authMethod must be string", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'default': 'HTTP/S Basic Auth', 'enum': ['HTTP/S Basic Auth', 'HTTP/S Token Auth', 'SSH Auth']}, rule='type')
+            if data__authMethod not in ['HTTP/S Basic Auth', 'HTTP/S Token Auth', 'SSH Auth']:
+                raise JsonSchemaValueException("data.authMethod must be one of ['HTTP/S Basic Auth', 'HTTP/S Token Auth', 'SSH Auth']", value=data__authMethod, name="data.authMethod", definition={'type': 'string', 'default': 'HTTP/S Basic Auth', 'enum': ['HTTP/S Basic Auth', 'HTTP/S Token Auth', 'SSH Auth']}, rule='enum')
+        else: data["authMethod"] = 'HTTP/S Basic Auth'
     return data
 
-def validate___definitions_secrettype(data, custom_formats={}):
-    if data not in ['Docker', 'Git']:
-        raise JsonSchemaValueException("data must be one of ['Docker', 'Git']", value=data, name="data", definition={'enum': ['Docker', 'Git']}, rule='enum')
+def validate___definitions_docker(data, custom_formats={}):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'registry': {'type': 'string', 'default': 'https://index.docker.io/v1/'}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'email': {'type': 'string'}}, 'required': ['username', 'password', 'email']}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_len = len(data)
+        if not all(prop in data for prop in ['username', 'password', 'email']):
+            raise JsonSchemaValueException("data must contain ['username', 'password', 'email'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'registry': {'type': 'string', 'default': 'https://index.docker.io/v1/'}, 'username': {'type': 'string'}, 'password': {'type': 'string'}, 'email': {'type': 'string'}}, 'required': ['username', 'password', 'email']}, rule='required')
+        data_keys = set(data.keys())
+        if "registry" in data_keys:
+            data_keys.remove("registry")
+            data__registry = data["registry"]
+            if not isinstance(data__registry, (str)):
+                raise JsonSchemaValueException("data.registry must be string", value=data__registry, name="data.registry", definition={'type': 'string', 'default': 'https://index.docker.io/v1/'}, rule='type')
+        else: data["registry"] = 'https://index.docker.io/v1/'
+        if "username" in data_keys:
+            data_keys.remove("username")
+            data__username = data["username"]
+            if not isinstance(data__username, (str)):
+                raise JsonSchemaValueException("data.username must be string", value=data__username, name="data.username", definition={'type': 'string'}, rule='type')
+        if "password" in data_keys:
+            data_keys.remove("password")
+            data__password = data["password"]
+            if not isinstance(data__password, (str)):
+                raise JsonSchemaValueException("data.password must be string", value=data__password, name="data.password", definition={'type': 'string'}, rule='type')
+        if "email" in data_keys:
+            data_keys.remove("email")
+            data__email = data["email"]
+            if not isinstance(data__email, (str)):
+                raise JsonSchemaValueException("data.email must be string", value=data__email, name="data.email", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_metadata(data, custom_formats={}):

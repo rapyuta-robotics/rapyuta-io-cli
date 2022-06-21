@@ -16,18 +16,19 @@ def validate(data, custom_formats={}):
 
 def validate___definitions_project(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Project'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/projectSpec'}, 'status': {'$ref': '#/definitions/projectStatus'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Project'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/projectSpec'}, 'status': {'$ref': '#/definitions/projectStatus'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['apiVersion', 'kind', 'metadata', 'spec']):
-            raise JsonSchemaValueException("data must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Project'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/projectSpec'}, 'status': {'$ref': '#/definitions/projectStatus'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
+            raise JsonSchemaValueException("data must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Project'}, 'metadata': {'$ref': '#/definitions/metadata'}, 'spec': {'$ref': '#/definitions/projectSpec'}, 'status': {'$ref': '#/definitions/projectStatus'}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
         data_keys = set(data.keys())
         if "apiVersion" in data_keys:
             data_keys.remove("apiVersion")
             data__apiVersion = data["apiVersion"]
             if data__apiVersion != "apiextensions.rapyuta.io/v1":
-                raise JsonSchemaValueException("data.apiVersion must be same as const definition: apiextensions.rapyuta.io/v1", value=data__apiVersion, name="data.apiVersion", definition={'const': 'apiextensions.rapyuta.io/v1'}, rule='const')
+                raise JsonSchemaValueException("data.apiVersion must be same as const definition: apiextensions.rapyuta.io/v1", value=data__apiVersion, name="data.apiVersion", definition={'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, rule='const')
+        else: data["apiVersion"] = 'apiextensions.rapyuta.io/v1'
         if "kind" in data_keys:
             data_keys.remove("kind")
             data__kind = data["kind"]
@@ -138,12 +139,12 @@ def validate___definitions_projectspec(data, custom_formats={}):
 
 def validate___definitions_metadata(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'guid': {'$ref': '#/definitions/projectGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name']}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'guid': {'$ref': '#/definitions/projectGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['name']):
-            raise JsonSchemaValueException("data must contain ['name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'guid': {'$ref': '#/definitions/projectGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name']}, rule='required')
+            raise JsonSchemaValueException("data must contain ['name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'guid': {'$ref': '#/definitions/projectGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name']}, rule='required')
         data_keys = set(data.keys())
         if "name" in data_keys:
             data_keys.remove("name")
@@ -158,6 +159,10 @@ def validate___definitions_metadata(data, custom_formats={}):
             data_keys.remove("creator")
             data__creator = data["creator"]
             validate___definitions_uuid(data__creator, custom_formats)
+        if "project" in data_keys:
+            data_keys.remove("project")
+            data__project = data["project"]
+            validate___definitions_projectguid(data__project, custom_formats)
         if "labels" in data_keys:
             data_keys.remove("labels")
             data__labels = data["labels"]

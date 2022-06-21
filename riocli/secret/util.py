@@ -32,7 +32,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         name = kwargs.pop('secret_name')
         guid = None
 
-        if name.startswith('secret-'):
+        if name.startswith('secret-') and len(name) == 31:
             guid = name
             name = None
 

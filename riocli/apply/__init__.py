@@ -51,37 +51,42 @@ def apply(files: typing.List[str]) -> None:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    try:
-        # Don't use the Context Client, Project can change
-        config = Configuration()
-        project = config.data.get('project_id', None)
-        client = config.new_client(with_project=False)
+    # try:
+    # Don't use the Context Client, Project can change
+    config = Configuration()
+    project = config.data.get('project_id', None)
+    client = config.new_client(with_project=False)
 
-        for f in files:
-            client.set_project(project)
+    for f in files:
+        client.set_project(project)
 
-            # Let the apply_file overwrite Project
-            apply_file(client, f)
-    except Exception as e:
-        click.secho(str(e), fg='red')
-        exit(1)
+        # Let the apply_file overwrite Project
+        apply_file(client, f)
+    # except Exception as e:
+    #     click.secho(str(e), fg='red')
+    #     exit(1)
 
 
 def apply_file(client: Client, filepath: str) -> None:
     with open(filepath) as f:
         data = f.read()
 
+    loaded_data = []
     if filepath.endswith("json"):
-        data = json.loads(data)
+        loaded = json.loads(data)
+        # FIXME: Handle for JSON List.
+        loaded_data.append(loaded)
     elif filepath.endswith('yaml') or filepath.endswith('yml'):
-        data = yaml.safe_load(data)
+        loaded = yaml.safe_load_all(data)
+        loaded_data = list(loaded)
 
-    if not data:
+    if not loaded_data:
         raise Exception('{} file is empty'.format(filepath))
 
-    cls = get_model(data)
-    ist = cls.from_dict(client, data)
-    ist.apply(client)
+    for manifest in loaded_data:
+        cls = get_model(manifest)
+        ist = cls.from_dict(client, manifest)
+        ist.apply(client)
 
 
 def get_model(data: dict) -> typing.Any:

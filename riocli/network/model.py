@@ -25,16 +25,16 @@ from riocli.network.validation import validate
 
 class Network(Model):
     _RoutedNetworkLimits = {
-        'Small': RoutedNetworkLimits.SMALL,
-        'Medium': RoutedNetworkLimits.MEDIUM,
-        'Large': RoutedNetworkLimits.LARGE,
+        'small': RoutedNetworkLimits.SMALL,
+        'medium': RoutedNetworkLimits.MEDIUM,
+        'large': RoutedNetworkLimits.LARGE,
     }
 
     _NativeNetworkLimits = {
-        'XSmall': NativeNetworkLimits.X_SMALL,
-        'Small': NativeNetworkLimits.SMALL,
-        'Medium': NativeNetworkLimits.MEDIUM,
-        'Large': NativeNetworkLimits.LARGE,
+        'xSmall': NativeNetworkLimits.X_SMALL,
+        'small': NativeNetworkLimits.SMALL,
+        'medium': NativeNetworkLimits.MEDIUM,
+        'large': NativeNetworkLimits.LARGE,
 
     }
 
@@ -43,21 +43,27 @@ class Network(Model):
 
     def find_object(self, client: Client) -> bool:
         try:
-            find_network_name(client, self.metadata.name, self.spec.type, is_resolve_conflict=False)
+            network, _ = find_network_name(client, self.metadata.name, self.spec.type, is_resolve_conflict=False)
             click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
+            return network
         except NetworkNotFound:
             return False
 
     def create_object(self, client: Client) -> Union[NativeNetwork, RoutedNetwork]:
-        if self.spec.type == 'Routed':
+        if self.spec.type == 'routed':
             return self._create_routed_network(client)
 
         network = client.create_native_network(self.to_v1(client))
         click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return network
 
-    def update_object(self, client: Client, obj: Any) -> Any:
+    def update_object(self, client: Client, obj: Union[RoutedNetwork, NativeNetwork]) -> Any:
+        # try:
+        #     obj.delete()
+        #     self.create_object(client)
+        # except Exception as e:
+        #     click.secho(str(e), fg='red')
+        #     exit(1)
         pass
 
     @classmethod
@@ -69,7 +75,7 @@ class Network(Model):
         validate(data)
 
     def to_v1(self, client: Client) -> NativeNetwork:
-        if self.spec.runtime == 'Cloud':
+        if self.spec.runtime == 'cloud':
             limits = self._get_limits()
             parameters = NativeNetworkParameters(limits=limits)
         else:
@@ -80,7 +86,7 @@ class Network(Model):
         return NativeNetwork(self.metadata.name, self.spec.runtime.lower(), self.spec.rosDistro, parameters=parameters)
 
     def _create_routed_network(self, client: Client) -> RoutedNetwork:
-        if self.spec.runtime == 'Cloud':
+        if self.spec.runtime == 'cloud':
             network = self._create_cloud_routed_network(client)
         else:
             network = self._create_device_routed_network(client)
@@ -100,7 +106,7 @@ class Network(Model):
                                                    network_interface=self.spec.networkInterface)
 
     def _get_limits(self) -> Union[RoutedNetworkLimits, NativeNetworkLimits]:
-        if self.spec.type == 'Routed':
+        if self.spec.type == 'routed':
             return self._RoutedNetworkLimits[self.spec.resourceLimits]
         else:
             return self._NativeNetworkLimits[self.spec.resourceLimits]

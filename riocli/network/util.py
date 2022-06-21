@@ -29,7 +29,7 @@ def name_to_guid(f: Callable) -> Callable:
         client = new_client()
 
         name = kwargs.pop('network_name')
-        network_type = kwargs.pop('network')
+        network_type = kwargs.pop('network', None)
         guid = None
 
         if name.startswith('net-'):
@@ -121,15 +121,15 @@ def resolve_conflict(
     if not routed and not native:
         raise NetworkNotFound()
 
-    if not is_resolve_conflict:
-        raise NetworkConflict()
-
-    # If only routed, or only native network was found, there is no conflict to resolve.
+    # If only routed, or only native network was found, there is no conflict to
+    # resolve.
     if routed and not native:
         return routed, 'routed'
     elif native and not routed:
         return native, 'native'
 
+    if not is_resolve_conflict:
+        raise NetworkConflict()
 
     # Check if user already offered a choice in case of conflict
     if network_type:

@@ -46,66 +46,65 @@ def validate___definitions_network(data, custom_formats={}):
 
 def validate___definitions_networkspec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'runtime': {'$ref': '#/definitions/runtime'}, 'type': {'$ref': '#/definitions/networkType'}, 'rosDistro': {'$ref': '#/definitions/rosDistro'}}, 'required': ['runtime', 'type', 'rosDistro'], 'allOf': [{'if': {'properties': {'runtime': {'const': 'Cloud'}}}, 'then': {'properties': {'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['resourceLimits']}}, {'if': {'properties': {'runtime': {'const': 'Device'}}}, 'then': {'properties': {'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}}, 'required': ['deviceGUID', 'networkInterface']}}]}, rule='type')
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "runtime" in data_keys:
-                data_keys.remove("runtime")
-                data__runtime = data["runtime"]
-                if data__runtime != "Cloud":
-                    raise JsonSchemaValueException("data.runtime must be same as const definition: Cloud", value=data__runtime, name="data.runtime", definition={'const': 'Cloud'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['resourceLimits']):
-                raise JsonSchemaValueException("data must contain ['resourceLimits'] properties", value=data, name="data", definition={'properties': {'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['resourceLimits']}, rule='required')
-            data_keys = set(data.keys())
-            if "resourceLimits" in data_keys:
-                data_keys.remove("resourceLimits")
-                data__resourceLimits = data["resourceLimits"]
-                validate___definitions_resourcelimits(data__resourceLimits, custom_formats)
-    try:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_keys = set(data.keys())
-            if "runtime" in data_keys:
-                data_keys.remove("runtime")
-                data__runtime = data["runtime"]
-                if data__runtime != "Device":
-                    raise JsonSchemaValueException("data.runtime must be same as const definition: Device", value=data__runtime, name="data.runtime", definition={'const': 'Device'}, rule='const')
-    except JsonSchemaValueException:
-        pass
-    else:
-        data_is_dict = isinstance(data, dict)
-        if data_is_dict:
-            data_len = len(data)
-            if not all(prop in data for prop in ['deviceGUID', 'networkInterface']):
-                raise JsonSchemaValueException("data must contain ['deviceGUID', 'networkInterface'] properties", value=data, name="data", definition={'properties': {'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}}, 'required': ['deviceGUID', 'networkInterface']}, rule='required')
-            data_keys = set(data.keys())
-            if "deviceGUID" in data_keys:
-                data_keys.remove("deviceGUID")
-                data__deviceGUID = data["deviceGUID"]
-                validate___definitions_uuid(data__deviceGUID, custom_formats)
-            if "networkInterface" in data_keys:
-                data_keys.remove("networkInterface")
-                data__networkInterface = data["networkInterface"]
-                if not isinstance(data__networkInterface, (str)):
-                    raise JsonSchemaValueException("data.networkInterface must be string", value=data__networkInterface, name="data.networkInterface", definition={'type': 'string'}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'$ref': '#/definitions/networkType'}, 'rosDistro': {'$ref': '#/definitions/rosDistro'}, 'runtime': {'$ref': '#/definitions/runtime'}}, 'required': ['type', 'rosDistro', 'runtime'], 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['cloud']}, 'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['runtime', 'resourceLimits']}, {'properties': {'runtime': {'enum': ['device']}, 'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}, 'restartPolicy': {'$ref': '#/definitions/restartPolicy', 'default': 'Always'}}, 'required': ['deviceGUID', 'networkInterface']}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
-        if not all(prop in data for prop in ['runtime', 'type', 'rosDistro']):
-            raise JsonSchemaValueException("data must contain ['runtime', 'type', 'rosDistro'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'runtime': {'$ref': '#/definitions/runtime'}, 'type': {'$ref': '#/definitions/networkType'}, 'rosDistro': {'$ref': '#/definitions/rosDistro'}}, 'required': ['runtime', 'type', 'rosDistro'], 'allOf': [{'if': {'properties': {'runtime': {'const': 'Cloud'}}}, 'then': {'properties': {'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['resourceLimits']}}, {'if': {'properties': {'runtime': {'const': 'Device'}}}, 'then': {'properties': {'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}}, 'required': ['deviceGUID', 'networkInterface']}}]}, rule='required')
+        if not all(prop in data for prop in ['type', 'rosDistro', 'runtime']):
+            raise JsonSchemaValueException("data must contain ['type', 'rosDistro', 'runtime'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'$ref': '#/definitions/networkType'}, 'rosDistro': {'$ref': '#/definitions/rosDistro'}, 'runtime': {'$ref': '#/definitions/runtime'}}, 'required': ['type', 'rosDistro', 'runtime'], 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['cloud']}, 'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['runtime', 'resourceLimits']}, {'properties': {'runtime': {'enum': ['device']}, 'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}, 'restartPolicy': {'$ref': '#/definitions/restartPolicy', 'default': 'Always'}}, 'required': ['deviceGUID', 'networkInterface']}]}}}, rule='required')
+        if "runtime" in data:
+            data_one_of_count1 = 0
+            if data_one_of_count1 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_len = len(data)
+                        if not all(prop in data for prop in ['runtime', 'resourceLimits']):
+                            raise JsonSchemaValueException("data must contain ['runtime', 'resourceLimits'] properties", value=data, name="data", definition={'properties': {'runtime': {'enum': ['cloud']}, 'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['runtime', 'resourceLimits']}, rule='required')
+                        data_keys = set(data.keys())
+                        if "runtime" in data_keys:
+                            data_keys.remove("runtime")
+                            data__runtime = data["runtime"]
+                            if data__runtime not in ['cloud']:
+                                raise JsonSchemaValueException("data.runtime must be one of ['cloud']", value=data__runtime, name="data.runtime", definition={'enum': ['cloud']}, rule='enum')
+                        if "resourceLimits" in data_keys:
+                            data_keys.remove("resourceLimits")
+                            data__resourceLimits = data["resourceLimits"]
+                            validate___definitions_resourcelimits(data__resourceLimits, custom_formats)
+                    data_one_of_count1 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count1 < 2:
+                try:
+                    data_is_dict = isinstance(data, dict)
+                    if data_is_dict:
+                        data_len = len(data)
+                        if not all(prop in data for prop in ['deviceGUID', 'networkInterface']):
+                            raise JsonSchemaValueException("data must contain ['deviceGUID', 'networkInterface'] properties", value=data, name="data", definition={'properties': {'runtime': {'enum': ['device']}, 'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}, 'restartPolicy': {'$ref': '#/definitions/restartPolicy', 'default': 'Always'}}, 'required': ['deviceGUID', 'networkInterface']}, rule='required')
+                        data_keys = set(data.keys())
+                        if "runtime" in data_keys:
+                            data_keys.remove("runtime")
+                            data__runtime = data["runtime"]
+                            if data__runtime not in ['device']:
+                                raise JsonSchemaValueException("data.runtime must be one of ['device']", value=data__runtime, name="data.runtime", definition={'enum': ['device']}, rule='enum')
+                        if "deviceGUID" in data_keys:
+                            data_keys.remove("deviceGUID")
+                            data__deviceGUID = data["deviceGUID"]
+                            validate___definitions_uuid(data__deviceGUID, custom_formats)
+                        if "networkInterface" in data_keys:
+                            data_keys.remove("networkInterface")
+                            data__networkInterface = data["networkInterface"]
+                            if not isinstance(data__networkInterface, (str)):
+                                raise JsonSchemaValueException("data.networkInterface must be string", value=data__networkInterface, name="data.networkInterface", definition={'type': 'string'}, rule='type')
+                        if "restartPolicy" in data_keys:
+                            data_keys.remove("restartPolicy")
+                            data__restartPolicy = data["restartPolicy"]
+                            validate___definitions_restartpolicy(data__restartPolicy, custom_formats)
+                        else: data["restartPolicy"] = 'Always'
+                    data_one_of_count1 += 1
+                except JsonSchemaValueException: pass
+            if data_one_of_count1 != 1:
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'runtime': {'enum': ['cloud']}, 'resourceLimits': {'$ref': '#/definitions/resourceLimits'}}, 'required': ['runtime', 'resourceLimits']}, {'properties': {'runtime': {'enum': ['device']}, 'deviceGUID': {'$ref': '#/definitions/uuid'}, 'networkInterface': {'type': 'string'}, 'restartPolicy': {'$ref': '#/definitions/restartPolicy', 'default': 'Always'}}, 'required': ['deviceGUID', 'networkInterface']}]}, rule='oneOf')
         data_keys = set(data.keys())
-        if "runtime" in data_keys:
-            data_keys.remove("runtime")
-            data__runtime = data["runtime"]
-            validate___definitions_runtime(data__runtime, custom_formats)
         if "type" in data_keys:
             data_keys.remove("type")
             data__type = data["type"]
@@ -114,6 +113,15 @@ def validate___definitions_networkspec(data, custom_formats={}):
             data_keys.remove("rosDistro")
             data__rosDistro = data["rosDistro"]
             validate___definitions_rosdistro(data__rosDistro, custom_formats)
+        if "runtime" in data_keys:
+            data_keys.remove("runtime")
+            data__runtime = data["runtime"]
+            validate___definitions_runtime(data__runtime, custom_formats)
+    return data
+
+def validate___definitions_runtime(data, custom_formats={}):
+    if data not in ['cloud', 'device']:
+        raise JsonSchemaValueException("data must be one of ['cloud', 'device']", value=data, name="data", definition={'enum': ['cloud', 'device']}, rule='enum')
     return data
 
 def validate___definitions_rosdistro(data, custom_formats={}):
@@ -122,13 +130,13 @@ def validate___definitions_rosdistro(data, custom_formats={}):
     return data
 
 def validate___definitions_networktype(data, custom_formats={}):
-    if data not in ['Routed', 'Native']:
-        raise JsonSchemaValueException("data must be one of ['Routed', 'Native']", value=data, name="data", definition={'enum': ['Routed', 'Native']}, rule='enum')
+    if data not in ['routed', 'native']:
+        raise JsonSchemaValueException("data must be one of ['routed', 'native']", value=data, name="data", definition={'enum': ['routed', 'native']}, rule='enum')
     return data
 
-def validate___definitions_runtime(data, custom_formats={}):
-    if data not in ['Cloud', 'Device']:
-        raise JsonSchemaValueException("data must be one of ['Cloud', 'Device']", value=data, name="data", definition={'enum': ['Cloud', 'Device']}, rule='enum')
+def validate___definitions_restartpolicy(data, custom_formats={}):
+    if data not in ['always', 'never', 'onFailure']:
+        raise JsonSchemaValueException("data must be one of ['always', 'never', 'onFailure']", value=data, name="data", definition={'enum': ['always', 'never', 'onFailure']}, rule='enum')
     return data
 
 def validate___definitions_uuid(data, custom_formats={}):
@@ -140,8 +148,8 @@ def validate___definitions_uuid(data, custom_formats={}):
     return data
 
 def validate___definitions_resourcelimits(data, custom_formats={}):
-    if data not in ['XSmall', 'Small', 'Medium', 'Large']:
-        raise JsonSchemaValueException("data must be one of ['XSmall', 'Small', 'Medium', 'Large']", value=data, name="data", definition={'enum': ['XSmall', 'Small', 'Medium', 'Large']}, rule='enum')
+    if data not in ['xSmall', 'small', 'medium', 'large']:
+        raise JsonSchemaValueException("data must be one of ['xSmall', 'small', 'medium', 'large']", value=data, name="data", definition={'enum': ['xSmall', 'small', 'medium', 'large']}, rule='enum')
     return data
 
 def validate___definitions_metadata(data, custom_formats={}):

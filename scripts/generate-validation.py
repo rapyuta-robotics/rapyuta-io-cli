@@ -15,19 +15,19 @@
 # Usage: python generate-validation.py
 # Run it from the Root of the repository inside virtual-environment.
 
-from json import loads
+from yaml import safe_load
 from pathlib import Path
 
 from fastjsonschema import compile_to_code
 
 schema_dir = Path('jsonschema')
 
-for schema in schema_dir.iterdir():
+for schema in schema_dir.glob('*.yaml'):
     module = Path('riocli').\
         joinpath(schema.stem.removesuffix('-schema')).\
         joinpath('validation.py')
     with open(schema) as f:
-        body = loads(f.read())
+        body = safe_load(f.read())
 
     code = compile_to_code(body)
     module.write_text(code)

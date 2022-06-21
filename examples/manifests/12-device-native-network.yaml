@@ -3,8 +3,8 @@ kind: "Network"
 metadata:
   name: "device-native-network"
 spec:
-  runtime: "Device"
-  type: "Native"
+  runtime: "device"
+  type: "native"
   rosDistro: "melodic"
   deviceGUID: "299a436f-9d7f-4bbf-adce-21be06bfbbce"
   networkInterface: "eth0"

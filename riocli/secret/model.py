@@ -50,16 +50,16 @@ class Secret(Model):
             return self._git_secret_to_v1()
 
     def _docker_secret_to_v1(self) -> v1Secret:
-        config = SecretConfigDocker(self.spec.username, self.spec.password, self.spec.email, self.spec.registry)
+        config = SecretConfigDocker(self.spec.docker.username, self.spec.docker.password, self.spec.docker.email, self.spec.docker.registry)
         return v1Secret(self.metadata.name, config)
 
     def _git_secret_to_v1(self) -> v1Secret:
-        if self.spec.gitAuthMethod == 'SSH':
-            config = SecretConfigSourceSSHAuth(self.spec.privateKey)
-        elif self.spec.gitAuthMethod == 'Basic':
-            ca_cert = self.spec.get('ca_cert', None)
-            config = SecretConfigSourceBasicAuth(self.spec.username, self.spec.password, ca_cert=ca_cert)
-        elif self.spec.gitAuthMethod == 'Token':
+        if self.spec.git.authMethod == 'SSH Auth':
+            config = SecretConfigSourceSSHAuth(self.spec.git.privateKey)
+        elif self.spec.git.authMethod == 'HTTP/S Basic Auth':
+            ca_cert = self.spec.git.get('ca_cert', None)
+            config = SecretConfigSourceBasicAuth(self.spec.git.username, self.spec.git.password, ca_cert=ca_cert)
+        elif self.spec.git.authMethod == 'HTTP/S Token Auth':
             # TODO(ankit): Implement it once SDK has support for it.
             raise Exception('token-based secret is not supported yet!')
         else:

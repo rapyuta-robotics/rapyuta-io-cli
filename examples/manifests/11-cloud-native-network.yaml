@@ -3,7 +3,7 @@ kind: "Network"
 metadata:
   name: "cloud-native-network"
 spec:
-  runtime: "Cloud"
-  type: "Native"
+  runtime: "cloud"
+  type: "native"
   rosDistro: "melodic"
-  resourceLimits: "XSmall"
+  resourceLimits: "xSmall"
