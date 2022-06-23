@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import graphlib
 import json
 import typing
 
@@ -19,12 +20,17 @@ import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
 
+from riocli.apply.parse import ResolverCache
 from riocli.build.model import Build
 from riocli.config import Configuration
 from riocli.device.model import Device
 from riocli.network.model import Network
 from riocli.project.model import Project
 from riocli.secret.model import Secret
+from riocli.static_route.model import StaticRoute
+from riocli.package.model import Package
+from riocli.disk.model import Disk
+from riocli.deployment.model import Deployment
 
 KIND_TO_CLASS = {
     'Project': Project,
@@ -32,6 +38,10 @@ KIND_TO_CLASS = {
     'Build': Build,
     'Device': Device,
     'Network': Network,
+    'StaticRoute': StaticRoute,
+    'Package': Package,
+    'Disk': Disk,
+    'Deployment': Deployment,
 }
 
 
@@ -51,17 +61,23 @@ def apply(files: typing.List[str]) -> None:
         click.secho('no files specified', fg='red')
         exit(1)
 
+    rc = ResolverCache(files)
+    rc.parse_dependencies()
+    deploy_order = rc.order()
+
+
+    print(list(deploy_order))
     # try:
     # Don't use the Context Client, Project can change
-    config = Configuration()
-    project = config.data.get('project_id', None)
-    client = config.new_client(with_project=False)
-
-    for f in files:
-        client.set_project(project)
-
-        # Let the apply_file overwrite Project
-        apply_file(client, f)
+    # config = Configuration()
+    # project = config.data.get('project_id', None)
+    # client = config.new_client(with_project=False)
+    #
+    # for f in files:
+    #     client.set_project(project)
+    #
+    #     # Let the apply_file overwrite Project
+    #     apply_file(client, f)
     # except Exception as e:
     #     click.secho(str(e), fg='red')
     #     exit(1)

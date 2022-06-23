@@ -22,12 +22,19 @@ from fastjsonschema import compile_to_code
 
 schema_dir = Path('jsonschema')
 
-for schema in schema_dir.glob('*.yaml'):
+# with open(schema_dir.joinpath('primitives.yaml')) as primitive:
+#     primitives = safe_load(primitive.read())
+#     primitives = primitives.get('definitions', None)
+
+for schema in schema_dir.glob('*-schema.yaml'):
+    print("processed {}".format(schema))
     module = Path('riocli').\
         joinpath(schema.stem.removesuffix('-schema')).\
         joinpath('validation.py')
     with open(schema) as f:
         body = safe_load(f.read())
 
+    # Inject primitives
+    # body['definitions'] = body['definitions'].extend(primitives)
     code = compile_to_code(body)
     module.write_text(code)

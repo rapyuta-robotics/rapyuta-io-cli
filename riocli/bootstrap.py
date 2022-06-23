@@ -28,6 +28,7 @@ from riocli.build import build
 from riocli.completion import completion
 from riocli.deployment import deployment
 from riocli.device import device
+from riocli.disk import disk
 from riocli.marketplace import marketplace
 from riocli.network import network
 from riocli.package import package
@@ -79,4 +80,5 @@ cli.add_command(rosbag)
 cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(marketplace)
+cli.add_command(disk)
 register_repl(cli)
