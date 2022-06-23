@@ -22,11 +22,13 @@ from click_plugins import with_plugins
 from click_repl import register_repl
 from pkg_resources import iter_entry_points
 
+from riocli.apply import apply
 from riocli.auth import auth
 from riocli.build import build
 from riocli.completion import completion
 from riocli.deployment import deployment
 from riocli.device import device
+from riocli.disk import disk
 from riocli.marketplace import marketplace
 from riocli.network import network
 from riocli.package import package
@@ -66,6 +68,7 @@ def version():
     return
 
 
+cli.add_command(apply)
 cli.add_command(auth)
 cli.add_command(project)
 cli.add_command(device)
@@ -79,4 +82,5 @@ cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(marketplace)
 cli.add_command(parameter)
+cli.add_command(disk)
 register_repl(cli)

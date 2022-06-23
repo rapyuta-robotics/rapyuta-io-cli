@@ -32,7 +32,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         name = kwargs.pop('secret_name')
         guid = None
 
-        if name.startswith('secret-'):
+        if name.startswith('secret-') and len(name) == 31:
             guid = name
             name = None
 
@@ -40,7 +40,11 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             name = get_secret_name(client, guid)
 
         if guid is None:
-            guid = find_secret_guid(client, name)
+            try:
+                guid = find_secret_guid(client, name)
+            except Exception as e:
+                click.secho(str(e), fg='red')
+                exit(1)
 
         kwargs['secret_name'] = name
         kwargs['secret_guid'] = guid
@@ -55,10 +59,15 @@ def find_secret_guid(client: Client, name: str) -> str:
         if secret.name == name:
             return secret.guid
 
-    click.secho("secret not found", fg='red')
-    exit(1)
+    raise SecretNotFound()
 
 
 def get_secret_name(client: Client, guid: str) -> str:
     secret = client.get_secret(guid)
     return secret.name
+
+
+class SecretNotFound(Exception):
+    def __init__(self, message='secret not found'):
+        self.message = message
+        super().__init__(self.message)

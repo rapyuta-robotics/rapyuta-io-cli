@@ -1,0 +1,115 @@
+---
+"$schema": https://json-schema.org/draft-07/schema
+title: Network
+"$ref": "#/definitions/network"
+definitions:
+  network:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+      kind:
+        const: Network
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/networkSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+  networkSpec:
+    type: object
+    properties:
+      type:
+        "$ref": "#/definitions/networkType"
+      rosDistro:
+        "$ref": "#/definitions/rosDistro"
+      runtime:
+        "$ref": "#/definitions/runtime"
+    required:
+      - type
+      - rosDistro
+      - runtime
+    dependencies:
+      runtime:
+        oneOf:
+          - properties:
+              runtime:
+                enum:
+                  - cloud
+              resourceLimits:
+                "$ref": "#/definitions/resourceLimits"
+            required:
+              - runtime
+              - resourceLimits
+          - properties:
+              runtime:
+                enum:
+                  - device
+              deviceGUID:
+                "$ref": "#/definitions/uuid"
+              networkInterface:
+                type: string
+              restartPolicy:
+                "$ref": "#/definitions/restartPolicy"
+                default: Always
+
+            required:
+              - deviceGUID
+              - networkInterface
+
+  resourceLimits:
+    enum:
+      - xSmall
+      - small
+      - medium
+      - large
+  rosDistro:
+    enum:
+      - melodic
+      - kinetic
+      - noetic
+  restartPolicy:
+    enum:
+      - always
+      - never
+      - onFailure
+  runtime:
+    enum:
+      - cloud
+      - device
+  networkType:
+    enum:
+      - routed
+      - native
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      guid:
+        "$ref": "#/definitions/networkGUID"
+      creator:
+        "$ref": "#/definitions/uuid"
+      project:
+        "$ref": "#/definitions/projectGUID"
+      labels:
+        "$ref": "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+  networkGUID:
+    type: string
+    pattern: "^network-[a-z]{24}$"
+  projectGUID:
+    type: string
+    pattern: "^project-[a-z]{24}$"
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"

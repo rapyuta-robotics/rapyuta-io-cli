@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-import typing
+from typing import Optional, Union, Tuple, Callable, Any
 
 import click
 from rapyuta_io import DeploymentPhaseConstants, Client
@@ -23,12 +23,12 @@ from riocli.config import new_client
 from riocli.utils.selector import show_selection
 
 
-def name_to_guid(f: typing.Callable) -> typing.Callable:
+def name_to_guid(f: Callable) -> Callable:
     @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
+    def decorated(**kwargs: Any):
         client = new_client()
 
-        name = kwargs.pop('network_name', None)
+        name = kwargs.pop('network_name')
         network_type = kwargs.pop('network', None)
         guid = None
 
@@ -56,7 +56,7 @@ def find_network_guid(
         client: Client,
         guid: str,
         network_type: str,
-) -> (typing.Union[NativeNetwork, RoutedNetwork], str):
+) -> Tuple[Union[RoutedNetwork, NativeNetwork], str]:
     if network_type is None or network_type == 'routed':
         routed_networks = client.get_all_routed_networks()
         for network in routed_networks:
@@ -74,12 +74,15 @@ def find_network_guid(
             if network.guid == guid:
                 return network, 'native'
 
+    raise NetworkNotFound()
+
 
 def find_network_name(
         client: Client,
         name: str,
-        network_type: str,
-) -> (typing.Union[RoutedNetwork, NativeNetwork], str):
+        network_type: Optional[str],
+        is_resolve_conflict: bool = True
+) -> Tuple[Optional[Union[RoutedNetwork, NativeNetwork]], str]:
     routed, native = None, None
     if network_type in [None, 'routed']:
         routed = find_routed_network_name(client, name)
@@ -87,10 +90,10 @@ def find_network_name(
     if network_type in [None, 'native']:
         native = find_native_network_name(client, name)
 
-    return resolve_conflict(routed, native, network_type)
+    return resolve_conflict(routed, native, network_type, is_resolve_conflict)
 
 
-def find_native_network_name(client: Client, name: str) -> NativeNetwork:
+def find_native_network_name(client: Client, name: str) -> Optional[NativeNetwork]:
     native_networks = client.list_native_networks()
     for network in native_networks:
         phase = network.internal_deployment_status.phase
@@ -100,7 +103,7 @@ def find_native_network_name(client: Client, name: str) -> NativeNetwork:
             return network
 
 
-def find_routed_network_name(client: Client, name: str) -> RoutedNetwork:
+def find_routed_network_name(client: Client, name: str) -> Optional[RoutedNetwork]:
     routed_networks = client.get_all_routed_networks()
     for network in routed_networks:
         if network.phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
@@ -110,15 +113,23 @@ def find_routed_network_name(client: Client, name: str) -> RoutedNetwork:
 
 
 def resolve_conflict(
-        routed: RoutedNetwork,
-        native: NativeNetwork,
-        network_type: str,
-) -> (typing.Union[RoutedNetwork, NativeNetwork], str):
-    # If only routed, or only native network was found, there is no conflict to resolve.
+        routed: Optional[RoutedNetwork],
+        native: Optional[NativeNetwork],
+        network_type: Optional[str],
+        is_resolve_conflict: bool = True
+) -> Tuple[Optional[Union[RoutedNetwork, NativeNetwork]], str]:
+    if not routed and not native:
+        raise NetworkNotFound()
+
+    # If only routed, or only native network was found, there is no conflict to
+    # resolve.
     if routed and not native:
         return routed, 'routed'
     elif native and not routed:
         return native, 'native'
+
+    if not is_resolve_conflict:
+        raise NetworkConflict()
 
     # Check if user already offered a choice in case of conflict
     if network_type:
@@ -145,7 +156,7 @@ def get_network(
         client: Client,
         network_guid: str,
         network_type: str,
-) -> typing.Union[RoutedNetwork, NativeNetwork]:
+) -> Optional[Union[RoutedNetwork, NativeNetwork]]:
     if network_type == 'routed':
         return client.get_routed_network(network_guid)
     elif network_type == 'native':
@@ -153,10 +164,21 @@ def get_network(
 
 
 def get_network_internal_deployment(
-        network: typing.Union[RoutedNetwork, NativeNetwork],
+        network: Union[RoutedNetwork, NativeNetwork],
         network_type: str,
-) -> str:
+) -> Optional[str]:
     if network_type == 'routed':
         return network.internalDeploymentGUID
     elif network_type == 'native':
         return network.internal_deployment_guid
+
+
+class NetworkNotFound(Exception):
+    def __init__(self, message='network not found!'):
+        self.message = message
+        super().__init__(self.message)
+
+class NetworkConflict(Exception):
+    def __init__(self, message='both routed and native networks exist with the same name!'):
+        self.message = message
+        super().__init__(self.message)

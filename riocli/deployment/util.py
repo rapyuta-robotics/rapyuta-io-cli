@@ -61,8 +61,7 @@ def find_deployment_guid(client: Client, name: str) -> str:
         if deployment.name == name:
             return deployment.deploymentId
 
-    click.secho("Deployment not found", fg='red')
-    exit(1)
+    raise DeploymentNotFound()
 
 
 def select_details(deployment_guid, component_name=None, exec_name=None) -> (str, str, str):
@@ -98,3 +97,9 @@ def select_details(deployment_guid, component_name=None, exec_name=None) -> (str
         pod_name = show_selection(pods, 'Choose the pod')
 
     return selected_component.componentID, exec_meta.id, pod_name
+
+
+class DeploymentNotFound(Exception):
+    def __init__(self, message='deployment not found!'):
+        self.message = message
+        super().__init__(self.message)

@@ -35,7 +35,11 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             name = get_project_name(client, guid)
 
         if guid is None:
-            guid = find_project_guid(client, name)
+            try:
+                guid = find_project_guid(client, name)
+            except Exception as e:
+                click.secho(str(e), fg='red')
+                exit(1)
 
         kwargs['project_name'] = name
         kwargs['project_guid'] = guid
@@ -50,10 +54,15 @@ def find_project_guid(client: Client, name: str) -> str:
         if project.name == name:
             return project.guid
 
-    click.secho("project not found", fg='red')
-    exit(1)
+    raise ProjectNotFound()
 
 
 def get_project_name(client: Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.name
+
+
+class ProjectNotFound(Exception):
+    def __init__(self, message='project not found'):
+        self.message = message
+        super().__init__(self.message)
