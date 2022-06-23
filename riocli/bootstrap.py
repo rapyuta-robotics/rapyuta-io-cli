@@ -34,6 +34,7 @@ from riocli.project import project
 from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.static_route import static_route
+from riocli.parameter import parameter
 
 
 @with_plugins(iter_entry_points('riocli.plugins'))
@@ -77,4 +78,5 @@ cli.add_command(rosbag)
 cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(marketplace)
+cli.add_command(parameter)
 register_repl(cli)
