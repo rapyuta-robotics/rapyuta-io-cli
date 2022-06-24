@@ -91,16 +91,15 @@ class Applier(object):
             for obj in self.graph.get_ready():
                 if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                     self._apply_manifest(obj)
-                yield from obj
-            self.graph.done()
+                self.graph.done(obj)    
 
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
         ist = cls.from_dict(self.client, obj)
         setattr(ist, 'rc', self.rc)
-        print(obj_key)
-        # ist.apply(self.client)
+        if obj_key.startswith('deployment'):
+            ist.apply(self.client)
 
     def _read_files(self, files):
         for f in files:
@@ -170,6 +169,7 @@ class Applier(object):
                 self.resolved_objects[key]['src'] = 'remote'
 
                 self.graph.add(dependent_key, key)
+                dependency['guid'] = obj_guid
 
             # Special handling for Static route since it doesn't have a name field.
             # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
@@ -181,14 +181,13 @@ class Applier(object):
                 self.resolved_objects[key]['guid'] = obj_guid
                 self.resolved_objects[key]['raw'] = obj
                 self.resolved_objects[key]['src'] = 'remote'
-
-
+                dependency['guid'] = obj_guid
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
         
-        if not self.resolved_objects[key]:
-            self.resolved_objects[key]['src'] = 'missing'
+        if key not in self.resolved_objects:
+            self.resolved_objects[key] = {'src' : 'missing'}
 
 
     def order(self):

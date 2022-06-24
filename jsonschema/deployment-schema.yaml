@@ -212,12 +212,16 @@ definitions:
         type: string
       version:
         type: string
+      guid:
+        type: string
   deviceDepends:
     properties:
       kind:
         const: device
         default: device
       nameOrGUID:
+        type: string
+      guid:
         type: string
   networkDepends:
     properties:
@@ -226,12 +230,16 @@ definitions:
         default: network
       nameOrGUID:
         type: string
+      guid:
+        type: string
   secretDepends:
     properties:
       kind:
         const: secret
         default: secret
       nameOrGUID:
+        type: string
+      guid:
         type: string
   diskDepends:
     properties:
@@ -240,6 +248,8 @@ definitions:
         default: disk
       nameOrGUID:
         type: string
+      guid:
+        type: string
   staticRouteDepends:
     properties:
       kind:
@@ -247,10 +257,14 @@ definitions:
         default: static-route
       nameOrGUID:
         type: string
+      guid:
+        type: string
   deploymentDepends:
     properties:
       kind:
         const: deployment
         default: deployment
       nameOrGUID:
+        type: string
+      guid:
         type: string

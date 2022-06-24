@@ -75,13 +75,17 @@ def apply(files: str) -> None:
 
     rc = Applier(glob_files)
     rc.parse_dependencies()
-    # print(rc.resolved_objects)
     missing_resources = []        
+    for key, item in rc.resolved_objects.items():
+        if 'src' in item and item['src'] == 'missing':
+            missing_resources.append(key)
+
     if(missing_resources):
-        raise Exception("missing resources found in yaml. " + \
+        click.secho("missing resources found in yaml. " + \
                         "Plese ensure the following are either available in your yaml" + \
                         "or created on the server. {}".format(set(missing_resources))
-                       )
+                    , fg="red")
+        exit(1)
 
     rc.apply()
 

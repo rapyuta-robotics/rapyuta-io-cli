@@ -503,12 +503,16 @@ definitions:
         default: build
       nameOrGUID:
         type: string
+      guid:
+        type: string
   packageDepends:
     properties:
       kind:
         const: package
         default: package
       nameOrGUID:
+        type: string
+      guid:
         type: string
   deviceDepends:
     properties:
@@ -517,12 +521,16 @@ definitions:
         default: device
       nameOrGUID:
         type: string
+      guid:
+        type: string
   networkDepends:
     properties:
       kind:
         const: network
         default: network
       nameOrGUID:
+        type: string
+      guid:
         type: string
   secretDepends:
     properties:
@@ -531,12 +539,16 @@ definitions:
         default: secret
       nameOrGUID:
         type: string
+      guid:
+        type: string
   diskDepends:
     properties:
       kind:
         const: disk
         default: disk
       nameOrGUID:
+        type: string
+      guid:
         type: string
   staticRouteDepends:
     properties:
@@ -545,10 +557,14 @@ definitions:
         default: static-route
       nameOrGUID:
         type: string
+      guid:
+        type: string
   deploymentDepends:
     properties:
       kind:
         const: deployment
         default: deployment
       nameOrGUID:
+        type: string
+      guid:
         type: string
