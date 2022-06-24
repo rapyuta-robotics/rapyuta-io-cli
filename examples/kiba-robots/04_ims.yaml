@@ -1,4 +1,3 @@
-
 ---
 #sootballs_staticroutes
 apiVersion: "apiextensions.rapyuta.io/v1"
@@ -90,7 +89,7 @@ spec:
   runtime: cloud
   envArgs:
     - name: AUTH_ENABLED
-      value: True
+      value: "True"
     - name: AWS_STORAGE_BUCKET_NAME
       value: kiba-robots
     #TODO  this should be parsed from redis url in the docker container. 
@@ -102,11 +101,11 @@ spec:
     - name: CONTAINER_NAME
       value: warehouse
     - name: DAYS_BEFORE_ARCHIVE
-      value: 15
+      value: "15"
     - name: DEPLOY_ON_CLOUD
-      value: False
+      value: "False"
     - name: EODTIME
-      value: 19:00
+      value: "19:00"
     - name: IMS_DB
       value: ims_db
     - name: SECRET_KEY
@@ -122,3 +121,20 @@ spec:
       depends:
         kind: staticroute
         nameOrGUID: ims-kibarobots
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Disk"
+metadata:
+  name: "postgres-pvc"
+spec:
+  runtime: cloud
+  capacity: 4
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Disk"
+metadata:
+  name: "minio-pvc"
+spec:
+  runtime: cloud
+  capacity: 4
+

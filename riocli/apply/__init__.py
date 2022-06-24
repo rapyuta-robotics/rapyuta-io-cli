@@ -74,14 +74,20 @@ def apply(files: str) -> None:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    print(glob_files)
     rc = ResolverCache(glob_files)
+    deploy_order = list(rc.order())
     
-    print(rc.dependencies)
-    deploy_order = rc.order()
+    if(rc.missing_resource):
+        raise Exception("missing resources found in yaml. " + \
+                        "Plese ensure the following are either available in your yaml" + \
+                        "or created on the server. {}".format(set(rc.missing_resource))
+                       )
 
-
-    print(list(deploy_order))
+    for entry in deploy_order:
+        if entry in rc.objects:
+            manifest = rc.objects[entry]      
+            apply_manifest(rc.client, manifest)
+        
     # try:
     # Don't use the Context Client, Project can change
     # config = Configuration()
@@ -98,26 +104,11 @@ def apply(files: str) -> None:
     #     exit(1)
 
 
-def apply_file(client: Client, filepath: str) -> None:
-    with open(filepath) as f:
-        data = f.read()
-
-    loaded_data = []
-    if filepath.endswith("json"):
-        loaded = json.loads(data)
-        # FIXME: Handle for JSON List.
-        loaded_data.append(loaded)
-    elif filepath.endswith('yaml') or filepath.endswith('yml'):
-        loaded = yaml.safe_load_all(data)
-        loaded_data = list(loaded)
-
-    if not loaded_data:
-        raise Exception('{} file is empty'.format(filepath))
-
-    for manifest in loaded_data:
-        cls = get_model(manifest)
-        ist = cls.from_dict(client, manifest)
-        ist.apply(client)
+def apply_manifest(client: Client, manifest: str) -> None:
+    cls = get_model(manifest)
+    ist = cls.from_dict(client, manifest)
+    print(manifest['metadata']['name'])
+    # ist.apply(client)
 
 
 def get_model(data: dict) -> typing.Any:
@@ -148,5 +139,7 @@ def explain(resource: str, template_root: str) -> None:
     for file in glob_files:
         if resource in os.path.basename(file):
             with open(file) as f:
-                lines = f.readlines()
+                lines = ["---\n"]
+                lines.extend(f.readlines())
+                lines.extend(["---\n"])
                 click.secho("".join(lines))

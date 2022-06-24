@@ -50,9 +50,11 @@ class ResolverCache(object):
         self.config = Configuration()
         self.client = self.config.new_client()
         self.dependencies = {}
+        self.missing_resource = []
         self.objects = {}
         self.graph = {}
-        self._read_files(files)
+        self._read_files(self.input_file_paths)
+        self.parse_dependencies()
 
     def _read_files(self, files):
         self.files = {}
@@ -78,11 +80,14 @@ class ResolverCache(object):
 
             self.files[f] = loaded_data
 
-    def register_object(self, data):
+    def resourceKey(self, data):
         kind = data['kind'].lower()
         name = data['metadata']['name']
-
         key = '{}:{}'.format(kind, name)
+        return key 
+
+    def register_object(self, data):
+        key = self.resourceKey(data)
         self.objects[key] = data
 
     def parse_dependencies(self):
@@ -117,10 +122,7 @@ class ResolverCache(object):
     def resolve_dependency(self, dependency):
         kind = dependency.get('kind')
         nameOrGUID = dependency.get('nameOrGUID')
-        key = '{}:{}'.format(kind, nameOrGUID)
-
-        if not self.dependencies.get(kind):
-            self.dependencies[kind] = {}
+        key = "{}:{}".format(kind, nameOrGUID)
 
         guid = nameOrGUID if re.fullmatch(self.KIND_REGEX[kind], nameOrGUID) else None
 
@@ -130,7 +132,7 @@ class ResolverCache(object):
             obj_name = self.get_attr(obj, self.NAME_KEYS)
 
             if (guid and obj_guid == guid) or (nameOrGUID == obj_name):
-                self.dependencies[kind][nameOrGUID] = {
+                self.dependencies[key] = {
                         'guid': obj_guid,
                         'raw': obj,
                         'local': False,
@@ -138,14 +140,20 @@ class ResolverCache(object):
                 return key
 
             if kind == 'staticroute' and nameOrGUID in obj_name:
-                self.dependencies[kind][nameOrGUID] = {
+                self.dependencies[key] = {
                     'guid': obj_guid,
                     'raw': obj,
                     'local': False,
                 }
                 return key
 
-        self.dependencies[kind][nameOrGUID] = {'local': True}
+        
+        
+        if key in self.objects:
+            self.dependencies[key] = {'local': True}
+        else:
+            self.missing_resource.append(key)
+            self.dependencies[key] = {'missing': True}
         return key
 
     def get_attr(self, object, accept_keys):
