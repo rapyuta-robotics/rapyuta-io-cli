@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import graphlib
 import json
 import typing
 
@@ -20,17 +19,16 @@ import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
 
-from riocli.apply.parse import ResolverCache
+from riocli.apply.parse import Applier
 from riocli.build.model import Build
-from riocli.config import Configuration
+from riocli.deployment.model import Deployment
 from riocli.device.model import Device
+from riocli.disk.model import Disk
 from riocli.network.model import Network
+from riocli.package.model import Package
 from riocli.project.model import Project
 from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
-from riocli.package.model import Package
-from riocli.disk.model import Disk
-from riocli.deployment.model import Deployment
 
 KIND_TO_CLASS = {
     'Project': Project,
@@ -61,12 +59,11 @@ def apply(files: typing.List[str]) -> None:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    rc = ResolverCache(files)
+    rc = Applier(files)
     rc.parse_dependencies()
-    deploy_order = rc.order()
+    rc.apply()
 
 
-    print(list(deploy_order))
     # try:
     # Don't use the Context Client, Project can change
     # config = Configuration()
@@ -81,37 +78,3 @@ def apply(files: typing.List[str]) -> None:
     # except Exception as e:
     #     click.secho(str(e), fg='red')
     #     exit(1)
-
-
-def apply_file(client: Client, filepath: str) -> None:
-    with open(filepath) as f:
-        data = f.read()
-
-    loaded_data = []
-    if filepath.endswith("json"):
-        loaded = json.loads(data)
-        # FIXME: Handle for JSON List.
-        loaded_data.append(loaded)
-    elif filepath.endswith('yaml') or filepath.endswith('yml'):
-        loaded = yaml.safe_load_all(data)
-        loaded_data = list(loaded)
-
-    if not loaded_data:
-        raise Exception('{} file is empty'.format(filepath))
-
-    for manifest in loaded_data:
-        cls = get_model(manifest)
-        ist = cls.from_dict(client, manifest)
-        ist.apply(client)
-
-
-def get_model(data: dict) -> typing.Any:
-    kind = data.get('kind', None)
-    if not kind:
-        raise Exception('kind is missing')
-
-    cls = KIND_TO_CLASS.get(kind, None)
-    if not cls:
-        raise Exception('invalid kind {}'.format(kind))
-
-    return cls
