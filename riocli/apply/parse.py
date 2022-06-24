@@ -87,6 +87,7 @@ class Applier(object):
         while self.graph.is_active():
             for obj in self.graph.get_ready():
                 self._apply_manifest(obj)
+                self.graph.done(obj)
 
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
@@ -156,12 +157,14 @@ class Applier(object):
             if (guid and obj_guid == guid) or (name_or_guid == obj_name):
                 self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
                 self.graph.add(dependent_key, key)
+                dependency['guid'] = obj_guid
 
             # Special handling for Static route since it doesn't have a name field.
             # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
             if kind == 'staticroute' and name_or_guid in obj_name:
                 self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
                 self.graph.add(dependent_key, key)
+                dependency['guid'] = obj_guid
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
