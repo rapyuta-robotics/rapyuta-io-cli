@@ -24,17 +24,16 @@ import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
 
-from riocli.apply.parse import ResolverCache
+from riocli.apply.parse import Applier
 from riocli.build.model import Build
-from riocli.config import Configuration
+from riocli.deployment.model import Deployment
 from riocli.device.model import Device
+from riocli.disk.model import Disk
 from riocli.network.model import Network
+from riocli.package.model import Package
 from riocli.project.model import Project
 from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
-from riocli.package.model import Package
-from riocli.disk.model import Disk
-from riocli.deployment.model import Deployment
 
 KIND_TO_CLASS = {
     'Project': Project,
@@ -74,19 +73,23 @@ def apply(files: str) -> None:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    rc = ResolverCache(glob_files)
-    deploy_order = list(rc.order())
-    
-    if(rc.missing_resource):
-        raise Exception("missing resources found in yaml. " + \
-                        "Plese ensure the following are either available in your yaml" + \
-                        "or created on the server. {}".format(set(rc.missing_resource))
-                       )
+    rc = Applier(glob_files)
+    rc.parse_dependencies()
+    rc.apply()
 
-    for entry in deploy_order:
-        if entry in rc.objects:
-            manifest = rc.objects[entry]      
-            apply_manifest(rc.client, manifest)
+    # rc = ResolverCache(glob_files)
+    # deploy_order = list(rc.order())
+    
+    # if(rc.missing_resource):
+    #     raise Exception("missing resources found in yaml. " + \
+    #                     "Plese ensure the following are either available in your yaml" + \
+    #                     "or created on the server. {}".format(set(rc.missing_resource))
+    #                    )
+
+    # for entry in deploy_order:
+    #     if entry in rc.objects:
+    #         manifest = rc.objects[entry]      
+    #         apply_manifest(rc.client, manifest)
 
 
 def apply_manifest(client: Client, manifest: str) -> None:

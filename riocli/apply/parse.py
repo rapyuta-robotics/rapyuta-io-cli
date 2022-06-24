@@ -1,49 +1,68 @@
-#!/usr/bin/env python3
+# Copyright 2022 Rapyuta Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import functools
+import json
 import re
 import typing
 from graphlib import TopologicalSorter
 
-import yaml
-import json
 import click
+import yaml
 from munch import munchify
-from rapyuta_io import Client, DeploymentPhaseConstants
+from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
+from riocli.build.model import Build
 from riocli.config import Configuration
+from riocli.deployment.model import Deployment
+from riocli.device.model import Device
+from riocli.disk.model import Disk
+from riocli.network.model import Network
+from riocli.package.model import Package
+from riocli.project.model import Project
+from riocli.secret.model import Secret
+from riocli.static_route.model import StaticRoute
+from riocli.secret.util import find_secret_guid
 
 
-class ResolverCache(object):
+class Applier(object):
+    KIND_TO_CLASS = {
+        'Project': Project,
+        'Secret': Secret,
+        'Build': Build,
+        'Device': Device,
+        'Network': Network,
+        'StaticRoute': StaticRoute,
+        'Package': Package,
+        'Disk': Disk,
+        'Deployment': Deployment,
+    }
     KIND_REGEX = {
-        "organization": "^org-.*",
-        "project": "^project-.*",
-        "secret": "^secret-.*",
-        "package": "^pkg-.*",
-        "staticroute": "^staticroute-.*",
-        "build": "^build-.*",
-        "disk": "^disk-.*",
-        "deployment": "^dep-.*",
-        "network": "net-.*",
-        "device": "UUID_REGEX",
-        "user": "UUID_REGEX",
+        "organization": "^org-[a-z]{24}$",
+        "project": "^project-[a-z]{24}$",
+        "secret": "^secret-[a-z]{24}$",
+        "package": "^pkg-[a-z]{24}$",
+        "staticroute": "^staticroute-[a-z]{24}$",
+        "build": "^build-[a-z]{24}$",
+        "disk": "^disk-[a-z]{24}$",
+        "deployment": "^dep-[a-z]{24}$",
+        "network": "^net-[a-z]{24}$",
+        "device": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+        "user": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
     }
     GUID_KEYS = ['guid', 'GUID', 'uuid', 'ID', 'Id', 'id']
     NAME_KEYS = ['name', 'urlPrefix']
-    def list_functors(self, kind):
-        mapping = {
-            'secret': self.client.list_secrets,
-            "project": self.client.list_projects,
-            "package": self.client.get_all_packages,
-            "staticroute": self.client.get_all_static_routes,
-            "build": self.client.list_builds,
-            "deployment": functools.partial(self.client.get_all_deployments, phases=[DeploymentPhaseConstants.SUCCEEDED, DeploymentPhaseConstants.PROVISIONING]),
-            "network": self.list_networks,
-            "disk": self.list_disks,
-            "device": self.client.get_all_devices,
-        }
-
-        return mapping[kind]
 
     def __init__(self, files: typing.List):
         self.input_file_paths = files
@@ -52,12 +71,34 @@ class ResolverCache(object):
         self.dependencies = {}
         self.missing_resource = []
         self.objects = {}
-        self.graph = {}
-        self._read_files(self.input_file_paths)
-        self.parse_dependencies()
+        self.files = {}
+        self.graph = TopologicalSorter()
+        self.rc = ResolverCache(self.client)
+        self._read_files(files)
+
+    def parse_dependencies(self):
+        for f, data in self.files.items():
+            for model in data:
+                key = self._get_object_key(model)
+                self._parse_dependency(key, model)
+                self.graph.add(key)
+
+        self.graph.prepare()
+
+    def apply(self):
+        while self.graph.is_active():
+            for obj in self.graph.get_ready():
+                self._apply_manifest(obj)
+
+    def _apply_manifest(self, obj_key):
+        obj = self.objects[obj_key]
+        cls = self.get_model(obj)
+        ist = cls.from_dict(self.client, obj)
+        setattr(ist, 'rc', self.rc)
+        if ist.kind.lower() == "deployment":
+            ist.apply(self.client)
 
     def _read_files(self, files):
-        self.files = {}
         for f in files:
             with open(f) as opened:
                 data = opened.read()
@@ -75,112 +116,159 @@ class ResolverCache(object):
                 click.secho('{} file is empty', f)
                 continue
 
-            for object in loaded_data:
-                self.register_object(object)
+            for obj in loaded_data:
+                self._register_object(obj)
 
             self.files[f] = loaded_data
 
-    def resourceKey(self, data):
-        kind = data['kind'].lower()
-        name = data['metadata']['name']
-        key = '{}:{}'.format(kind, name)
-        return key 
+    def _register_object(self, data):
+        try:
+            key = self._get_object_key(data)
+            self.objects[key] = data
+        except KeyError:
+            return
 
-    def register_object(self, data):
-        key = self.resourceKey(data)
-        self.objects[key] = data
-
-    def parse_dependencies(self):
-        for f, data in self.files.items():
-            for model in data:
-                key = '{}:{}'.format(model['kind'], model['metadata']['name']).lower()
-                self.parse_dependency(model)
-                dependencies = self.parse_dependency(model)
-                self.graph[key] = dependencies
-
-    def parse_dependency(self, model):
-        dependencies = set()
+    def _parse_dependency(self, dependent_key, model):
         for key, value in model.items():
             if key == "depends" and value.get('kind'):
-                local = self.resolve_dependency(value)
-                if local:
-                    dependencies |= {local}
-
+                self._resolve_dependency(dependent_key, value)
                 continue
 
             if isinstance(value, dict):
-                dependencies |= self.parse_dependency(value)
+                self._parse_dependency(dependent_key, value)
                 continue
 
             if isinstance(value, list):
                 for each in value:
                     if isinstance(each, dict):
-                        dependencies |= self.parse_dependency(each)
+                        self._parse_dependency(dependent_key, each)
 
-        return dependencies
-
-    def resolve_dependency(self, dependency):
+    def _resolve_dependency(self, dependent_key, dependency):
         kind = dependency.get('kind')
-        nameOrGUID = dependency.get('nameOrGUID')
-        key = "{}:{}".format(kind, nameOrGUID)
+        name_or_guid = dependency.get('nameOrGUID')
+        key = '{}:{}'.format(kind, name_or_guid)
 
-        guid = nameOrGUID if re.fullmatch(self.KIND_REGEX[kind], nameOrGUID) else None
+        self._initialize_kind_dependency(kind)
+        guid = self._maybe_guid(kind, name_or_guid)
 
-        list = self.list_objects(kind)
-        for obj in list:
-            obj_guid = self.get_attr(obj, self.GUID_KEYS)
-            obj_name = self.get_attr(obj, self.NAME_KEYS)
+        obj_list = self.rc.list_objects(kind)
+        for obj in obj_list:
+            obj_guid = self._get_attr(obj, self.GUID_KEYS)
+            obj_name = self._get_attr(obj, self.NAME_KEYS)
 
-            if (guid and obj_guid == guid) or (nameOrGUID == obj_name):
-                self.dependencies[key] = {
-                        'guid': obj_guid,
-                        'raw': obj,
-                        'local': False,
-                    }
-                return key
+            if (guid and obj_guid == guid) or (name_or_guid == obj_name):
+                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
+                self.graph.add(dependent_key, key)
 
-            if kind == 'staticroute' and nameOrGUID in obj_name:
-                self.dependencies[key] = {
-                    'guid': obj_guid,
-                    'raw': obj,
-                    'local': False,
-                }
-                return key
+            # Special handling for Static route since it doesn't have a name field.
+            # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
+            if kind == 'staticroute' and name_or_guid in obj_name:
+                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
+                self.graph.add(dependent_key, key)
 
-        
-        
-        if key in self.objects:
-            self.dependencies[key] = {'local': True}
-        else:
-            self.missing_resource.append(key)
-            self.dependencies[key] = {'missing': True}
-        return key
+        self.dependencies[kind][name_or_guid] = {'local': True}
+        self.graph.add(dependent_key, key)
 
-    def get_attr(self, object, accept_keys):
+    def order(self):
+        return self.graph.static_order()
+
+    @staticmethod
+    def _get_attr(obj, accept_keys):
         for key in accept_keys:
-            if hasattr(object, key):
-                return getattr(object, key)
+            if hasattr(obj, key):
+                return getattr(obj, key)
 
         raise Exception('guid resolve failed')
 
-    # @functools.lru_cache()
-    def list_objects(self, kind):
-        # return [kind]
-        return self.list_functors(kind)()
+    @staticmethod
+    def _get_object_key(obj: dict) -> str:
+        kind = obj.get('kind').lower()
+        name_or_guid = obj['metadata']['name']
 
-    def list_networks(self):
+        return '{}:{}'.format(kind, name_or_guid)
+
+    def _initialize_kind_dependency(self, kind):
+        if not self.dependencies.get(kind):
+            self.dependencies[kind] = {}
+
+    @classmethod
+    def _maybe_guid(cls, kind: str, name_or_guid: str) -> typing.Union[str, None]:
+        if re.fullmatch(cls.KIND_REGEX[kind], name_or_guid):
+            return name_or_guid
+
+    @classmethod
+    def get_model(cls, data: dict) -> typing.Any:
+        kind = data.get('kind', None)
+        if not kind:
+            raise Exception('kind is missing')
+
+        kind_cls = cls.KIND_TO_CLASS.get(kind, None)
+        if not kind_cls:
+            raise Exception('invalid kind {}'.format(kind))
+
+        return kind_cls
+
+
+class ResolverCache(object):
+    def __init__(self, client):
+        self.client = client
+
+    @functools.lru_cache()
+    def list_objects(self, kind):
+        return self._list_functors(kind)()
+
+    @functools.lru_cache()
+    def find_guid(self, name, kind):
+        obj_list = self.list_objects(kind)
+        return self._find_guid_functors(kind)(name, obj_list=obj_list)
+
+    def _list_functors(self, kind):
+        mapping = {
+            'secret': self.client.list_secrets,
+            "project": self.client.list_projects,
+            "package": self.client.get_all_packages,
+            "staticroute": self.client.get_all_static_routes,
+            "build": self.client.list_builds,
+            "deployment": functools.partial(self.client.get_all_deployments,
+                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
+                                                    DeploymentPhaseConstants.PROVISIONING]),
+            "network": self._list_networks,
+            "disk": self._list_disks,
+            "device": self.client.get_all_devices,
+        }
+
+        return mapping[kind]
+
+    def _find_guid_functors(self, kind):
+        mapping = {
+            'secret': find_secret_guid,
+            "project": self.client.list_projects,
+            "package": self.client.get_all_packages,
+            "staticroute": self.client.get_all_static_routes,
+            "build": self.client.list_builds,
+            "deployment": functools.partial(self.client.get_all_deployments,
+                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
+                                                    DeploymentPhaseConstants.PROVISIONING]),
+            "network": self._list_networks,
+            "disk": self._list_disks,
+            "device": self.client.get_all_devices,
+        }
+
+        return mapping[kind]
+
+    def _list_networks(self):
         native = self.client.list_native_networks()
         routed = self.client.get_all_routed_networks()
 
-        list = []
+        networks = []
         if native:
-            list.extend(native)
+            networks.extend(native)
 
         if routed:
-            list.extend(routed)
-        return list
+            networks.extend(routed)
+        return networks
 
-    def list_disks(self):
+    def _list_disks(self):
         config = Configuration()
         catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
         url = '{}/disk'.format(catalog_host)
@@ -192,15 +280,3 @@ class ResolverCache(object):
             raise Exception(err_msg)
         return munchify(data)
 
-    def order(self):
-        return TopologicalSorter(self.graph).static_order()
-
-
-    def __repr__(self):
-      # Print the files which were given. 
-      # show,  resources created,   
-      #  resources which will be updated. col => patched / recreate 
-      # --mode patch.  will throw errors for non-implemented resources. 
-      # --mode recreate  
-      # TODO implement
-      pass
