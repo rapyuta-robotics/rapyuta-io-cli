@@ -22,11 +22,7 @@ from click_plugins import with_plugins
 from click_repl import register_repl
 from pkg_resources import iter_entry_points
 
-<<<<<<< HEAD
 from riocli.apply import apply, explain
-=======
-from riocli.apply import apply
->>>>>>> cf353f04ce859d72eb877c13b99d6bfea6d44a1e
 from riocli.auth import auth
 from riocli.build import build
 from riocli.completion import completion

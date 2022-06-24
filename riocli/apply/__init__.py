@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-<<<<<<< HEAD
 from genericpath import isdir
-from imp import PKG_DIRECTORY
 import graphlib
 import json
 import typing
@@ -22,13 +20,6 @@ import glob
 
 import click
 from pyparsing import line
-=======
-import graphlib
-import json
-import typing
-
-import click
->>>>>>> cf353f04ce859d72eb877c13b99d6bfea6d44a1e
 import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
@@ -57,11 +48,7 @@ KIND_TO_CLASS = {
     'Deployment': Deployment,
 }
 
-<<<<<<< HEAD
 PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
-=======
-
->>>>>>> cf353f04ce859d72eb877c13b99d6bfea6d44a1e
 @click.command(
     'apply',
     hidden=True,
