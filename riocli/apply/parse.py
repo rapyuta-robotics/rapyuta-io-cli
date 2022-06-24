@@ -28,11 +28,8 @@ class ResolverCache(object):
         "device": "UUID_REGEX",
         "user": "UUID_REGEX",
     }
-
     GUID_KEYS = ['guid', 'GUID', 'uuid', 'ID', 'Id', 'id']
     NAME_KEYS = ['name', 'urlPrefix']
-
-
     def list_functors(self, kind):
         mapping = {
             'secret': self.client.list_secrets,
@@ -49,6 +46,7 @@ class ResolverCache(object):
         return mapping[kind]
 
     def __init__(self, files: typing.List):
+        self.input_file_paths = files
         self.config = Configuration()
         self.client = self.config.new_client()
         self.dependencies = {}
@@ -157,20 +155,17 @@ class ResolverCache(object):
 
         raise Exception('guid resolve failed')
 
-    # @functools.lru_cache()
+    
+    
+    # @functools.lru_cache(maxsize=20)
     def list_objects(self, kind):
         # return [kind]
-        return self.list_functors(kind)()
+        # print("."+ kind)
+        list_return = self.list_functors(kind)()
+        # print("."+ kind + "[" + str(list_return) + "]")
+        return list_return
 
-    # def create_dag(read_files, server_resource, local_resource):
-    #     return [[res1, res2], [res4, res3]]
-    #     pass
-
-    # def fetch_resource_list(kind):
-    #     switch kind:
-    #        #sdk
-    #        #request
-
+    #TODO: move to SDK
     def list_networks(self):
         native = self.client.list_native_networks()
         routed = self.client.get_all_routed_networks()
@@ -182,7 +177,7 @@ class ResolverCache(object):
         if routed:
             list.extend(routed)
         return list
-
+    
     def list_disks(self):
         config = Configuration()
         catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
@@ -197,3 +192,12 @@ class ResolverCache(object):
 
     def order(self):
         return TopologicalSorter(self.graph).static_order()
+
+
+    def __repr__(self):
+      # Print the files which were given. 
+      # show,  resources created,   
+      #  resources which will be updated. col => patched / recreate 
+      # --mode patch.  will throw errors for non-implemented resources. 
+      # --mode recreate  
+      # 

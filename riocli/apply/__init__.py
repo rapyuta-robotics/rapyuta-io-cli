@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from genericpath import isdir
+from imp import PKG_DIRECTORY
 import graphlib
 import json
 import typing
+import os
+import glob 
 
 import click
+from pyparsing import line
 import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
@@ -44,7 +49,7 @@ KIND_TO_CLASS = {
     'Deployment': Deployment,
 }
 
-
+PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
 @click.command(
     'apply',
     hidden=True,
@@ -52,17 +57,28 @@ KIND_TO_CLASS = {
     help_headers_color='yellow',
     help_options_color='green',
 )
-@click.argument('files', nargs=-1)
-def apply(files: typing.List[str]) -> None:
+@click.argument('files')
+def apply(files: str) -> None:
     """
     Apply resource manifests
     """
-    if len(files) == 0:
+    abs_path = os.path.abspath(files)
+    glob_files = []
+    if(os.path.exists(abs_path)):
+        if(os.path.isdir(abs_path)):
+            print(abs_path)
+            glob_files = glob.glob( abs_path+"/**/*", recursive=True)
+        else:
+            glob_files = [files]
+    
+    if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    rc = ResolverCache(files)
-    rc.parse_dependencies()
+    print(glob_files)
+    rc = ResolverCache(glob_files)
+    
+    print(rc.dependencies)
     deploy_order = rc.order()
 
 
@@ -77,7 +93,7 @@ def apply(files: typing.List[str]) -> None:
     #     client.set_project(project)
     #
     #     # Let the apply_file overwrite Project
-    #     apply_file(client, f)
+        # apply_file(client, f)
     # except Exception as e:
     #     click.secho(str(e), fg='red')
     #     exit(1)
@@ -86,6 +102,7 @@ def apply(files: typing.List[str]) -> None:
 def apply_file(client: Client, filepath: str) -> None:
     with open(filepath) as f:
         data = f.read()
+
 
     loaded_data = []
     if filepath.endswith("json"):
@@ -115,3 +132,23 @@ def get_model(data: dict) -> typing.Any:
         raise Exception('invalid kind {}'.format(kind))
 
     return cls
+
+
+
+#TODO very ghetto explain command
+@click.command(
+    'explain',
+    hidden=True,
+    cls=HelpColorsCommand,
+    help_headers_color='yellow',
+    help_options_color='green',
+)
+@click.argument('resource')
+@click.argument('template_root', default= os.path.abspath(os.path.join(PKG_ROOT, '../../examples/manifests')))
+def explain(resource: str, template_root: str) -> None:
+    glob_files = glob.glob( template_root+"/**/*", recursive=True)
+    for file in glob_files:
+        if resource in os.path.basename(file):
+            with open(file) as f:
+                lines = f.readlines()
+                click.secho("".join(lines))

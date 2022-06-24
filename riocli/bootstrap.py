@@ -22,7 +22,7 @@ from click_plugins import with_plugins
 from click_repl import register_repl
 from pkg_resources import iter_entry_points
 
-from riocli.apply import apply
+from riocli.apply import apply, explain
 from riocli.auth import auth
 from riocli.build import build
 from riocli.completion import completion
@@ -69,6 +69,7 @@ def version():
 
 
 cli.add_command(apply)
+cli.add_command(explain)
 cli.add_command(auth)
 cli.add_command(project)
 cli.add_command(device)
