@@ -155,17 +155,20 @@ class ResolverCache(object):
 
         raise Exception('guid resolve failed')
 
-    
-    
-    # @functools.lru_cache(maxsize=20)
+    # @functools.lru_cache()
     def list_objects(self, kind):
         # return [kind]
-        # print("."+ kind)
-        list_return = self.list_functors(kind)()
-        # print("."+ kind + "[" + str(list_return) + "]")
-        return list_return
+        return self.list_functors(kind)()
 
-    #TODO: move to SDK
+    # def create_dag(read_files, server_resource, local_resource):
+    #     return [[res1, res2], [res4, res3]]
+    #     pass
+
+    # def fetch_resource_list(kind):
+    #     switch kind:
+    #        #sdk
+    #        #request
+
     def list_networks(self):
         native = self.client.list_native_networks()
         routed = self.client.get_all_routed_networks()
@@ -177,7 +180,6 @@ class ResolverCache(object):
         if routed:
             list.extend(routed)
         return list
-    
     def list_disks(self):
         config = Configuration()
         catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
@@ -200,4 +202,5 @@ class ResolverCache(object):
       #  resources which will be updated. col => patched / recreate 
       # --mode patch.  will throw errors for non-implemented resources. 
       # --mode recreate  
-      # 
+      # TODO implement
+      pass
