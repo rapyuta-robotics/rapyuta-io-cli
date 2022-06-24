@@ -78,7 +78,7 @@ spec:
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_ims
+  name: sootballs_ims_testing
   depends:
     kind: package
     nameOrGUID: "sootballs_ims"

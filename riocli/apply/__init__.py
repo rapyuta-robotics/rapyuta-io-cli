@@ -87,28 +87,13 @@ def apply(files: str) -> None:
         if entry in rc.objects:
             manifest = rc.objects[entry]      
             apply_manifest(rc.client, manifest)
-        
-    # try:
-    # Don't use the Context Client, Project can change
-    # config = Configuration()
-    # project = config.data.get('project_id', None)
-    # client = config.new_client(with_project=False)
-    #
-    # for f in files:
-    #     client.set_project(project)
-    #
-    #     # Let the apply_file overwrite Project
-        # apply_file(client, f)
-    # except Exception as e:
-    #     click.secho(str(e), fg='red')
-    #     exit(1)
 
 
 def apply_manifest(client: Client, manifest: str) -> None:
     cls = get_model(manifest)
     ist = cls.from_dict(client, manifest)
-    print(manifest['metadata']['name'])
-    # ist.apply(client)
+    if manifest['kind'].lower() == "deployment":
+        ist.apply(client)
 
 
 def get_model(data: dict) -> typing.Any:
@@ -121,7 +106,6 @@ def get_model(data: dict) -> typing.Any:
         raise Exception('invalid kind {}'.format(kind))
 
     return cls
-
 
 
 #TODO very ghetto explain command

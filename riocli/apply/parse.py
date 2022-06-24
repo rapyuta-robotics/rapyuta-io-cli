@@ -168,15 +168,6 @@ class ResolverCache(object):
         # return [kind]
         return self.list_functors(kind)()
 
-    # def create_dag(read_files, server_resource, local_resource):
-    #     return [[res1, res2], [res4, res3]]
-    #     pass
-
-    # def fetch_resource_list(kind):
-    #     switch kind:
-    #        #sdk
-    #        #request
-
     def list_networks(self):
         native = self.client.list_native_networks()
         routed = self.client.get_all_routed_networks()
@@ -188,6 +179,7 @@ class ResolverCache(object):
         if routed:
             list.extend(routed)
         return list
+
     def list_disks(self):
         config = Configuration()
         catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')

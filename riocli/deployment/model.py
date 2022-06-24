@@ -29,22 +29,24 @@ class Deployment(Model):
     def find_object(self, client: Client) -> typing.Any:
         try:
             deployment = find_deployment_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
+            click.echo('>> {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
             return deployment
         except DeploymentNotFound:
             return False
 
     def create_object(self, client: Client) -> typing.Any:
-        pkg = self._get_package(client)
-        comp_name = pkg['plans']['components'][0]['name']
-        prov_config = pkg.get_provision_configuration()
-        prov_config.add_static_route
+        click.secho("Creating {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
+        # print(self)
+        return
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        click.secho("Updating {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+        # print(self)
         pass
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
+
         pass
 
     @staticmethod
