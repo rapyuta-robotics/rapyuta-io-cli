@@ -75,21 +75,15 @@ def apply(files: str) -> None:
 
     rc = Applier(glob_files)
     rc.parse_dependencies()
+    # print(rc.resolved_objects)
+    missing_resources = []        
+    if(missing_resources):
+        raise Exception("missing resources found in yaml. " + \
+                        "Plese ensure the following are either available in your yaml" + \
+                        "or created on the server. {}".format(set(missing_resources))
+                       )
+
     rc.apply()
-
-    # rc = ResolverCache(glob_files)
-    # deploy_order = list(rc.order())
-    
-    # if(rc.missing_resource):
-    #     raise Exception("missing resources found in yaml. " + \
-    #                     "Plese ensure the following are either available in your yaml" + \
-    #                     "or created on the server. {}".format(set(rc.missing_resource))
-    #                    )
-
-    # for entry in deploy_order:
-    #     if entry in rc.objects:
-    #         manifest = rc.objects[entry]      
-    #         apply_manifest(rc.client, manifest)
 
 
 def apply_manifest(client: Client, manifest: str) -> None:

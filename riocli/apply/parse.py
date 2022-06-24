@@ -71,6 +71,7 @@ class Applier(object):
         self.dependencies = {}
         self.missing_resource = []
         self.objects = {}
+        self.resolved_objects = {}
         self.files = {}
         self.graph = TopologicalSorter()
         self.rc = ResolverCache(self.client)
@@ -88,15 +89,18 @@ class Applier(object):
     def apply(self):
         while self.graph.is_active():
             for obj in self.graph.get_ready():
-                self._apply_manifest(obj)
+                if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
+                    self._apply_manifest(obj)
+                yield from obj
+            self.graph.done()
 
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
         ist = cls.from_dict(self.client, obj)
         setattr(ist, 'rc', self.rc)
-        if ist.kind.lower() == "deployment":
-            ist.apply(self.client)
+        print(obj_key)
+        # ist.apply(self.client)
 
     def _read_files(self, files):
         for f in files:
@@ -125,6 +129,7 @@ class Applier(object):
         try:
             key = self._get_object_key(data)
             self.objects[key] = data
+            self.resolved_objects[key] = {'src' : 'local', 'manifest': data}
         except KeyError:
             return
 
@@ -158,6 +163,12 @@ class Applier(object):
 
             if (guid and obj_guid == guid) or (name_or_guid == obj_name):
                 self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
+                if key not in self.resolved_objects:
+                    self.resolved_objects[key] = {} 
+                self.resolved_objects[key]['guid'] = obj_guid
+                self.resolved_objects[key]['raw'] = obj
+                self.resolved_objects[key]['src'] = 'remote'
+
                 self.graph.add(dependent_key, key)
 
             # Special handling for Static route since it doesn't have a name field.
@@ -165,9 +176,20 @@ class Applier(object):
             if kind == 'staticroute' and name_or_guid in obj_name:
                 self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
                 self.graph.add(dependent_key, key)
+                if key not in self.resolved_objects:
+                    self.resolved_objects[key] = {} 
+                self.resolved_objects[key]['guid'] = obj_guid
+                self.resolved_objects[key]['raw'] = obj
+                self.resolved_objects[key]['src'] = 'remote'
+
+
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
+        
+        if not self.resolved_objects[key]:
+            self.resolved_objects[key]['src'] = 'missing'
+
 
     def order(self):
         return self.graph.static_order()
