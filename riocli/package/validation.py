@@ -666,6 +666,11 @@ def validate___definitions_secretdepends(data, custom_formats={}):
             data__nameOrGUID = data["nameOrGUID"]
             if not isinstance(data__nameOrGUID, (str)):
                 raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_cloudcomponentinfospec(data, custom_formats={}):
@@ -870,6 +875,11 @@ def validate___definitions_builddepends(data, custom_formats={}):
             data__nameOrGUID = data["nameOrGUID"]
             if not isinstance(data__nameOrGUID, (str)):
                 raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_devicecomponentinfospec(data, custom_formats={}):

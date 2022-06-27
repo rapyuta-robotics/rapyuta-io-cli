@@ -172,6 +172,38 @@ def validate___definitions_componentspec(data, custom_formats={}):
             if data__runtime not in ['device', 'cloud']:
                 raise JsonSchemaValueException("data.runtime must be one of ['device', 'cloud']", value=data__runtime, name="data.runtime", definition={'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, rule='enum')
         else: data["runtime"] = 'cloud'
+        if "dependentDeployments" in data_keys:
+            data_keys.remove("dependentDeployments")
+            data__dependentDeployments = data["dependentDeployments"]
+            if not isinstance(data__dependentDeployments, (list, tuple)):
+                raise JsonSchemaValueException("data.dependentDeployments must be array", value=data__dependentDeployments, name="data.dependentDeployments", definition={'type': 'array', 'items': {'$ref': '#/definitions/deploymentDepends'}}, rule='type')
+            data__dependentDeployments_is_list = isinstance(data__dependentDeployments, (list, tuple))
+            if data__dependentDeployments_is_list:
+                data__dependentDeployments_len = len(data__dependentDeployments)
+                for data__dependentDeployments_x, data__dependentDeployments_item in enumerate(data__dependentDeployments):
+                    validate___definitions_deploymentdepends(data__dependentDeployments_item, custom_formats)
+    return data
+
+def validate___definitions_deploymentdepends(data, custom_formats={}):
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "kind" in data_keys:
+            data_keys.remove("kind")
+            data__kind = data["kind"]
+            if data__kind != "deployment":
+                raise JsonSchemaValueException("data.kind must be same as const definition: deployment", value=data__kind, name="data.kind", definition={'const': 'deployment', 'default': 'deployment'}, rule='const')
+        else: data["kind"] = 'deployment'
+        if "nameOrGUID" in data_keys:
+            data_keys.remove("nameOrGUID")
+            data__nameOrGUID = data["nameOrGUID"]
+            if not isinstance(data__nameOrGUID, (str)):
+                raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_cloudnetworkattachspec(data, custom_formats={}):
@@ -210,6 +242,11 @@ def validate___definitions_networkdepends(data, custom_formats={}):
             data__nameOrGUID = data["nameOrGUID"]
             if not isinstance(data__nameOrGUID, (str)):
                 raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_endpointspec(data, custom_formats={}):
@@ -282,6 +319,11 @@ def validate___definitions_diskdepends(data, custom_formats={}):
             data__nameOrGUID = data["nameOrGUID"]
             if not isinstance(data__nameOrGUID, (str)):
                 raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_devicenetworkattachspec(data, custom_formats={}):
@@ -366,6 +408,11 @@ def validate___definitions_devicedepends(data, custom_formats={}):
             data__nameOrGUID = data["nameOrGUID"]
             if not isinstance(data__nameOrGUID, (str)):
                 raise JsonSchemaValueException("data.nameOrGUID must be string", value=data__nameOrGUID, name="data.nameOrGUID", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data
 
 def validate___definitions_metadata(data, custom_formats={}):
@@ -461,4 +508,9 @@ def validate___definitions_packagedepends(data, custom_formats={}):
             data__version = data["version"]
             if not isinstance(data__version, (str)):
                 raise JsonSchemaValueException("data.version must be string", value=data__version, name="data.version", definition={'type': 'string'}, rule='type')
+        if "guid" in data_keys:
+            data_keys.remove("guid")
+            data__guid = data["guid"]
+            if not isinstance(data__guid, (str)):
+                raise JsonSchemaValueException("data.guid must be string", value=data__guid, name="data.guid", definition={'type': 'string'}, rule='type')
     return data

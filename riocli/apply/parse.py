@@ -191,6 +191,7 @@ class Applier(object):
             if kind == 'package':
                 if (guid and obj_guid == guid):
                     self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                
                 if (name_or_guid == obj_name) and ('version' in dependency and obj['packageVersion'] == dependency.get('version')):
                     self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
             

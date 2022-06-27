@@ -3,7 +3,7 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "ims-kibarobots-2"
+  name: "ims-kibarobots-4"
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
@@ -78,13 +78,14 @@ spec:
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_ims_testing
+  name: sootballs_ims_testing2
   depends:
     kind: package
     nameOrGUID: "sootballs_ims"
     version: "v1.14.0-rc4-6"
   labels: 
     app: ims
+  project
 spec:
   runtime: cloud
   envArgs:
@@ -120,7 +121,7 @@ spec:
     - name: IMS_URL
       depends:
         kind: staticroute
-        nameOrGUID: ims-kibarobots-2
+        nameOrGUID: ims-kibarobots-4
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Disk"

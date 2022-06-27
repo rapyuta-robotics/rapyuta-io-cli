@@ -112,6 +112,10 @@ definitions:
           - device
           - cloud
         default: cloud
+      dependentDeployments:
+        type: array
+        items:
+          "$ref": "#/definitions/deploymentDepends"
     dependencies:
       runtime:
         oneOf:
