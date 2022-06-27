@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dis import dis
 import typing
 
 import click
+from munch import munchify
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
-from rapyuta_io.clients.package import ProvisionConfiguration
+from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
 
 from riocli.deployment.validation import validate
 from riocli.deployment.util import find_deployment_guid, DeploymentNotFound
@@ -26,22 +28,104 @@ from riocli.static_route.util import find_static_route_guid
 
 
 class Deployment(Model):
+    RESTART_POLICY = {
+        'always': RestartPolicy.Always,
+        'never': RestartPolicy.Never,
+        'onFailure': RestartPolicy.OnFailure
+    }
     def find_object(self, client: Client) -> typing.Any:
         try:
             deployment = find_deployment_guid(client, self.metadata.name)
-            click.echo('>> {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
             return deployment
         except DeploymentNotFound:
             return False
 
     def create_object(self, client: Client) -> typing.Any:
-        click.secho("Creating {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
-        # print(self)
-        return
+        pkg = client.get_package(self.metadata.depends.guid)
+        pkg.update()
+        default_plan = pkg['plans'][0]
+        internal_component = default_plan['internalComponents'][0]
+
+        __planId = default_plan['planId']
+        __componentName = internal_component.componentName
+        runtime = internal_component['runtime']
+        
+        if 'runtime' in self.spec and runtime != self.spec.runtime :
+            click.secho('>> runtime mismatch => ' +\
+                    'deployment:{}.runtime !== package:{}.runtime '.format(
+                        self.metadata.name, pkg['packageName']
+                    ), fg="red"
+                )
+            pass
+
+
+        
+        provision_config = pkg.get_provision_configuration(__planId)
+        
+        # add label
+        if 'labels' in self.metadata:
+            for key, value in self.metadata.labels.items():
+                provision_config.add_label(key, value)
+
+        # Add envArgs
+        if 'envArgs' in self.spec:
+            for items in self.spec.envArgs:
+                provision_config.add_parameter(__componentName, items.name, items.value)
+        
+                
+        # Add Dependent Deployment
+
+
+        if self.spec.runtime == 'cloud':
+            if 'staticRoutes' in self.spec:
+                for stroute in self.spec.staticRoutes:
+                    route_object= client.get_static_route(stroute.depends.guid)
+                    provision_config.add_static_route(__componentName, stroute.name, route_object)
+
+            # Add Disk
+            if 'volumes' in self.spec:
+                disk_mounts = {}
+                for vol in self.spec.volumes:
+                    disk_guid = vol.depends.depGuid
+                    if not disk_guid in disk_mounts:
+                        disk_mounts[disk_guid] = []
+                    disk_mounts[disk_guid].append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+                
+                for disk_guid in disk_mounts.keys():
+                    disk = client.get_volume_instance(disk_guid)
+                    provision_config.mount_volume(__componentName,volume=disk, executable_mounts=disk_mounts[disk_guid])
+
+            # Add Network
+            # if self.spec.rosNetworks:
+                # for network in self.spec.rosNetworks:
+                    # network_type = 
+        
+        if self.spec.runtime == 'device':
+            device = client.get_device(self.spec.depends.guid)
+            provision_config.add_device(__componentName, device=device)
+
+            if 'restart' in self.spec:
+                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart])
+
+            # Add Network
+            # if self.spec.rosNetworks:
+                # for network in self.spec.rosNetworks:
+                    # network_type = 
+
+                        # Add Disk
+            if 'volumes' in self.spec.volumes:
+                exec_mounts = []
+                for vol in self.spec.volumes:
+                    exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))        
+                provision_config.mount_volume(__componentName,device=device, executable_mounts=exec_mounts)
+
+        deployment = pkg.provision(self.metadata.name, provision_config)
+        deployment.poll_deployment_till_ready()
+        return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        click.secho("Updating {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
         # print(self)
+        
         pass
 
     @classmethod

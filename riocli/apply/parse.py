@@ -97,9 +97,17 @@ class Applier(object):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
         ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', self.rc)
-        if obj_key.startswith('deployment'):
-            ist.apply(self.client)
+        rc =  {
+            'cache': self.rc,
+            'dependencies': self.dependencies,
+            'missing': self.missing_resource,
+            'objects' : self.objects,
+            'resolved_objects': self.resolved_objects
+
+        }
+        setattr(ist, 'rc', munchify(rc))
+        # if obj_key.startswith('deployment'):
+        ist.apply(self.client)
 
     def _read_files(self, files):
         for f in files:
@@ -147,6 +155,25 @@ class Applier(object):
                     if isinstance(each, dict):
                         self._parse_dependency(dependent_key, each)
 
+
+    def _add_remote_object_to_resolve_tree(self, dependent_key, guid, dependency, obj):
+        kind = dependency.get('kind')
+        name_or_guid = dependency.get('nameOrGUID')
+        key = '{}:{}'.format(kind, name_or_guid)
+
+        self.dependencies[kind][name_or_guid] = {'guid': guid, 'raw': obj, 'local': False}
+        if key not in self.resolved_objects:
+            self.resolved_objects[key] = {} 
+        self.resolved_objects[key]['guid'] = guid
+        self.resolved_objects[key]['raw'] = obj
+        self.resolved_objects[key]['src'] = 'remote'
+
+        self.graph.add(dependent_key, key)
+        dependency['guid'] = guid
+        if kind.lower() == "disk":
+            dependency['depGuid'] = obj['internalDeploymentGUID']
+            
+
     def _resolve_dependency(self, dependent_key, dependency):
         kind = dependency.get('kind')
         name_or_guid = dependency.get('nameOrGUID')
@@ -160,28 +187,21 @@ class Applier(object):
             obj_guid = self._get_attr(obj, self.GUID_KEYS)
             obj_name = self._get_attr(obj, self.NAME_KEYS)
 
-            if (guid and obj_guid == guid) or (name_or_guid == obj_name):
-                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
-                if key not in self.resolved_objects:
-                    self.resolved_objects[key] = {} 
-                self.resolved_objects[key]['guid'] = obj_guid
-                self.resolved_objects[key]['raw'] = obj
-                self.resolved_objects[key]['src'] = 'remote'
 
-                self.graph.add(dependent_key, key)
-                dependency['guid'] = obj_guid
-
+            if kind == 'package':
+                if (guid and obj_guid == guid):
+                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                if (name_or_guid == obj_name) and ('version' in dependency and obj['packageVersion'] == dependency.get('version')):
+                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+            
             # Special handling for Static route since it doesn't have a name field.
             # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
-            if kind == 'staticroute' and name_or_guid in obj_name:
-                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
-                self.graph.add(dependent_key, key)
-                if key not in self.resolved_objects:
-                    self.resolved_objects[key] = {} 
-                self.resolved_objects[key]['guid'] = obj_guid
-                self.resolved_objects[key]['raw'] = obj
-                self.resolved_objects[key]['src'] = 'remote'
-                dependency['guid'] = obj_guid
+            elif kind == 'staticroute' and name_or_guid in obj_name:
+                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+
+            elif (guid and obj_guid == guid) or (name_or_guid == obj_name):
+                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
@@ -241,7 +261,7 @@ class ResolverCache(object):
     @functools.lru_cache()
     def find_guid(self, name, kind):
         obj_list = self.list_objects(kind)
-        return self._find_guid_functors(kind)(name, obj_list=obj_list)
+        return self._find_guid_functors(kind)(name, obj_list)
 
     def _list_functors(self, kind):
         mapping = {
@@ -271,7 +291,7 @@ class ResolverCache(object):
                                             phases=[DeploymentPhaseConstants.SUCCEEDED,
                                                     DeploymentPhaseConstants.PROVISIONING]),
             "network": self._list_networks,
-            "disk": self._list_disks,
+            "disk": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
             "device": self.client.get_all_devices,
         }
 

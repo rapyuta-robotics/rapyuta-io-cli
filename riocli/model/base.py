@@ -18,19 +18,29 @@ from munch import Munch, munchify
 from rapyuta_io import Client
 
 from riocli.project.util import find_project_guid
-
+import click
 
 class Model(ABC, Munch):
 
     def apply(self, client: Client) -> typing.Any:
-        self._set_project_in_client(client)
-
-        obj = self.find_object(client)
-        if not obj:
-            return self.create_object(client)
-
-        return self.update_object(client, obj)
-
+        try:
+            self._set_project_in_client(client)
+            obj = self.find_object(client)
+        
+            if not obj:
+                click.secho("Creating {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
+                result = self.create_object(client)
+                # click.secho("Created {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                return result
+            else:
+                click.echo('>> {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
+                click.secho("Updating {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                result=self.update_object(client, obj)
+                # click.secho("Updated {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                return result
+        except Exception as e:
+            click.secho(">> !!! [ERR {}:{}] {} !!!".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            raise e
     @abstractmethod
     def find_object(self, client: Client) -> typing.Any:
         pass

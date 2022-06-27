@@ -64,7 +64,6 @@ def apply(files: str) -> None:
     glob_files = []
     if(os.path.exists(abs_path)):
         if(os.path.isdir(abs_path)):
-            print(abs_path)
             glob_files = glob.glob( abs_path+"/**/*", recursive=True)
         else:
             glob_files = [files]

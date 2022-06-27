@@ -24,9 +24,7 @@ from riocli.model import Model
 class Disk(Model):
     def find_object(self, client: Client) -> typing.Any:
         try:
-            find_disk_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
+            return self.rc.cache.find_guid(self.metadata.name, self.kind.lower())
         except DiskNotFound:
             return False
 

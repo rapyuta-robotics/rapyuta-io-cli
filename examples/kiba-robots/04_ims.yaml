@@ -3,18 +3,18 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "ims-kibarobots"
+  name: "ims-kibarobots-2"
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "minio-kibarobots"
+  name: "minio-kibarobots-2"
 ---
 #sootballs_minio
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_minio
+  name: sootballs_minio_test
   depends:
     kind: package
     nameOrGUID: "MinIO File Server"
@@ -32,7 +32,7 @@ spec:
     - name: FileStorage
       depends:
         kind: staticroute
-        nameOrGUID: minio-kibarobots
+        nameOrGUID: minio-kibarobots-2
   volumes:
     - execName: minio_executable
       mountPath: "/data"
@@ -45,7 +45,7 @@ spec:
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_db
+  name: sootballs_db_test
   depends:
     kind: package
     nameOrGUID: "Sootballs DB"
@@ -120,7 +120,7 @@ spec:
     - name: IMS_URL
       depends:
         kind: staticroute
-        nameOrGUID: ims-kibarobots
+        nameOrGUID: ims-kibarobots-2
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Disk"
