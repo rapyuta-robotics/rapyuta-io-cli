@@ -99,9 +99,9 @@ class Applier(object):
         ist = cls.from_dict(self.client, obj)
         rc =  {
             'cache': self.rc,
-            'dependencies': self.dependencies,
-            'missing': self.missing_resource,
-            'objects' : self.objects,
+            # 'dependencies': self.dependencies,
+            # 'missing': self.missing_resource,
+            # 'objects' : self.objects,
             'resolved_objects': self.resolved_objects
 
         }

@@ -29,7 +29,7 @@ spec:
     - name: MINIO_SECRET_KEY
       value: secret_key
   staticRoutes:
-    - name: FileStorage
+    - name: MINIO
       depends:
         kind: staticroute
         nameOrGUID: minio-kibarobots-apply

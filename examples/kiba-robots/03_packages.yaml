@@ -121,8 +121,8 @@ spec:
       docker:
         image: rrdockerhub/minio-server
       limits:
-        cpu: 0.5
-        memory: 2048
+        cpu: 1
+        memory: 4096
   environmentVars:
     - name: MINIO_ACCESS_KEY
     - name: MINIO_SECRET_KEY
@@ -155,8 +155,8 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       limits:
-        cpu: 0.5
-        memory: 2048
+        cpu: 1
+        memory: 4096
   environmentVars:
     - name: TIMEZONE
       default: Asia/Tokyo

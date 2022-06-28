@@ -127,10 +127,9 @@ class Deployment(Model):
         return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        
         if 'depends' in self.spec:
-            print(self.spec.depends)
-
+            # print(self.spec.depends)
+            pass
         pass
 
     @classmethod
