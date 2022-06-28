@@ -54,7 +54,6 @@ class Network(Model):
             return self._create_routed_network(client)
 
         network = client.create_native_network(self.to_v1(client))
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return network
 
     def update_object(self, client: Client, obj: Union[RoutedNetwork, NativeNetwork]) -> Any:

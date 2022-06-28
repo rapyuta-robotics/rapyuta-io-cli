@@ -112,7 +112,7 @@ definitions:
           - device
           - cloud
         default: cloud
-      dependentDeployments:
+      depends:
         type: array
         items:
           "$ref": "#/definitions/deploymentDepends"

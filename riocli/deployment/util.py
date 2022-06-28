@@ -56,7 +56,10 @@ def get_deployment_name(client: Client, guid: str) -> str:
 
 
 def find_deployment_guid(client: Client, name: str) -> str:
-    deployments = client.get_all_deployments()
+    find_func = functools.partial(client.get_all_deployments,
+                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
+                                                    DeploymentPhaseConstants.PROVISIONING])
+    deployments = find_func()
     for deployment in deployments:
         if deployment.name == name:
             return deployment.deploymentId

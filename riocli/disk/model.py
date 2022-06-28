@@ -24,7 +24,11 @@ from riocli.model import Model
 class Disk(Model):
     def find_object(self, client: Client) -> typing.Any:
         try:
-            return self.rc.cache.find_guid(self.metadata.name, self.kind.lower())
+            guid =  list(self.rc.cache.find_guid(self.metadata.name, self.kind.lower()))
+            if isinstance(guid, list) and len(guid) > 0:
+                return guid[0]
+            else:
+                return False
         except DiskNotFound:
             return False
 
@@ -37,6 +41,7 @@ class Disk(Model):
             "runtime": self.spec.runtime,
             "capacity": self.spec.capacity,
         }
+        
         return _api_call(HttpMethod.POST, payload=payload)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:

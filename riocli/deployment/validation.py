@@ -172,16 +172,16 @@ def validate___definitions_componentspec(data, custom_formats={}):
             if data__runtime not in ['device', 'cloud']:
                 raise JsonSchemaValueException("data.runtime must be one of ['device', 'cloud']", value=data__runtime, name="data.runtime", definition={'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, rule='enum')
         else: data["runtime"] = 'cloud'
-        if "dependentDeployments" in data_keys:
-            data_keys.remove("dependentDeployments")
-            data__dependentDeployments = data["dependentDeployments"]
-            if not isinstance(data__dependentDeployments, (list, tuple)):
-                raise JsonSchemaValueException("data.dependentDeployments must be array", value=data__dependentDeployments, name="data.dependentDeployments", definition={'type': 'array', 'items': {'$ref': '#/definitions/deploymentDepends'}}, rule='type')
-            data__dependentDeployments_is_list = isinstance(data__dependentDeployments, (list, tuple))
-            if data__dependentDeployments_is_list:
-                data__dependentDeployments_len = len(data__dependentDeployments)
-                for data__dependentDeployments_x, data__dependentDeployments_item in enumerate(data__dependentDeployments):
-                    validate___definitions_deploymentdepends(data__dependentDeployments_item, custom_formats)
+        if "depends" in data_keys:
+            data_keys.remove("depends")
+            data__depends = data["depends"]
+            if not isinstance(data__depends, (list, tuple)):
+                raise JsonSchemaValueException("data.depends must be array", value=data__depends, name="data.depends", definition={'type': 'array', 'items': {'$ref': '#/definitions/deploymentDepends'}}, rule='type')
+            data__depends_is_list = isinstance(data__depends, (list, tuple))
+            if data__depends_is_list:
+                data__depends_len = len(data__depends)
+                for data__depends_x, data__depends_item in enumerate(data__depends):
+                    validate___definitions_deploymentdepends(data__depends_item, custom_formats)
     return data
 
 def validate___definitions_deploymentdepends(data, custom_formats={}):

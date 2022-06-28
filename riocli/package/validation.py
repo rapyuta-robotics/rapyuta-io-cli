@@ -222,12 +222,12 @@ def validate___definitions_roscomponentspec(data, custom_formats={}):
 
 def validate___definitions_rosendpointspec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'topic', 'enum': ['topic', 'service', 'action']}, 'name': {'type': 'string'}, 'compression': {'type': 'boolean', 'default': False}, 'scoped': {'type': 'boolean', 'default': False}, 'targeted': {'type': 'boolean', 'default': False}}, 'required': ['type', 'name'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'high', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}}}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'topic', 'enum': ['topic', 'service', 'action']}, 'name': {'type': 'string'}, 'compression': {'type': 'boolean', 'default': False}, 'scoped': {'type': 'boolean', 'default': False}, 'targeted': {'type': 'boolean', 'default': False}}, 'required': ['type', 'name'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'hi', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['type', 'name']):
-            raise JsonSchemaValueException("data must contain ['type', 'name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'topic', 'enum': ['topic', 'service', 'action']}, 'name': {'type': 'string'}, 'compression': {'type': 'boolean', 'default': False}, 'scoped': {'type': 'boolean', 'default': False}, 'targeted': {'type': 'boolean', 'default': False}}, 'required': ['type', 'name'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'high', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}}}, rule='required')
+            raise JsonSchemaValueException("data must contain ['type', 'name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'topic', 'enum': ['topic', 'service', 'action']}, 'name': {'type': 'string'}, 'compression': {'type': 'boolean', 'default': False}, 'scoped': {'type': 'boolean', 'default': False}, 'targeted': {'type': 'boolean', 'default': False}}, 'required': ['type', 'name'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'hi', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}}}, rule='required')
         if "type" in data:
             data_one_of_count3 = 0
             if data_one_of_count3 < 2:
@@ -244,9 +244,9 @@ def validate___definitions_rosendpointspec(data, custom_formats={}):
                             data_keys.remove("qos")
                             data__qos = data["qos"]
                             if not isinstance(data__qos, (str)):
-                                raise JsonSchemaValueException("data.qos must be string", value=data__qos, name="data.qos", definition={'type': 'string', 'enum': ['low', 'medium', 'high', 'max'], 'default': 'low'}, rule='type')
-                            if data__qos not in ['low', 'medium', 'high', 'max']:
-                                raise JsonSchemaValueException("data.qos must be one of ['low', 'medium', 'high', 'max']", value=data__qos, name="data.qos", definition={'type': 'string', 'enum': ['low', 'medium', 'high', 'max'], 'default': 'low'}, rule='enum')
+                                raise JsonSchemaValueException("data.qos must be string", value=data__qos, name="data.qos", definition={'type': 'string', 'enum': ['low', 'medium', 'hi', 'max'], 'default': 'low'}, rule='type')
+                            if data__qos not in ['low', 'medium', 'hi', 'max']:
+                                raise JsonSchemaValueException("data.qos must be one of ['low', 'medium', 'hi', 'max']", value=data__qos, name="data.qos", definition={'type': 'string', 'enum': ['low', 'medium', 'hi', 'max'], 'default': 'low'}, rule='enum')
                         else: data["qos"] = 'low'
                     data_one_of_count3 += 1
                 except JsonSchemaValueException: pass
@@ -281,7 +281,7 @@ def validate___definitions_rosendpointspec(data, custom_formats={}):
                     data_one_of_count3 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count3 != 1:
-                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'high', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}, rule='oneOf')
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'type': {'enum': ['topic']}, 'qos': {'type': 'string', 'enum': ['low', 'medium', 'hi', 'max'], 'default': 'low'}}}, {'properties': {'type': {'enum': ['service']}, 'timeout': {'type': 'number', 'default': 120, 'min': 0}}}, {'properties': {'type': {'enum': ['action']}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "type" in data_keys:
             data_keys.remove("type")
@@ -513,12 +513,12 @@ def validate___definitions_portnumber(data, custom_formats={}):
 
 def validate___definitions_cloudexecutablespec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'string'}, 'memory': {'type': 'string'}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['type']):
-            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'string'}, 'memory': {'type': 'string'}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
+            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
         if "type" in data:
             data_one_of_count5 = 0
             if data_one_of_count5 < 2:
@@ -606,6 +606,11 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}):
             if data_one_of_count5 != 1:
                 raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
         data_keys = set(data.keys())
+        if "name" in data_keys:
+            data_keys.remove("name")
+            data__name = data["name"]
+            if not isinstance(data__name, (str)):
+                raise JsonSchemaValueException("data.name must be string", value=data__name, name="data.name", definition={'type': 'string'}, rule='type')
         if "type" in data_keys:
             data_keys.remove("type")
             data__type = data["type"]
@@ -635,20 +640,20 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}):
             data_keys.remove("limits")
             data__limits = data["limits"]
             if not isinstance(data__limits, (dict)):
-                raise JsonSchemaValueException("data.limits must be object", value=data__limits, name="data.limits", definition={'type': 'object', 'properties': {'cpu': {'type': 'string'}, 'memory': {'type': 'string'}}}, rule='type')
+                raise JsonSchemaValueException("data.limits must be object", value=data__limits, name="data.limits", definition={'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}, rule='type')
             data__limits_is_dict = isinstance(data__limits, dict)
             if data__limits_is_dict:
                 data__limits_keys = set(data__limits.keys())
                 if "cpu" in data__limits_keys:
                     data__limits_keys.remove("cpu")
                     data__limits__cpu = data__limits["cpu"]
-                    if not isinstance(data__limits__cpu, (str)):
-                        raise JsonSchemaValueException("data.limits.cpu must be string", value=data__limits__cpu, name="data.limits.cpu", definition={'type': 'string'}, rule='type')
+                    if not isinstance(data__limits__cpu, (int, float)) or isinstance(data__limits__cpu, bool):
+                        raise JsonSchemaValueException("data.limits.cpu must be number", value=data__limits__cpu, name="data.limits.cpu", definition={'type': 'number', 'min': 0.1, 'max': 8}, rule='type')
                 if "memory" in data__limits_keys:
                     data__limits_keys.remove("memory")
                     data__limits__memory = data__limits["memory"]
-                    if not isinstance(data__limits__memory, (str)):
-                        raise JsonSchemaValueException("data.limits.memory must be string", value=data__limits__memory, name="data.limits.memory", definition={'type': 'string'}, rule='type')
+                    if not isinstance(data__limits__memory, (int, float)) or isinstance(data__limits__memory, bool):
+                        raise JsonSchemaValueException("data.limits.memory must be number", value=data__limits__memory, name="data.limits.memory", definition={'type': 'number', 'min': 256, 'max': 32678}, rule='type')
     return data
 
 def validate___definitions_secretdepends(data, custom_formats={}):
@@ -689,12 +694,12 @@ def validate___definitions_cloudcomponentinfospec(data, custom_formats={}):
 
 def validate___definitions_environmentspec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'defaultValue': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['name']):
-            raise JsonSchemaValueException("data must contain ['name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'defaultValue': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}, rule='required')
+            raise JsonSchemaValueException("data must contain ['name'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}, rule='required')
         if "exposed" in data:
             data_one_of_count6 = 0
             if data_one_of_count6 < 2:
@@ -742,11 +747,11 @@ def validate___definitions_environmentspec(data, custom_formats={}):
             data__description = data["description"]
             if not isinstance(data__description, (str)):
                 raise JsonSchemaValueException("data.description must be string", value=data__description, name="data.description", definition={'type': 'string'}, rule='type')
-        if "defaultValue" in data_keys:
-            data_keys.remove("defaultValue")
-            data__defaultValue = data["defaultValue"]
-            if not isinstance(data__defaultValue, (str)):
-                raise JsonSchemaValueException("data.defaultValue must be string", value=data__defaultValue, name="data.defaultValue", definition={'type': 'string'}, rule='type')
+        if "default" in data_keys:
+            data_keys.remove("default")
+            data__default = data["default"]
+            if not isinstance(data__default, (str)):
+                raise JsonSchemaValueException("data.default must be string", value=data__default, name="data.default", definition={'type': 'string'}, rule='type')
         if "exposed" in data_keys:
             data_keys.remove("exposed")
             data__exposed = data["exposed"]
@@ -757,12 +762,12 @@ def validate___definitions_environmentspec(data, custom_formats={}):
 
 def validate___definitions_deviceexecutablespec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['type']):
-            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
+            raise JsonSchemaValueException("data must contain ['type'] properties", value=data, name="data", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
         if "type" in data:
             data_one_of_count7 = 0
             if data_one_of_count7 < 2:
@@ -839,6 +844,11 @@ def validate___definitions_deviceexecutablespec(data, custom_formats={}):
             if data_one_of_count7 != 1:
                 raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
         data_keys = set(data.keys())
+        if "name" in data_keys:
+            data_keys.remove("name")
+            data__name = data["name"]
+            if not isinstance(data__name, (str)):
+                raise JsonSchemaValueException("data.name must be string", value=data__name, name="data.name", definition={'type': 'string'}, rule='type')
         if "type" in data_keys:
             data_keys.remove("type")
             data__type = data["type"]

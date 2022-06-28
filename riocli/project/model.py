@@ -36,7 +36,6 @@ class Project(Model):
 
     def create_object(self, client: Client) -> v1Project:
         project = client.create_project(self.to_v1())
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return project
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:

@@ -138,12 +138,19 @@ class Applier(object):
             self.objects[key] = data
             self.resolved_objects[key] = {'src' : 'local', 'manifest': data}
         except KeyError:
+            print("key error {}".format(data))
             return
 
     def _parse_dependency(self, dependent_key, model):
         for key, value in model.items():
-            if key == "depends" and value.get('kind'):
-                self._resolve_dependency(dependent_key, value)
+            if key == "depends" :
+                if 'kind' in value and value.get('kind'):
+                    self._resolve_dependency(dependent_key, value)
+                if isinstance(value, list):
+                    for each in value:
+                        if isinstance(each, dict) and each.get('kind'):
+                            self._resolve_dependency(dependent_key, each)
+
                 continue
 
             if isinstance(value, dict):
@@ -172,6 +179,9 @@ class Applier(object):
         dependency['guid'] = guid
         if kind.lower() == "disk":
             dependency['depGuid'] = obj['internalDeploymentGUID']
+        
+        if kind.lower() == "deployment":
+            dependency['guid'] = obj['deploymentId']
             
 
     def _resolve_dependency(self, dependent_key, dependency):
@@ -186,8 +196,8 @@ class Applier(object):
         for obj in obj_list:
             obj_guid = self._get_attr(obj, self.GUID_KEYS)
             obj_name = self._get_attr(obj, self.NAME_KEYS)
-
-
+            
+            
             if kind == 'package':
                 if (guid and obj_guid == guid):
                     self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
@@ -260,9 +270,9 @@ class ResolverCache(object):
         return self._list_functors(kind)()
 
     @functools.lru_cache()
-    def find_guid(self, name, kind):
+    def find_guid(self, name, kind, *args):
         obj_list = self.list_objects(kind)
-        return self._find_guid_functors(kind)(name, obj_list)
+        return self._find_guid_functors(kind)(name, obj_list, *args)
 
     def _list_functors(self, kind):
         mapping = {
@@ -285,7 +295,7 @@ class ResolverCache(object):
         mapping = {
             'secret': find_secret_guid,
             "project": self.client.list_projects,
-            "package": self.client.get_all_packages,
+            "package": lambda name, obj_list, version: filter(lambda x: name == x.name and version == x['packageVersion'], obj_list),
             "staticroute": self.client.get_all_static_routes,
             "build": self.client.list_builds,
             "deployment": functools.partial(self.client.get_all_deployments,

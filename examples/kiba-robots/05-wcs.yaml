@@ -1,0 +1,40 @@
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "wcs-kibarobots-apply"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_wcs
+  depends:
+    kind: package
+    nameOrGUID: sootballs_wcs
+    version: "v1.14.0-rc4-2"
+  labels: 
+    app: wcs
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_db
+    - kind: deployment
+      nameOrGUID: sootballs_ims
+  envArgs:
+    - name: CELERY_BROKER_URL
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    - name: CELERY_RESULT_BACKEND
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    - name: LOCAL_PRINT_SERVER_URL
+      value: " "
+    - name: SECRET_KEY
+      value: asdasd
+    - name: TIMEZONE
+      value: Asia/Tokyo
+    - name: WCS_DB
+      value: wcs_db
+
+       
+
+      

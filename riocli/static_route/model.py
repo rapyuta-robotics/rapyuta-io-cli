@@ -29,14 +29,12 @@ class StaticRoute(Model):
     def find_object(self, client: Client) -> bool:
         try:
             _find_static_route_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
             return True
         except StaticRouteNotFound:
             return False
 
     def create_object(self, client: Client) -> v1StaticRoute:
         static_route = client.create_static_route(self.metadata.name)
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return static_route
 
     def update_object(self, client: Client, obj: typing.Any) -> None:

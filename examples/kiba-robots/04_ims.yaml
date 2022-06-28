@@ -3,22 +3,22 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "ims-kibarobots-4"
+  name: "ims-kibarobots-apply"
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "minio-kibarobots-2"
+  name: "minio-kibarobots-apply"
 ---
 #sootballs_minio
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_minio_test
+  name: sootballs_minio
   depends:
     kind: package
     nameOrGUID: "MinIO File Server"
-    version: "v1.0.0"
+    version: "v1.0.11"
   labels: 
     app: ims
 spec:
@@ -32,7 +32,7 @@ spec:
     - name: FileStorage
       depends:
         kind: staticroute
-        nameOrGUID: minio-kibarobots-2
+        nameOrGUID: minio-kibarobots-apply
   volumes:
     - execName: minio_executable
       mountPath: "/data"
@@ -45,10 +45,10 @@ spec:
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_db_test
+  name: sootballs_db
   depends:
     kind: package
-    nameOrGUID: "Sootballs DB"
+    nameOrGUID: sootballs_db
     version: "v1.0.11"
   labels: 
     app: ims
@@ -78,16 +78,20 @@ spec:
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
-  name: sootballs_ims_testing2
+  name: sootballs_ims
   depends:
     kind: package
     nameOrGUID: "sootballs_ims"
     version: "v1.14.0-rc4-6"
   labels: 
     app: ims
-  project
 spec:
   runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_db
+    - kind: deployment
+      nameOrGUID: sootballs_minio
   envArgs:
     - name: AUTH_ENABLED
       value: "True"
@@ -121,7 +125,7 @@ spec:
     - name: IMS_URL
       depends:
         kind: staticroute
-        nameOrGUID: ims-kibarobots-4
+        nameOrGUID: ims-kibarobots-apply
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Disk"

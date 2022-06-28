@@ -74,7 +74,10 @@ class Deployment(Model):
         
                 
         # Add Dependent Deployment
-
+        if 'depends' in self.spec:
+            for item in self.spec.depends:
+                dep = client.get_deployment(item.guid)
+                provision_config.add_dependent_deployment(dep)
 
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
@@ -124,13 +127,14 @@ class Deployment(Model):
         return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        # print(self)
         
+        if 'depends' in self.spec:
+            print(self.spec.depends)
+
         pass
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
-
         pass
 
     @staticmethod

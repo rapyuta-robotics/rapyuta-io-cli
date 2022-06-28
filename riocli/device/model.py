@@ -36,9 +36,8 @@ class Device(Model):
             return False
 
     def create_object(self, client: Client) -> v1Device:
-        project = client.create_device(self.to_v1())
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
-        return project
+        device = client.create_device(self.to_v1())
+        return device
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass

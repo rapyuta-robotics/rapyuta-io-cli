@@ -36,7 +36,6 @@ class Build(Model):
 
     def create_object(self, client: Client) -> v1Build:
         build = client.create_build(build=self.to_v1())
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return build
 
     def update_object(self, client: Client, obj: typing.Any) -> None:

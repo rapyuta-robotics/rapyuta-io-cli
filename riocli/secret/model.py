@@ -37,7 +37,6 @@ class Secret(Model):
 
     def create_object(self, client: Client) -> v1Secret:
         secret = client.create_secret(self.to_v1())
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return secret
 
     def update_object(self, client: Client, obj: typing.Any) -> None:
