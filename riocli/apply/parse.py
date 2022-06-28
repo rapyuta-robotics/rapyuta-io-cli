@@ -65,10 +65,13 @@ class Applier(object):
     NAME_KEYS = ['name', 'urlPrefix']
 
     def __init__(self, files: typing.List):
+        self.input_file_paths = files
         self.config = Configuration()
         self.client = self.config.new_client()
         self.dependencies = {}
+        self.missing_resource = []
         self.objects = {}
+        self.resolved_objects = {}
         self.files = {}
         self.graph = TopologicalSorter()
         self.rc = ResolverCache(self.client)
@@ -86,14 +89,24 @@ class Applier(object):
     def apply(self):
         while self.graph.is_active():
             for obj in self.graph.get_ready():
-                self._apply_manifest(obj)
-                self.graph.done(obj)
+                if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
+                    self._apply_manifest(obj)
+                self.graph.done(obj)    
 
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
         ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', self.rc)
+        rc =  {
+            'cache': self.rc,
+            'dependencies': self.dependencies,
+            'missing': self.missing_resource,
+            'objects' : self.objects,
+            'resolved_objects': self.resolved_objects
+
+        }
+        setattr(ist, 'rc', munchify(rc))
+        # if obj_key.startswith('deployment'):
         ist.apply(self.client)
 
     def _read_files(self, files):
@@ -123,13 +136,21 @@ class Applier(object):
         try:
             key = self._get_object_key(data)
             self.objects[key] = data
+            self.resolved_objects[key] = {'src' : 'local', 'manifest': data}
         except KeyError:
+            print("key error {}".format(data))
             return
 
     def _parse_dependency(self, dependent_key, model):
         for key, value in model.items():
-            if key == "depends" and value.get('kind'):
-                self._resolve_dependency(dependent_key, value)
+            if key == "depends" :
+                if 'kind' in value and value.get('kind'):
+                    self._resolve_dependency(dependent_key, value)
+                if isinstance(value, list):
+                    for each in value:
+                        if isinstance(each, dict) and each.get('kind'):
+                            self._resolve_dependency(dependent_key, each)
+
                 continue
 
             if isinstance(value, dict):
@@ -140,6 +161,28 @@ class Applier(object):
                 for each in value:
                     if isinstance(each, dict):
                         self._parse_dependency(dependent_key, each)
+
+
+    def _add_remote_object_to_resolve_tree(self, dependent_key, guid, dependency, obj):
+        kind = dependency.get('kind')
+        name_or_guid = dependency.get('nameOrGUID')
+        key = '{}:{}'.format(kind, name_or_guid)
+
+        self.dependencies[kind][name_or_guid] = {'guid': guid, 'raw': obj, 'local': False}
+        if key not in self.resolved_objects:
+            self.resolved_objects[key] = {} 
+        self.resolved_objects[key]['guid'] = guid
+        self.resolved_objects[key]['raw'] = obj
+        self.resolved_objects[key]['src'] = 'remote'
+
+        self.graph.add(dependent_key, key)
+        dependency['guid'] = guid
+        if kind.lower() == "disk":
+            dependency['depGuid'] = obj['internalDeploymentGUID']
+        
+        if kind.lower() == "deployment":
+            dependency['guid'] = obj['deploymentId']
+            
 
     def _resolve_dependency(self, dependent_key, dependency):
         kind = dependency.get('kind')
@@ -153,21 +196,30 @@ class Applier(object):
         for obj in obj_list:
             obj_guid = self._get_attr(obj, self.GUID_KEYS)
             obj_name = self._get_attr(obj, self.NAME_KEYS)
-
-            if (guid and obj_guid == guid) or (name_or_guid == obj_name):
-                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
-                self.graph.add(dependent_key, key)
-                dependency['guid'] = obj_guid
-
+            
+            
+            if kind == 'package':
+                if (guid and obj_guid == guid):
+                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                
+                if (name_or_guid == obj_name) and ('version' in dependency and obj['packageVersion'] == dependency.get('version')):
+                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+            
             # Special handling for Static route since it doesn't have a name field.
             # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
-            if kind == 'staticroute' and name_or_guid in obj_name:
-                self.dependencies[kind][name_or_guid] = {'guid': obj_guid, 'raw': obj, 'local': False}
-                self.graph.add(dependent_key, key)
-                dependency['guid'] = obj_guid
+            elif kind == 'staticroute' and name_or_guid in obj_name:
+                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+
+            elif (guid and obj_guid == guid) or (name_or_guid == obj_name):
+                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
+        
+        if key not in self.resolved_objects:
+            self.resolved_objects[key] = {'src' : 'missing'}
+
 
     def order(self):
         return self.graph.static_order()
@@ -218,9 +270,9 @@ class ResolverCache(object):
         return self._list_functors(kind)()
 
     @functools.lru_cache()
-    def find_guid(self, name, kind):
+    def find_guid(self, name, kind, *args):
         obj_list = self.list_objects(kind)
-        return self._find_guid_functors(kind)(name, obj_list=obj_list)
+        return self._find_guid_functors(kind)(name, obj_list, *args)
 
     def _list_functors(self, kind):
         mapping = {
@@ -243,14 +295,14 @@ class ResolverCache(object):
         mapping = {
             'secret': find_secret_guid,
             "project": self.client.list_projects,
-            "package": self.client.get_all_packages,
+            "package": lambda name, obj_list, version: filter(lambda x: name == x.name and version == x['packageVersion'], obj_list),
             "staticroute": self.client.get_all_static_routes,
             "build": self.client.list_builds,
             "deployment": functools.partial(self.client.get_all_deployments,
                                             phases=[DeploymentPhaseConstants.SUCCEEDED,
                                                     DeploymentPhaseConstants.PROVISIONING]),
             "network": self._list_networks,
-            "disk": self._list_disks,
+            "disk": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
             "device": self.client.get_all_devices,
         }
 

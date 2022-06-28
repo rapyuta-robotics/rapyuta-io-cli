@@ -16,8 +16,7 @@
 # Run it from the Root of the repository inside virtual-environment.
 
 from yaml import safe_load
-from pathlib import Path
-
+from pathlib import Path, PurePosixPath
 from fastjsonschema import compile_to_code
 
 schema_dir = Path('jsonschema')
@@ -28,8 +27,9 @@ schema_dir = Path('jsonschema')
 
 for schema in schema_dir.glob('*-schema.yaml'):
     print("processed {}".format(schema))
-    module = Path('riocli').\
-        joinpath(schema.stem.removesuffix('-schema')).\
+    base_path = Path('riocli').joinpath(schema)
+    module_name = Path(base_path).stem.replace("-schema", "")
+    module = Path('riocli').joinpath(module_name).\
         joinpath('validation.py')
     with open(schema) as f:
         body = safe_load(f.read())

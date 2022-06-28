@@ -11,10 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from genericpath import isdir
+import graphlib
 import json
 import typing
+import os
+import glob 
 
 import click
+from pyparsing import line
 import yaml
 from click_help_colors import HelpColorsCommand
 from rapyuta_io import Client
@@ -42,7 +47,7 @@ KIND_TO_CLASS = {
     'Deployment': Deployment,
 }
 
-
+PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
 @click.command(
     'apply',
     hidden=True,
@@ -50,31 +55,75 @@ KIND_TO_CLASS = {
     help_headers_color='yellow',
     help_options_color='green',
 )
-@click.argument('files', nargs=-1)
-def apply(files: typing.List[str]) -> None:
+@click.argument('files')
+def apply(files: str) -> None:
     """
     Apply resource manifests
     """
-    if len(files) == 0:
+    abs_path = os.path.abspath(files)
+    glob_files = []
+    if(os.path.exists(abs_path)):
+        if(os.path.isdir(abs_path)):
+            glob_files = glob.glob( abs_path+"/**/*", recursive=True)
+        else:
+            glob_files = [files]
+    
+    if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    rc = Applier(files)
+    rc = Applier(glob_files)
     rc.parse_dependencies()
+    missing_resources = []        
+    for key, item in rc.resolved_objects.items():
+        if 'src' in item and item['src'] == 'missing':
+            missing_resources.append(key)
+
+    if(missing_resources):
+        click.secho("missing resources found in yaml. " + \
+                        "Plese ensure the following are either available in your yaml" + \
+                        "or created on the server. {}".format(set(missing_resources))
+                    , fg="red")
+        exit(1)
+
     rc.apply()
 
 
-    # try:
-    # Don't use the Context Client, Project can change
-    # config = Configuration()
-    # project = config.data.get('project_id', None)
-    # client = config.new_client(with_project=False)
-    #
-    # for f in files:
-    #     client.set_project(project)
-    #
-    #     # Let the apply_file overwrite Project
-    #     apply_file(client, f)
-    # except Exception as e:
-    #     click.secho(str(e), fg='red')
-    #     exit(1)
+def apply_manifest(client: Client, manifest: str) -> None:
+    cls = get_model(manifest)
+    ist = cls.from_dict(client, manifest)
+    if manifest['kind'].lower() == "deployment":
+        ist.apply(client)
+
+
+def get_model(data: dict) -> typing.Any:
+    kind = data.get('kind', None)
+    if not kind:
+        raise Exception('kind is missing')
+
+    cls = KIND_TO_CLASS.get(kind, None)
+    if not cls:
+        raise Exception('invalid kind {}'.format(kind))
+
+    return cls
+
+
+#TODO very ghetto explain command
+@click.command(
+    'explain',
+    hidden=True,
+    cls=HelpColorsCommand,
+    help_headers_color='yellow',
+    help_options_color='green',
+)
+@click.argument('resource')
+@click.argument('template_root', default= os.path.abspath(os.path.join(PKG_ROOT, '../../examples/manifests')))
+def explain(resource: str, template_root: str) -> None:
+    glob_files = glob.glob( template_root+"/**/*", recursive=True)
+    for file in glob_files:
+        if resource in os.path.basename(file):
+            with open(file) as f:
+                lines = ["---\n"]
+                lines.extend(f.readlines())
+                lines.extend(["---\n"])
+                click.secho("".join(lines))

@@ -105,6 +105,8 @@ definitions:
   deviceExecutableSpec:
     type: object
     properties:
+      name: 
+        type: string
       type:
         type: string
         default: docker
@@ -154,6 +156,8 @@ definitions:
   cloudExecutableSpec:
     type: object
     properties:
+      name: 
+        type: string
       type:
         type: string
         default: docker
@@ -172,9 +176,13 @@ definitions:
         type: object
         properties:
           cpu:
-            type: string
+            type: number
+            min: 0.1
+            max: 8
           memory:
-            type: string
+            type: number
+            min: 256
+            max: 32678
     required:
       - type
     dependencies:
@@ -331,7 +339,7 @@ definitions:
         type: string
       description:
         type: string
-      defaultValue:
+      default:
         type: string
       exposed:
         type: boolean
@@ -448,7 +456,7 @@ definitions:
                 enum:
                   - low
                   - medium
-                  - high
+                  - hi
                   - max
                 default: low
           - properties:

@@ -56,12 +56,14 @@ def get_disk_name(client: Client, guid: str) -> str:
 
 
 def find_disk_guid(client: Client, name: str) -> str:
-    disks = _api_call(HttpMethod.GET)
-    for disk in disks:
-        if disk['name'] == name:
-            return disk['guid']
-
-    raise DiskNotFound()
+    try: 
+        disks = _api_call(HttpMethod.GET)
+        for disk in disks:
+            if disk['name'] == name:
+                return disk['guid']
+        raise DiskNotFound()
+    except Exception:
+        raise DiskNotFound()
 
 
 def _api_call(method: str, guid: typing.Union[str, None] = None,
