@@ -43,15 +43,15 @@ class Device(Model):
         pass
 
     def to_v1(self) -> v1Device:
-        python_version = DevicePythonVersion(str(self.spec.python))
+        python_version = DevicePythonVersion(self.spec.python)
         runtime = self._get_runtime()
         rosbag_mount_path = None
         ros_workspace = None
 
         if runtime == DeviceRuntime.DOCKER:
-            rosbag_mount_path = self.spec.rosbagMountPath
+            rosbag_mount_path = self.spec.docker.rosbagMountPath
         else:
-            ros_workspace = self.spec.catkinWorkspace
+            ros_workspace = self.spec.preinstalled.catkinWorkspace
 
         return v1Device(name=self.metadata.name, description=self.spec.get('description'),
                         runtime=runtime, ros_distro=self.spec.rosDistro,
@@ -59,10 +59,14 @@ class Device(Model):
                         ros_workspace=ros_workspace)
 
     def _get_runtime(self) -> DeviceRuntime:
-        if self.spec.runtime == 'Docker':
+        # TODO: Get rid of it once we support both runtimes on same device.
+        if self.spec.get('docker') and self.spec.docker.enabled:
             return DeviceRuntime.DOCKER
-        else:
+
+        if self.spec.get('preinstalled') and self.spec.preinstalled.enabled:
             return DeviceRuntime.PREINSTALLED
+
+        raise Exception('select atleast one device runtime')
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
