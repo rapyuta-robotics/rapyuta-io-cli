@@ -272,7 +272,42 @@ class ResolverCache(object):
     @functools.lru_cache()
     def find_guid(self, name, kind, *args):
         obj_list = self.list_objects(kind)
-        return self._find_guid_functors(kind)(name, obj_list, *args)
+        obj_match = list(self._find_functors(kind)(name, obj_list, *args))
+        if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
+            return obj_match[0]
+        else:
+            return None
+
+    def find_depends(self, depends, *args):
+        if 'depGuid' in depends and depends['kind'] == 'disk':
+            return depends['depGuid'], None
+        elif 'guid' in depends :
+            return depends['guid'], None
+        
+        elif 'nameOrGUID' in depends:
+            obj_list =  self._list_functors(depends['kind'])()
+            obj_match = list(self._find_functors(depends['kind'])(depends['nameOrGUID'], obj_list, *args))
+            if not obj_list or (isinstance(obj_list, list) and len(obj_list) == 0):
+                return None
+            if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
+                return self._guid_functor(depends['kind'])(obj_match[0]), obj_match[0]
+            else:
+                return None
+        return None
+
+    def _guid_functor(self, kind):
+        mapping = {
+            'secret': lambda x: munchify(x).guid,
+            "project": lambda x: munchify(x).guid,
+            "package": lambda x: munchify(x)['id'],
+            "staticroute": lambda x: munchify(x)['guid'],
+            "build": lambda x: munchify(x)['guid'],
+            "deployment": lambda x: munchify(x)['deploymentId'],
+            "network": lambda x: munchify(x)['guid'],
+            "disk": lambda x: munchify(x)['internalDeploymentGUID'], #This is only temporarity like this
+            "device": lambda x: munchify(x)['uuid']
+        }
+        return mapping[kind]
 
     def _list_functors(self, kind):
         mapping = {
@@ -291,19 +326,17 @@ class ResolverCache(object):
 
         return mapping[kind]
 
-    def _find_guid_functors(self, kind):
+    def _find_functors(self, kind):
         mapping = {
-            'secret': find_secret_guid,
-            "project": self.client.list_projects,
+            'secret': lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
+            "project": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
             "package": lambda name, obj_list, version: filter(lambda x: name == x.name and version == x['packageVersion'], obj_list),
-            "staticroute": self.client.get_all_static_routes,
-            "build": self.client.list_builds,
-            "deployment": functools.partial(self.client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING]),
-            "network": self._list_networks,
+            "staticroute": lambda name, obj_list: filter(lambda x: name in x.name,  obj_list),
+            "build": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
+            "deployment": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
+            "network": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
             "disk": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
-            "device": self.client.get_all_devices,
+            "device": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
         }
 
         return mapping[kind]

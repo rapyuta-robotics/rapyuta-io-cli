@@ -29,12 +29,13 @@ class Package(Model):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
+    
     def find_object(self, client: Client):
         try:
-            guid =  list(self.rc.cache.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version ))
-            if guid and isinstance(guid, list) and len(guid) > 0:
+            obj =  self.rc.cache.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version )
+            if obj:
                 click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-                return True
+                return obj
             else:
                 return False
         except Exception as e:
@@ -191,14 +192,15 @@ class Package(Model):
         
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
-            if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                exec_object.secret = exec.docker.pullSecret.depends.guid
+            if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
+                secret_guid, secret =  self.rc.cache.find_depends(exec.docker.pullSecret.depends)
+                exec_object.secret = secret_guid
             
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid
             #TODO verify this is right for secret?
-            if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                exec_object.secret = exec.docker.pullSecret.depends.guid
+            # if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
+                # exec_object.secret = exec.docker.pullSecret.depends.guid
         
         #TODO handle preinstalled
         
