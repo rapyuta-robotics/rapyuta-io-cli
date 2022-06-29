@@ -20,33 +20,41 @@ from datetime import datetime
 
 from riocli.project.util import find_project_guid
 import click
+import os
+rows, columns = os.popen('stty size', 'r').read().split()
+
+prompt = ">> {}{}{} [{}]"  #>> msg  spacer  rigth_msg time
+def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
+        time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")        
+        spacer = ' '*(int(columns) - len(msg+ right_msg + time) - 12)
+        msg = prompt.format(msg, spacer, right_msg, time)
+        click.secho(msg, fg=fg)
+     
 
 class Model(ABC, Munch):
-
+    
     def apply(self, client: Client, *args, **kwargs) -> typing.Any:
         try:
             self._set_project_in_client(client)
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
-            prompt = ">> [{}]"
-            prompt = prompt.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             if not obj:
                 if dryrun:
-                    click.secho("{} Create {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
+                    message_with_prompt("⌛ Create {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 else:
                     result = self.create_object(client)
-                    click.secho("{} Created {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='green')
+                    message_with_prompt("✅ Created {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
                     return result
             else:
-                click.echo('{} [INFO] {}/{} {} exists'.format(prompt, self.apiVersion, self.kind, self.metadata.name))
+                message_with_prompt('🔎 {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
                 if dryrun:
-                    click.secho("{} Update {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
+                    message_with_prompt("⌛ Update {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 else:
                     result = self.update_object(client, obj)
-                    click.secho("{} Updated {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='green')
+                    message_with_prompt("✅ Updated {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
                     return result
         except Exception as e:
-            click.secho("{} !!! [ERR {}:{}] {} !!!".format(prompt, self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            message_with_prompt("‼ ERR {}:{}.  {} ‼".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
 
     def delete(self, client: Client, obj: typing.Any, *args, **kwargs):
@@ -54,20 +62,18 @@ class Model(ABC, Munch):
             self._set_project_in_client(client)
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
-            prompt = ">> [{}]"
-            prompt = prompt.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-
+        
             if not obj:
-                click.echo('{} {}/{} {} does not exists'.format(prompt, self.apiVersion, self.kind, self.metadata.name))
+                message_with_prompt('⁉ {} {}/{} {} does not exists'.format(self.apiVersion, self.kind, self.metadata.name))
                 return
             
             if not dryrun:
                 self.delete_object(client, obj)
-                click.secho("{} Deleted {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='red')
+                message_with_prompt("❌ Deleted {}:{}".format(self.kind.lower(), self.metadata.name), fg='red')
             else:
-                click.secho("{} Delete {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
+                message_with_prompt("⌛ Delete {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
         except Exception as e:
-            click.secho("{} !!! [ERR {}:{}] {} !!!".format(prompt, self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            message_with_prompt("‼ ERR {}:{}. {} ‼".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
 
     @abstractmethod
