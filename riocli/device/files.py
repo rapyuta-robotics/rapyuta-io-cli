@@ -170,11 +170,11 @@ def shared_url(device_name: str, device_guid: str, file_name: str, request_id: s
 
 def _display_upload_list(uploads: LogUploads, show_header: bool = True) -> None:
     if show_header:
-        click.secho('{:34} {:20} {:16} {:<12} {:64}'.
-                    format('Upload ID', 'Name', 'Status', 'Total Size', 'Error'),
+        click.secho('{:34} {:20} {:16} {:<12}'.
+                    format('Upload ID', 'Name', 'Status', 'Total Size'),
                     fg='yellow')
 
     for upload in uploads:
-        click.secho('{:34} {:20} {:16} {:<12} {:64}'.format(upload.request_uuid, upload.filename, upload.status,
-                                                           upload.total_size, upload.error_message))
+        click.secho('{:34} {:20} {:16} {:<12}'.format(upload.request_uuid, upload.filename, upload.status,
+                                                            upload.total_size))
 
