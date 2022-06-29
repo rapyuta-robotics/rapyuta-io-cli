@@ -11,17 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from dis import dis
 import typing
 
 import click
-from munch import munchify
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
 
-from riocli.deployment.validation import validate
 from riocli.deployment.util import find_deployment_guid, DeploymentNotFound
+from riocli.deployment.validation import validate
 from riocli.model import Model
 from riocli.package.util import find_package_guid
 from riocli.static_route.util import find_static_route_guid

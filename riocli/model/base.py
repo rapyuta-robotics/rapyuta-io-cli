@@ -53,6 +53,10 @@ class Model(ABC, Munch):
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
+    @abstractmethod
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        pass
+
     @classmethod
     @abstractmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

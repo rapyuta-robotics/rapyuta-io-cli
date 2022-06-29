@@ -13,12 +13,11 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Client
 from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
 from riocli.model import Model
-from riocli.static_route.util import StaticRouteNotFound, find_static_route_guid
+from riocli.static_route.util import StaticRouteNotFound
 from riocli.static_route.validation import validate
 
 
@@ -27,11 +26,11 @@ class StaticRoute(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            _find_static_route_guid(client, self.metadata.name)
-            return True
-        except StaticRouteNotFound:
-            return False
+        static_routes = self.rc.find_guid(self.metadata.name, 'staticroute')
+        if len(static_routes) != 0:
+            raise StaticRouteNotFound()
+
+        return static_routes[0]
 
     def create_object(self, client: Client) -> v1StaticRoute:
         static_route = client.create_static_route(self.metadata.name)
@@ -40,6 +39,8 @@ class StaticRoute(Model):
     def update_object(self, client: Client, obj: typing.Any) -> None:
         pass
 
+    def delete_object(self, client: Client, obj: typing.Any):
+        client.delete_static_route(obj.guid)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
@@ -48,18 +49,3 @@ class StaticRoute(Model):
     @staticmethod
     def validate(data) -> None:
         validate(data)
-
-
-def _find_static_route_guid(client: Client, name: str) -> str:
-    """
-    This method is re-implemented because the default find method for name_to_guid decorator does direct match of the
-    urlPrefix without splitting the Org Short GUID.
-    """
-    routes = client.get_all_static_routes()
-    for route in routes:
-        route_parts = route.urlPrefix.split("-")
-
-        if "-".join(route_parts[:-1]) == name:
-            return route.guid
-
-    raise StaticRouteNotFound()

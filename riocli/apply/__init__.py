@@ -11,18 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from genericpath import isdir
-import graphlib
-import json
-import typing
+import glob
 import os
-import glob 
 
 import click
-from pyparsing import line
-import yaml
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import Client
 
 from riocli.apply.parse import Applier
 from riocli.build.model import Build
