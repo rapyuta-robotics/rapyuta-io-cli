@@ -39,17 +39,15 @@ class Model(ABC, Munch):
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
             if not obj:
-                if dryrun:
-                    message_with_prompt("⌛ Create {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                else:
+                message_with_prompt("⌛ Create {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                if not dryrun:
                     result = self.create_object(client)
                     message_with_prompt("✅ Created {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
                     return result
             else:
                 message_with_prompt('🔎 {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-                if dryrun:
-                    message_with_prompt("⌛ Update {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                else:
+                message_with_prompt("⌛ Update {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                if not dryrun:
                     result = self.update_object(client, obj)
                     message_with_prompt("✅ Updated {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
                     return result
@@ -66,12 +64,12 @@ class Model(ABC, Munch):
             if not obj:
                 message_with_prompt('⁉ {} {}/{} {} does not exists'.format(self.apiVersion, self.kind, self.metadata.name))
                 return
-            
-            if not dryrun:
-                self.delete_object(client, obj)
-                message_with_prompt("❌ Deleted {}:{}".format(self.kind.lower(), self.metadata.name), fg='red')
             else:
                 message_with_prompt("⌛ Delete {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+                if not dryrun:
+                    self.delete_object(client, obj)
+                    message_with_prompt("❌ Deleted {}:{}".format(self.kind.lower(), self.metadata.name), fg='red')
+                
         except Exception as e:
             message_with_prompt("‼ ERR {}:{}. {} ‼".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
