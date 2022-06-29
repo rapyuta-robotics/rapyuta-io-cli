@@ -35,6 +35,13 @@ from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
 from riocli.secret.util import find_secret_guid
 
+class _Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 class Applier(object):
     KIND_TO_CLASS = {
@@ -69,7 +76,6 @@ class Applier(object):
         self.config = Configuration()
         self.client = self.config.new_client()
         self.dependencies = {}
-        self.missing_resource = []
         self.objects = {}
         self.resolved_objects = {}
         self.files = {}
@@ -86,6 +92,18 @@ class Applier(object):
 
         self.graph.prepare()
 
+        missing_resources = []
+        for key, item in self.resolved_objects.items():
+            if 'src' in item and item['src'] == 'missing':
+                missing_resources.append(key)
+
+        if(missing_resources):
+            click.secho("missing resources found in yaml. " + \
+                            "Plese ensure the following are either available in your yaml" + \
+                            "or created on the server. {}".format(set(missing_resources))
+                        , fg="red")
+            exit(1)
+
     def apply(self):
         while self.graph.is_active():
             for obj in self.graph.get_ready():
@@ -97,16 +115,7 @@ class Applier(object):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
         ist = cls.from_dict(self.client, obj)
-        rc =  {
-            'cache': self.rc,
-            'dependencies': self.dependencies,
-            'missing': self.missing_resource,
-            'objects' : self.objects,
-            'resolved_objects': self.resolved_objects
-
-        }
-        setattr(ist, 'rc', munchify(rc))
-        # if obj_key.startswith('deployment'):
+        setattr(ist, 'rc', ResolverCache(self.client))
         ist.apply(self.client)
 
     def _read_files(self, files):
@@ -261,7 +270,7 @@ class Applier(object):
         return kind_cls
 
 
-class ResolverCache(object):
+class ResolverCache(object, metaclass=_Singleton):
     def __init__(self, client):
         self.client = client
 
@@ -293,20 +302,23 @@ class ResolverCache(object):
 
     def _find_guid_functors(self, kind):
         mapping = {
-            'secret': find_secret_guid,
-            "project": self.client.list_projects,
+            'secret': self._generate_find_guid_functor(),
+            "project": self._generate_find_guid_functor(),
             "package": lambda name, obj_list, version: filter(lambda x: name == x.name and version == x['packageVersion'], obj_list),
-            "staticroute": self.client.get_all_static_routes,
-            "build": self.client.list_builds,
-            "deployment": functools.partial(self.client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING]),
-            "network": self._list_networks,
-            "disk": lambda name, obj_list: filter(lambda x: name == x.name,  obj_list),
-            "device": self.client.get_all_devices,
+            "staticroute": lambda name, obj_list: filter(lambda x: name == '-'.join(x.urlPrefix.split('-')[:-1]), obj_list),
+            "build": self._generate_find_guid_functor(),
+            "deployment": self._generate_find_guid_functor(),
+            "network": self._generate_find_guid_functor(),
+            "disk": self._generate_find_guid_functor(),
+            "device": self._generate_find_guid_functor(),
         }
 
         return mapping[kind]
+
+
+    def _generate_find_guid_functor(self, name_field='name'):
+        return lambda name, obj_list: filter(lambda x: name == getattr(x, name_field), obj_list)
+
 
     def _list_networks(self):
         native = self.client.list_native_networks()

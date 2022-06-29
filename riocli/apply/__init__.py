@@ -74,26 +74,8 @@ def apply(files: str) -> None:
 
     rc = Applier(glob_files)
     rc.parse_dependencies()
-    missing_resources = []        
-    for key, item in rc.resolved_objects.items():
-        if 'src' in item and item['src'] == 'missing':
-            missing_resources.append(key)
-
-    if(missing_resources):
-        click.secho("missing resources found in yaml. " + \
-                        "Plese ensure the following are either available in your yaml" + \
-                        "or created on the server. {}".format(set(missing_resources))
-                    , fg="red")
-        exit(1)
 
     rc.apply()
-
-
-def apply_manifest(client: Client, manifest: str) -> None:
-    cls = get_model(manifest)
-    ist = cls.from_dict(client, manifest)
-    if manifest['kind'].lower() == "deployment":
-        ist.apply(client)
 
 
 def get_model(data: dict) -> typing.Any:
