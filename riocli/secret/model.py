@@ -28,12 +28,11 @@ class Secret(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            find_secret_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
-        except SecretNotFound:
+        _, secret = self.rc.find_depends({'kind': 'secret', 'nameOrGUID': self.metadata.name})
+        if not secret:
             return False
+
+        return secret
 
     def create_object(self, client: Client) -> v1Secret:
         secret = client.create_secret(self.to_v1())
@@ -41,6 +40,9 @@ class Secret(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> None:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        client.delete_secret(obj.guid)
 
     def to_v1(self) -> v1Secret:
         if self.spec.type == 'Docker':

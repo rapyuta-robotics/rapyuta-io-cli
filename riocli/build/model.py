@@ -27,12 +27,11 @@ class Build(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            find_build_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
-        except BuildNotFound:
+        guid, obj = self.rc.find_depends({"kind": "build", "nameOrGUID": self.metadata.name})
+        if not guid:
             return False
+
+        return obj
 
     def create_object(self, client: Client) -> v1Build:
         build = client.create_build(build=self.to_v1())
@@ -40,6 +39,9 @@ class Build(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> None:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        obj.delete()
 
     def to_v1(self) -> v1Build:
         build_opts = None

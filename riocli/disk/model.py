@@ -26,14 +26,11 @@ from riocli.model import Model
 
 class Disk(Model):
     def find_object(self, client: Client) -> typing.Any:
-        try:
-            guid =  self.rc.find_guid(self.metadata.name, self.kind.lower())
-            if guid:
-                return guid
-            else:
-                return False
-        except DiskNotFound:
+        _, disk = self.rc.find_depends({'kind': 'disk', 'nameOrGUID': self.metadata.name})
+        if not disk:
             return False
+
+        return disk
 
     def create_object(self, client: Client) -> typing.Any:
         labels = self.metadata.get('labels', None)
@@ -45,7 +42,7 @@ class Disk(Model):
             "capacity": self.spec.capacity,
         }
         with click_spinner.spinner():
-            result =  _api_call(HttpMethod.POST, payload=payload)
+            result = _api_call(HttpMethod.POST, payload=payload)
             result = munchify(result)
             disk_dep_guid, disk = self.rc.find_depends({'kind': self.kind.lower(), 'nameOrGUID':self.metadata.name})
             volume_instance = client.get_volume_instance(disk_dep_guid)
@@ -58,6 +55,22 @@ class Disk(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        self._poll_till_available(client, obj)
+        volume_instance = client.get_volume_instance(obj.internalDeploymentGUID)
+        volume_instance.destroy_volume_instance()
+
+    def _poll_till_available(self, client: Client, obj: typing.Any, sleep_interval=5, retries=10):
+        dep_guid = obj.internalDeploymentGUID
+        deployment = client.get_deployment(deployment_id=dep_guid)
+
+        for _ in range(retries):
+            status = deployment.get_status().status
+            if status != 'Available':
+                sleep(sleep_interval)
+                continue
+
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

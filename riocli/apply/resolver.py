@@ -78,19 +78,19 @@ class ResolverCache(object, metaclass=_Singleton):
     def find_depends(self, depends, *args):
         if 'depGuid' in depends and depends['kind'] == 'disk':
             return depends['depGuid'], None
-        elif 'guid' in depends :
+        elif 'guid' in depends:
             return depends['guid'], None
         
         elif 'nameOrGUID' in depends:
-            obj_list =  self._list_functors(depends['kind'])()
+            obj_list = self._list_functors(depends['kind'])()
             obj_match = list(self._find_functors(depends['kind'])(depends['nameOrGUID'], obj_list, *args))
             if not obj_list or (isinstance(obj_list, list) and len(obj_list) == 0):
-                return None
+                return None, None
             if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
                 return self._guid_functor(depends['kind'])(obj_match[0]), obj_match[0]
             else:
-                return None
-        return None
+                return None, None
+        return None, None
 
     def _guid_functor(self, kind):
         mapping = {

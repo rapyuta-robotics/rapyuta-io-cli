@@ -29,19 +29,13 @@ class Package(Model):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
-    
     def find_object(self, client: Client):
-        try:
-            obj =  self.rc.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version )
-            if obj:
-                click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-                return obj
-            else:
-                return False
-        except Exception as e:
-            print(str(e))
+        guid, obj = self.rc.find_depends({"kind":  self.kind.lower(), "nameOrGUID": self.metadata.name},
+                                         self.metadata.version)
+        if not guid:
             return False
-        pass
+
+        return obj
 
     def create_object(self, client: Client):
         # click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
@@ -150,6 +144,9 @@ class Package(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        client.delete_package(obj.packageId)
 
     def to_v1(self):
         # return v1Project(self.metadata.name)

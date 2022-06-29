@@ -27,12 +27,11 @@ class Project(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            find_project_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
-        except ProjectNotFound:
+        guid, obj = self.rc.find_depends({"kind": "project", "nameOrGUID": self.metadata.name})
+        if not guid:
             return False
+
+        return obj
 
     def create_object(self, client: Client) -> v1Project:
         project = client.create_project(self.to_v1())
@@ -40,6 +39,9 @@ class Project(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        obj.delete()
 
     def to_v1(self) -> v1Project:
         return v1Project(self.metadata.name)

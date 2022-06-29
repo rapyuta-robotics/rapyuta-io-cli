@@ -13,6 +13,7 @@
 # limitations under the License.
 import typing
 
+import click
 from rapyuta_io import Client
 from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
@@ -26,11 +27,11 @@ class StaticRoute(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        static_routes = self.rc.find_guid(self.metadata.name, 'staticroute')
-        if len(static_routes) != 0:
-            raise StaticRouteNotFound()
+        _, static_route = self.rc.find_depends({"kind": "staticroute", "nameOrGUID": self.metadata.name})
+        if not static_route:
+            return False
 
-        return static_routes[0]
+        return static_route
 
     def create_object(self, client: Client) -> v1StaticRoute:
         static_route = client.create_static_route(self.metadata.name)

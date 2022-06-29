@@ -35,39 +35,37 @@ class Deployment(Model):
         'never': RestartPolicy.Never,
         'onFailure': RestartPolicy.OnFailure
     }
+
     def find_object(self, client: Client) -> typing.Any:
-        try:
-            deployment = find_deployment_guid(client, self.metadata.name)
-            return deployment
-        except DeploymentNotFound:
+        guid, obj = self.rc.find_depends({"kind": "deployment", "nameOrGUID": self.metadata.name})
+        if not guid:
             return False
 
-    
+        return obj
+
     def create_object(self, client: Client) -> typing.Any:
         pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
         if pkg is None and pkg_guid:
             pkg = client.get_package(pkg_guid)
         pkg.update()
-        
+
         default_plan = pkg['plans'][0]
         internal_component = default_plan['internalComponents'][0]
 
         __planId = default_plan['planId']
         __componentName = internal_component.componentName
         runtime = internal_component['runtime']
-        
-        if 'runtime' in self.spec and runtime != self.spec.runtime :
-            click.secho('>> runtime mismatch => ' +\
-                    'deployment:{}.runtime !== package:{}.runtime '.format(
-                        self.metadata.name, pkg['packageName']
-                    ), fg="red"
-                )
+
+        if 'runtime' in self.spec and runtime != self.spec.runtime:
+            click.secho('>> runtime mismatch => ' + \
+                        'deployment:{}.runtime !== package:{}.runtime '.format(
+                            self.metadata.name, pkg['packageName']
+                        ), fg="red"
+                        )
             pass
 
-
-        
         provision_config = pkg.get_provision_configuration(__planId)
-        
+
         # add label
         if 'labels' in self.metadata:
             for key, value in self.metadata.labels.items():
@@ -77,8 +75,7 @@ class Deployment(Model):
         if 'envArgs' in self.spec:
             for items in self.spec.envArgs:
                 provision_config.add_parameter(__componentName, items.name, items.value)
-        
-                
+
         # Add Dependent Deployment
         if 'depends' in self.spec:
             for item in self.spec.depends:
@@ -102,20 +99,21 @@ class Deployment(Model):
                     disk_guid, disk = self.rc.find_depends(vol.depends)
                     if not disk_guid in disk_mounts:
                         disk_mounts[disk_guid] = []
-                    
+
                     disk_mounts[disk_guid].append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
-                
+
                 for disk_guid in disk_mounts.keys():
                     disk = client.get_volume_instance(disk_guid)
-                    provision_config.mount_volume(__componentName,volume=disk, executable_mounts=disk_mounts[disk_guid])
+                    provision_config.mount_volume(__componentName, volume=disk,
+                                                  executable_mounts=disk_mounts[disk_guid])
 
             # Add Network
             # if self.spec.rosNetworks:
-                # for network in self.spec.rosNetworks:
-                    # network_type = 
-        
+            # for network in self.spec.rosNetworks:
+            # network_type =
+
         if self.spec.runtime == 'device':
-            device_guid , device  =  self.rc.find_depends(self.spec.depends)
+            device_guid, device = self.rc.find_depends(self.spec.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
             provision_config.add_device(__componentName, device=device)
@@ -125,24 +123,28 @@ class Deployment(Model):
 
             # Add Network
             # if self.spec.rosNetworks:
-                # for network in self.spec.rosNetworks:
-                    # network_type = 
+            # for network in self.spec.rosNetworks:
+            # network_type =
 
-                        # Add Disk
+            # Add Disk
             if 'volumes' in self.spec.volumes:
                 exec_mounts = []
                 for vol in self.spec.volumes:
-                    exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))        
-                provision_config.mount_volume(__componentName,device=device, executable_mounts=exec_mounts)
+                    exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+                provision_config.mount_volume(__componentName, device=device, executable_mounts=exec_mounts)
 
         deployment = pkg.provision(self.metadata.name, provision_config)
         deployment.poll_deployment_till_ready()
+        deployment.get_status()
         return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         if 'depends' in self.spec:
             pass
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        obj.deprovision()
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
@@ -174,7 +176,6 @@ class Deployment(Model):
 
         native_networks = client.list_native_networks()
         routed_networks = client.get_all_routed_networks()
-
 
     def _configure_disks(self, client: Client, prov_config: ProvisionConfiguration, component: str):
         if not self.spec.get('volumes'):

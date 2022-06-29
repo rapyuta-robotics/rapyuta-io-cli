@@ -28,12 +28,11 @@ class Device(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            find_device_guid(client, self.metadata.name)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-            return True
-        except DeviceNotFound:
+        guid, obj = self.rc.find_depends({"kind": "device", "nameOrGUID": self.metadata.name})
+        if not guid:
             return False
+
+        return obj
 
     def create_object(self, client: Client) -> v1Device:
         device = client.create_device(self.to_v1())
@@ -41,6 +40,9 @@ class Device(Model):
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        obj.delete()
 
     def to_v1(self) -> v1Device:
         python_version = DevicePythonVersion(self.spec.python)

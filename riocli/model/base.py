@@ -35,12 +35,28 @@ class Model(ABC, Munch):
             else:
                 click.echo('>> {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
                 click.secho("Updating {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                result=self.update_object(client, obj)
+                result = self.update_object(client, obj)
                 # click.secho("Updated {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 return result
         except Exception as e:
             click.secho(">> !!! [ERR {}:{}] {} !!!".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
+
+    def delete(self, client: Client, obj: typing.Any):
+        try:
+            self._set_project_in_client(client)
+            obj = self.find_object(client)
+
+            if not obj:
+                click.echo('>> {}/{} {} does not exists'.format(self.apiVersion, self.kind, self.metadata.name))
+                return
+
+            click.secho("Deleting {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
+            self.delete_object(client, obj)
+        except Exception as e:
+            click.secho(">> !!! [ERR {}:{}] {} !!!".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            raise e
+
     @abstractmethod
     def find_object(self, client: Client) -> typing.Any:
         pass
@@ -53,6 +69,7 @@ class Model(ABC, Munch):
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
+    @staticmethod
     @abstractmethod
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
