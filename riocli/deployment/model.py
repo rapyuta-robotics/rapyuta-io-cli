@@ -45,13 +45,14 @@ class Deployment(Model):
 
     def create_object(self, client: Client) -> typing.Any:
         pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
-        if pkg is None and pkg_guid:
+        
+        if pkg_guid:
             pkg = client.get_package(pkg_guid)
         pkg.update()
 
         default_plan = pkg['plans'][0]
         internal_component = default_plan['internalComponents'][0]
-
+            
         __planId = default_plan['planId']
         __componentName = internal_component.componentName
         runtime = internal_component['runtime']

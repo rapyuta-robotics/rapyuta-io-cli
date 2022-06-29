@@ -16,45 +16,58 @@ from abc import ABC, abstractmethod
 
 from munch import Munch, munchify
 from rapyuta_io import Client
+from datetime import datetime
 
 from riocli.project.util import find_project_guid
 import click
 
 class Model(ABC, Munch):
 
-    def apply(self, client: Client) -> typing.Any:
+    def apply(self, client: Client, *args, **kwargs) -> typing.Any:
         try:
             self._set_project_in_client(client)
             obj = self.find_object(client)
-        
+            dryrun = kwargs.get("dryrun", False)
+            prompt = ">> [{}]"
+            prompt = prompt.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             if not obj:
-                click.secho("Creating {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
-                result = self.create_object(client)
-                # click.secho("Created {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                return result
+                if dryrun:
+                    click.secho("{} Create {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
+                else:
+                    result = self.create_object(client)
+                    click.secho("{} Created {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='green')
+                    return result
             else:
-                click.echo('>> {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-                click.secho("Updating {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                result = self.update_object(client, obj)
-                # click.secho("Updated {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-                return result
+                click.echo('{} [INFO] {}/{} {} exists'.format(prompt, self.apiVersion, self.kind, self.metadata.name))
+                if dryrun:
+                    click.secho("{} Update {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
+                else:
+                    result = self.update_object(client, obj)
+                    click.secho("{} Updated {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='green')
+                    return result
         except Exception as e:
-            click.secho(">> !!! [ERR {}:{}] {} !!!".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            click.secho("{} !!! [ERR {}:{}] {} !!!".format(prompt, self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
 
-    def delete(self, client: Client, obj: typing.Any):
+    def delete(self, client: Client, obj: typing.Any, *args, **kwargs):
         try:
             self._set_project_in_client(client)
             obj = self.find_object(client)
+            dryrun = kwargs.get("dryrun", False)
+            prompt = ">> [{}]"
+            prompt = prompt.format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
 
             if not obj:
-                click.echo('>> {}/{} {} does not exists'.format(self.apiVersion, self.kind, self.metadata.name))
+                click.echo('{} {}/{} {} does not exists'.format(prompt, self.apiVersion, self.kind, self.metadata.name))
                 return
-
-            click.secho("Deleting {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
-            self.delete_object(client, obj)
+            
+            if not dryrun:
+                self.delete_object(client, obj)
+                click.secho("{} Deleted {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='red')
+            else:
+                click.secho("{} Delete {}:{}".format(prompt, self.kind.lower(), self.metadata.name), fg='yellow')
         except Exception as e:
-            click.secho(">> !!! [ERR {}:{}] {} !!!".format(self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            click.secho("{} !!! [ERR {}:{}] {} !!!".format(prompt, self.kind.lower(), self.metadata.name, str(e)), fg="red")
             raise e
 
     @abstractmethod
