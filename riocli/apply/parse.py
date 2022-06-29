@@ -111,6 +111,16 @@ class Applier(object):
                     self._apply_manifest(obj)
                 self.graph.done(obj)    
 
+    def delete(self):
+        delete_order = list(self.graph.static_order()).reverse()
+
+    def _apply_manifest(self, obj_key):
+        obj = self.objects[obj_key]
+        cls = self.get_model(obj)
+        ist = cls.from_dict(self.client, obj)
+        setattr(ist, 'rc', ResolverCache(self.client))
+        ist.apply(self.client)
+    
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)

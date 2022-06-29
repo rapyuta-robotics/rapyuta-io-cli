@@ -32,7 +32,7 @@ class Package(Model):
     
     def find_object(self, client: Client):
         try:
-            obj =  self.rc.cache.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version )
+            obj =  self.rc.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version )
             if obj:
                 click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
                 return obj
@@ -193,7 +193,7 @@ class Package(Model):
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
             if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
-                secret_guid, secret =  self.rc.cache.find_depends(exec.docker.pullSecret.depends)
+                secret_guid, secret =  self.rc.find_depends(exec.docker.pullSecret.depends)
                 exec_object.secret = secret_guid
             
         if exec.type == 'build':

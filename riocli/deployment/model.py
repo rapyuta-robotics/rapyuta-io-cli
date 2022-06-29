@@ -44,7 +44,7 @@ class Deployment(Model):
 
     
     def create_object(self, client: Client) -> typing.Any:
-        pkg_guid, pkg = self.rc.cache.find_depends(self.metadata.depends, self.metadata.depends.version)
+        pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
         if pkg is None and pkg_guid:
             pkg = client.get_package(pkg_guid)
         pkg.update()
@@ -82,7 +82,7 @@ class Deployment(Model):
         # Add Dependent Deployment
         if 'depends' in self.spec:
             for item in self.spec.depends:
-                dep_guid, dep = self.rc.cache.find_depends(item)
+                dep_guid, dep = self.rc.find_depends(item)
                 if dep is None and dep_guid:
                     dep = client.get_deployment(dep_guid)
                 provision_config.add_dependent_deployment(dep)
@@ -90,7 +90,7 @@ class Deployment(Model):
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
                 for stroute in self.spec.staticRoutes:
-                    route_guid, route = self.rc.cache.find_depends(stroute.depends)
+                    route_guid, route = self.rc.find_depends(stroute.depends)
                     if route is None and route_guid:
                         route = client.get_static_route(route_guid)
                     provision_config.add_static_route(__componentName, stroute.name, route)
@@ -99,7 +99,7 @@ class Deployment(Model):
             if 'volumes' in self.spec:
                 disk_mounts = {}
                 for vol in self.spec.volumes:
-                    disk_guid, disk = self.rc.cache.find_depends(vol.depends)
+                    disk_guid, disk = self.rc.find_depends(vol.depends)
                     if not disk_guid in disk_mounts:
                         disk_mounts[disk_guid] = []
                     
@@ -115,7 +115,7 @@ class Deployment(Model):
                     # network_type = 
         
         if self.spec.runtime == 'device':
-            device_guid , device  =  self.rc.cache.find_depends(self.spec.depends)
+            device_guid , device  =  self.rc.find_depends(self.spec.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
             provision_config.add_device(__componentName, device=device)

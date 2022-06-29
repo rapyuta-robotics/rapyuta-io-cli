@@ -498,7 +498,7 @@ spec:
   runtime: cloud
   depends:
     - kind: deployment
-      nameOrGUID: sootballs_db2
+      nameOrGUID: sootballs_db
     - kind: deployment
       nameOrGUID: sootballs_minio
   envArgs:

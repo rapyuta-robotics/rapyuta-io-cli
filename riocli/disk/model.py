@@ -27,7 +27,7 @@ from riocli.model import Model
 class Disk(Model):
     def find_object(self, client: Client) -> typing.Any:
         try:
-            guid =  self.rc.cache.find_guid(self.metadata.name, self.kind.lower())
+            guid =  self.rc.find_guid(self.metadata.name, self.kind.lower())
             if guid:
                 return guid
             else:
@@ -47,7 +47,7 @@ class Disk(Model):
         with click_spinner.spinner():
             result =  _api_call(HttpMethod.POST, payload=payload)
             result = munchify(result)
-            disk_dep_guid, disk = self.rc.cache.find_depends({'kind': self.kind.lower(), 'nameOrGUID':self.metadata.name})
+            disk_dep_guid, disk = self.rc.find_depends({'kind': self.kind.lower(), 'nameOrGUID':self.metadata.name})
             volume_instance = client.get_volume_instance(disk_dep_guid)
             try:
                 volume_instance.poll_deployment_till_ready(sleep_interval=5)
