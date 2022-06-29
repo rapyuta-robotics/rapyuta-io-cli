@@ -29,12 +29,13 @@ class Package(Model):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
+    
     def find_object(self, client: Client):
         try:
-            guid =  list(self.rc.cache.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version ))
-            if guid and isinstance(guid, list) and len(guid) > 0:
+            obj =  self.rc.find_guid(self.metadata.name, self.kind.lower(), self.metadata.version )
+            if obj:
                 click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
-                return True
+                return obj
             else:
                 return False
         except Exception as e:
@@ -81,7 +82,9 @@ class Package(Model):
         
         pkg_object.name = self.metadata.name
         pkg_object.packageVersion = self.metadata.version
-        pkg_object.description = self.metadata.description
+        
+        if 'description' in self.metadata:
+            pkg_object.description = self.metadata.description
         
         
         # spec
@@ -99,7 +102,7 @@ class Package(Model):
         component_obj.parameters = self.spec.environmentVars
         # handle exposed params
         exposed_parameters = []
-        for entry in filter(lambda x: x.exposed, self.spec.environmentVars):
+        for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
             exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
         component_obj.exposedParameters = exposed_parameters
             
@@ -118,7 +121,7 @@ class Package(Model):
             else:
                 component_obj.cloudInfra.replicas = 1
 
-        if self.spec.endpoints:
+        if 'endpoints' in self.spec:
             endpoints =  list(map(self._map_endpoints, self.spec.endpoints))
             component_obj.cloudInfra.endpoints = endpoints
         
@@ -131,13 +134,17 @@ class Package(Model):
         if 'ros' in self.spec:
             component_obj.ros.isRos = True
             component_obj.ros.ros_distro  = self.spec.ros.version
-            pkg_object.inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted
-            component_obj.ros.topics = self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic')
-            component_obj.ros.services = self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service')
-            component_obj.ros.actions = self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action')
+            pkg_object.inboundROSInterfaces = munchify({})
+            
+            pkg_object.inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
+            if 'rosEndpoints' in self.spec.ros:
+                component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
+                component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
+                component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
         
         pkg_object.plans[0].components = [component_obj]
         # return package
+        # print(json.dumps(pkg_object))
         return client.create_package(pkg_object)
         
 
@@ -149,20 +156,31 @@ class Package(Model):
         pass
 
     def _get_rosendpoint_struct(self, rosEndpoints, filter_type):
-        return filter(lambda x: x.type == filter_type, rosEndpoints)
+        topic_list = filter(lambda x: x.type == filter_type, rosEndpoints)
+        return_list = []
+        for topic in topic_list:
+            if topic.compression is False:
+                topic.compression = ""
+            else:
+                topic.compression = "snappy"
+            return_list.append(topic)
+        return return_list
 
     def _map_executable(self, exec):
+        
         exec_object = munchify({
             "name": exec.name,
             "simulationOptions": {
-                "simulation": exec.simulation
-            },
-            "limits": {
-                "cpu": exec.limits.cpu,
-                "memory": exec.limits.memory
+                "simulation": exec.simulation if 'simulation' in exec  else False
             }
         })
         
+        if 'limits' in exec:
+            exec_object.limits = {
+                "cpu": exec.limits.cpu,
+                "memory": exec.limits.memory
+            }
+            
         if exec.runAsBash:
             if 'command' in exec:
                 exec_object.cmd = ['/bin/bash', '-c', exec.command]
@@ -174,14 +192,15 @@ class Package(Model):
         
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
-            if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                exec_object.secret = exec.docker.pullSecret.depends.guid
+            if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
+                secret_guid, secret =  self.rc.find_depends(exec.docker.pullSecret.depends)
+                exec_object.secret = secret_guid
             
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid
             #TODO verify this is right for secret?
-            if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                exec_object.secret = exec.docker.pullSecret.depends.guid
+            # if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
+                # exec_object.secret = exec.docker.pullSecret.depends.guid
         
         #TODO handle preinstalled
         

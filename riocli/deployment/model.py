@@ -11,9 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from dis import dis
+from time import sleep
 import typing
 
 import click
+from munch import munchify
+from pyparsing import removeQuotes
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
@@ -38,9 +42,13 @@ class Deployment(Model):
         except DeploymentNotFound:
             return False
 
+    
     def create_object(self, client: Client) -> typing.Any:
-        pkg = client.get_package(self.metadata.depends.guid)
+        pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
+        if pkg is None and pkg_guid:
+            pkg = client.get_package(pkg_guid)
         pkg.update()
+        
         default_plan = pkg['plans'][0]
         internal_component = default_plan['internalComponents'][0]
 
@@ -74,22 +82,27 @@ class Deployment(Model):
         # Add Dependent Deployment
         if 'depends' in self.spec:
             for item in self.spec.depends:
-                dep = client.get_deployment(item.guid)
+                dep_guid, dep = self.rc.find_depends(item)
+                if dep is None and dep_guid:
+                    dep = client.get_deployment(dep_guid)
                 provision_config.add_dependent_deployment(dep)
 
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
                 for stroute in self.spec.staticRoutes:
-                    route_object= client.get_static_route(stroute.depends.guid)
-                    provision_config.add_static_route(__componentName, stroute.name, route_object)
+                    route_guid, route = self.rc.find_depends(stroute.depends)
+                    if route is None and route_guid:
+                        route = client.get_static_route(route_guid)
+                    provision_config.add_static_route(__componentName, stroute.name, route)
 
             # Add Disk
             if 'volumes' in self.spec:
                 disk_mounts = {}
                 for vol in self.spec.volumes:
-                    disk_guid = vol.depends.depGuid
+                    disk_guid, disk = self.rc.find_depends(vol.depends)
                     if not disk_guid in disk_mounts:
                         disk_mounts[disk_guid] = []
+                    
                     disk_mounts[disk_guid].append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
                 
                 for disk_guid in disk_mounts.keys():
@@ -102,7 +115,9 @@ class Deployment(Model):
                     # network_type = 
         
         if self.spec.runtime == 'device':
-            device = client.get_device(self.spec.depends.guid)
+            device_guid , device  =  self.rc.find_depends(self.spec.depends)
+            if device is None and device_guid:
+                device = client.get_device(device_guid)
             provision_config.add_device(__componentName, device=device)
 
             if 'restart' in self.spec:
@@ -125,10 +140,8 @@ class Deployment(Model):
         return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        
         if 'depends' in self.spec:
-            print(self.spec.depends)
-
+            pass
         pass
 
     @classmethod

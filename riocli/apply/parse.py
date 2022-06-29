@@ -111,6 +111,16 @@ class Applier(object):
                     self._apply_manifest(obj)
                 self.graph.done(obj)    
 
+    def delete(self):
+        delete_order = list(self.graph.static_order()).reverse()
+
+    def _apply_manifest(self, obj_key):
+        obj = self.objects[obj_key]
+        cls = self.get_model(obj)
+        ist = cls.from_dict(self.client, obj)
+        setattr(ist, 'rc', ResolverCache(self.client))
+        ist.apply(self.client)
+    
     def _apply_manifest(self, obj_key):
         obj = self.objects[obj_key]
         cls = self.get_model(obj)
@@ -281,7 +291,42 @@ class ResolverCache(object, metaclass=_Singleton):
     @functools.lru_cache()
     def find_guid(self, name, kind, *args):
         obj_list = self.list_objects(kind)
-        return self._find_guid_functors(kind)(name, obj_list, *args)
+        obj_match = list(self._find_functors(kind)(name, obj_list, *args))
+        if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
+            return obj_match[0]
+        else:
+            return None
+
+    def find_depends(self, depends, *args):
+        if 'depGuid' in depends and depends['kind'] == 'disk':
+            return depends['depGuid'], None
+        elif 'guid' in depends :
+            return depends['guid'], None
+        
+        elif 'nameOrGUID' in depends:
+            obj_list =  self._list_functors(depends['kind'])()
+            obj_match = list(self._find_functors(depends['kind'])(depends['nameOrGUID'], obj_list, *args))
+            if not obj_list or (isinstance(obj_list, list) and len(obj_list) == 0):
+                return None
+            if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
+                return self._guid_functor(depends['kind'])(obj_match[0]), obj_match[0]
+            else:
+                return None
+        return None
+
+    def _guid_functor(self, kind):
+        mapping = {
+            'secret': lambda x: munchify(x).guid,
+            "project": lambda x: munchify(x).guid,
+            "package": lambda x: munchify(x)['id'],
+            "staticroute": lambda x: munchify(x)['guid'],
+            "build": lambda x: munchify(x)['guid'],
+            "deployment": lambda x: munchify(x)['deploymentId'],
+            "network": lambda x: munchify(x)['guid'],
+            "disk": lambda x: munchify(x)['internalDeploymentGUID'], #This is only temporarity like this
+            "device": lambda x: munchify(x)['uuid']
+        }
+        return mapping[kind]
 
     def _list_functors(self, kind):
         mapping = {
@@ -300,7 +345,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
         return mapping[kind]
 
-    def _find_guid_functors(self, kind):
+    def _find_functors(self, kind):
         mapping = {
             'secret': self._generate_find_guid_functor(),
             "project": self._generate_find_guid_functor(),

@@ -1,0 +1,573 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Secret"
+metadata:
+  name: "sootballs"
+  guid: secret-vebkjobybhhwmyiwkwvndagu
+spec:
+  type: Docker
+  docker:
+    username: shaishavrapyuta
+    password: asdfg123$
+    email: shaishavrapyuta
+    # registry: https://index.docker.io/v1/
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "Sootballs SUI2"
+  version: "1.0.0"
+  labels:
+    app: sootballs
+spec:
+  runtime: "cloud"
+  ros:
+    enabled: True
+    version: "melodic"
+    rosEndpoints:
+      - name: "/cmd_global_charge"
+        type: "topic"
+        qos: "hi"
+      - name: "/cmd_global_in"
+        type: "topic"
+        qos: "hi"
+      - name: "/cmd_move_to"
+        type: "topic"
+        qos: "hi"
+      - name: "/dispatcher/active_tote_unload_request"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/control_request"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/modify_order_request"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/productivity_configs_request"
+        type: "topic"
+        qos: "low"
+      - name: "/edge/emergency_released_request"
+        type: "topic"
+        qos: "low"
+      - name: "/manual_order_recovery"
+        type: "topic"
+        qos: "hi"
+      - name: "/reservation_request"
+        type: "topic"
+        qos: "hi"
+  cloud:
+    replicas: 1
+  executables:
+    - name: "systemui"
+      type: docker
+      docker:
+        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        pullSecret:
+          depends:  
+            kind: secret
+            nameOrGUID: sootballs
+      command: "roslaunch sootballs_applications_edge remote_ui.launch"
+      limits:
+        cpu: 2
+        memory: 8192
+      
+  environmentVars:
+    - name: "IMS_AUTH_USERNAME"
+      description: "Username to authenticate to IMS"
+      defaultValue: "root"
+    - name: "IMS_AUTH_PASSWORD"
+      description: "Password to authenticate to IMS"
+      defaultValue: "airborne_rr"
+    - name: "SENTRY_DSN"
+      description: "Password to authenticate to IMS"
+      defaultValue: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "SOOTBALLS_MAP"
+      defaultValue: "rrkibstg"
+    - name: "SYSTEM_UI_REMOTE_MODE"
+      defaultValue: "true"
+    - name: "WS_EXTERNAL_PORT"
+      defaultValue: "80"
+    - name: "DOCKER_STDOUT"
+      defaultValue: "true"
+  endpoints:
+    - name: "SYSTEM_UI"
+      type: external-https
+      port: 443
+      targetPort: 7099
+    - name: "SYSTEM_UI_ROSBRIDGE_URL"
+      type: external-https
+      port: 443
+      targetPort: 9092
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "Sootballs Edge2"
+  version: "1.0.0"
+  labels:
+    app: sootballs
+spec:
+  runtime: "device"
+  device:
+    arch: amd64
+    restart: always
+  ros:
+    enabled: True
+    version: "melodic"
+    rosEndpoints:
+      - name: "/dispatcher/control_response"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/modify_order_response"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/productivity_configs_response"
+        type: "topic"
+        qos: "low"
+      - name: "/dispatcher/active_tote_unload_response"
+        type: "topic"
+        qos: "low"
+      - name: "/edge/emergency_released_response"
+        type: "topic"
+        qos: "low"
+      - name: "/robot_reservation"
+        type: "topic"
+        qos: "low"
+      - name: "/sui/status"
+        type: "topic"
+        qos: "low"
+      - name: "/sui/overview"
+        type: "topic"
+        qos: "low"
+      - name: "/sui/main"
+        type: "topic"
+        qos: "low"
+  executables:
+    - name: "systemui"
+      type: docker
+      docker:
+        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: sootballs
+      command: "roslaunch sootballs_applications_edge default.launch --wait"
+      
+  environmentVars:
+    - name: "IMS_AUTH_USERNAME"
+      description: "Username to authenticate to IMS"
+      defaultValue: "root"
+    - name: "IMS_AUTH_PASSWORD"
+      description: "Password to authenticate to IMS"
+      defaultValue: "airborne_rr"
+    - name: "SENTRY_DSN"
+      description: "Password to authenticate to IMS"
+      defaultValue: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      defaultValue: "true"
+    - name: "DISABLE_MULTICAST"
+      defaultValue: "false"
+    - name: "ROS_DOMAIN_ID"
+      defaultValue: "10"
+    - name: "USE_PARAMS_IO"
+      defaultValue: "true"
+    - name: "EDGE_ALARM_MONITOR"
+      defaultValue: "true"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "Sootballs Robot2"
+  version: "1.0.0"
+  labels:
+    app: sootballs
+spec:
+  runtime: "device"
+  device:
+    arch: amd64
+    restart: always
+  ros:
+    enabled: True
+    version: "melodic"
+  executables:
+    - name: "systemui"
+      type: docker
+      docker:
+        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: sootballs
+      command: "roslaunch sootballs_applications_edge default.launch --wait"
+      
+  environmentVars:
+    - name: "IMS_AUTH_USERNAME"
+      description: "Username to authenticate to IMS"
+      defaultValue: "root"
+    - name: "IMS_AUTH_PASSWORD"
+      description: "Password to authenticate to IMS"
+      defaultValue: "airborne_rr"
+    - name: "SENTRY_DSN"
+      description: "Password to authenticate to IMS"
+      defaultValue: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      defaultValue: "true"
+    - name: "DISABLE_MULTICAST"
+      defaultValue: "false"
+    - name: "ROS_DOMAIN_ID"
+      defaultValue: "10"
+    - name: "USE_PARAMS_IO"
+      defaultValue: "true"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: sootballs_ims
+  version: v1.14.0-rc4-6
+  description: Sootballs IMS Package
+  labels:
+    app: ims
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+    - type: docker
+      name: Django
+      docker:
+        image: rrdockerhub/sootballs_ims:1.14.0-rc4
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: sootballs
+      limits:
+        cpu: 0.5
+        memory: 2048
+  environmentVars:
+    - name: SECRET_KEY
+    - name: AUTH_ENABLED
+      default: "False"
+    - name: TIMEZONE
+      default: "Asia/Tokyo"
+    - name: CONTAINER_NAME
+      default: "warehouse"
+    - name: DAYS_BEFORE_ARCHIVE
+      default: "15"
+    - name: DEPLOY_ON_CLOUD
+      default: "False"
+    - name: SODTIME
+      default: "09:00"
+    - name: EODTIME
+      default: "19:00"
+    - name: AWS_STORAGE_BUCKET_NAME
+      default: "kiba-robots"
+    - name: IMS_DB
+      default: ims_db
+    - name: CELERY_BROKER_URL
+    - name: CELERY_RESULT_BACKEND
+    
+  endpoints:
+    - name: IMS_URL
+      type: external-https
+      port: 443
+      targetPort: 8002
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: sootballs_db
+  version: v1.0.11
+  description: Sootballs DB package
+  labels:
+    app: ims
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+    - type: docker
+      name: redis
+      docker:
+        image: redis:4.0-alpine
+      limits:
+        cpu: 0.5
+        memory: 2048
+    - type: docker
+      name: postgres
+      docker:
+        image: postgis/postgis:9.6-3.2
+      limits:
+        cpu: 1
+        memory: 4096
+  environmentVars:
+    - name: POSTGRES_MULTIPLE_DATABASES
+      default: ims_db,wcs_db
+    - name: PGDATA
+      default: /var/lib/postgresql/data/pgdata
+    - name: POSTGRES_HOST_AUTH_METHOD
+      default: trust
+    - name: POSTGRES_USER
+      default: postgres
+      exposed: true
+      exposedName: POSTGRES_USER
+    - name: POSTGRES_PASSWORD
+      default: password
+      exposed: true
+      exposedName: POSTGRES_PASSWORD
+  endpoints:
+    - name: POSTGRES
+      type: internal-tcp
+      port: 5432
+      targetPort: 5432
+    - name: REDIS
+      type: internal-tcp
+      port: 6379
+      targetPort: 6379
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: MinIO File Server
+  version: v1.0.11
+  description: Sootballs File Server package
+  labels:
+    app: ims
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+    - type: docker
+      name: minio_executable
+      docker:
+        image: rrdockerhub/minio-server
+      limits:
+        cpu: 1
+        memory: 4096
+  environmentVars:
+    - name: MINIO_ACCESS_KEY
+    - name: MINIO_SECRET_KEY
+  endpoints:
+    - name: MINIO
+      type: external-https
+      port: 443
+      targetPort: 9000
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: sootballs_wcs
+  version: v1.14.0-rc4-2
+  description: Sootballs WCS package 
+  labels:
+    app: wcs
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+    - type: docker
+      name: django
+      command: /code/docker/entrypoint.sh
+      docker:
+        image: rrdockerhub/sootballs_wcs:1.14.0-rc4
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: sootballs
+      limits:
+        cpu: 1
+        memory: 4096
+  environmentVars:
+    - name: TIMEZONE
+      default: Asia/Tokyo
+    - name: WCS_DB
+      default: wcs_db
+    - name: CELERY_BROKER_URL
+    - name: CELERY_RESULT_BACKEND
+    - name: LOCAL_PRINT_SERVER_URL
+    - name: SECRET_KEY
+  endpoints:
+    - name: WCS_URL
+      type: external-https
+      port: 443
+      targetPort: 8003
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Disk"
+metadata:
+  name: "postgres-pvc"
+spec:
+  runtime: cloud
+  capacity: 4
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Disk"
+metadata:
+  name: "minio-pvc"
+spec:
+  runtime: cloud
+  capacity: 4
+---
+#sootballs_staticroutes
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "ims-kibarobots-apply"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "minio-kibarobots-apply"
+---
+#sootballs_minio
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_minio
+  depends:
+    kind: package
+    nameOrGUID: "MinIO File Server"
+    version: "v1.0.11"
+  labels: 
+    app: ims
+spec:
+  runtime: cloud
+  envArgs:
+    - name: MINIO_ACCESS_KEY
+      value: access
+    - name: MINIO_SECRET_KEY
+      value: secret_key
+  staticRoutes:
+    - name: MINIO
+      depends:
+        kind: staticroute
+        nameOrGUID: minio-kibarobots-apply
+  volumes:
+    - execName: minio_executable
+      mountPath: "/data"
+      subPath: "data"
+      depends:
+        kind: disk
+        nameOrGUID: "minio-pvc"
+---
+#sootballs_db
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_db
+  depends:
+    kind: package
+    nameOrGUID: sootballs_db
+    version: "v1.0.11"
+  labels: 
+    app: ims
+spec:
+  runtime: cloud
+  envArgs:
+    - name: PGDATA
+      value: /var/lib/postgresql/data/pgdata
+    - name: POSTGRES_HOST_AUTH_METHOD
+      value: trust
+    - name: POSTGRES_MULTIPLE_DATABASES
+      value: ims_db,wcs_db
+    - name: POSTGRES_PASSWORD
+      value: sootballs
+    - name: POSTGRES_USER
+      value: postgres
+  volumes:
+    - execName: postgres
+      mountPath: "/var/lib/postgresql/data/pgdata"
+      subPath: "pgdata"
+      depends:
+        kind: disk
+        nameOrGUID: "postgres-pvc"
+
+#sootballs_ims
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_ims
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_ims"
+    version: "v1.14.0-rc4-6"
+  labels: 
+    app: ims
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_db
+    - kind: deployment
+      nameOrGUID: sootballs_minio
+  envArgs:
+    - name: AUTH_ENABLED
+      value: "True"
+    - name: AWS_STORAGE_BUCKET_NAME
+      value: kiba-robots
+    #TODO  this should be parsed from redis url in the docker container. 
+    - name: CELERY_BROKER_URL
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    #TODO  this should be parsed from redis url in the docker container. 
+    - name: CELERY_RESULT_BACKEND
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    - name: CONTAINER_NAME
+      value: warehouse
+    - name: DAYS_BEFORE_ARCHIVE
+      value: "15"
+    - name: DEPLOY_ON_CLOUD
+      value: "False"
+    - name: EODTIME
+      value: "19:00"
+    - name: IMS_DB
+      value: ims_db
+    - name: SECRET_KEY
+      value: asdasd
+    - name: SODTIME
+      value: 09:00
+    - name: TIMEZONE
+      value: Asia/Tokyo
+    - name: TEST_ENV
+      value: asdsad
+  staticRoutes:
+    - name: IMS_URL
+      depends:
+        kind: staticroute
+        nameOrGUID: ims-kibarobots-apply
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "wcs-kibarobots-apply"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_wcs
+  depends:
+    kind: package
+    nameOrGUID: sootballs_wcs
+    version: "v1.14.0-rc4-2"
+  labels: 
+    app: wcs
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_db
+    - kind: deployment
+      nameOrGUID: sootballs_ims
+  envArgs:
+    - name: CELERY_BROKER_URL
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    - name: CELERY_RESULT_BACKEND
+      value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
+    - name: LOCAL_PRINT_SERVER_URL
+      value: " "
+    - name: SECRET_KEY
+      value: asdasd
+    - name: TIMEZONE
+      value: Asia/Tokyo
+    - name: WCS_DB
+      value: wcs_db
