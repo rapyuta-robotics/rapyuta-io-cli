@@ -78,18 +78,6 @@ def apply(files: str) -> None:
     rc.apply()
 
 
-def get_model(data: dict) -> typing.Any:
-    kind = data.get('kind', None)
-    if not kind:
-        raise Exception('kind is missing')
-
-    cls = KIND_TO_CLASS.get(kind, None)
-    if not cls:
-        raise Exception('invalid kind {}'.format(kind))
-
-    return cls
-
-
 #TODO very ghetto explain command
 @click.command(
     'explain',
