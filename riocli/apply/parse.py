@@ -11,23 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
 import json
-import re
 import typing
 from graphlib import TopologicalSorter
 
 import click
+import jinja2
 import yaml
-from munch import munchify
 
-from riocli.config import Configuration
-from riocli.secret.util import find_secret_guid
 from riocli.apply.resolver import ResolverCache
+from riocli.config import Configuration
 
 
 class Applier(object):
-    def __init__(self, files: typing.List):
+    def __init__(self, files: typing.List, values):
+        self.environment = None
         self.input_file_paths = files
         self.config = Configuration()
         self.client = self.config.new_client()
@@ -37,8 +35,10 @@ class Applier(object):
         self.files = {}
         self.graph = TopologicalSorter()
         self.rc = ResolverCache(self.client)
+        if values:
+            self.values = self._read_file(values)[0]
+            self.environment = jinja2.Environment()
         self._read_files(files)
-        # self.environment = self._read_file(values)
 
     def parse_dependencies(self, check_missing=True):
         for f, data in self.files.items():
@@ -99,6 +99,10 @@ class Applier(object):
     def _read_file(self, file_name):
         with open(file_name) as opened:
             data = opened.read()
+
+        if self.environment:
+            template = self.environment.from_string(data)
+            data = template.render(**self.values)
 
         loaded_data = []
         if file_name.endswith("json"):
