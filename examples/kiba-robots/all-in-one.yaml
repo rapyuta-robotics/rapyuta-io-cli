@@ -66,6 +66,7 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge remote_ui.launch"
+      runAsBash: False
       limits:
         cpu: 2
         memory: 8192
@@ -572,3 +573,61 @@ spec:
       value: Asia/Tokyo
     - name: WCS_DB
       value: wcs_db
+---
+#sootballs_staticroutes
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "ui-{{ routePrefix }}"
+
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_systemui
+  depends:
+    kind: package
+    nameOrGUID: Sootballs SUI2
+    version: "1.0.0"
+  labels: 
+    app: systemui
+spec:
+  runtime: cloud
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: sootballs
+  envArgs:
+    - name: DOCKER_STDOUT
+      value: "true"
+    - name: IMS_AUTH_PASSWORD
+      value: airborne_rr
+    - name: IMS_AUTH_USERNAME
+      value: root
+    - name: IMS_URL
+      value: https://ims-rrkibstg-buonj.ep-r.io
+    - name: SENTRY_DSN
+      value: https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18
+    - name: SOOTBALLS_MAP
+      value: rrkibstg
+    - name: SYSTEM_UI_REMOTE_MODE
+      value: "true"
+    - name: USE_LOCAL_MAP
+      value: "false"
+    - name: WS_EXTERNAL_PORT
+      value: "80"
+  staticRoutes:
+    - name: SYSTEM_UI
+      depends:
+        kind: staticroute
+        nameOrGUID: ui-{{ routePrefix }}
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "sootballs"
+spec:
+  runtime: "cloud"
+  type: "routed"
+  rosDistro: "melodic"
+  resourceLimits: "small"

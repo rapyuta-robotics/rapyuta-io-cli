@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from dis import dis
+from rapyuta_io.clients.routed_network import RoutedNetwork
+from rapyuta_io.clients.native_network import NativeNetwork
 from time import sleep
 import typing
 
@@ -85,6 +87,16 @@ class Deployment(Model):
                     dep = client.get_deployment(dep_guid)
                 provision_config.add_dependent_deployment(dep)
 
+        # Add Network
+        if self.spec.rosNetworks:
+            for network_depends in self.spec.rosNetworks:
+                network_guid, network_obj = self.rc.find_depends(network_depends.depends)
+                
+                if type(network_obj) == RoutedNetwork:
+                    provision_config.add_routed_network(network_obj, network_interface=network_depends.get('interface', None))
+                if type(network_obj) == NativeNetwork:
+                    provision_config.add_native_network(network_obj, network_interface=network_depends.get('interface', None))
+        
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
                 for stroute in self.spec.staticRoutes:
@@ -107,11 +119,7 @@ class Deployment(Model):
                     disk = client.get_volume_instance(disk_guid)
                     provision_config.mount_volume(__componentName, volume=disk,
                                                   executable_mounts=disk_mounts[disk_guid])
-
-            # Add Network
-            # if self.spec.rosNetworks:
-            # for network in self.spec.rosNetworks:
-            # network_type =
+        
 
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(self.spec.depends)

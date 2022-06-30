@@ -82,9 +82,9 @@ class Applier(object):
         click.secho("YAML object      : "+ str(number_of_objects), fg="yellow")
         
         click.secho("           Inventory", fg="yellow")
-        click.secho(" "*50, bg='blue')
+        click.secho(" "*100, bg='blue')
         click.secho(tabulate(resource_list, headers=["Resource", "Action", "Expected Time (mins)"]), fg='white')
-        click.secho(" "*50, bg='blue')
+        click.secho(" "*100, bg='blue')
 
         if check_missing:
             missing_resources = []
