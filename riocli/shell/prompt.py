@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2022 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,23 +13,7 @@
 # limitations under the License.
 import click
 
-from riocli.config import Configuration
 
-
-@click.command()
 @click.pass_context
-def logout(ctx: click.Context):
-    """
-    Log out from the Rapyuta.io account using the CLI.
-    """
-
-    if not ctx.obj.exists:
-        return
-
-    ctx.obj.data.pop('auth_token', None)
-    ctx.obj.data.pop('password', None)
-    ctx.obj.data.pop('email_id', None)
-    ctx.obj.data.pop('project_id', None)
-    ctx.obj.save()
-
-    click.secho('Logged out successfully!', fg='green')
+def prompt_callback(ctx: click.Context) -> str:
+    return '{} > '.format(ctx.obj.data['project_name'])
