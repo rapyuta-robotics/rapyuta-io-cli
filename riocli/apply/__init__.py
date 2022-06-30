@@ -49,9 +49,10 @@ PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
     help_headers_color='yellow',
     help_options_color='green',
 )
+@click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
 @click.option('--values')
 @click.argument('files')
-def apply(values: str, files: str) -> None:
+def apply(values: str, files: str, dryrun: bool = False) -> None:
     """
     Apply resource manifests
     """
@@ -70,7 +71,7 @@ def apply(values: str, files: str) -> None:
     rc = Applier(glob_files, values)
     rc.parse_dependencies()
 
-    rc.apply()
+    rc.apply(dryrun=dryrun)
 
 
 @click.command(
@@ -81,7 +82,8 @@ def apply(values: str, files: str) -> None:
 )
 @click.option('--values')
 @click.argument('files')
-def delete(values: str, files: str) -> None:
+@click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
+def delete(values: str, files: str, dryrun: bool = False) -> None:
     """
     Apply resource manifests
     """
@@ -99,7 +101,7 @@ def delete(values: str, files: str) -> None:
 
     rc = Applier(glob_files, values)
     rc.parse_dependencies(check_missing=False)
-    rc.delete()
+    rc.delete(dryrun=dryrun)
 
 
 # TODO very ghetto explain command

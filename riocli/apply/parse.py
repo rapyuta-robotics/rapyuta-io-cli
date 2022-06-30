@@ -22,7 +22,6 @@ import yaml
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 
-
 class Applier(object):
     def __init__(self, files: typing.List, values):
         self.environment = None
@@ -59,34 +58,34 @@ class Applier(object):
                             "or created on the server. {}".format(set(missing_resources)), fg="red")
                 exit(1)
 
-    def apply(self):
+    def apply(self, *args, **kwargs):
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
                 if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
-                    self._apply_manifest(obj)
+                    self._apply_manifest(obj, *args, **kwargs)
                 self.graph.done(obj)
 
-    def _apply_manifest(self, obj_key):
+    def _apply_manifest(self, obj_key, *args, **kwargs):
         obj = self.objects[obj_key]
         cls = ResolverCache.get_model(obj)
         ist = cls.from_dict(self.client, obj)
         setattr(ist, 'rc', ResolverCache(self.client))
-        ist.apply(self.client)
+        ist.apply(self.client, *args, **kwargs)
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         delete_order = list(self.graph.static_order())
         delete_order.reverse()
         for obj in delete_order:
             if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
-                self._delete_manifest(obj)
+                self._delete_manifest(obj, *args, **kwargs)
 
-    def _delete_manifest(self, obj_key):
+    def _delete_manifest(self, obj_key, *args, **kwargs):
         obj = self.objects[obj_key]
         cls = ResolverCache.get_model(obj)
         ist = cls.from_dict(self.client, obj)
         setattr(ist, 'rc', ResolverCache(self.client))
-        ist.delete(self.client, obj)
+        ist.delete(self.client, obj, *args, **kwargs)
 
     def _read_files(self, files):
         for f in files:
