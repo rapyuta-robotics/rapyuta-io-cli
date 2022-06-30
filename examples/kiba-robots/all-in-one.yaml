@@ -62,14 +62,14 @@ spec:
       docker:
         image: "rrdockerhub/sootballs:1.14.0-rc4"
         pullSecret:
-          depends:  
+          depends:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge remote_ui.launch"
       limits:
         cpu: 2
         memory: 8192
-      
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"
@@ -151,7 +151,8 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge default.launch --wait"
-      
+      runAsBash: False
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"
@@ -198,7 +199,7 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge default.launch --wait"
-      
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"
@@ -264,7 +265,7 @@ spec:
       default: ims_db
     - name: CELERY_BROKER_URL
     - name: CELERY_RESULT_BACKEND
-    
+
   endpoints:
     - name: IMS_URL
       type: external-https
@@ -357,7 +358,7 @@ kind: "Package"
 metadata:
   name: sootballs_wcs
   version: v1.14.0-rc4-2
-  description: Sootballs WCS package 
+  description: Sootballs WCS package
   labels:
     app: wcs
 spec:
@@ -433,7 +434,7 @@ metadata:
     kind: package
     nameOrGUID: "MinIO File Server"
     version: "v1.0.11"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud
@@ -464,7 +465,7 @@ metadata:
     kind: package
     nameOrGUID: sootballs_db
     version: "v1.0.11"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud
@@ -497,7 +498,7 @@ metadata:
     kind: package
     nameOrGUID: "sootballs_ims"
     version: "v1.14.0-rc4-6"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud
@@ -511,10 +512,10 @@ spec:
       value: "True"
     - name: AWS_STORAGE_BUCKET_NAME
       value: kiba-robots
-    #TODO  this should be parsed from redis url in the docker container. 
+    #TODO  this should be parsed from redis url in the docker container.
     - name: CELERY_BROKER_URL
       value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
-    #TODO  this should be parsed from redis url in the docker container. 
+    #TODO  this should be parsed from redis url in the docker container.
     - name: CELERY_RESULT_BACKEND
       value: rediss://inst-lrxokslpvkctnstujixsczsw-redis-srv.dep-ns-inst-lrxokslpvkctnstujixsczsw.svc:6379/5
     - name: CONTAINER_NAME
@@ -541,7 +542,6 @@ spec:
         kind: staticroute
         nameOrGUID: ims-{{ routePrefix }}
 ---
-
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:
@@ -550,7 +550,7 @@ metadata:
     kind: package
     nameOrGUID: sootballs_wcs
     version: "v1.14.0-rc4-2"
-  labels: 
+  labels:
     app: wcs
 spec:
   runtime: cloud
@@ -572,3 +572,48 @@ spec:
       value: Asia/Tokyo
     - name: WCS_DB
       value: wcs_db
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "sootballs"
+spec:
+  runtime: "cloud"
+  type: "routed"
+  rosDistro: "melodic"
+  resourceLimits: "small"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_edge_01
+  depends:
+    kind: package
+    nameOrGUID: "Sootballs Edge2"
+    version: "1.0.0"
+spec:
+  runtime: device
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims
+  device:
+    depends:
+      kind: device
+      nameOrGUID: kibstg-edge-1
+  envArgs:
+    - name: IMS_AUTH_USERNAME
+      value: root
+    - name: IMS_AUTH_PASSWORD
+      value: airborne_rr
+    - name: "SENTRY_DSN"
+      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      value: "true"
+    - name: "DISABLE_MULTICAST"
+      value: "false"
+    - name: "ROS_DOMAIN_ID"
+      value: "10"
+    - name: "USE_PARAMS_IO"
+      value: "true"
+    - name: "EDGE_ALARM_MONITOR"
+      value: "true"
