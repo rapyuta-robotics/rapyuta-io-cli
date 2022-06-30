@@ -19,18 +19,18 @@ from riocli.exceptions import LoggedOut
 
 
 @click.command()
-def refresh_token():
+@click.pass_context
+def refresh_token(ctx: click.Context):
     """
     Refreshes the authentication Token after it expires
     """
 
-    config = Configuration()
-    email = config.data.get('email_id', None)
-    password = config.data.get('password', None)
-    if not config.exists or not email or not password:
+    email = ctx.obj.data.get('email_id', None)
+    password = ctx.obj.data.get('password', None)
+    if not ctx.obj.exists or not email or not password:
         raise LoggedOut
 
-    config.data['auth_token'] = get_token(email, password)
+    ctx.obj.data['auth_token'] = get_token(email, password)
 
-    config.save()
+    ctx.obj.save()
     click.echo('Token refreshed successfully!')

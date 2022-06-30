@@ -13,18 +13,20 @@
 # limitations under the License.
 import click
 
-from riocli.config import Configuration
 from riocli.project.util import name_to_guid
+from riocli.utils.context import get_root_context
 
 
 @click.command('select')
 @click.argument('project-name', type=str)
 @name_to_guid
-def select_project(project_name: str, project_guid: str) -> None:
+@click.pass_context
+def select_project(ctx: click.Context, project_name: str, project_guid: str) -> None:
     """
     Sets the given project in the CLI context. All other resources use this project to act upon.
     """
-    config = Configuration()
-    config.data['project_id'] = project_guid
-    config.save()
+    ctx = get_root_context(ctx)
+    ctx.obj.data['project_id'] = project_guid
+    ctx.obj.data['project_name'] = project_name
+    ctx.obj.save()
     click.secho('Project {} ({}) is selected!'.format(project_name, project_guid), fg='green')

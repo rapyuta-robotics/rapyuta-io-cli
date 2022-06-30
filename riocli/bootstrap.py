@@ -17,15 +17,16 @@ __version__ = "0.3.1"
 
 import click
 import rapyuta_io.version
+from click import Context
 from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
-from click_repl import register_repl
 from pkg_resources import iter_entry_points
 
 from riocli.apply import apply, explain, delete
 from riocli.auth import auth
 from riocli.build import build
 from riocli.completion import completion
+from riocli.config import Configuration
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -35,6 +36,7 @@ from riocli.package import package
 from riocli.project import project
 from riocli.rosbag import rosbag
 from riocli.secret import secret
+from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
 from riocli.parameter import parameter
 
@@ -43,14 +45,15 @@ from riocli.parameter import parameter
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
-def cli():
-    pass
+@click.pass_context
+def cli(ctx: Context, config: str = None):
+    ctx.obj = Configuration(filepath=config)
 
 
-@cli.command('help')
+@cli.command("help")
 @click.pass_context
 def cli_help(ctx):
     """
@@ -64,7 +67,7 @@ def version():
     """
     Version of the CLI/SDK
     """
-    click.echo("rio {} / SDK {}".format(__version__, rapyuta_io.VERSIONSTR))
+    click.echo("rio {} / SDK {}".format(__version__, rapyuta_io.__version__))
     return
 
 
@@ -86,3 +89,5 @@ cli.add_command(marketplace)
 cli.add_command(parameter)
 cli.add_command(disk)
 register_repl(cli)
+cli.add_command(shell)
+cli.add_command(deprecated_repl)
