@@ -66,9 +66,6 @@ class Package(Model):
                             'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
                             'exposedParameters': [],
                             'metadata': {},
-                            'cloudInfra': {
-                                'replicas': 1
-                            }
                         })
         
         # metadata
@@ -103,6 +100,7 @@ class Package(Model):
         # device
         #  ✓ arch, ✓ restart
         if self.spec.runtime == 'device':
+            component_obj.required_runtime = 'device'
             component_obj.architecture = self.spec.device.arch
             component_obj.restartPolicy = self.spec.device.restart
         
@@ -110,6 +108,7 @@ class Package(Model):
         #  ✓ replicas
         #  ✓ endpoints
         if 'cloud' in self.spec:
+            component_obj.cloudInfra = munchify(dict())
             if 'replicas' in self.spec.cloud:
                 component_obj.cloudInfra.replicas = self.spec.cloud.replicas
             else:
@@ -184,7 +183,7 @@ class Package(Model):
         else:
             #TODO verify this is right for secret?
             if 'command' in exec:
-                exec_object.cmd = exec.command
+                exec_object.cmd = [exec.command]
 
         
         if exec.type == 'docker':

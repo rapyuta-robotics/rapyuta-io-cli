@@ -63,7 +63,7 @@ class Deployment(Model):
                             self.metadata.name, pkg['packageName']
                         ), fg="red"
                         )
-            pass
+            return
 
         provision_config = pkg.get_provision_configuration(__planId)
 
