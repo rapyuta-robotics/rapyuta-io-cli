@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
 from typing import Union, Any, Dict
 
 from rapyuta_io import Client
@@ -62,6 +63,9 @@ class Network(Model):
         #     click.secho(str(e), fg='red')
         #     exit(1)
         pass
+
+    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        obj.delete()
 
     @classmethod
     def pre_process(cls, client: Client, d: Dict) -> None:

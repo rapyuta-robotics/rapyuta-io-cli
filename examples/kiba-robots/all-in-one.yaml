@@ -199,7 +199,8 @@ spec:
           depends:
             kind: secret
             nameOrGUID: sootballs
-      command: "roslaunch sootballs_applications_edge default.launch --wait"
+      command: "roslaunch sootballs_applications_robot default.launch --wait"
+      runAsBash: False
 
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
@@ -244,6 +245,7 @@ spec:
       limits:
         cpu: 0.5
         memory: 2048
+      command: "/code/docker/entrypoint.sh"
   environmentVars:
     - name: SECRET_KEY
     - name: AUTH_ENABLED
@@ -598,10 +600,13 @@ metadata:
     kind: package
     nameOrGUID: Sootballs SUI2
     version: "1.0.0"
-  labels: 
+  labels:
     app: systemui
 spec:
   runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims
   rosNetworks:
     - depends:
         kind: network
@@ -613,8 +618,6 @@ spec:
       value: airborne_rr
     - name: IMS_AUTH_USERNAME
       value: root
-    - name: IMS_URL
-      value: https://ims-rrkibstg-buonj.ep-r.io
     - name: SENTRY_DSN
       value: https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18
     - name: SOOTBALLS_MAP
@@ -684,6 +687,10 @@ spec:
   depends:
     - kind: deployment
       nameOrGUID: sootballs_ims
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: sootballs
   device:
     depends:
       kind: device
