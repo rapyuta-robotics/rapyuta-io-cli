@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Union, Any, Dict
 
-import click
 from rapyuta_io import Client
 from rapyuta_io.clients.native_network import NativeNetwork, NativeNetworkLimits, Parameters as NativeNetworkParameters
 from rapyuta_io.clients.routed_network import RoutedNetwork, RoutedNetworkLimits, Parameters as RoutedNetworkParameters
@@ -44,7 +43,6 @@ class Network(Model):
     def find_object(self, client: Client) -> bool:
         try:
             network, _ = find_network_name(client, self.metadata.name, self.spec.type, is_resolve_conflict=False)
-            click.echo('{}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
             return network
         except NetworkNotFound:
             return False
@@ -90,7 +88,6 @@ class Network(Model):
         else:
             network = self._create_device_routed_network(client)
 
-        click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         return network
 
     def _create_cloud_routed_network(self, client: Client) -> RoutedNetwork:
