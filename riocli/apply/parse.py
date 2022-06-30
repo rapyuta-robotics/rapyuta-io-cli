@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
 import json
 import typing
 from graphlib import TopologicalSorter
+from requests import head
+from tabulate import tabulate
 
 import click
 import jinja2
@@ -40,11 +43,48 @@ class Applier(object):
         self._read_files(files)
 
     def parse_dependencies(self, check_missing=True):
+        
+        number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
                 self.graph.add(key)
+                number_of_objects = number_of_objects + 1
+
+        EXPECTED_TIME = {
+            "organization": 3,
+            "project": 3,
+            "secret": 3,
+            "package": 3,
+            "staticroute": 3,
+            "build": 180,
+            "disk": 180,
+            "deployment": 240,
+            "network": 120,
+            "device": 5,
+            "user": 3,
+
+        }
+        resource_list = []
+        total_time = 0
+        for node in copy.deepcopy(self.graph).static_order():
+            action = 'CREATE' if not self.resolved_objects[node]['src'] == 'remote' else 'UPDATE'
+            kind = node.split(":")[0]
+            expected_time = round(EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
+            total_time = total_time + expected_time
+            resource_list.append([node, action, expected_time])
+
+        total_time = round(total_time, 2)
+        click.secho("rapyuta.io Apply context", bg='white', fg="black")
+        click.secho("Expected Runtime : {} mins".format(total_time) , fg="red")
+        click.secho("File             : "+ str(len(self.files)), fg="yellow")
+        click.secho("YAML object      : "+ str(number_of_objects), fg="yellow")
+        
+        click.secho("           Inventory", fg="yellow")
+        click.secho(" "*50, bg='blue')
+        click.secho(tabulate(resource_list, headers=["Resource", "Action", "Expected Time (mins)"]), fg='white')
+        click.secho(" "*50, bg='blue')
 
         if check_missing:
             missing_resources = []
