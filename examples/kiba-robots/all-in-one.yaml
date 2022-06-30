@@ -617,3 +617,36 @@ spec:
       value: "true"
     - name: "EDGE_ALARM_MONITOR"
       value: "true"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_amr_01
+  depends:
+    kind: package
+    nameOrGUID: "Sootballs Robot2"
+    version: "1.0.0"
+spec:
+  runtime: device
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims
+  device:
+    depends:
+      kind: device
+      nameOrGUID: kibstg-amr-1
+  envArgs:
+    - name: IMS_AUTH_USERNAME
+      value: root
+    - name: IMS_AUTH_PASSWORD
+      value: airborne_rr
+    - name: "SENTRY_DSN"
+      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      value: "true"
+    - name: "DISABLE_MULTICAST"
+      value: "false"
+    - name: "ROS_DOMAIN_ID"
+      value: "10"
+    - name: "USE_PARAMS_IO"
+      value: "true"
