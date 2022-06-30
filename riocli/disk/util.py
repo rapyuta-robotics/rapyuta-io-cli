@@ -80,9 +80,9 @@ def _api_call(method: str, guid: typing.Union[str, None] = None,
     err_msg = 'error in the api call'
     if load_response:
         data = json.loads(response.text)
-        err_msg = data.get('error')
 
     if not response.ok:
+        err_msg = data.get('error')
         raise Exception(err_msg)
     return data
 

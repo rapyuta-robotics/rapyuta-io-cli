@@ -139,12 +139,13 @@ class Applier(object):
         with open(file_name) as opened:
             data = opened.read()
 
-        if self.environment:
+        if self.environment or file_name.endswith('.j2'):
             template = self.environment.from_string(data)
             data = template.render(**self.values)
+            file_name = file_name.rstrip('.j2')
 
         loaded_data = []
-        if file_name.endswith("json"):
+        if file_name.endswith('json'):
             # FIXME: Handle for JSON List.
             loaded = json.loads(data)
             loaded_data.append(loaded)

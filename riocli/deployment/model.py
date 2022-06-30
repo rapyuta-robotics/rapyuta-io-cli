@@ -65,7 +65,7 @@ class Deployment(Model):
                             self.metadata.name, pkg['packageName']
                         ), fg="red"
                         )
-            pass
+            return
 
         provision_config = pkg.get_provision_configuration(__planId)
 
@@ -122,7 +122,7 @@ class Deployment(Model):
         
 
         if self.spec.runtime == 'device':
-            device_guid, device = self.rc.find_depends(self.spec.depends)
+            device_guid, device = self.rc.find_depends(self.spec.device.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
             provision_config.add_device(__componentName, device=device)
@@ -136,7 +136,7 @@ class Deployment(Model):
             # network_type =
 
             # Add Disk
-            if 'volumes' in self.spec.volumes:
+            if 'volumes' in self.spec:
                 exec_mounts = []
                 for vol in self.spec.volumes:
                     exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
