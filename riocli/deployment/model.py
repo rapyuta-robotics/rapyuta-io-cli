@@ -88,7 +88,7 @@ class Deployment(Model):
                 provision_config.add_dependent_deployment(dep)
 
         # Add Network
-        if self.spec.rosNetworks:
+        if 'rosNetworks' in self.spec:
             for network_depends in self.spec.rosNetworks:
                 network_guid, network_obj = self.rc.find_depends(network_depends.depends)
                 
