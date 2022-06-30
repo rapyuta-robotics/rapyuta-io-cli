@@ -78,7 +78,7 @@ class ResolverCache(object, metaclass=_Singleton):
     def find_depends(self, depends, *args):
         if 'depGuid' in depends and depends['kind'] == 'disk':
             return depends['depGuid'], None
-        elif 'guid' in depends:
+        elif 'guid' in depends and depends['kind'] != 'network':
             return depends['guid'], None
         
         elif 'nameOrGUID' in depends:
