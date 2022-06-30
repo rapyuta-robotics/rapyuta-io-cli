@@ -412,12 +412,17 @@ spec:
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "ims-kibarobots-apply-gen2"
+  name: "ims-{{ routePrefix }}"
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "minio-kibarobots-apply-gen2"
+  name: "minio-{{ routePrefix }}"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "wcs-{{ routePrefix }}"
 ---
 #sootballs_minio
 apiVersion: apiextensions.rapyuta.io/v1
@@ -441,7 +446,7 @@ spec:
     - name: MINIO
       depends:
         kind: staticroute
-        nameOrGUID: minio-kibarobots-apply-gen2
+        nameOrGUID: minio-{{ routePrefix }}
   volumes:
     - execName: minio_executable
       mountPath: "/data"
@@ -534,13 +539,9 @@ spec:
     - name: IMS_URL
       depends:
         kind: staticroute
-        nameOrGUID: ims-kibarobots-apply-gen2
+        nameOrGUID: ims-{{ routePrefix }}
 ---
-apiVersion: "apiextensions.rapyuta.io/v1"
-kind: "StaticRoute"
-metadata:
-  name: "wcs-kibarobots-apply-gen2"
----
+
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
 metadata:

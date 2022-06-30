@@ -45,7 +45,7 @@ class Model(ABC, Munch):
                     message_with_prompt("✅ Created {}:{}".format(self.kind.lower(), self.metadata.name), fg='green')
                     return result
             else:
-                message_with_prompt('🔎 {}/{} {} exists'.format(self.apiVersion, self.kind, self.metadata.name))
+                message_with_prompt('🔎 {}:{} exists. will be updated'.format(self.kind.lower(), self.metadata.name))
                 message_with_prompt("⌛ Update {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 if not dryrun:
                     result = self.update_object(client, obj)
@@ -62,7 +62,7 @@ class Model(ABC, Munch):
             dryrun = kwargs.get("dryrun", False)
         
             if not obj:
-                message_with_prompt('⁉ {} {}/{} {} does not exists'.format(self.apiVersion, self.kind, self.metadata.name))
+                message_with_prompt('⁉ {}:{} does not exist'.format(self.kind.lower(), self.metadata.name))
                 return
             else:
                 message_with_prompt("⌛ Delete {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
