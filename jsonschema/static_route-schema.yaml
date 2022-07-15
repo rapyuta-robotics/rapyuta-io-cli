@@ -1,8 +1,8 @@
 ---
-"$schema": https://json-schema.org/draft-07/schema
+$schema: http://json-schema.org/draft-07/schema#
 title: Static Route
 description: A named route for the Deployment endpoint
-"$ref": "#/definitions/staticRoute"
+$ref: "#/definitions/staticRoute"
 definitions:
   staticRoute:
     type: object

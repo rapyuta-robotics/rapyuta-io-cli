@@ -1,6 +1,7 @@
-"$schema": "http://json-schema.org/draft-07/schema#"
+---
+$schema: "http://json-schema.org/draft-07/schema#"
 title: Disk
-"$ref": "#/definitions/disk"
+$ref: "#/definitions/disk"
 definitions:
   disk:
     type: object
@@ -58,7 +59,7 @@ definitions:
         default: cloud
         const: cloud
       capacity:
-        type:  number
+        type: number
         enum:
           - 4
           - 8
