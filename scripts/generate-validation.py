@@ -14,12 +14,14 @@
 #
 # Usage: python generate-validation.py
 # Run it from the Root of the repository inside virtual-environment.
-
+import json
 from yaml import safe_load
 from pathlib import Path, PurePosixPath
 from fastjsonschema import compile_to_code
 
 schema_dir = Path('jsonschema')
+json_schema_path = schema_dir.joinpath('json')
+json_schema_path.mkdir(parents=True, exist_ok=True)
 
 # with open(schema_dir.joinpath('primitives.yaml')) as primitive:
 #     primitives = safe_load(primitive.read())
@@ -28,13 +30,21 @@ schema_dir = Path('jsonschema')
 for schema in schema_dir.glob('*-schema.yaml'):
     print("processed {}".format(schema))
     base_path = Path('riocli').joinpath(schema)
+    
+
     module_name = Path(base_path).stem.replace("-schema", "")
     module = Path('riocli').joinpath(module_name).\
         joinpath('validation.py')
     with open(schema) as f:
         body = safe_load(f.read())
 
+    json_output = json_schema_path.joinpath(module_name+".schema.json")
+    print(json_output)
+    with open(json_output, 'w') as outfile:
+        content = json.dumps(body)
+        outfile.write(content)
     # Inject primitives
     # body['definitions'] = body['definitions'].extend(primitives)
     code = compile_to_code(body)
     module.write_text(code)
+

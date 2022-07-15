@@ -60,7 +60,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -146,7 +146,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -194,7 +194,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -237,7 +237,7 @@ spec:
     - type: docker
       name: Django
       docker:
-        image: rrdockerhub/sootballs_ims:1.14.0-rc4
+        image: rrdockerhub/sootballs_ims:{{ testlabel }}
         pullSecret:
           depends:
             kind: secret
@@ -373,7 +373,7 @@ spec:
       name: django
       command: /code/docker/entrypoint.sh
       docker:
-        image: rrdockerhub/sootballs_wcs:1.14.0-rc4
+        image: rrdockerhub/sootballs_wcs:{{ testlabel}}
         pullSecret:
           depends:
             kind: secret
