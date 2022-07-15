@@ -60,7 +60,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -146,7 +146,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -194,7 +194,7 @@ spec:
     - name: "systemui"
       type: docker
       docker:
-        image: "rrdockerhub/sootballs:1.14.0-rc4"
+        image: "rrdockerhub/sootballs:{{ testlabel }}"
         pullSecret:
           depends:
             kind: secret
@@ -236,7 +236,7 @@ spec:
     - type: docker
       name: Django
       docker:
-        image: rrdockerhub/sootballs_ims:1.14.0-rc4
+        image: rrdockerhub/sootballs_ims:{{ testlabel }}
         pullSecret:
           depends:
             kind: secret
@@ -371,7 +371,7 @@ spec:
       name: django
       command: /code/docker/entrypoint.sh
       docker:
-        image: rrdockerhub/sootballs_wcs:1.14.0-rc4
+        image: rrdockerhub/sootballs_wcs:{{ testlabel}}
         pullSecret:
           depends:
             kind: secret
@@ -631,42 +631,42 @@ spec:
         kind: staticroute
         nameOrGUID: ui-{{ routePrefix }}
 
----
-apiVersion: apiextensions.rapyuta.io/v1
-kind: Deployment
-metadata:
-  name: sootballs_edge_01
-  depends:
-    kind: package
-    nameOrGUID: "Sootballs Edge2"
-    version: "1.0.0"
-spec:
-  runtime: device
-  depends:
-    - kind: deployment
-      nameOrGUID: sootballs_ims
-  rosNetworks:
-    - depends:
-        kind: network
-        nameOrGUID: sootballs
-  device:
-    depends:
-      kind: device
-      nameOrGUID: kibstg-edge-1
-  envArgs:
-    - name: IMS_AUTH_USERNAME
-      value: root
-    - name: IMS_AUTH_PASSWORD
-      value: airborne_rr
-    - name: "SENTRY_DSN"
-      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
-    - name: "DOCKER_STDOUT"
-      value: "true"
-    - name: "DISABLE_MULTICAST"
-      value: "false"
-    - name: "ROS_DOMAIN_ID"
-      value: "10"
-    - name: "USE_PARAMS_IO"
-      value: "true"
-    - name: "EDGE_ALARM_MONITOR"
-      value: "true"
+#---
+#apiVersion: apiextensions.rapyuta.io/v1
+#kind: Deployment
+#metadata:
+# name: sootballs_edge_01
+# depends:
+#   kind: package
+#   nameOrGUID: "Sootballs Edge2"
+#   version: "1.0.0"
+#spec:
+# runtime: device
+# depends:
+#   - kind: deployment
+#     nameOrGUID: sootballs_ims
+# rosNetworks:
+#   - depends:
+#       kind: network
+#       nameOrGUID: sootballs
+# device:
+#   depends:
+#     kind: device
+#     nameOrGUID: kibstg-edge-1
+# envArgs:
+#   - name: IMS_AUTH_USERNAME
+#     value: root
+#   - name: IMS_AUTH_PASSWORD
+#     value: airborne_rr
+#   - name: "SENTRY_DSN"
+#     value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+#   - name: "DOCKER_STDOUT"
+#     value: "true"
+#   - name: "DISABLE_MULTICAST"
+#     value: "false"
+#   - name: "ROS_DOMAIN_ID"
+#     value: "10"
+#   - name: "USE_PARAMS_IO"
+#     value: "true"
+#   - name: "EDGE_ALARM_MONITOR"
+#     value: "true"

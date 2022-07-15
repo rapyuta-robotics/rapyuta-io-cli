@@ -1,7 +1,19 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
-kind: "Package"
+kind: "Secret"
 metadata:
-  name: "non-ros-cloud"
+  name: "rrdockerhub"
+spec:
+  type: Docker
+  docker:
+    username: user
+    password: password
+    email: user@example.net
+    # registry: https://index.docker.io/v1/
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package" #We will create a package
+metadata:
+  name: "non-ros-cloud"  #it will be called non-ros-cloud.
   version: "1.0.0"
   labels:
     app: test
@@ -12,12 +24,13 @@ spec:
   executables:
     - name: "http"
       type: docker
-      image: "nginx"
-      pullSecret:
+      docker:
+          image: "nginx"
+      pullSecret:  # docker with a pull secret
         depends:
           kind: secret
-          nameOrGUID: "rrdockerhub"
-  environmentVars:
+          nameOrGUID: "rrdockerhub"  #here we referene by names. not GUIDs
+  environmentVars: #it has environment args
     - name: "TEST_VAR"
       description: "This is a test var"
       defaultValue: "45"
@@ -25,7 +38,7 @@ spec:
       exposedName: "TEST_VAR_EXPOSED"
     - name: "TEST_INTERNAL_VAR"
       defaultValue: "45"
-  endpoints:
+  endpoints: #These are cloud endpoints
     - name: "HTTP"
       type: external-http
       port: 80
@@ -34,14 +47,3 @@ spec:
       type: external-https
       port: 443
       targetPort: 443
-    - name: "TCP/TLS"
-      type: external-tls-tcp
-      port: 5432
-      targetPort: 5432
-    - name: "Internal UDP"
-      type: internal-udp
-      port: 53
-      targetPort: 53
-    - name: "Internal UDP Range"
-      type: internal-udp-range
-      portRange: "1024-2048"
