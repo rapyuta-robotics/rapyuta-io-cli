@@ -18,6 +18,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.apply.parse import Applier
+from riocli.apply.explain import explain
 from riocli.build.model import Build
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
@@ -40,7 +41,6 @@ KIND_TO_CLASS = {
     'Deployment': Deployment,
 }
 
-PKG_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 @click.command(
@@ -102,24 +102,3 @@ def delete(values: str, files: str, dryrun: bool = False) -> None:
     rc = Applier(glob_files, values)
     rc.parse_dependencies(check_missing=False)
     rc.delete(dryrun=dryrun)
-
-
-# TODO very ghetto explain command
-@click.command(
-    'explain',
-    hidden=True,
-    cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
-)
-@click.argument('resource')
-@click.argument('template_root', default=os.path.abspath(os.path.join(PKG_ROOT, '../../examples/manifests')))
-def explain(resource: str, template_root: str) -> None:
-    glob_files = glob.glob(template_root + "/**/*", recursive=True)
-    for file in glob_files:
-        if resource in os.path.basename(file):
-            with open(file) as f:
-                lines = ["---\n"]
-                lines.extend(f.readlines())
-                lines.extend(["---\n"])
-                click.secho("".join(lines))

@@ -11,24 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import typing
 from abc import ABC, abstractmethod
+from datetime import datetime
+from shutil import get_terminal_size
 
+import click
 from munch import Munch, munchify
 from rapyuta_io import Client
-from datetime import datetime
 
 from riocli.project.util import find_project_guid
-import click
-import os
-rows, columns = os.popen('stty size', 'r').read().split()
 
 prompt = ">> {}{}{} [{}]"  #>> msg  spacer  rigth_msg time
+
+
 def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
-        time = datetime.now().strftime("%d/%m/%Y %H:%M:%S")        
-        spacer = ' '*(int(columns) - len(msg+ right_msg + time) - 12)
-        msg = prompt.format(msg, spacer, right_msg, time)
-        click.secho(msg, fg=fg)
+    columns, _ = get_terminal_size()
+    time = datetime.now().isoformat('T')
+    spacer = ' '*(int(columns) - len(msg + right_msg + time) - 12)
+    msg = prompt.format(msg, spacer, right_msg, time)
+    click.secho(msg, fg=fg)
      
 
 class Model(ABC, Munch):

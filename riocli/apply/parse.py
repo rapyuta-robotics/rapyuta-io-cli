@@ -15,17 +15,33 @@ import copy
 import json
 import typing
 from graphlib import TopologicalSorter
-from requests import head
-from tabulate import tabulate
+from shutil import get_terminal_size
 
 import click
 import jinja2
 import yaml
+from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 
+
 class Applier(object):
+    EXPECTED_TIME = {
+        "organization": 3,
+        "project": 3,
+        "secret": 3,
+        "package": 3,
+        "staticroute": 3,
+        "build": 180,
+        "disk": 180,
+        "deployment": 240,
+        "network": 120,
+        "device": 5,
+        "user": 3,
+
+    }
+
     def __init__(self, files: typing.List, values):
         self.environment = None
         self.input_file_paths = files
@@ -43,7 +59,6 @@ class Applier(object):
         self._read_files(files)
 
     def parse_dependencies(self, check_missing=True):
-        
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
@@ -52,39 +67,16 @@ class Applier(object):
                 self.graph.add(key)
                 number_of_objects = number_of_objects + 1
 
-        EXPECTED_TIME = {
-            "organization": 3,
-            "project": 3,
-            "secret": 3,
-            "package": 3,
-            "staticroute": 3,
-            "build": 180,
-            "disk": 180,
-            "deployment": 240,
-            "network": 120,
-            "device": 5,
-            "user": 3,
-
-        }
         resource_list = []
         total_time = 0
         for node in copy.deepcopy(self.graph).static_order():
             action = 'CREATE' if not self.resolved_objects[node]['src'] == 'remote' else 'UPDATE'
             kind = node.split(":")[0]
-            expected_time = round(EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
+            expected_time = round(self.EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
             total_time = total_time + expected_time
             resource_list.append([node, action, expected_time])
 
-        total_time = round(total_time, 2)
-        click.secho("rapyuta.io Apply context", bg='white', fg="black")
-        click.secho("Expected Runtime : {} mins".format(total_time) , fg="red")
-        click.secho("File             : "+ str(len(self.files)), fg="yellow")
-        click.secho("YAML object      : "+ str(number_of_objects), fg="yellow")
-        
-        click.secho("           Inventory", fg="yellow")
-        click.secho(" "*100, bg='blue')
-        click.secho(tabulate(resource_list, headers=["Resource", "Action", "Expected Time (mins)"]), fg='white')
-        click.secho(" "*100, bg='blue')
+        self._display_context(total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
 
         if check_missing:
             missing_resources = []
@@ -97,6 +89,26 @@ class Applier(object):
                             "Plese ensure the following are either available in your yaml" + \
                             "or created on the server. {}".format(set(missing_resources)), fg="red")
                 exit(1)
+
+    def _display_context(self, total_time: int, total_objects: int, resource_list: typing.List) -> None:
+        # Display context
+        headers = [click.style('Resource Context', bold=True, fg='yellow')]
+        context = [
+            ['Expected Time (mins)', round(total_time, 2)],
+            ['Files', len(self.files)],
+            ['Resources', total_objects],
+        ]
+        click.echo(tabulate(context, headers=headers, tablefmt='simple', numalign='center'))
+
+        # Display Resource Inventory
+        headers = []
+        for header in ['Resource', 'Action', 'Expected Time (mins)']:
+            headers.append(click.style(header, fg='yellow', bold=True))
+
+        col, _ = get_terminal_size()
+        click.secho(" " * col, bg='blue')
+        click.echo(tabulate(resource_list, headers=headers, tablefmt='simple', numalign='center'))
+        click.secho(" " * col, bg='blue')
 
     def apply(self, *args, **kwargs):
         self.graph.prepare()
@@ -154,7 +166,7 @@ class Applier(object):
             loaded_data = list(loaded)
 
         if not loaded_data:
-            click.secho('{} file is empty', file_name)
+            click.secho('{} file is empty'.format(file_name))
 
         return loaded_data
 

@@ -1,23 +1,35 @@
-
-
+# Copyright 2022 Rapyuta Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import functools
 import json
 import re
-from riocli.deployment.model import Deployment
-from riocli.disk.model import Disk
-from riocli.package.model import Package
-from riocli.static_route.model import StaticRoute
-from riocli.build.model import Build
-from riocli.device.model import Device
-from riocli.network.model import Network
-from riocli.secret.model import Secret
-from riocli.project.model import Project
 import typing
-from riocli.config.config import Configuration
+
+from munch import munchify
 from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from munch import munchify
+from riocli.build.model import Build
+from riocli.config.config import Configuration
+from riocli.deployment.model import Deployment
+from riocli.device.model import Device
+from riocli.disk.model import Disk
+from riocli.network.model import Network
+from riocli.package.model import Package
+from riocli.project.model import Project
+from riocli.secret.model import Secret
+from riocli.static_route.model import StaticRoute
 
 
 class _Singleton(type):
@@ -138,10 +150,8 @@ class ResolverCache(object, metaclass=_Singleton):
 
         return mapping[kind]
 
-
     def _generate_find_guid_functor(self, name_field='name'):
         return lambda name, obj_list: filter(lambda x: name == getattr(x, name_field), obj_list)
-
 
     def _list_networks(self):
         native = self.client.list_native_networks()
@@ -166,7 +176,6 @@ class ResolverCache(object, metaclass=_Singleton):
             err_msg = data.get('error')
             raise Exception(err_msg)
         return munchify(data)
-
 
     @classmethod
     def _maybe_guid(cls, kind: str, name_or_guid: str) -> typing.Union[str, None]:

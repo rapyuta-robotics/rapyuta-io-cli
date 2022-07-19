@@ -22,6 +22,7 @@ from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
+from riocli.chart import chart
 from riocli.apply import apply, explain, delete
 from riocli.auth import auth
 from riocli.build import build
@@ -33,12 +34,12 @@ from riocli.disk import disk
 from riocli.marketplace import marketplace
 from riocli.network import network
 from riocli.package import package
+from riocli.parameter import parameter
 from riocli.project import project
 from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
-from riocli.parameter import parameter
 
 
 @with_plugins(iter_entry_points('riocli.plugins'))
@@ -72,6 +73,7 @@ def version():
 
 
 cli.add_command(apply)
+cli.add_command(chart)
 cli.add_command(explain)
 cli.add_command(delete)
 cli.add_command(auth)
