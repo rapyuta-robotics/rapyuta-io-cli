@@ -26,6 +26,7 @@ from riocli.chart.util import find_chart
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
+    help='Describe the available chart with versions',
 )
 @click.argument('chart', type=str)
 def info_chart(chart: str) -> None:
@@ -38,6 +39,7 @@ def info_chart(chart: str) -> None:
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
+    help='Search for available charts in the repository',
 )
 @click.argument('chart', type=str)
 def search_chart(chart: str) -> None:

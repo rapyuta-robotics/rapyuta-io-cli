@@ -19,10 +19,10 @@ from click_help_colors import HelpColorsCommand
 
 @click.command(
     'explain',
-    hidden=True,
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
+    help='Generates a sample resource manifest for the given type'
 )
 @click.option('--templates', help='Alternate root for templates',
               default=None)

@@ -29,6 +29,7 @@ from riocli.chart.util import find_chart
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
+    help='Apply a new Rapyuta Chart in the Project',
 )
 @click.option('--values')
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='Perform dry-run for applying the chart')

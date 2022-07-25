@@ -27,7 +27,7 @@ from riocli.chart.search import search_chart, info_chart
 )
 def chart() -> None:
     """
-    Operations on Rapyuta Charts
+    Rapyuta Charts is a way to package the complete Application for Rapyuta.io Platform.
     """
     pass
 
