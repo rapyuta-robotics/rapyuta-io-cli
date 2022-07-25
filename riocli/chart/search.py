@@ -15,10 +15,11 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 from tabulate import tabulate
 from yaml import safe_dump_all
 
-from riocli.chart.util import find_chart
+from riocli.chart.util import find_chart, fetch_index
 
 
 @click.command(
@@ -45,12 +46,30 @@ def search_chart(chart: str) -> None:
     _display_entries(versions)
 
 
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color='yellow',
+    help_options_color='green',
+)
+def list_charts() -> None:
+    index = fetch_index()
+    if 'entries' not in index:
+        raise Exception('No entries found!')
+    entries = []
+    for name, chart in index['entries'].items():
+        for version in chart:
+            entries.append(version)
+    
+    _display_entries(munchify(entries))
+
+
 def _display_entries(entries: typing.List) -> None:
     headers, table = [], []
-    for header in ['Name', 'Version', 'Created At']:
+    for header in ['Name', 'Version', 'Description', 'Created At']:
         headers.append(click.style(header, fg='yellow'))
 
     for entry in entries:
-        table.append([entry.get('name'), entry.get('version'), entry.get('created')])
+        table.append([entry.get('name'), entry.get('version'),entry.get('description'), entry.get('created')])
 
     click.echo(tabulate(table, headers=headers, tablefmt='simple'))
