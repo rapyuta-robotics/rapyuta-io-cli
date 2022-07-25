@@ -16,7 +16,7 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.chart.apply import apply_chart
 from riocli.chart.delete import delete_chart
-from riocli.chart.search import search_chart, info_chart
+from riocli.chart.search import list_charts, search_chart, info_chart
 
 
 @click.group(
@@ -36,3 +36,4 @@ chart.add_command(search_chart)
 chart.add_command(info_chart)
 chart.add_command(apply_chart)
 chart.add_command(delete_chart)
+chart.add_command(list_charts)
