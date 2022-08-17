@@ -14,6 +14,7 @@
 from textwrap import indent
 import typing
 import json
+import os
 
 import click
 from munch import munchify
@@ -90,12 +91,15 @@ class Package(Model):
 
         # ✓ parameters
         # TODO validate transform.  
-        component_obj.parameters = self.spec.environmentVars
-        # handle exposed params
-        exposed_parameters = []
-        for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
-            exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
-        component_obj.exposedParameters = exposed_parameters
+        if 'environmentVars' in self.spec:
+            component_obj.parameters = self.spec.environmentVars
+            # handle exposed params
+            exposed_parameters = []
+            for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
+                if os.environ.get('DEBUG'):
+                    print(entry.name)
+                exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
+            pkg_object.plans[0].exposedParameters = exposed_parameters
             
         # device
         #  ✓ arch, ✓ restart
