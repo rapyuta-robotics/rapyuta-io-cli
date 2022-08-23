@@ -35,11 +35,13 @@ setup(
     author_email="opensource@rapyuta-robotics.com",
     url="http://docs.rapyuta.io",
     install_requires=[
+        "pretty-traceback==2022.1018",
         "argparse>=1.4.0",
         "click-completion>=0.5.2",
         "click-help-colors>=0.9.1",
         "click-repl>=0.2.0",
         "click-spinner>=0.1.10",
+        "click-plugins>=1.1.1",
         "click>=8.0.0",
         "dictdiffer>=0.9.0",
         "fastjsonschema>=2.15.0",

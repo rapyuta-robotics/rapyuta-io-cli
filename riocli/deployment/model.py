@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
-
+import os
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
@@ -131,12 +131,15 @@ class Deployment(Model):
             # network_type =
 
             # Add Disk
+            exec_mounts = []
             if 'volumes' in self.spec:
-                exec_mounts = []
                 for vol in self.spec.volumes:
                     exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+            if len(exec_mounts) > 0:
                 provision_config.mount_volume(__componentName, device=device, executable_mounts=exec_mounts)
 
+        if os.environ.get('DEBUG'):
+            print(provision_config)
         deployment = pkg.provision(self.metadata.name, provision_config)
         deployment.poll_deployment_till_ready()
         deployment.get_status()
