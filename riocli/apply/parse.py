@@ -24,6 +24,7 @@ from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
+from riocli.utils import run_bash
 
 
 class Applier(object):
@@ -42,7 +43,7 @@ class Applier(object):
 
     }
 
-    def __init__(self, files: typing.List, values):
+    def __init__(self, files: typing.List, values, secrets):
         self.environment = None
         self.input_file_paths = files
         self.config = Configuration()
@@ -53,9 +54,19 @@ class Applier(object):
         self.files = {}
         self.graph = TopologicalSorter()
         self.rc = ResolverCache(self.client)
-        if values:
-            self.values = self._read_file(values)[0]
+        self.secrets = {}
+        self.values = {}
+
+        if values and secrets:
             self.environment = jinja2.Environment()
+
+        if values:
+            self.values = self._read_file(values, is_value=True, is_secret=False)[0]
+        
+        if secrets:
+            self.secrets = self._read_file(secrets, is_value=True, is_secret=True)[0]
+
+
         self._read_files(files)
 
     def parse_dependencies(self, check_missing=True):
@@ -142,28 +153,52 @@ class Applier(object):
     def _read_files(self, files):
         for f in files:
             data = self._read_file(f)
-            for obj in data:
-                self._register_object(obj)
+            if data:
+                for obj in data:
+                    self._register_object(obj)
 
             self.files[f] = data
 
-    def _read_file(self, file_name):
-        with open(file_name) as opened:
-            data = opened.read()
+    def _read_file(self, file_name, is_value=False, is_secret=False):
+        
+        if not is_secret:
+            with open(file_name) as opened:
+                data = opened.read()
+        else:
+            data = run_bash('sops -d {}'.format(file_name))
+            
 
-        if self.environment or file_name.endswith('.j2'):
-            template = self.environment.from_string(data)
-            data = template.render(**self.values)
-            file_name = file_name.rstrip('.j2')
+        if (not is_value or is_secret):
+            if self.environment or file_name.endswith('.j2'):
+                template = self.environment.from_string(data)
+                template_args = self.values
+                if self.secrets:
+                    template_args['secrets'] = self.secrets
+                try:
+                    data = template.render(**template_args)
+                except Exception as e:
+                    click.secho('{} yaml parsing error. Msg: {}'.format(file_name, str(e)))
+                    return None
+                
+                file_name = file_name.rstrip('.j2')
 
         loaded_data = []
         if file_name.endswith('json'):
             # FIXME: Handle for JSON List.
-            loaded = json.loads(data)
-            loaded_data.append(loaded)
+            try:
+                loaded = json.loads(data)
+                loaded_data.append(loaded)
+            except json.JSONDecodeError as e:
+                click.secho('{} yaml parsing error. Msg: {}'.format(file_name, str(e)))
+                return None
         elif file_name.endswith('yaml') or file_name.endswith('yml'):
-            loaded = yaml.safe_load_all(data)
-            loaded_data = list(loaded)
+            try:
+                loaded = yaml.safe_load_all(data)
+                loaded_data = list(loaded)
+                
+            except yaml.YAMLError as e:
+                click.secho('{} yaml parsing error. Msg: {}'.format(file_name, str(e)))
+                return None
 
         if not loaded_data:
             click.secho('{} file is empty'.format(file_name))
