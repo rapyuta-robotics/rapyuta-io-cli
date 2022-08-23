@@ -57,11 +57,6 @@ class Disk(Model):
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        labels = self.metadata.get('labels', {})
-        if labels.get('deletionPolicy') == "dont-delete":
-            click.secho(">> Warning: delete protection enabled on {}:{}. Disk won't be deleted ".format(self.kind.lower(), self.metadata.name), fg="yellow")
-            return 
-
         self._poll_till_available(client, obj)
         volume_instance = client.get_volume_instance(obj.internalDeploymentGUID)
         volume_instance.destroy_volume_instance()

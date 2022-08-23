@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import copy
 import json
 import typing
@@ -25,8 +26,11 @@ from tabulate import tabulate
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.utils import run_bash
+from riocli.utils.mermaid import mermaid_link
 
-
+def mermaid_safe(s: str):
+    return s.replace(" ", "_")
+    
 class Applier(object):
     EXPECTED_TIME = {
         "organization": 3,
@@ -56,7 +60,7 @@ class Applier(object):
         self.rc = ResolverCache(self.client)
         self.secrets = {}
         self.values = {}
-
+        self.diagram = ["flowchart LR"]
         if values and secrets:
             self.environment = jinja2.Environment()
 
@@ -68,27 +72,34 @@ class Applier(object):
 
 
         self._read_files(files)
-
-    def parse_dependencies(self, check_missing=True):
+        
+    def parse_dependencies(self, check_missing=True, delete=False):
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
                 self.graph.add(key)
+                self.diagram.append('    {}[{}]'.format( mermaid_safe(key), key))
                 number_of_objects = number_of_objects + 1
 
         resource_list = []
         total_time = 0
+
         for node in copy.deepcopy(self.graph).static_order():
+            
             action = 'CREATE' if not self.resolved_objects[node]['src'] == 'remote' else 'UPDATE'
+            if delete:
+                action = 'DELETE'
             kind = node.split(":")[0]
             expected_time = round(self.EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
             total_time = total_time + expected_time
             resource_list.append([node, action, expected_time])
 
         self._display_context(total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
-
+        
+        if os.environ.get('MERMAID'):
+            click.launch(mermaid_link("\n".join(self.diagram)))
         if check_missing:
             missing_resources = []
             for key, item in self.resolved_objects.items():
@@ -122,6 +133,7 @@ class Applier(object):
         click.secho(" " * col, bg='blue')
 
     def apply(self, *args, **kwargs):
+
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
@@ -160,7 +172,6 @@ class Applier(object):
             self.files[f] = data
 
     def _read_file(self, file_name, is_value=False, is_secret=False):
-        
         if not is_secret:
             with open(file_name) as opened:
                 data = opened.read()
@@ -248,6 +259,7 @@ class Applier(object):
         self.resolved_objects[key]['src'] = 'remote'
 
         self.graph.add(dependent_key, key)
+        self.diagram.append('    {}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
         dependency['guid'] = guid
         if kind.lower() == "disk":
             dependency['depGuid'] = obj['internalDeploymentGUID']
@@ -286,7 +298,7 @@ class Applier(object):
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self.graph.add(dependent_key, key)
-
+        self.diagram.append('    {}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
         if key not in self.resolved_objects:
             self.resolved_objects[key] = {'src': 'missing'}
 

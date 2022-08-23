@@ -63,13 +63,19 @@ class Model(ABC, Munch):
             self._set_project_in_client(client)
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
-        
+
             if not obj:
                 message_with_prompt('⁉ {}:{} does not exist'.format(self.kind.lower(), self.metadata.name))
                 return
             else:
                 message_with_prompt("⌛ Delete {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 if not dryrun:
+                    labels = self.metadata.get('labels', {})
+                    if labels.get('rapyuta.io/deletionPolicy').lower() == "retain":
+                        click.secho(">> Warning: delete protection enabled on {}:{}. Resource will be retained ".format(self.kind.lower(), self.metadata.name), fg="yellow")
+                        return 
+
+                    
                     self.delete_object(client, obj)
                     message_with_prompt("❌ Deleted {}:{}".format(self.kind.lower(), self.metadata.name), fg='red')
                 
