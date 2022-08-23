@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from cProfile import label
 import typing
 
 import click
@@ -38,23 +39,32 @@ def list_packages(filter_word: str) -> None:
 def _display_package_list(
         packages: typing.List[Package],
         show_header: bool = True,
-        truncate_limit: int = 32,
+        truncate_limit: int = 48,
 ) -> None:
     if show_header:
-        click.secho('{:30} {:34} {:10} {:<32}'.
-                    format('Package ID', 'Name', 'Version', 'Description'),
+        click.secho('{:30} {:10} {:34} {:<48}'.
+                    format('Name', 'Version', 'Package ID', 'Description'),
                     fg='yellow')
 
     # Show IO Packages first
-    packages.sort(key=lambda p: p.packageId)
+    iter_pkg = list(map(lambda x: x.packageName, packages))
+    iter_pkg.sort()
 
-    for package in packages:
-        description = package.description
-        name = package.packageName
-        if truncate_limit:
-            if len(description) > truncate_limit:
-                description = description[:truncate_limit] + '..'
-            if len(name) > truncate_limit:
-                name = name[:truncate_limit] + '..'
-        click.echo('{:30} {:34} {:10} {:<32}'.
-                   format(package.packageId, name, package.packageVersion, description))
+    package_dict = {}
+    for pkgName in iter_pkg:
+        filtered_pkg = list(filter(lambda x: x.packageName == pkgName, packages))
+        filtered_pkg.sort(key=lambda x: x.packageVersion)
+        package_dict[pkgName] = filtered_pkg
+
+    
+    for pkgName, pkgVersionList in package_dict.items():
+        for package in pkgVersionList:
+            description = package.description
+            name = package.packageName
+            if truncate_limit:
+                if len(description) > truncate_limit:
+                    description = description[:truncate_limit] + '..'
+                if len(name) > truncate_limit:
+                    name = name[:truncate_limit] + '..'
+            click.echo('{:30} {:10} {:34} {:<48}'.
+                   format(name, package.packageVersion, package.packageId, description))

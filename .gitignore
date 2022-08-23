@@ -11,6 +11,9 @@ jsonschema/json/
 *.class
 
 # Compiled Python bytecode
+venv/
+build/
+*.egg-info/
 *.py[cod]
 
 # Log files
