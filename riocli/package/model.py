@@ -27,7 +27,7 @@ from rapyuta_io.clients.package import RestartPolicy
 
 
 class Package(Model):
-    RRESTART_POLICY = {
+    RESTART_POLICY = {
         'always': RestartPolicy.Always,
         'never': RestartPolicy.Never,
         'onfailure': RestartPolicy.OnFailure
@@ -102,6 +102,7 @@ class Package(Model):
                 obj = envVar.copy()
                 if 'defaultValue' in obj:
                     obj['default'] = obj['defaultValue']
+                    del obj['default']
 
                 fixed_default.append(obj)
             component_obj.parameters = fixed_default
@@ -118,7 +119,8 @@ class Package(Model):
         if self.spec.runtime == 'device':
             component_obj.required_runtime = 'device'
             component_obj.architecture = self.spec.device.arch
-            component_obj.restart_policy = self.RRESTART_POLICY[self.spec.device.restart.lower()]
+            if 'restart' in self.spec.device:
+                component_obj.restart_policy = self.RESTART_POLICY[self.spec.device.restart.lower()]
         
         # cloud
         #  ✓ replicas

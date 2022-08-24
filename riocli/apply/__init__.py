@@ -54,12 +54,10 @@ def parse_varidac_pathargs(pathItem):
     #        consider it a file path directly. 
     if os.path.exists(abs_path):
         if os.path.isdir(abs_path):
+            #TODO: Should we keep this recursive?
             glob_files = glob.glob(abs_path + "/**/*", recursive=True)
         else:
-            if "*" in abs_path or '?' in abs_path or '^' in abs_path or '.' in abs_path or '!' in abs_path:
-                glob_files = glob.glob(abs_path, recursive=True)
-            else:
-                glob_files = [pathItem]
+            glob_files = glob.glob(abs_path, recursive=True)
     return glob_files
 
 def process_files_values_secrets(files, values, secrets):
@@ -68,7 +66,6 @@ def process_files_values_secrets(files, values, secrets):
     for pathItem in files:
         path_glob = parse_varidac_pathargs(pathItem)
         glob_files.extend(path_glob)
-
 
     abs_values = values
     if values and values != "":
@@ -81,7 +78,8 @@ def process_files_values_secrets(files, values, secrets):
         abs_secrets = os.path.abspath(secrets)
         if abs_secrets in glob_files:
             glob_files.remove(abs_secrets)
-        
+
+    glob_files = list(set(glob_files))        
     return glob_files, abs_values, abs_secret
 
 @click.command(
