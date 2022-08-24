@@ -31,14 +31,15 @@ from riocli.chart.util import find_chart
     help_options_color='green',
     help='Apply a new Rapyuta Chart in the Project',
 )
-@click.option('--values')
-@click.option('--dryrun', '-d', is_flag=True, default=False, help='Perform dry-run for applying the chart')
+@click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
+@click.option('--values', '-v')
+@click.option('--secrets', '-s')
 @click.argument('chart', type=str)
-def apply_chart(chart: str, values: str, dryrun: bool) -> None:
+def apply_chart(chart: str, values: str, secrets:str, dryrun: bool) -> None:
     versions = find_chart(chart)
     if len(versions) > 1:
         click.secho('More than one charts are available, please specify the version!', fg='red')
 
     chart = Chart(**versions[0])
-    chart.apply_chart(values, dryrun)
+    chart.apply_chart(values, secrets, dryrun)
     chart.cleanup()

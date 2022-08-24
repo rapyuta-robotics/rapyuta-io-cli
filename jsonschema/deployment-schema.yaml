@@ -132,7 +132,7 @@ definitions:
                 type: string
                 enum:
                   - always
-                  - onFailure
+                  - onfailure
                   - never
                 default: always
               envArgs:

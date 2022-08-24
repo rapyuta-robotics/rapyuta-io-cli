@@ -30,7 +30,7 @@ class Deployment(Model):
     RESTART_POLICY = {
         'always': RestartPolicy.Always,
         'never': RestartPolicy.Never,
-        'onFailure': RestartPolicy.OnFailure
+        'onfailure': RestartPolicy.OnFailure
     }
 
     def find_object(self, client: Client) -> typing.Any:
@@ -123,7 +123,7 @@ class Deployment(Model):
             provision_config.add_device(__componentName, device=device)
 
             if 'restart' in self.spec:
-                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart])
+                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart.lower()])
 
             # Add Network
             # if self.spec.rosNetworks:

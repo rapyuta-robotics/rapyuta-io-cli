@@ -61,7 +61,7 @@ class Applier(object):
         self.secrets = {}
         self.values = {}
         self.diagram = ["flowchart LR"]
-        if values and secrets:
+        if values or secrets:
             self.environment = jinja2.Environment()
 
         if values:
@@ -72,15 +72,22 @@ class Applier(object):
 
 
         self._read_files(files)
-        
+    
+    def _add_graph_node(self, key):
+        self.graph.add(key)
+        self.diagram.append('    {}[{}]'.format( mermaid_safe(key), key))
+    
+    def _add_graph_edge(self, dependent_key, key):
+        self.graph.add(dependent_key, key)
+        self.diagram.append('    {}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
+
     def parse_dependencies(self, check_missing=True, delete=False):
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
-                self.graph.add(key)
-                self.diagram.append('    {}[{}]'.format( mermaid_safe(key), key))
+                self._add_graph_node(key)
                 number_of_objects = number_of_objects + 1
 
         resource_list = []
@@ -97,9 +104,7 @@ class Applier(object):
             resource_list.append([node, action, expected_time])
 
         self._display_context(total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
-        
-        if os.environ.get('MERMAID'):
-            click.launch(mermaid_link("\n".join(self.diagram)))
+     
         if check_missing:
             missing_resources = []
             for key, item in self.resolved_objects.items():
@@ -114,6 +119,10 @@ class Applier(object):
 
     def _display_context(self, total_time: int, total_objects: int, resource_list: typing.List) -> None:
         # Display context
+           
+        if os.environ.get('MERMAID'):
+            click.launch(mermaid_link("\n".join(self.diagram)))
+
         headers = [click.style('Resource Context', bold=True, fg='yellow')]
         context = [
             ['Expected Time (mins)', round(total_time, 2)],
@@ -181,11 +190,13 @@ class Applier(object):
 
         if (not is_value or is_secret):
             if self.environment or file_name.endswith('.j2'):
+                print("Jinja Happening")
                 template = self.environment.from_string(data)
                 template_args = self.values
                 if self.secrets:
                     template_args['secrets'] = self.secrets
                 try:
+                    print(template_args)
                     data = template.render(**template_args)
                 except Exception as e:
                     click.secho('{} yaml parsing error. Msg: {}'.format(file_name, str(e)))
@@ -258,8 +269,8 @@ class Applier(object):
         self.resolved_objects[key]['raw'] = obj
         self.resolved_objects[key]['src'] = 'remote'
 
-        self.graph.add(dependent_key, key)
-        self.diagram.append('    {}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
+        self._add_graph_edge(dependent_key, key)
+        
         dependency['guid'] = guid
         if kind.lower() == "disk":
             dependency['depGuid'] = obj['internalDeploymentGUID']
@@ -297,8 +308,8 @@ class Applier(object):
                 self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
 
         self.dependencies[kind][name_or_guid] = {'local': True}
-        self.graph.add(dependent_key, key)
-        self.diagram.append('    {}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
+        self._add_graph_edge(dependent_key, key)
+        
         if key not in self.resolved_objects:
             self.resolved_objects[key] = {'src': 'missing'}
 

@@ -23,10 +23,15 @@ from rapyuta_io import Project as v1Project, Client
 from riocli.model import Model
 # from riocli.package.util import find_project_guid, ProjectNotFound
 from riocli.package.validation import validate
+from rapyuta_io.clients.package import RestartPolicy
 
 
 class Package(Model):
-
+    RRESTART_POLICY = {
+        'always': RestartPolicy.Always,
+        'never': RestartPolicy.Never,
+        'onfailure': RestartPolicy.OnFailure
+    }
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -92,7 +97,14 @@ class Package(Model):
         # ✓ parameters
         # TODO validate transform.  
         if 'environmentVars' in self.spec:
-            component_obj.parameters = self.spec.environmentVars
+            fixed_default = []
+            for envVar in self.spec.environmentVars:
+                obj = envVar.copy()
+                if 'defaultValue' in obj:
+                    obj['default'] = obj['defaultValue']
+
+                fixed_default.append(obj)
+            component_obj.parameters = fixed_default
             # handle exposed params
             exposed_parameters = []
             for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
@@ -106,7 +118,7 @@ class Package(Model):
         if self.spec.runtime == 'device':
             component_obj.required_runtime = 'device'
             component_obj.architecture = self.spec.device.arch
-            component_obj.restartPolicy = self.spec.device.restart
+            component_obj.restart_policy = self.RRESTART_POLICY[self.spec.device.restart.lower()]
         
         # cloud
         #  ✓ replicas
