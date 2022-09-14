@@ -45,7 +45,7 @@ def validate___definitions_device(data, custom_formats={}):
 
 def validate___definitions_devicespec(data, custom_formats={}):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'rosDistro': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'python': {'type': 'string', 'enum': ['2', '3'], 'default': '3'}}, 'dependencies': {'docker': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'enum': [True]}, 'rosbagMountPath': {'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}}}]}, 'preinstalled': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'enum': [True]}, 'catkinWorkspace': {'type': 'string'}}}]}}}, rule='type')
+        raise JsonSchemaValueException("data must be object", value=data, name="data", definition={'type': 'object', 'properties': {'rosDistro': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'python': {'type': 'string', 'enum': ['2', '3'], 'default': '3'}}, 'dependencies': {'docker': {'oneOf': [{'properties': {'docker': {'type': 'object', 'properties': {'enabled': {'enum': [False]}}}}}, {'properties': {'docker': {'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'rosbagMountPath': {'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}}}}}]}, 'preinstalled': {'oneOf': [{'properties': {'preinstalled': {'type': 'object', 'properties': {'enabled': {'enum': [False]}}}}}, {'properties': {'preinstalled': {'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'catkinWorkspace': {'type': 'string'}}}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         if "docker" in data:
@@ -55,11 +55,19 @@ def validate___definitions_devicespec(data, custom_formats={}):
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_keys = set(data.keys())
-                        if "enabled" in data_keys:
-                            data_keys.remove("enabled")
-                            data__enabled = data["enabled"]
-                            if data__enabled not in [False]:
-                                raise JsonSchemaValueException("data.enabled must be one of [False]", value=data__enabled, name="data.enabled", definition={'enum': [False]}, rule='enum')
+                        if "docker" in data_keys:
+                            data_keys.remove("docker")
+                            data__docker = data["docker"]
+                            if not isinstance(data__docker, (dict)):
+                                raise JsonSchemaValueException("data.docker must be object", value=data__docker, name="data.docker", definition={'type': 'object', 'properties': {'enabled': {'enum': [False]}}}, rule='type')
+                            data__docker_is_dict = isinstance(data__docker, dict)
+                            if data__docker_is_dict:
+                                data__docker_keys = set(data__docker.keys())
+                                if "enabled" in data__docker_keys:
+                                    data__docker_keys.remove("enabled")
+                                    data__docker__enabled = data__docker["enabled"]
+                                    if data__docker__enabled not in [False]:
+                                        raise JsonSchemaValueException("data.docker.enabled must be one of [False]", value=data__docker__enabled, name="data.docker.enabled", definition={'enum': [False]}, rule='enum')
                     data_one_of_count1 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count1 < 2:
@@ -67,21 +75,29 @@ def validate___definitions_devicespec(data, custom_formats={}):
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_keys = set(data.keys())
-                        if "enabled" in data_keys:
-                            data_keys.remove("enabled")
-                            data__enabled = data["enabled"]
-                            if data__enabled not in [True]:
-                                raise JsonSchemaValueException("data.enabled must be one of [True]", value=data__enabled, name="data.enabled", definition={'enum': [True]}, rule='enum')
-                        if "rosbagMountPath" in data_keys:
-                            data_keys.remove("rosbagMountPath")
-                            data__rosbagMountPath = data["rosbagMountPath"]
-                            if not isinstance(data__rosbagMountPath, (str)):
-                                raise JsonSchemaValueException("data.rosbagMountPath must be string", value=data__rosbagMountPath, name="data.rosbagMountPath", definition={'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}, rule='type')
-                        else: data["rosbagMountPath"] = '/opt/rapyuta/volumes/rosbag'
+                        if "docker" in data_keys:
+                            data_keys.remove("docker")
+                            data__docker = data["docker"]
+                            if not isinstance(data__docker, (dict)):
+                                raise JsonSchemaValueException("data.docker must be object", value=data__docker, name="data.docker", definition={'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'rosbagMountPath': {'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}}}, rule='type')
+                            data__docker_is_dict = isinstance(data__docker, dict)
+                            if data__docker_is_dict:
+                                data__docker_keys = set(data__docker.keys())
+                                if "enabled" in data__docker_keys:
+                                    data__docker_keys.remove("enabled")
+                                    data__docker__enabled = data__docker["enabled"]
+                                    if data__docker__enabled not in [True]:
+                                        raise JsonSchemaValueException("data.docker.enabled must be one of [True]", value=data__docker__enabled, name="data.docker.enabled", definition={'enum': [True]}, rule='enum')
+                                if "rosbagMountPath" in data__docker_keys:
+                                    data__docker_keys.remove("rosbagMountPath")
+                                    data__docker__rosbagMountPath = data__docker["rosbagMountPath"]
+                                    if not isinstance(data__docker__rosbagMountPath, (str)):
+                                        raise JsonSchemaValueException("data.docker.rosbagMountPath must be string", value=data__docker__rosbagMountPath, name="data.docker.rosbagMountPath", definition={'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}, rule='type')
+                                else: data__docker["rosbagMountPath"] = '/opt/rapyuta/volumes/rosbag'
                     data_one_of_count1 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count1 != 1:
-                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'enum': [True]}, 'rosbagMountPath': {'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}}}]}, rule='oneOf')
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'docker': {'type': 'object', 'properties': {'enabled': {'enum': [False]}}}}}, {'properties': {'docker': {'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'rosbagMountPath': {'type': 'string', 'default': '/opt/rapyuta/volumes/rosbag'}}}}}]}, rule='oneOf')
         if "preinstalled" in data:
             data_one_of_count2 = 0
             if data_one_of_count2 < 2:
@@ -89,11 +105,19 @@ def validate___definitions_devicespec(data, custom_formats={}):
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_keys = set(data.keys())
-                        if "enabled" in data_keys:
-                            data_keys.remove("enabled")
-                            data__enabled = data["enabled"]
-                            if data__enabled not in [False]:
-                                raise JsonSchemaValueException("data.enabled must be one of [False]", value=data__enabled, name="data.enabled", definition={'enum': [False]}, rule='enum')
+                        if "preinstalled" in data_keys:
+                            data_keys.remove("preinstalled")
+                            data__preinstalled = data["preinstalled"]
+                            if not isinstance(data__preinstalled, (dict)):
+                                raise JsonSchemaValueException("data.preinstalled must be object", value=data__preinstalled, name="data.preinstalled", definition={'type': 'object', 'properties': {'enabled': {'enum': [False]}}}, rule='type')
+                            data__preinstalled_is_dict = isinstance(data__preinstalled, dict)
+                            if data__preinstalled_is_dict:
+                                data__preinstalled_keys = set(data__preinstalled.keys())
+                                if "enabled" in data__preinstalled_keys:
+                                    data__preinstalled_keys.remove("enabled")
+                                    data__preinstalled__enabled = data__preinstalled["enabled"]
+                                    if data__preinstalled__enabled not in [False]:
+                                        raise JsonSchemaValueException("data.preinstalled.enabled must be one of [False]", value=data__preinstalled__enabled, name="data.preinstalled.enabled", definition={'enum': [False]}, rule='enum')
                     data_one_of_count2 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count2 < 2:
@@ -101,20 +125,28 @@ def validate___definitions_devicespec(data, custom_formats={}):
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_keys = set(data.keys())
-                        if "enabled" in data_keys:
-                            data_keys.remove("enabled")
-                            data__enabled = data["enabled"]
-                            if data__enabled not in [True]:
-                                raise JsonSchemaValueException("data.enabled must be one of [True]", value=data__enabled, name="data.enabled", definition={'enum': [True]}, rule='enum')
-                        if "catkinWorkspace" in data_keys:
-                            data_keys.remove("catkinWorkspace")
-                            data__catkinWorkspace = data["catkinWorkspace"]
-                            if not isinstance(data__catkinWorkspace, (str)):
-                                raise JsonSchemaValueException("data.catkinWorkspace must be string", value=data__catkinWorkspace, name="data.catkinWorkspace", definition={'type': 'string'}, rule='type')
+                        if "preinstalled" in data_keys:
+                            data_keys.remove("preinstalled")
+                            data__preinstalled = data["preinstalled"]
+                            if not isinstance(data__preinstalled, (dict)):
+                                raise JsonSchemaValueException("data.preinstalled must be object", value=data__preinstalled, name="data.preinstalled", definition={'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'catkinWorkspace': {'type': 'string'}}}, rule='type')
+                            data__preinstalled_is_dict = isinstance(data__preinstalled, dict)
+                            if data__preinstalled_is_dict:
+                                data__preinstalled_keys = set(data__preinstalled.keys())
+                                if "enabled" in data__preinstalled_keys:
+                                    data__preinstalled_keys.remove("enabled")
+                                    data__preinstalled__enabled = data__preinstalled["enabled"]
+                                    if data__preinstalled__enabled not in [True]:
+                                        raise JsonSchemaValueException("data.preinstalled.enabled must be one of [True]", value=data__preinstalled__enabled, name="data.preinstalled.enabled", definition={'enum': [True]}, rule='enum')
+                                if "catkinWorkspace" in data__preinstalled_keys:
+                                    data__preinstalled_keys.remove("catkinWorkspace")
+                                    data__preinstalled__catkinWorkspace = data__preinstalled["catkinWorkspace"]
+                                    if not isinstance(data__preinstalled__catkinWorkspace, (str)):
+                                        raise JsonSchemaValueException("data.preinstalled.catkinWorkspace must be string", value=data__preinstalled__catkinWorkspace, name="data.preinstalled.catkinWorkspace", definition={'type': 'string'}, rule='type')
                     data_one_of_count2 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count2 != 1:
-                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'enum': [True]}, 'catkinWorkspace': {'type': 'string'}}}]}, rule='oneOf')
+                raise JsonSchemaValueException("data must be valid exactly by one of oneOf definition", value=data, name="data", definition={'oneOf': [{'properties': {'preinstalled': {'type': 'object', 'properties': {'enabled': {'enum': [False]}}}}}, {'properties': {'preinstalled': {'type': 'object', 'properties': {'enabled': {'enum': [True]}, 'catkinWorkspace': {'type': 'string'}}}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "rosDistro" in data_keys:
             data_keys.remove("rosDistro")

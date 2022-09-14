@@ -57,28 +57,40 @@ definitions:
       docker:
         oneOf:
           - properties:
-              enabled:
-                enum:
-                  - False
+              docker:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - False
           - properties:
-              enabled:
-                enum:
-                  - True
-              rosbagMountPath:
-                type: string
-                default: /opt/rapyuta/volumes/rosbag
+              docker:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - True
+                  rosbagMountPath:
+                    type: string
+                    default: /opt/rapyuta/volumes/rosbag
       preinstalled:
         oneOf:
           - properties:
-              enabled:
-                enum:
-                  - False
+              preinstalled:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - False
           - properties:
-              enabled:
-                enum:
-                  - True
-              catkinWorkspace:
-                type: string
+              preinstalled:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - True
+                  catkinWorkspace:
+                    type: string
 
   stringMap:
     type: object
