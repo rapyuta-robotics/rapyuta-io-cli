@@ -39,5 +39,5 @@ def explain(resource: str, templates: str = None) -> None:
                 click.secho(f.readlines())
                 exit(0)
 
-    click.secho("Error in explain command. Exit Code -1", fg='red')
+    click.secho("[Err] Resource \"{}\" not found".format(resource), fg='red')
     exit(1)

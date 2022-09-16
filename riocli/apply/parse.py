@@ -28,11 +28,7 @@ from tabulate import tabulate
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.utils import run_bash
-from riocli.utils.mermaid import mermaid_link
-
-def mermaid_safe(s: str):
-    return s.replace(" ", "_")
-
+from riocli.utils.mermaid import mermaid_link, mermaid_safe
     
 class Applier(object):
     MAX_WORKERS=6
@@ -82,17 +78,17 @@ class Applier(object):
         return self.graph.static_order()
 
     def apply(self, *args, **kwargs):
-        taskQueue = queue.Queue()
-        doneQueue    = queue.Queue()
+        task_queue = queue.Queue()
+        done_queue    = queue.Queue()
 
         def worker():
             while True:
-                obj = taskQueue.get()
+                obj = task_queue.get()
                 if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
-                    click.secho("obj {} is being aplied".format(obj))
+                    # click.secho("obj {} is being aplied".format(obj))
                     self._apply_manifest(obj, *args, **kwargs)
-                taskQueue.task_done()
-                doneQueue.put(obj)
+                task_queue.task_done()
+                done_queue.put(obj)
         
         
         worker_list = []
@@ -104,12 +100,12 @@ class Applier(object):
         while self.graph.is_active():
             for obj in self.graph.get_ready():
                 # if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
-                taskQueue.put(obj)
+                task_queue.put(obj)
             
-            done_obj = doneQueue.get()
+            done_obj = done_queue.get()
             self.graph.done(done_obj)
         
-        taskQueue.join()
+        task_queue.join()
 
     def delete(self, *args, **kwargs):
         delete_order = list(self.graph.static_order())
@@ -332,7 +328,8 @@ class Applier(object):
         # Display context
            
         if os.environ.get('MERMAID'):
-            click.launch(mermaid_link("\n".join(self.diagram)))
+            diagram_link = mermaid_link("\n".join(self.diagram))
+            click.launch(diagram_link)
 
         headers = [click.style('Resource Context', bold=True, fg='yellow')]
         context = [
