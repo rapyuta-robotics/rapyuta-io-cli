@@ -35,7 +35,7 @@ def inspect_deployment(format_type: str, deployment_name: str, deployment_guid: 
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_deployment_inspectable(deployment: Deployment) -> dict:

@@ -45,4 +45,4 @@ def delete_network(force: bool, network_name: str, network_guid: str, network_ty
         click.secho('{} Network deleted successfully!'.format(network_type.capitalize()), fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

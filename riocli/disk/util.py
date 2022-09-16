@@ -41,7 +41,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
                 guid = find_disk_guid(client, name)
             except Exception as e:
                 click.secho(str(e), fg='red')
-                exit(1)
+                raise SystemExit(1)
 
         kwargs['disk_name'] = name
         kwargs['disk_guid'] = guid

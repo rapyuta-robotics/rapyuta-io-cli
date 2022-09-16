@@ -36,7 +36,7 @@ def inspect_project(format_type: str, project_name: str, project_guid: str) -> N
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_project_inspectable(obj: Project) -> dict:

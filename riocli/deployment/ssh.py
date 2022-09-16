@@ -39,7 +39,7 @@ def ssh_init(deployment_name: str, deployment_guid: str) -> None:
         click.secho('Deployment ready for SSH', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _ssh_setup(deployment_guid: str) -> None:

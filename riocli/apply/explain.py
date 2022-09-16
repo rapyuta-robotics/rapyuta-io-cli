@@ -37,7 +37,7 @@ def explain(resource: str, templates: str = None) -> None:
         if resource in each.name:
             with open(each) as f:
                 click.secho(f.readlines())
-                exit(0)
+                raise SystemExit(0)
 
     click.secho("[Err] Resource \"{}\" not found".format(resource), fg='red')
-    exit(1)
+    raise SystemExit(1)

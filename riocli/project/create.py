@@ -34,4 +34,4 @@ def create_project(project_name: str) -> None:
                     fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

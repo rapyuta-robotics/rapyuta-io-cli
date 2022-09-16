@@ -30,7 +30,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             client = new_client()
         except Exception as e:
             click.secho(str(e), fg='red')
-            exit(1)
+            raise SystemExit(1)
 
         name = kwargs.pop('device_name')
 
@@ -53,7 +53,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
                 guid = find_device_guid(client, name)
             except Exception as e:
                 click.secho(str(e), fg='red')
-                exit(1)
+                raise SystemExit(1)
 
         kwargs['device_name'] = name
         kwargs['device_guid'] = guid
@@ -83,7 +83,7 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
             client = new_client()
         except Exception as e:
             click.secho(str(e), fg='red')
-            exit(1)
+            raise SystemExit(1)
 
         device_guid = kwargs.get('device_guid')
         device = client.get_device(device_id=device_guid)
@@ -106,7 +106,7 @@ def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, 
             return request.filename, request.request_uuid
 
     click.secho("file not found", fg='red')
-    exit(1)
+    raise SystemExit(1)
 
 
 def device_identity(src, devices=[]):

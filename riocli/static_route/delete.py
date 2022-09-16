@@ -38,4 +38,4 @@ def delete_static_route(static_route: str, static_route_guid: str, force: bool) 
         click.secho('Static Route deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

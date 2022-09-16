@@ -61,7 +61,7 @@ class Network(Model):
         #     self.create_object(client)
         # except Exception as e:
         #     click.secho(str(e), fg='red')
-        #     exit(1)
+        #     raise SystemExit(1)
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:

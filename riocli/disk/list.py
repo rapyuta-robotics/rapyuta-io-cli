@@ -30,7 +30,7 @@ def list_disks() -> None:
         _display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_disk_list(disks: typing.Any, show_header: bool = True):

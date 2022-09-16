@@ -28,6 +28,6 @@ def list_static_routes() -> None:
         repr_static_routes(routes)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 

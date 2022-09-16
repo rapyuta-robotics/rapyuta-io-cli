@@ -59,4 +59,4 @@ def create_device(
         click.secho('Device created successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

@@ -33,7 +33,7 @@ def list_builds(status: typing.List[str]) -> None:
         _display_build_list(builds, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_build_list(builds: typing.List[Build], show_header: bool = True):

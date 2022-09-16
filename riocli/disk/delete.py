@@ -35,4 +35,4 @@ def delete_disk(disk_name: str, disk_guid: str, force: bool):
         click.echo(click.style('Disk deleted successfully!', fg='green'))
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

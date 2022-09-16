@@ -61,7 +61,7 @@ def get_token(email: str, password: str) -> str:
         return token
     except UnauthorizedError:
         click.secho("incorrect email/password", fg='red')
-        exit(1)
+        raise SystemExit(1)
     except Exception as e:
         click.secho(e, fg='red')
-        exit(1)
+        raise SystemExit(1)

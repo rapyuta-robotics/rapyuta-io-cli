@@ -51,7 +51,7 @@ def diff_configurations(path: click.Path, tree_names:Tuple = None,  delete_exist
     """
     if path is None:
         click.secho( f"Base path missing. cannot diff without a local path to compare with remote tree", fg='red')
-        exit(1)
+        raise SystemExit(1)
         
     try:
         client = new_client()
@@ -78,10 +78,10 @@ def diff_configurations(path: click.Path, tree_names:Tuple = None,  delete_exist
 
     except (APIError, InternalServerError) as e:
         click.secho( f"failed API request {str(e)}", fg='red')
-        exit(1)
+        raise SystemExit(1)
     except (IOError, OSError) as e:
         click.secho( f"failed file/directory creation {str(e)}", fg='red')
-        exit(1)
+        raise SystemExit(1)
     
 
 

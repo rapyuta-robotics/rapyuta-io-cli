@@ -30,4 +30,4 @@ def create_static_route(prefix: str) -> None:
         click.secho("Static Route created successfully for URL {}".format(route.urlString), fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

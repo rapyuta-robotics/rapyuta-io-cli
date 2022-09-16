@@ -65,7 +65,7 @@ def create_secret(secret: Secret) -> None:
         click.secho("Secret created successfully!", fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def secret_from_docker_config() -> Secret:
@@ -75,7 +75,7 @@ def secret_from_docker_config() -> Secret:
 
     if not config or 'auths' not in config:
         click.secho("docker config not found!", fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     registries = list(filter(lambda x: 'rapyuta.io' not in x, config['auths'].keys()))
     choice = show_selection(registries, header='Found these registries in the docker config')

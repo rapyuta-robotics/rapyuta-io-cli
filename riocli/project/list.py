@@ -32,7 +32,7 @@ def list_project(ctx: click.Context) -> None:
         _display_project_list(projects, current, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_project_list(projects: typing.List[Project], current: str = None, show_header: bool = True) -> None:

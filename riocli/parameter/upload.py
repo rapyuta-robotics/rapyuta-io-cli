@@ -72,7 +72,7 @@ def upload_configurations(paths: click.Path, tree_names:str = None,  delete_exis
                         except IOError as e:
                         # file not found in this directory, try the next
                             click.secho(str(e), fg='red')
-                            exit(1)
+                            raise SystemExit(1)
                         else:
                             # copied the file, break out of the loop
                             click.secho("Copied file '{}' to '{}'".format(src, file_path))
@@ -85,11 +85,11 @@ def upload_configurations(paths: click.Path, tree_names:str = None,  delete_exis
             return upload_configurations
         else:
             click.secho(str(e), fg='red')
-            exit(1)
+            raise SystemExit(1)
 
     except IOError as e:
         click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 

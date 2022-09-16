@@ -41,7 +41,7 @@ def wait_for_deployment(deployment_name: str, deployment_guid: str) -> None:
             click.secho('Device is either offline or not reachable', fg='red')
         else:
             click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

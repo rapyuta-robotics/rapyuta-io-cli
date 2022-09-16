@@ -44,10 +44,10 @@ def login(ctx: click.Context, email: str, password: str, project: str, interacti
 
     if not email:
         click.secho('email not specified')
-        exit(1)
+        raise SystemExit(1)
     if not password:
         click.secho('password not specified')
-        exit(1)
+        raise SystemExit(1)
 
     ctx = get_root_context(ctx)
     ctx.obj.data['email_id'] = email

@@ -50,7 +50,7 @@ def list_labels(device_name: str, device_guid: str) -> None:
         _display_label_list(labels, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_labels.command('create')
@@ -70,7 +70,7 @@ def create_label(device_name: str, device_guid: str, key: str, value: str) -> No
         click.secho('Label added successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_labels.command('update')
@@ -88,7 +88,7 @@ def update_label(device_name: str, device_guid: str, key: str, value: str) -> No
         click.secho('Label updated successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_labels.command('delete')
@@ -105,7 +105,7 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
         click.secho('Label deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_label_list(labels: typing.List[Label], show_header: bool = True) -> None:

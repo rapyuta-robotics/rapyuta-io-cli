@@ -49,7 +49,7 @@ def blob_delete(guid: str) -> None:
         click.secho('Rosbag Blob deleted successfully', fg='green')
     except ResourceNotFoundError as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @rosbag_blob.command('download')
@@ -67,7 +67,7 @@ def blob_download(guid: str, filename: str, download_dir: str) -> None:
         click.secho('Rosbag Blob downloaded successfully', fg='green')
     except ResourceNotFoundError as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @rosbag_blob.command('list')
@@ -96,7 +96,7 @@ def blob_list(guids: typing.List[str], deployment_ids: typing.List[str], compone
         _display_rosbag_blob_list(rosbag_blobs, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_rosbag_blob_list(blobs: typing.List[ROSBagBlob], show_header: bool = True) -> None:

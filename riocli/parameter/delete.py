@@ -41,6 +41,6 @@ def delete_configurations(tree_names:str = None) -> None:
     except IOError as e:
         click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 

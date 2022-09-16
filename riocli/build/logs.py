@@ -32,7 +32,7 @@ def build_logs(build_name: str, build_guid: str) -> None:
         stream_build_logs(build_guid)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def stream_build_logs(build_guid: str) -> None:

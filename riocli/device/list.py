@@ -30,7 +30,7 @@ def list_devices() -> None:
         _display_device_list(devices, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_device_list(devices: typing.List[Device], show_header: bool = True) -> None:

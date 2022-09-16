@@ -34,7 +34,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             client = new_client()
         except Exception as e:
             click.secho(str(e), fg='red')
-            exit(1)
+            raise SystemExit(1)
 
         name = kwargs.pop('deployment_name')
         guid = None

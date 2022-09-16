@@ -149,7 +149,7 @@ def resolve_conflict(
         return native, choice
     else:
         click.secho('Invalid choice. Try again', fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def get_network(

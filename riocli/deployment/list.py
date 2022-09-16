@@ -37,7 +37,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def display_deployment_list(deployments: typing.List[Deployment], show_header: bool = True):
