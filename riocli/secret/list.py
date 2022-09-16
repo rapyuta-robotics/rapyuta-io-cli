@@ -32,7 +32,7 @@ def list_secrets(secret_type: typing.Union[str, typing.Tuple[str]]) -> None:
         _display_secret_list(secrets, secret_type, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_secret_list(

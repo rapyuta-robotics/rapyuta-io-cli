@@ -25,7 +25,7 @@ def status(ctx: click.Context):
 
     if not ctx.obj.exists:
         click.secho('Logged out 🔒', fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     if 'auth_token' in ctx.obj.data:
         click.secho('Logged in 🎉', fg='green')

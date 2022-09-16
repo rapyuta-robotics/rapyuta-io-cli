@@ -28,7 +28,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             client = new_client()
         except Exception as e:
             click.secho(str(e), fg='red')
-            exit(1)
+            raise SystemExit(1)
 
         name = kwargs.pop('package_name')
         guid = None
@@ -60,7 +60,7 @@ def find_package_guid(client: Client, name: str, version: str = None) -> str:
     packages = client.get_all_packages(name=name, version=version)
     if len(packages) == 0:
         click.secho("package not found", fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     if len(packages) == 1:
         return packages[0].packageId

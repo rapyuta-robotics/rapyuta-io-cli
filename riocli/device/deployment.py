@@ -39,6 +39,6 @@ def list_deployments(device_name: str, device_guid: str) -> None:
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 

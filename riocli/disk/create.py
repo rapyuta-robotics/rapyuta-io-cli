@@ -41,4 +41,4 @@ def create_disk(disk_name: str, capacity: int) -> None:
                     format(disk['name'], disk['guid']), fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

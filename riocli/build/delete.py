@@ -36,4 +36,4 @@ def delete_build(build_name: str, build_guid: str, force: bool):
         click.echo(click.style('Build deleted successfully!', fg='green'))
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

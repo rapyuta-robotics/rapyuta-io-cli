@@ -38,4 +38,4 @@ def port_forward(device_name: str, device_guid: str, remote_port: int, local_por
         run_tunnel_on_local(local_port=local_port, path=path, background=False)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

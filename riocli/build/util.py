@@ -39,7 +39,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
                 guid = find_build_guid(client, name)
             except Exception as e:
                 click.secho(str(e), fg='red')
-                exit(1)
+                raise SystemExit(1)
 
         kwargs['build_name'] = name
         kwargs['build_guid'] = guid

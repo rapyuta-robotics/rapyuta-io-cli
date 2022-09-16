@@ -35,4 +35,4 @@ def device_onboard(device_name: str, device_guid: str) -> None:
         click.secho(script.full_command())
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

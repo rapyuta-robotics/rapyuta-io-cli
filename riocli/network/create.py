@@ -46,4 +46,4 @@ def create_network(name: str, network: str, **kwargs: typing.Any) -> None:
             create_native_network(name, **kwargs)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

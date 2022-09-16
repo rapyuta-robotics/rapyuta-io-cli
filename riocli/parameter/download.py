@@ -58,10 +58,10 @@ def download_configurations(path: click.Path, tree_names:Tuple = None,  delete_e
     
     except (APIError, InternalServerError) as e:
         click.secho( f"failed API request {str(e)}", fg='red')
-        exit(1)
+        raise SystemExit(1)
     except (IOError, OSError) as e:
         click.secho( f"failed file/directory creation {str(e)}", fg='red')
-        exit(1)
+        raise SystemExit(1)
     
     click.secho("Downloaded IO configurations to '{}'".format(path), fg='green')
     return path

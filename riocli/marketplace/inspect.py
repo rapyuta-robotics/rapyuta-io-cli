@@ -40,5 +40,5 @@ def inspect_marketplace(format_type: str, rrn: str, version: str = None) -> None
         inspect_with_format(package, format_type=format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 

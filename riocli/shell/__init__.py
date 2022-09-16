@@ -52,7 +52,13 @@ def deprecated_repl(ctx: click.Context):
 
 def start_shell(ctx: click.Context):
     prompt_config = _parse_config(ctx.obj)
-    repl(click.get_current_context(), prompt_kwargs=prompt_config)
+    while True:
+        try:
+            repl(click.get_current_context(), prompt_kwargs=prompt_config)
+        except Exception as e:
+            click.secho(str(e), fg='red')
+        else:
+            break
 
 
 def _parse_config(config: Configuration) -> dict:

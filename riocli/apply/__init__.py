@@ -39,7 +39,7 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
-        exit(1)
+        raise SystemExit(1)
     
     click.secho("----- Files Processed ----", fg="yellow")
     for file in glob_files:
@@ -70,7 +70,7 @@ def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies(check_missing=False, delete=True)

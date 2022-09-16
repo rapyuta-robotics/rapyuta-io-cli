@@ -37,7 +37,7 @@ def trigger_build(build_name: str, build_guid: str, trigger_name: str, tail: boo
         click.secho('Triggered build successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     if tail:
         stream_build_logs(build_guid)

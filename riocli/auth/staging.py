@@ -55,7 +55,7 @@ def _validate_environment(name: str) -> bool:
     valid = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
     if not valid:
         click.secho('Invalid staging environment!', fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _configure_environment(config: Configuration, name: str) -> None:

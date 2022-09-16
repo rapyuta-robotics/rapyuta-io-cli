@@ -42,4 +42,4 @@ def create_package(manifest: click.File, format_type: str) -> None:
         click.secho('Package created successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

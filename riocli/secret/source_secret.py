@@ -52,7 +52,7 @@ def create_basic_auth_secret(
 
         if not ca_cert_data:
             click.secho("Empty CA Cert file. Try again with correct file", fg='red')
-            exit(1)
+            raise SystemExit(1)
 
     secret_config = SecretConfigSourceBasicAuth(username=username, password=password,
                                                 ca_cert=ca_cert_data)
@@ -70,7 +70,7 @@ def create_ssh_secret(secret_name: str, ssh_key: click.File = None) -> None:
     data = ssh_key.read()
     if not data:
         click.secho("Empty key file. Try again with correct key file", fg='red')
-        exit(1)
+        raise SystemExit(1)
 
     secret_config = SecretConfigSourceSSHAuth(ssh_key=data)
     client = new_client()

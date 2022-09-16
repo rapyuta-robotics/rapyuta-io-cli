@@ -30,4 +30,4 @@ def status(deployment_name: str, deployment_guid: str) -> None:
         click.secho(deployment.status)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

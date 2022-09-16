@@ -35,7 +35,7 @@ def device_init(device_name: str, device_guid: str) -> None:
             _setup_local()
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _setup_device(device_guid: str) -> None:

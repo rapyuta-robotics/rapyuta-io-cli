@@ -47,7 +47,7 @@ def list_uploads(device_name: str, device_guid: str) -> None:
         _display_upload_list(uploads=uploads, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('create')
@@ -79,7 +79,7 @@ def create_upload(
         click.secho('File upload requested successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('status')
@@ -95,7 +95,7 @@ def upload_status(device_name: str, device_guid: str, file_name: str, request_id
         click.secho(status.status)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('delete')
@@ -112,7 +112,7 @@ def delete_upload(device_name: str, device_guid: str, file_name: str, request_id
         click.secho('Deleted upload successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('download')
@@ -129,7 +129,7 @@ def download_log(device_name: str, device_guid: str, file_name: str, request_id:
         click.secho(url)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('cancel')
@@ -146,7 +146,7 @@ def cancel_upload(device_name: str, device_guid: str, file_name: str, request_id
         click.secho('Cancelled upload successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_uploads.command('share')
@@ -165,7 +165,7 @@ def shared_url(device_name: str, device_guid: str, file_name: str, request_id: s
         click.secho(public_url.url, fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_upload_list(uploads: LogUploads, show_header: bool = True) -> None:

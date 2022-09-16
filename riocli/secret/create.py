@@ -47,4 +47,4 @@ def create_secret(secret_type: str, username: str, password: str, email: str, re
                                  ssh_key=ssh_priv_key)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

@@ -32,7 +32,7 @@ def list_packages(filter_word: str) -> None:
         _display_package_list(packages, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_package_list(

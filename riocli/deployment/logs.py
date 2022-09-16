@@ -35,7 +35,7 @@ def deployment_logs(component_name: str, exec_name: str, deployment_name: str, d
         stream_deployment_logs(deployment_guid, comp_id, exec_id, pod_name)
     except Exception as e:
         click.secho(e, fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def stream_deployment_logs(deployment_id, component_id, exec_id, pod_name=None):

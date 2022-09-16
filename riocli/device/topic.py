@@ -48,7 +48,7 @@ def list_topics(device_name: str, device_guid: str) -> None:
         _display_topic_list(device.topic_status())
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_topics.command('subscribe')
@@ -69,7 +69,7 @@ def subscribe_topic(device_name: str, device_guid: str, topic: str, kind: str) -
         click.secho('Topic subscribed successfully', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_topics.command('unsubscribe')
@@ -90,7 +90,7 @@ def unsubscribe_topic(device_name: str, device_guid: str, topic: str, kind: str)
         click.secho('Topic un-subscribed successfully', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_topic_list(status: TopicsStatus, show_header: bool = True) -> None:

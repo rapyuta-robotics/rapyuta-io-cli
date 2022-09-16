@@ -170,7 +170,7 @@ class Applier(object):
                 click.secho("missing resources found in yaml. " + \
                             "Plese ensure the following are either available in your yaml" + \
                             "or created on the server. {}".format(set(missing_resources)), fg="red")
-                exit(1)
+                raise SystemExit(1)
 
     #Manifest Operations via base.py
     def _apply_manifest(self, obj_key, *args, **kwargs):

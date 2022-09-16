@@ -35,7 +35,7 @@ def inspect_static_route(format_type: str, static_route: str, static_route_guid:
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_static_route_inspectable(static_route_data: StaticRoute) -> dict:

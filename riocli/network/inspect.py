@@ -37,4 +37,4 @@ def inspect_network(format_type: str, network_name: str, network_guid: str, netw
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
