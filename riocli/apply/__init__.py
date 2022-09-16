@@ -16,6 +16,7 @@ import os
 
 import click
 from click_help_colors import HelpColorsCommand
+from typing import Iterable
 
 from riocli.apply.parse import Applier
 from riocli.apply.explain import explain
@@ -92,7 +93,7 @@ def process_files_values_secrets(files, values, secrets):
 @click.option('--values', '-v')
 @click.option('--secrets', '-s')
 @click.argument('files', nargs=-1)
-def apply(values: str, secrets: str, files: list[str], dryrun: bool = False, ) -> None:
+def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """
     Apply resource manifests
     """
@@ -123,7 +124,7 @@ def apply(values: str, secrets: str, files: list[str], dryrun: bool = False, ) -
 @click.option('--values', '-v')
 @click.option('--secrets', '-s')
 @click.argument('files', nargs=-1)
-def delete(values: str, secrets: str, files: list[str], dryrun: bool = False) -> None:
+def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """
     Apply resource manifests
     """
