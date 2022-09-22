@@ -31,7 +31,8 @@ from riocli.utils import run_bash
 from riocli.utils.mermaid import mermaid_link, mermaid_safe
     
 class Applier(object):
-    MAX_WORKERS=6
+    DEFAULT_MAX_WORKERS=6
+
     EXPECTED_TIME = {
         "organization": 3,
         "project": 3,
@@ -44,7 +45,6 @@ class Applier(object):
         "network": 120,
         "device": 5,
         "user": 3,
-
     }
 
     def __init__(self, files: typing.List, values, secrets):
@@ -78,6 +78,14 @@ class Applier(object):
         return self.graph.static_order()
 
     def apply(self, *args, **kwargs):
+        WORKERS =  kwargs.get('workers', self.DEFAULT_MAX_WORKERS)
+        if WORKERS == 1 :
+            return self.apply_sync(*args, **kwargs)
+        else:
+            return self.apply_async(*args, **kwargs)
+
+    def apply_async(self, *args, **kwargs):
+        WORKERS =  kwargs.get('workers', self.DEFAULT_MAX_WORKERS)
         task_queue = queue.Queue()
         done_queue    = queue.Queue()
 
@@ -86,13 +94,18 @@ class Applier(object):
                 obj = task_queue.get()
                 if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                     # click.secho("obj {} is being aplied".format(obj))
-                    self._apply_manifest(obj, *args, **kwargs)
+                    try:
+                        self._apply_manifest(obj, *args, **kwargs)
+                    except Exception as ex:
+                        click.secho('[Err] Object "{}" apply failed. Apply will not progress further.'.format(obj, str(ex)))
+                        raise ex
+
                 task_queue.task_done()
                 done_queue.put(obj)
         
         
         worker_list = []
-        for worker_id in range(0, self.MAX_WORKERS-1):
+        for worker_id in range(0, WORKERS - 1):
             worker_list.append(threading.Thread(target=worker, daemon=True))
             worker_list[worker_id].start()
         
@@ -106,6 +119,15 @@ class Applier(object):
             self.graph.done(done_obj)
         
         task_queue.join()
+
+    def apply_sync(self, *args, **kwargs):
+        self.graph.prepare()
+        while self.graph.is_active():
+            for obj in self.graph.get_ready():
+                if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
+                    self._apply_manifest(obj, *args, **kwargs)
+                self.graph.done(obj)
+
 
     def delete(self, *args, **kwargs):
         delete_order = list(self.graph.static_order())

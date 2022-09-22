@@ -29,8 +29,9 @@ from riocli.apply.explain import explain
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
 @click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
 @click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.")
 @click.argument('files', nargs=-1)
-def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
+def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6) -> None:
     """
     Apply resource manifests
     """
@@ -48,7 +49,7 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False)
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
     
-    rc.apply(dryrun=dryrun)
+    rc.apply(dryrun=dryrun, workers=workers)
 
 
 @click.command(
