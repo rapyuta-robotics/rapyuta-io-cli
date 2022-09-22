@@ -32,14 +32,15 @@ from riocli.chart.util import find_chart
     help='Apply a new Rapyuta Chart in the Project',
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
-@click.option('--values', '-v')
-@click.option('--secrets', '-s')
+@click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+@click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.")
 @click.argument('chart', type=str)
-def apply_chart(chart: str, values: str, secrets:str, dryrun: bool) -> None:
+def apply_chart(chart: str, values: str, secrets:str, dryrun: bool, workers: int = 6) -> None:
     versions = find_chart(chart)
     if len(versions) > 1:
         click.secho('More than one charts are available, please specify the version!', fg='red')
 
     chart = Chart(**versions[0])
-    chart.apply_chart(values, secrets, dryrun)
+    chart.apply_chart(values, secrets, dryrun, workers)
     chart.cleanup()

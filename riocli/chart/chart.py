@@ -28,7 +28,7 @@ class Chart(Munch):
         self.tmp_dir = None
         self.downloaded = False
 
-    def apply_chart(self, values: str = None, secrets:str = None, dryrun: bool = None):
+    def apply_chart(self, values: str = None, secrets:str = None, dryrun: bool = None, workers: int = 6):
         if not self.downloaded:
             self.download_chart()
 
@@ -37,7 +37,7 @@ class Chart(Munch):
             values = Path(self.tmp_dir.name, self.name, 'values.yaml').as_posix()
 
             
-        apply.callback(values=values, files=[templates_dir], secrets=secrets, dryrun=dryrun)
+        apply.callback(values=values, files=[templates_dir], secrets=secrets, dryrun=dryrun, workers=workers)
 
     def delete_chart(self, values: str = None, secrets:str = None, dryrun: bool = None):
         if not self.downloaded:
