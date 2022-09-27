@@ -32,15 +32,12 @@ def explain(resource: str, templates: str = None) -> None:
         path = Path(templates)
     else:
         path = Path(__file__).parent.joinpath('manifests')
-
+    
     for each in path.glob('**/*'):
         if resource in each.name:
             with open(each) as f:
-                lines = ["---\n"]
-                lines.extend(f.readlines())
-                lines.extend(["---\n"])
-                click.secho("".join(lines))
+                click.secho(f.readlines())
                 exit(0)
 
-    click.secho("asdsa")
+    click.secho("[Err] Resource \"{}\" not found".format(resource), fg='red')
     exit(1)

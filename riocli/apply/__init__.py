@@ -11,37 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import glob
-import os
 
 import click
 from click_help_colors import HelpColorsCommand
+from typing import Iterable
 
 from riocli.apply.parse import Applier
+from riocli.apply.util import process_files_values_secrets
 from riocli.apply.explain import explain
-from riocli.build.model import Build
-from riocli.deployment.model import Deployment
-from riocli.device.model import Device
-from riocli.disk.model import Disk
-from riocli.network.model import Network
-from riocli.package.model import Package
-from riocli.project.model import Project
-from riocli.secret.model import Secret
-from riocli.static_route.model import StaticRoute
-
-KIND_TO_CLASS = {
-    'Project': Project,
-    'Secret': Secret,
-    'Build': Build,
-    'Device': Device,
-    'Network': Network,
-    'StaticRoute': StaticRoute,
-    'Package': Package,
-    'Disk': Disk,
-    'Deployment': Deployment,
-}
-
-
 
 @click.command(
     'apply',
@@ -50,28 +27,29 @@ KIND_TO_CLASS = {
     help_options_color='green',
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
-@click.option('--values')
-@click.argument('files')
-def apply(values: str, files: str, dryrun: bool = False) -> None:
+@click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+@click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.")
+@click.argument('files', nargs=-1)
+def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6) -> None:
     """
     Apply resource manifests
     """
-    abs_path = os.path.abspath(files)
-    glob_files = []
-    if os.path.exists(abs_path):
-        if os.path.isdir(abs_path):
-            glob_files = glob.glob(abs_path + "/**/*", recursive=True)
-        else:
-            glob_files = [files]
+    glob_files, abs_values, abs_secrets = process_files_values_secrets(files, values, secrets)
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
         exit(1)
-
-    rc = Applier(glob_files, values)
+    
+    click.secho("----- Files Processed ----", fg="yellow")
+    for file in glob_files:
+        click.secho(file, fg="yellow")
+    
+    
+    rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
-
-    rc.apply(dryrun=dryrun)
+    
+    rc.apply(dryrun=dryrun, workers=workers)
 
 
 @click.command(
@@ -80,25 +58,20 @@ def apply(values: str, files: str, dryrun: bool = False) -> None:
     help_headers_color='yellow',
     help_options_color='green',
 )
-@click.option('--values')
-@click.argument('files')
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
-def delete(values: str, files: str, dryrun: bool = False) -> None:
+@click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+@click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.argument('files', nargs=-1)
+def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """
     Apply resource manifests
     """
-    abs_path = os.path.abspath(files)
-    glob_files = []
-    if os.path.exists(abs_path):
-        if os.path.isdir(abs_path):
-            glob_files = glob.glob(abs_path + "/**/*", recursive=True)
-        else:
-            glob_files = [files]
+    glob_files, abs_values, abs_secrets = process_files_values_secrets(files, values, secrets)
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
         exit(1)
 
-    rc = Applier(glob_files, values)
-    rc.parse_dependencies(check_missing=False)
+    rc = Applier(glob_files, abs_values, abs_secrets)
+    rc.parse_dependencies(check_missing=False, delete=True)
     rc.delete(dryrun=dryrun)

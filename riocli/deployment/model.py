@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
-
+import os
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
@@ -30,7 +30,7 @@ class Deployment(Model):
     RESTART_POLICY = {
         'always': RestartPolicy.Always,
         'never': RestartPolicy.Never,
-        'onFailure': RestartPolicy.OnFailure
+        'onfailure': RestartPolicy.OnFailure
     }
 
     def find_object(self, client: Client) -> typing.Any:
@@ -123,7 +123,7 @@ class Deployment(Model):
             provision_config.add_device(__componentName, device=device)
 
             if 'restart' in self.spec:
-                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart])
+                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart.lower()])
 
             # Add Network
             # if self.spec.rosNetworks:
@@ -131,12 +131,15 @@ class Deployment(Model):
             # network_type =
 
             # Add Disk
+            exec_mounts = []
             if 'volumes' in self.spec:
-                exec_mounts = []
                 for vol in self.spec.volumes:
                     exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+            if len(exec_mounts) > 0:
                 provision_config.mount_volume(__componentName, device=device, executable_mounts=exec_mounts)
 
+        if os.environ.get('DEBUG'):
+            print(provision_config)
         deployment = pkg.provision(self.metadata.name, provision_config)
         deployment.poll_deployment_till_ready()
         deployment.get_status()

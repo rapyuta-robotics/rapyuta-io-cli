@@ -14,6 +14,7 @@
 from textwrap import indent
 import typing
 import json
+import os
 
 import click
 from munch import munchify
@@ -22,10 +23,15 @@ from rapyuta_io import Project as v1Project, Client
 from riocli.model import Model
 # from riocli.package.util import find_project_guid, ProjectNotFound
 from riocli.package.validation import validate
+from rapyuta_io.clients.package import RestartPolicy
 
 
 class Package(Model):
-
+    RESTART_POLICY = {
+        'always': RestartPolicy.Always,
+        'never': RestartPolicy.Never,
+        'onfailure': RestartPolicy.OnFailure
+    }
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -90,19 +96,31 @@ class Package(Model):
 
         # ✓ parameters
         # TODO validate transform.  
-        component_obj.parameters = self.spec.environmentVars
-        # handle exposed params
-        exposed_parameters = []
-        for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
-            exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
-        component_obj.exposedParameters = exposed_parameters
+        if 'environmentVars' in self.spec:
+            fixed_default = []
+            for envVar in self.spec.environmentVars:
+                obj = envVar.copy()
+                if 'defaultValue' in obj:
+                    obj['default'] = obj['defaultValue']
+                    del obj['default']
+
+                fixed_default.append(obj)
+            component_obj.parameters = fixed_default
+            # handle exposed params
+            exposed_parameters = []
+            for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
+                if os.environ.get('DEBUG'):
+                    print(entry.name)
+                exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
+            pkg_object.plans[0].exposedParameters = exposed_parameters
             
         # device
         #  ✓ arch, ✓ restart
         if self.spec.runtime == 'device':
             component_obj.required_runtime = 'device'
             component_obj.architecture = self.spec.device.arch
-            component_obj.restartPolicy = self.spec.device.restart
+            if 'restart' in self.spec.device:
+                component_obj.restart_policy = self.RESTART_POLICY[self.spec.device.restart.lower()]
         
         # cloud
         #  ✓ replicas

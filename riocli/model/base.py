@@ -25,6 +25,7 @@ from riocli.project.util import find_project_guid
 
 prompt = ">> {}{}{} [{}]"  #>> msg  spacer  rigth_msg time
 
+DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
 def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
     columns, _ = get_terminal_size()
@@ -63,13 +64,21 @@ class Model(ABC, Munch):
             self._set_project_in_client(client)
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
-        
+
             if not obj:
                 message_with_prompt('⁉ {}:{} does not exist'.format(self.kind.lower(), self.metadata.name))
                 return
             else:
                 message_with_prompt("⌛ Delete {}:{}".format(self.kind.lower(), self.metadata.name), fg='yellow')
                 if not dryrun:
+                    labels = self.metadata.get('labels', {})
+                    if DELETE_POLICY_LABEL in labels and \
+                            labels.get(DELETE_POLICY_LABEL)  and \
+                            labels.get(DELETE_POLICY_LABEL).lower() == "retain":
+                        click.secho(">> Warning: delete protection enabled on {}:{}. Resource will be retained ".format(self.kind.lower(), self.metadata.name), fg="yellow")
+                        return 
+
+                    
                     self.delete_object(client, obj)
                     message_with_prompt("❌ Deleted {}:{}".format(self.kind.lower(), self.metadata.name), fg='red')
                 
