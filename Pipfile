@@ -25,7 +25,7 @@ graphlib-backport = ">=1.0.3"
 jinja2 = ">=3.0.1"
 munch = ">=2.4.0"
 pyyaml = ">=5.4.1"
-rapyuta-io = ">=1.4.0"
+rapyuta-io = ">=1.5.0"
 tabulate = ">=0.8.0"
 
 [requires]

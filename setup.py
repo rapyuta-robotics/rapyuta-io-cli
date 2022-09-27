@@ -42,7 +42,7 @@ setup(
         "click-repl>=0.2.0",
         "click-spinner>=0.1.10",
         "click-plugins>=1.1.1",
-        "click>=8.0.0",
+        "click>=8.0.1",
         "dictdiffer>=0.9.0",
         "fastjsonschema>=2.16.1",
         "graphlib-backport>=1.0.3",
