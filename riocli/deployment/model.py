@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 import os
+import typing
+
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
@@ -20,6 +21,7 @@ from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
+from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.deployment.validation import validate
 from riocli.model import Model
 from riocli.package.util import find_package_guid
@@ -136,7 +138,8 @@ class Deployment(Model):
                 for vol in self.spec.volumes:
                     exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
             if len(exec_mounts) > 0:
-                provision_config.mount_volume(__componentName, device=device, executable_mounts=exec_mounts)
+                provision_config = add_mount_volume_provision_config(provision_config, __componentName, device,
+                                                                     exec_mounts)
 
         if os.environ.get('DEBUG'):
             print(provision_config)

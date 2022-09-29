@@ -11,12 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
 import functools
 import typing
 
 import click
 
 from rapyuta_io import Client, DeploymentPhaseConstants
+from rapyuta_io.clients import Device
+from rapyuta_io.clients.package import ExecutableMount
+from rapyuta_io.utils import InvalidParameterException, OperationNotAllowedError
+from rapyuta_io.utils.constants import DEVICE_ID
+
 from riocli.config import new_client
 from riocli.utils.selector import show_selection
 
@@ -106,3 +112,44 @@ class DeploymentNotFound(Exception):
     def __init__(self, message='deployment not found!'):
         self.message = message
         super().__init__(self.message)
+
+
+def add_mount_volume_provision_config(provision_config, component_name, device, executable_mounts):
+    if not isinstance(device, Device):
+        raise InvalidParameterException('device must be of type Device')
+
+    component_id = provision_config.plan.get_component_id(component_name)
+    if not isinstance(executable_mounts, list) or not all(
+            isinstance(mount, ExecutableMount) for mount in executable_mounts):
+        raise InvalidParameterException(
+            'executable_mounts must be a list of rapyuta_io.clients.package.ExecutableMount')
+    if not device.is_online():
+        raise OperationNotAllowedError('Device should be online')
+    if device.get_runtime() != Device.DOCKER_COMPOSE and not device.is_docker_enabled():
+        raise OperationNotAllowedError('Device must be a {} device'.format(Device.DOCKER_COMPOSE))
+    component_params = provision_config.parameters.get(component_id)
+    if component_params.get(DEVICE_ID) != device.deviceId:
+        raise OperationNotAllowedError('Device must be added to the component')
+    # self._add_disk_mount_info(device.deviceId, component_id, executable_mounts)
+
+    dep_info = dict()
+    dep_info['diskResourceId'] = device.deviceId
+    dep_info['applicableComponentId'] = component_id
+    dep_info['config'] = dict()
+
+    for mount in executable_mounts:
+        exec_mount = {
+            'mountPath': mount.mount_path
+        }
+        if mount.sub_path:
+            exec_mount['subPath'] = mount.sub_path
+        else:
+            exec_mount['subPath'] = '/'
+
+        tmp_info = copy.deepcopy(dep_info)
+        tmp_info['config']['mountPaths'] = {
+            mount.exec_name: exec_mount,
+        }
+        provision_config.context['diskMountInfo'].append(tmp_info)
+
+    return provision_config
