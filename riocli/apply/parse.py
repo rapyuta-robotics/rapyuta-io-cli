@@ -78,7 +78,7 @@ class Applier(object):
         return self.graph.static_order()
 
     def apply(self, *args, **kwargs):
-        WORKERS =  kwargs.get('workers', self.DEFAULT_MAX_WORKERS)
+        WORKERS =  int(kwargs.get('workers', self.DEFAULT_MAX_WORKERS))
         if WORKERS == 1 :
             return self.apply_sync(*args, **kwargs)
         else:
@@ -385,5 +385,3 @@ class Applier(object):
         name_or_guid = obj['metadata']['name']
 
         return '{}:{}'.format(kind, name_or_guid)
-
-    
