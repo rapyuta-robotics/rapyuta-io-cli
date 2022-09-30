@@ -1,0 +1,7 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Project"
+metadata: 
+  name: "test-project-1"
+spec:
+  users: 
+  - "user@example.net"

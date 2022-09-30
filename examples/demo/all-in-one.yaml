@@ -1,0 +1,292 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_ims
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_ims"
+    version: "1.13.0"
+  labels:
+    app: ims
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims_pgbouncer
+  # TODO: Come back once Minio and DB is deployed
+  #   - kind: deployment
+  #     nameOrGUID: sootballs_minio
+  envArgs:
+    - name: ACC_KEY
+      value: "rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q=="
+    - name: ACC_NAME
+      value: "rrkibdem"
+    - name: AUTH_ENABLED
+      value: "True"
+    - name: AZURE_CONNECTION_STRING
+      value: "DefaultEndpointsProtocol=https;AccountName=rrkibdem;AccountKey=rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q==;EndpointSuffix=core.windows.net"
+    - name: TIMEZONE
+      value: "Asia/Tokyo"
+    - name: CONTAINER_NAME
+      value: "warehouse"
+    - name: DAYS_BEFORE_ARCHIVE
+      value: "15"
+    - name: DEFAULT_FILE_STORAGE
+      value: "storages.backends.gcloud.GoogleCloudStorage"
+    - name: DEPLOY_ON_CLOUD
+      value: "True"
+    - name: EODTIME
+      value: "19:00"
+    - name: GCP_CREDS
+      value: "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"
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/code/creds.json"
+    - name: GS_BUCKET_NAME
+      value: "rrkibdem"
+    - name: IMS_DB
+      value: "rrkibdem_ims"
+    - name: CELERY_BROKER_URL
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: CELERY_RESULT_BACKEND
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: SECRET_KEY
+      value: "igy0moow=_qbsbiw4ln&wnpp5+ocvy*y(ov_9a$7j^1k4ccn86"
+    - name: SODTIME
+      value: "20:00"
+  staticRoutes:
+    - name: IMS_URL
+      depends:
+        kind: staticroute
+        nameOrGUID: ims-{{ routePrefix }}
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_ims_worker
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_ims_worker"
+    version: "1.13.0"
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims_pgbouncer
+  # TODO: Come back once Minio and DB is deployed
+  #   - kind: deployment
+  #     nameOrGUID: sootballs_minio
+  envArgs:
+    - name: ACC_KEY
+      value: "rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q=="
+    - name: ACC_NAME
+      value: "rrkibdem"
+    - name: AUTH_ENABLED
+      value: "True"
+    - name: AZURE_CONNECTION_STRING
+      value: "DefaultEndpointsProtocol=https;AccountName=rrkibdem;AccountKey=rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q==;EndpointSuffix=core.windows.net"
+    - name: TIMEZONE
+      value: "Asia/Tokyo"
+    - name: CONTAINER_NAME
+      value: "warehouse"
+    - name: DAYS_BEFORE_ARCHIVE
+      value: "15"
+    - name: DEFAULT_FILE_STORAGE
+      value: "storages.backends.gcloud.GoogleCloudStorage"
+    - name: DEPLOY_ON_CLOUD
+      value: "True"
+    - name: EODTIME
+      value: "19:00"
+    - name: GCP_CREDS
+      value: "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"
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/code/creds.json"
+    - name: GS_BUCKET_NAME
+      value: "rrkibdem"
+    - name: IMS_DB
+      value: "rrkibdem_ims"
+    - name: CELERY_BROKER_URL
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: CELERY_RESULT_BACKEND
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: SECRET_KEY
+      value: "igy0moow=_qbsbiw4ln&wnpp5+ocvy*y(ov_9a$7j^1k4ccn86"
+    - name: SODTIME
+      value: "20:00"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_ims_beat
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_ims_beat"
+    version: "1.13.0"
+spec:
+  runtime: cloud
+  depends:
+    - kind: deployment
+      nameOrGUID: sootballs_ims_pgbouncer
+  # TODO: Come back once Minio and DB is deployed
+  #   - kind: deployment
+  #     nameOrGUID: sootballs_minio
+  envArgs:
+    - name: ACC_KEY
+      value: "rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q=="
+    - name: ACC_NAME
+      value: "rrkibdem"
+    - name: AUTH_ENABLED
+      value: "True"
+    - name: AZURE_CONNECTION_STRING
+      value: "DefaultEndpointsProtocol=https;AccountName=rrkibdem;AccountKey=rooir+ucWD0ObAHVGdco3T7qFskEpZfgZm0lQdIxbsowLkct2uXi3zKYi+EKJmTpmtqsNGYVMswsp719klvl7Q==;EndpointSuffix=core.windows.net"
+    - name: TIMEZONE
+      value: "Asia/Tokyo"
+    - name: CONTAINER_NAME
+      value: "warehouse"
+    - name: DAYS_BEFORE_ARCHIVE
+      value: "15"
+    - name: DEFAULT_FILE_STORAGE
+      value: "storages.backends.gcloud.GoogleCloudStorage"
+    - name: DEPLOY_ON_CLOUD
+      value: "True"
+    - name: EODTIME
+      value: "19:00"
+    - name: GCP_CREDS
+      value: "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"
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/code/creds.json"
+    - name: GS_BUCKET_NAME
+      value: "rrkibdem"
+    - name: IMS_DB
+      value: "rrkibdem_ims"
+    - name: CELERY_BROKER_URL
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: CELERY_RESULT_BACKEND
+      value: "rediss://:QYTYXHGQHAdzx27jlxuJyqfnnaks61klHvPhD1vPx+Q=@sootballsdev.redis.cache.windows.net:6380/0"
+    - name: SECRET_KEY
+      value: "igy0moow=_qbsbiw4ln&wnpp5+ocvy*y(ov_9a$7j^1k4ccn86"
+    - name: SODTIME
+      value: "20:00"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_systemui
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_systemui"
+    version: "1.13.0"
+spec:
+  runtime: cloud
+  envArgs:
+    - name: DOCKER_STDOUT
+      value: "true"
+    - name: IMS_AUTH_PASSWORD
+      value: "airborne_rr"
+    - name: IMS_AUTH_USERNAME
+      value: "root"
+    - name: IMS_URL
+      value: "https://ims-rrkibdem-buonj.ep-r.io"
+    - name: SENTRY_DSN
+      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: SOOTBALLS_MAP
+      value: "rrkibdem"
+    - name: SYSTEM_UI_REMOTE_MODE
+      value: "true"
+    - name: USE_LOCAL_MAP
+      value: "false"
+    - name: WS_EXTERNAL_PORT
+      value: "80"
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: "sootballs"
+  staticRoutes:
+    - name: "SYSTEM_UI"
+      depends:
+        kind: staticroute
+        nameOrGUID: ui-{{ routePrefix }}
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_amr_06
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_robot"
+    version: "1.13.0"
+spec:
+  runtime: device
+  # TODO: Come back when IMS is bindable
+  # depends:
+  #   - kind: deployment
+  #     nameOrGUID: sootballs_ims
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: sootballs
+  device:
+    depends:
+      kind: device
+      nameOrGUID: amr06
+  envArgs:
+    - name: IMS_AUTH_USERNAME
+      value: root
+    - name: IMS_AUTH_PASSWORD
+      value: airborne_rr
+    - name: IMS_URL
+      value: "https://ims-rrkibdem-buonj.ep-r.io"
+    - name: "SOOTBALLS_MAP"
+      value: "rrkibdem"
+    - name: "SENTRY_DSN"
+      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      value: "true"
+    - name: "DISABLE_MULTICAST"
+      value: "false"
+    - name: "ROS_DOMAIN_ID"
+      value: "5"
+    - name: "USE_PARAMS_IO"
+      value: "true"
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: sootballs_edge_edge02
+  depends:
+    kind: package
+    nameOrGUID: "sootballs_edge"
+    version: "1.13.0"
+spec:
+  runtime: device
+  # TODO: Come back when IMS is bindable
+  # depends:
+  #   - kind: deployment
+  #     nameOrGUID: sootballs_ims
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: sootballs
+  device:
+    depends:
+      kind: device
+      nameOrGUID: edge02
+  envArgs:
+    - name: IMS_AUTH_USERNAME
+      value: root
+    - name: IMS_AUTH_PASSWORD
+      value: airborne_rr
+    - name: IMS_URL
+      value: "https://ims-rrkibdem-buonj.ep-r.io"
+    - name: "SOOTBALLS_MAP"
+      value: "rrkibdem"
+    - name: "SENTRY_DSN"
+      value: "https://a83904fb2f394a768557eaea8ec39db4:7d8a02b629994bf884534917dfb08511@sentry.svc.rapyuta.io/18"
+    - name: "DOCKER_STDOUT"
+      value: "true"
+    - name: "DISABLE_MULTICAST"
+      value: "false"
+    - name: "ROS_DOMAIN_ID"
+      value: "5"
+    - name: "USE_PARAMS_IO"
+      value: "true"

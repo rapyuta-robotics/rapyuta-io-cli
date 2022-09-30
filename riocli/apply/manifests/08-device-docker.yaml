@@ -1,0 +1,10 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "apply-device-docker"
+  project: "project-guid"
+spec:
+  python: "3"
+  rosDistro: "melodic"
+  docker:
+    enabled: True

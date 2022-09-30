@@ -1,0 +1,3 @@
+testlabel: 1.14.0-rc4
+routePrefix: rc4
+# this is a simple yaml file  which can be used to abstract out frequently changed values  from your resource yamls.  

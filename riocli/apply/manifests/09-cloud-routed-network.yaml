@@ -1,0 +1,41 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "cloud-routed-network"
+spec:
+  runtime: "cloud"
+  type: "routed"
+  rosDistro: "kinetic"
+  resourceLimits: "small"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "device-routed-network"
+spec:
+  runtime: "device"
+  type: "routed"
+  rosDistro: "melodic"
+  deviceGUID: "eca8de7b-932a-499b-8b9a-3cebeb2a8c7c"
+  networkInterface: "wlp0s20f3"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "cloud-native-network"
+spec:
+  runtime: "cloud"
+  type: "native"
+  rosDistro: "melodic"
+  resourceLimits: "xSmall"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "device-native-network"
+spec:
+  runtime: "device"
+  type: "native"
+  rosDistro: "melodic"
+  deviceGUID: "eca8de7b-932a-499b-8b9a-3cebeb2a8c7c"
+  networkInterface: "wlp0s20f3"

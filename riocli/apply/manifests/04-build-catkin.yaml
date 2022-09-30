@@ -1,0 +1,19 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "catkin-build"
+spec:
+  recipe: "Source"
+  architecture: "amd64"
+  git:
+    repository: "https://github.com/rapyuta-robotics/io_tutorials"
+    # gitRef: "master"
+    # secret: "secret-guid"
+  # contextDir: "talker/talker"
+  rosDistro: "melodic"
+  # catkinParameters:
+  # - rosPackages:
+  #   cmakeArguments:
+  #   makeArguments:
+  #   catkinMakeArguments:
+  #   blacklist:

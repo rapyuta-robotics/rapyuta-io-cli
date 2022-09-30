@@ -35,7 +35,11 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             name = get_build_name(client, guid)
 
         if guid is None:
-            guid = find_build_guid(client, name)
+            try:
+                guid = find_build_guid(client, name)
+            except Exception as e:
+                click.secho(str(e), fg='red')
+                exit(1)
 
         kwargs['build_name'] = name
         kwargs['build_guid'] = guid
@@ -55,5 +59,10 @@ def find_build_guid(client: Client, name: str) -> str:
         if build.buildName == name:
             return build.guid
 
-    click.secho("Build not found", fg='red')
-    exit(1)
+    raise BuildNotFound()
+
+
+class BuildNotFound(Exception):
+    def __init__(self, message='build not found!'):
+        self.message = message
+        super().__init__(self.message)

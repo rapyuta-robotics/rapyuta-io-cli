@@ -1,0 +1,42 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: cloud-deployment
+  depends:
+    kind: package
+    nameOrGUID: "non-ros-cloud"
+    version: "v1.0.0"
+  labels: {}
+spec:
+  runtime: device
+  depends:
+    kind: device
+    nameOrGUID: shaishav-thinkpad
+  envArgs:
+    - name: TEST_ENV
+      value: asdsad
+  volumes:
+    - execName: exec
+      mountPath: "/tmp"
+      subPath: "/tmp"
+      depends:
+        kind: disk
+        nameOrGUID: "PVC"
+  staticRoutes:
+    - name: asd
+      depends:
+        kind: staticroute
+        nameOrGUID: asdasd
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: asdasd
+      topics:
+        - "/telemetry"
+    - depends:
+        kind: network
+        nameOrGUID: "native"
+    - depends:
+        kind: network
+        nameOrGUID: "routed"

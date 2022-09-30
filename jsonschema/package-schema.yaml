@@ -1,0 +1,579 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: Package
+$ref: "#/definitions/package"
+definitions:
+  package:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+        default: apiextensions.rapyuta.io/v1
+      kind:
+        const: Package
+        default: Package
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/componentSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      version:
+        type: string
+      tag:
+        type: string
+      description:
+        type: string
+      guid:
+        "$ref": "#/definitions/packageGUID"
+      creator:
+        "$ref": "#/definitions/uuid"
+      project:
+        "$ref": "#/definitions/projectGUID"
+      labels:
+        "$ref": "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+      - version
+
+  componentSpec:
+    type: object
+    properties:
+      runtime:
+        type: string
+        enum:
+          - device
+          - cloud
+        default: cloud
+
+      # TODO: validate
+      ros:
+        type: object
+        "$ref": "#/definitions/rosComponentSpec"
+    dependencies:
+      runtime:
+        oneOf:
+          - properties:
+              runtime:
+                enum:
+                  - device
+              device:
+                type: object
+                "$ref": "#/definitions/deviceComponentInfoSpec"
+              executables:
+                type: array
+                items:
+                  "$ref": "#/definitions/deviceExecutableSpec"
+
+              environmentArgs:
+                type: array
+                items:
+                  "$ref": "#/definitions/environmentSpec"
+
+          - properties:
+              runtime:
+                enum:
+                  - cloud
+              cloud:
+                type: object
+                "$ref": "#/definitions/cloudComponentInfoSpec"
+
+              executables:
+                type: array
+                items:
+                  "$ref": "#/definitions/cloudExecutableSpec"
+
+              environmentVars:
+                type: array
+                items:
+                  "$ref": "#/definitions/environmentSpec"
+
+              endpoints:
+                type: array
+                items:
+                  "$ref": "#/definitions/endpointSpec"
+
+  deviceExecutableSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: docker
+        enum:
+          - docker
+          - build
+          - preInstalled
+      command:
+        type: string
+      runAsBash:
+        type: boolean
+        default: True
+    required:
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - docker
+              docker:
+                type: object
+                properties:
+                  image:
+                    type: string
+                  pullSecret:
+                    "$ref": "#/definitions/secretDepends"
+                required:
+                  - image
+          - properties:
+              type:
+                enum:
+                  - build
+              build:
+                type: object
+                properties:
+                  depends:
+                    "$ref": "#/definitions/buildDepends"
+                required:
+                  - depends
+          - properties:
+              type:
+                enum:
+                  - preInstalled
+
+  cloudExecutableSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: docker
+        enum:
+          - docker
+          - build
+      command:
+        type: string
+      runAsBash:
+        type: boolean
+        default: True
+      simulation:
+        type: boolean
+        default: False
+      limits:
+        type: object
+        properties:
+          cpu:
+            type: number
+            min: 0.1
+            max: 8
+          memory:
+            type: number
+            min: 256
+            max: 32678
+    required:
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - docker
+              docker:
+                type: object
+                properties:
+                  image:
+                    type: string
+                  pullSecret:
+                    type: object
+                    properties:
+                      depends:
+                        "$ref": "#/definitions/secretDepends"
+                    required:
+                      - depends
+                required:
+                  - image
+          - properties:
+              type:
+                enum:
+                  - build
+              build:
+                type: object
+                properties:
+                  depends:
+                    "$ref": "#/definitions/secretDepends"
+                required:
+                  - depends
+          - properties:
+              type:
+                enum:
+                  - preInstalled
+
+  portNumber:
+    type: integer
+    min: 1
+    max: 65531
+
+  endpointSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: external-http
+        enum:
+          - external-http
+          - external-https
+          - external-tls-tcp
+          - internal-tcp
+          - internal-udp
+          - internal-tcp-range
+          - internal-udp-range
+    required:
+      - name
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - external-http
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - external-https
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 443
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - external-tls-tcp
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 443
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - internal-tcp
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+
+          - properties:
+              type:
+                enum:
+                  - internal-udp
+
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - internal-tcp-range
+              portRange:
+                type: string
+                default: 22,80, 1024-1030
+            required:
+              - portRange
+
+          - properties:
+              type:
+                enum:
+                  - internal-udp-range
+
+              portRange:
+                type: string
+                default: 53,1024-1025
+            required:
+              - portRange
+
+  environmentSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      default:
+        type: string
+      exposed:
+        type: boolean
+        default: False
+    required:
+      - name
+    dependencies:
+      exposed:
+        oneOf:
+          - properties:
+              exposed:
+                enum:
+                  - True
+              exposedName:
+                type: string
+            required:
+              - exposedName
+          - properties:
+              exposed:
+                enum:
+                  - False
+
+  cloudComponentInfoSpec:
+    type: object
+    properties:
+      replicas:
+        type: number
+        default: 1
+
+  deviceComponentInfoSpec:
+    type: object
+    properties:
+      arch:
+        type: string
+        enum:
+          - arm32v7
+          - arm64v8
+          - amd64
+        default: amd64
+      restart:
+        type: string
+        default: always
+        enum:
+          - always
+          - never
+          - onfailure
+
+  rosComponentSpec:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: False
+    dependencies:
+      enabled:
+        oneOf:
+          - properties:
+              enabled:
+                enum:
+                  - False
+          - properties:
+              enabled:
+                type: boolean
+                enum:
+                  - True
+              version:
+                type: string
+                enum:
+                  - kinetic
+                  - melodic
+                  - noetic
+                default: melodic
+              inboundScopedTargeted:
+                type: boolean
+                default: false
+              rosEndpoints:
+                type: array
+                items:
+                  "$ref": "#/definitions/rosEndpointSpec"
+
+  rosEndpointSpec:
+    type: object
+    properties:
+      type:
+        type: string
+        default: topic
+        enum:
+          - topic
+          - service
+          - action
+      name:
+        type: string
+      compression:
+        type: boolean
+        default: false
+      scoped:
+        type: boolean
+        default: false
+      targeted:
+        type: boolean
+        default: false
+    required:
+      - type
+      - name
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - topic
+              qos:
+                type: string
+                enum:
+                  - low
+                  - medium
+                  - hi
+                  - max
+                default: low
+          - properties:
+              type:
+                enum:
+                  - service
+              timeout:
+                type: number
+                default: 120
+                min: 0
+          - properties:
+              type:
+                enum:
+                  - action
+
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  organizationGUID:
+    type: string
+    pattern: "^org-[a-z]{24}$"
+  projectGUID:
+    type: string
+    pattern: "^project-[a-z]{24}$"
+  secretGUID:
+    type: string
+    pattern: "^secret-[a-z]{24}$"
+  diskGUID:
+    type: string
+    pattern: "^disk-[a-z]{24}$"
+  buildGUID:
+    type: string
+    pattern: "^build-[a-z]{24}$"
+  packageGUID:
+    type: string
+    pattern: "^pkg-[a-z]{24}$"
+  deploymentGUID:
+    type: string
+    pattern: "^dep-[a-z]{24}$"
+  networkGUID:
+    type: string
+    pattern: "^network-[a-z]{24}$"
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  buildDepends:
+    properties:
+      kind:
+        const: build
+        default: build
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  packageDepends:
+    properties:
+      kind:
+        const: package
+        default: package
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  deviceDepends:
+    properties:
+      kind:
+        const: device
+        default: device
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  networkDepends:
+    properties:
+      kind:
+        const: network
+        default: network
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  secretDepends:
+    properties:
+      kind:
+        const: secret
+        default: secret
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  diskDepends:
+    properties:
+      kind:
+        const: disk
+        default: disk
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  staticRouteDepends:
+    properties:
+      kind:
+        const: static-route
+        default: static-route
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  deploymentDepends:
+    properties:
+      kind:
+        const: deployment
+        default: deployment
+      nameOrGUID:
+        type: string
+      guid:
+        type: string

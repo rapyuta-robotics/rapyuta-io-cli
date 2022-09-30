@@ -22,15 +22,19 @@ from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
+from riocli.chart import chart
+from riocli.apply import apply, explain, delete
 from riocli.auth import auth
 from riocli.build import build
 from riocli.completion import completion
 from riocli.config import Configuration
 from riocli.deployment import deployment
 from riocli.device import device
+from riocli.disk import disk
 from riocli.marketplace import marketplace
 from riocli.network import network
 from riocli.package import package
+from riocli.parameter import parameter
 from riocli.project import project
 from riocli.rosbag import rosbag
 from riocli.secret import secret
@@ -68,6 +72,10 @@ def version():
     return
 
 
+cli.add_command(apply)
+cli.add_command(chart)
+cli.add_command(explain)
+cli.add_command(delete)
 cli.add_command(auth)
 cli.add_command(project)
 cli.add_command(device)
@@ -80,5 +88,7 @@ cli.add_command(rosbag)
 cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(marketplace)
+cli.add_command(parameter)
+cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)

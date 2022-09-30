@@ -1,0 +1,13 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "docker-ros-build"
+spec:
+  recipe: "Docker"
+  architecture: "amd64"
+  git:
+    repository: "https://github.com/rapyuta-robotics/io_tutorial.git"
+    # gitRef: "master"
+    # secret: "secret-guid"
+  # contextDir: "talker/talker"
+  rosDistro: "melodic"
