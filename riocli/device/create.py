@@ -21,7 +21,7 @@ from riocli.config import new_client
 
 @click.command('create')
 @click.option('--description', type=str, help='Description of the device', default='')
-@click.option('--runtime', help='Runtime of the Device', default='dockercompose',
+@click.option('--runtime', help='Runtime of the Device', multiple=True,
               type=click.Choice(['preinstalled', 'dockercompose'], case_sensitive=False))
 @click.option('--ros', help='ROS Distribution for the Device', default='melodic',
               type=click.Choice(['kinetic', 'melodic', 'noetic'], case_sensitive=False))
@@ -35,7 +35,7 @@ from riocli.config import new_client
 def create_device(
         device_name: str,
         description: str,
-        runtime: str,
+        runtime: [],
         ros: str,
         python: str,
         rosbag_mount_path: str,
@@ -49,12 +49,14 @@ def create_device(
         with spinner():
             python_version = DevicePythonVersion(python)
             ros_distro = ROSDistro(ros)
-            runtime = DeviceRuntime(runtime)
-            device = Device(name=device_name, description=description, runtime=runtime, ros_distro=ros_distro,
+            runtime_docker = DeviceRuntime.DOCKER in runtime
+            runtime_preinstalled = DeviceRuntime.PREINSTALLED in runtime
+            device = Device(name=device_name, description=description, ros_distro=ros_distro,
+                            runtime_docker=runtime_docker, runtime_preinstalled=runtime_preinstalled,
                             python_version=python_version, rosbag_mount_path=rosbag_mount_path,
                             ros_workspace=catkin_workspace)
             client.create_device(device)
         click.secho('Device created successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

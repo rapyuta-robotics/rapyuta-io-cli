@@ -34,5 +34,5 @@ def execute_command(device_name: str, device_guid: str, user: str, shell: str, c
         click.secho(response)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 

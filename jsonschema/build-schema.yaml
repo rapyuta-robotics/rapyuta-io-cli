@@ -1,0 +1,214 @@
+---
+$schema: https://json-schema.org/draft-07/schema
+title: Build
+$ref: "#/definitions/buildSpec"
+definitions:
+  build:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+      kind:
+        const: Build
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/buildSpec"
+      status:
+        "$ref": "#/definitions/buildStatus"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      guid:
+        "$ref": "#/definitions/buildGUID"
+      creator:
+        "$ref": "#/definitions/uuid"
+      project:
+        "$ref": "#/definitions/projectGUID"
+      labels:
+        "$ref": "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+  projectGUID:
+    type: string
+    pattern: "^project-[a-z]{24}$"
+  buildGUID:
+    type: string
+    pattern: "^build-[a-z]{24}$"
+  secretGUID:
+    type: string
+    pattern: "^secret-[a-z]{24}$"
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  buildSpec:
+    type: object
+    properties:
+      repository:
+        type: object
+        properties:
+          url:
+            type: string
+          ref:
+            type: string
+          contextDir:
+            type: string
+          gitSecret:
+            "$ref": "#/definitions/secretGUID"
+      buildMethod:
+        "$ref": "#/definitions/buildRecipe"
+    required:
+      - buildMethod
+      - repository
+      - image
+    dependencies:
+      buildMethod:
+        oneOf:
+          - properties:
+              buildMethod:
+                enum:
+                  - Docker
+              docker:
+                type: object
+                "$ref": "#/definitions/docker"
+              image:
+                "$ref": "#/definitions/imageArtifact"
+          - properties:
+              buildMethod:
+                enum:
+                  - Source
+              catkin:
+                type: object
+                "$ref": "#/definitions/catkin"
+              image:
+                "$ref": "#/definitions/imageArtifact"
+  docker:
+    type: object
+    properties:
+      architecture:
+        "$ref": "#/definitions/architecture"
+      dockerfile:
+        type: string
+        default: Dockerfile
+      pullSecret:
+        "$ref": "#/definitions/secretGUID"
+
+      isRos:
+        type: boolean
+      rosDistro:
+        "$ref": "#/definitions/rosDistro"
+      simulation:
+        type: boolean
+        default: false
+
+    dependentRequired:
+      isRos:
+        - rosDistro
+        - simulation
+
+  catkin:
+    type: object
+    properties:
+      architecture:
+        "$ref": "#/definitions/architecture"
+
+      isRos:
+        type: boolean
+        const: true
+        default: true
+
+      rosDistro:
+        "$ref": "#/definitions/rosDistro"
+
+      simulation:
+        type: boolean
+        default: false
+
+      catkinParameters:
+        "$ref": "#/definitions/catkinParameters"
+    required:
+      - isRos
+      - rosDistro
+      - simulation
+      - architecture
+
+  imageArtifact:
+    type: object
+    properties:
+      registry:
+        type: string
+      pushSecret:
+        type: string
+      tagName:
+        type: string
+      triggerName:
+        type: string
+      webhookURL:
+        type: string
+
+  buildStatus:
+    type: object
+    properties:
+      status:
+        "$ref": "#/definitions/buildStatusType"
+      generation:
+        type: integer
+  buildStatusType:
+    enum:
+      - Complete
+      - BuildFailed
+      - BuildInProgress
+  gitInfo:
+    type: object
+    properties:
+      repository:
+        type: string
+      gitRef:
+        type: string
+      secret:
+        "$ref": "#/definitions/secretGUID"
+    required:
+      - repository
+  catkinParameters:
+    type: array
+    items:
+      "$ref": "#/definitions/catkinParameter"
+  catkinParameter:
+    type: object
+    properties:
+      rosPackages:
+        type: string
+      cmakeArguments:
+        type: string
+      makeArguments:
+        type: string
+      catkinMakeArguments:
+        type: string
+      blacklist:
+        type: string
+  buildRecipe:
+    enum:
+      - Docker
+      - Source
+  architecture:
+    enum:
+      - amd64
+      - arm32v7
+      - arm64v8
+  rosDistro:
+    enum:
+      - melodic
+      - kinetic
+      - noetic

@@ -30,4 +30,4 @@ def open_static_route(static_route, static_route_guid) -> None:
         click.launch(url='https://{}'.format(route.urlString), wait=False)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

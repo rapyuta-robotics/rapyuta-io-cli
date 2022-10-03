@@ -36,4 +36,4 @@ def delete_device(device_name: str, device_guid: str, force: bool):
         click.secho('Device deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

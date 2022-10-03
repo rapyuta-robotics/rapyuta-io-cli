@@ -61,4 +61,4 @@ def create_build(build_name: str, repository: str, strategy: str, branch: str, c
         click.secho('Created build successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

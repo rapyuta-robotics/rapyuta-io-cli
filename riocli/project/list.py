@@ -20,25 +20,30 @@ from riocli.config import new_client
 
 
 @click.command('list')
-def list_project() -> None:
+@click.pass_context
+def list_project(ctx: click.Context) -> None:
     """
     List all the projects you are part of
     """
     try:
         client = new_client(with_project=False)
         projects = client.list_projects()
-        _display_project_list(projects, show_header=True)
+        current = ctx.obj.data.get('project_id', None)
+        _display_project_list(projects, current, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
-def _display_project_list(projects: typing.List[Project], show_header: bool = True) -> None:
+def _display_project_list(projects: typing.List[Project], current: str = None, show_header: bool = True) -> None:
     if show_header:
         click.secho('{:40} {:<25} {:<27} {:40}'.
                     format('Project ID', 'Project Name', 'Created At', 'Creator'),
                     fg='yellow')
 
     for project in projects:
+        fg = None
+        if project.guid == current:
+            fg = 'green'
         click.secho('{:40} {:<25} {:<24} {:40}'.format(project.guid, project.name,
-                                                      project.created_at, project.creator))
+                                                      project.created_at, project.creator), fg=fg)

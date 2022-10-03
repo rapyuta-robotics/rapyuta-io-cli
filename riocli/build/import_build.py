@@ -65,7 +65,7 @@ def import_docker_build(arch: str, ros: bool, ros_distro: str, sim: bool, wait: 
         click.secho('Created build successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _gather_information() -> Build:

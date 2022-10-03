@@ -1,0 +1,49 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Secret"
+metadata:
+  name: "rrdockerhub"
+spec:
+  type: Docker
+  docker:
+    username: user
+    password: password
+    email: user@example.net
+    # registry: https://index.docker.io/v1/
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package" #We will create a package
+metadata:
+  name: "non-ros-cloud"  #it will be called non-ros-cloud.
+  version: "1.0.0"
+  labels:
+    app: test
+spec:
+  runtime: "cloud"
+  cloud:
+    replicas: 1
+  executables:
+    - name: "http"
+      type: docker
+      docker:
+          image: "nginx"
+      pullSecret:  # docker with a pull secret
+        depends:
+          kind: secret
+          nameOrGUID: "rrdockerhub"  #here we referene by names. not GUIDs
+  environmentVars: #it has environment args
+    - name: "TEST_VAR"
+      description: "This is a test var"
+      defaultValue: "45"
+      exposed: true
+      exposedName: "TEST_VAR_EXPOSED"
+    - name: "TEST_INTERNAL_VAR"
+      defaultValue: "45"
+  endpoints: #These are cloud endpoints
+    - name: "HTTP"
+      type: external-http
+      port: 80
+      targetPort: 80
+    - name: "HTTPS"
+      type: external-https
+      port: 443
+      targetPort: 443

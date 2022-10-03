@@ -27,7 +27,7 @@ def status_all(device_name: str, device_guid: str) -> None:
         click.secho(response)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def run_service_cmd(device_guid, service_name, service_cmd=""):
@@ -37,7 +37,7 @@ def run_service_cmd(device_guid, service_name, service_cmd=""):
         click.secho(response)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @click.command('status')

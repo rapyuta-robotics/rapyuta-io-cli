@@ -37,4 +37,4 @@ def delete_package(force: bool, package_name: str, package_guid: str) -> None:
         click.secho('Package deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

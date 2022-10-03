@@ -46,7 +46,7 @@ def device_ssh(device_name: str, device_guid: str, user: str, local_port: int, r
         os.system('ssh -p {} {} -o StrictHostKeyChecking=no {}@localhost'.format(local_port, extra_args, user))
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @click.command('ssh-authorize')
@@ -64,4 +64,4 @@ def ssh_authorize_key(device_name: str, device_guid: str, public_key_file: click
         click.secho('Keys added successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

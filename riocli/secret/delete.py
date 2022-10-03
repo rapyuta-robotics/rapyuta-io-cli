@@ -36,4 +36,4 @@ def delete_secret(force: str, secret_name: str, secret_guid: str) -> None:
         click.secho('Secret deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

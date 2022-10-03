@@ -31,7 +31,7 @@ def list_marketplace() -> None:
         display_marketplace_list(packages=packages, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def display_marketplace_list(packages: list, show_header: bool = True) -> None:

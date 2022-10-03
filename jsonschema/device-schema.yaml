@@ -1,0 +1,104 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: Device
+$ref: "#/definitions/device"
+definitions:
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      guid:
+        $ref: "#/definitions/uuid"
+      creator:
+        $ref: "#/definitions/uuid"
+      project:
+        $ref: "#/definitions/projectGUID"
+      labels:
+        $ref: "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+
+  device:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+      kind:
+        const: Device
+      metadata:
+        $ref: "#/definitions/metadata"
+      spec:
+        $ref: "#/definitions/deviceSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+
+  deviceSpec:
+    type: object
+    properties:
+      rosDistro:
+        type: string
+        enum:
+          - kinetic
+          - melodic
+          - noetic
+        default: melodic
+      python:
+        type: string
+        enum:
+          - "2"
+          - "3"
+        default: "3"
+    dependencies:
+      docker:
+        oneOf:
+          - properties:
+              docker:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - False
+          - properties:
+              docker:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - True
+                  rosbagMountPath:
+                    type: string
+                    default: /opt/rapyuta/volumes/rosbag
+      preinstalled:
+        oneOf:
+          - properties:
+              preinstalled:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - False
+          - properties:
+              preinstalled:
+                type: object
+                properties:
+                  enabled:
+                    enum:
+                      - True
+                  catkinWorkspace:
+                    type: string
+
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  projectGUID:
+    type: string
+    pattern: "^project-[a-z]{24}$"
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"

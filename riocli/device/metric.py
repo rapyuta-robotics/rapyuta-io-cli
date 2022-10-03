@@ -51,7 +51,7 @@ def list_metrics(device_name: str, device_guid: str) -> None:
         _display_metric_list(metrics, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_metrics.command('subscribe')
@@ -70,7 +70,7 @@ def subscribe_metrics(device_name: str, device_guid: str, metric: str) -> None:
         click.secho('Metrics subscribed successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_metrics.command('unsubscribe')
@@ -89,7 +89,7 @@ def unsubscribe_metrics(device_name: str, device_guid: str, metric: str) -> None
         click.secho('Metrics un-subscribed successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_metric_list(metrics: typing.List[Metric], show_header: bool = True) -> None:

@@ -35,7 +35,7 @@ def inspect_secret(format_type: str, secret_name: str, secret_guid: str) -> None
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_secret_inspectable(obj: Secret) -> dict:

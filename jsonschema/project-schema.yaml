@@ -1,0 +1,87 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: Project
+description: A namespace for resources on Rapyuta
+$ref: "#/definitions/project"
+definitions:
+  project:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+        default: apiextensions.rapyuta.io/v1
+      kind:
+        const: Project
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/projectSpec"
+      status:
+        "$ref": "#/definitions/projectStatus"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      guid:
+        "$ref": "#/definitions/projectGUID"
+      creator:
+        "$ref": "#/definitions/uuid"
+      project:
+        "$ref": "#/definitions/projectGUID"
+      labels:
+        "$ref": "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+  projectGUID:
+    type: string
+    pattern: "^project-[a-z]{24}$"
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  projectSpec:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          type: string
+    required:
+      - users
+  user:
+    type: object
+    properties:
+      email_id:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      guid:
+        "$ref": "#/definitions/uuid"
+      state:
+        type: string
+    required:
+      - guid
+      - state
+      - email_id
+  projectStatus:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          "$ref": "#/definitions/user"
+        uniqueItems: true
+    required:
+      - users

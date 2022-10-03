@@ -41,13 +41,13 @@ def run_tunnel_on_local(local_port: int, path: str, background: bool = False) ->
 
 
 def copy_from_device(device_guid: str, src: str, dest: str) -> None:
-    file = '{}-{}'.format(src, random_string(7, 5))
+    file = '{}-{}'.format(src, random_string(7, 5)).lstrip('/').replace('/', '-')
     client = new_client()
     device = client.get_device(device_id=device_guid)
-    request_uuid = device.upload_log_file(LogsUploadRequest(src, file_name=file, metadata={'cli_req_id': file}))
+    request_uuid = device.upload_log_file(LogsUploadRequest(src, file_name=file))
     while True:
         status = device.get_log_upload_status(request_uuid)
-        if status.status != "IN PROGRESS":
+        if status.status not in ["IN PROGRESS", "PENDING"]:
             break
 
         time.sleep(10)

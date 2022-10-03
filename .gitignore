@@ -6,11 +6,14 @@
 # Node artifact files
 node_modules/
 dist/
-
+jsonschema/json/
 # Compiled Java class files
 *.class
 
 # Compiled Python bytecode
+venv/
+build/
+*.egg-info/
 *.py[cod]
 
 # Log files

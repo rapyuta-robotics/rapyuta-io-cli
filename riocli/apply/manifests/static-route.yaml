@@ -1,0 +1,4 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "StaticRoute"
+metadata:
+  name: "unreal-server-apply"

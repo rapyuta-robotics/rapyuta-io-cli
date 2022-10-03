@@ -35,7 +35,7 @@ def inspect_build(format_type: str, build_guid: str, build_name: str) -> None:
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_build_inspectable(build: Build) -> dict:

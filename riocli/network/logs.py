@@ -27,7 +27,7 @@ def network_logs(network_name: str, network_guid: str, network_type: str) -> Non
     if network_type == 'routed':
         # FIXME: For routed network, it returns Pod not found error
         click.secho('Not implemented yet!', fg='red')
-        exit(1)
+        raise SystemExit(1)
     elif network_type == 'native':
         native_network_logs(network_name, network_guid)
 
@@ -43,4 +43,4 @@ def native_network_logs(network_name: str, network_guid: str) -> None:
         stream_deployment_logs(deployment.deploymentId, comp_id, exec_id, pod_name)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

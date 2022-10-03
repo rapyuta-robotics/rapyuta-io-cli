@@ -73,7 +73,7 @@ def job_create(name: str, deployment_id: str, component_instance_id: str, all_to
         click.secho('Rosbag Job created successfully', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @rosbag_job.command('stop')
@@ -94,7 +94,7 @@ def job_stop(deployment_guid: str, deployment_name: str, component_instance_ids:
         click.secho('Rosbag Job stopped successfully', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @rosbag_job.command('list')
@@ -120,7 +120,7 @@ def job_list(deployment_guid: str, deployment_name: str,
         _display_rosbag_job_list(rosbag_jobs, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_rosbag_job_list(jobs: typing.List[ROSBagJob], show_header: bool = True) -> None:

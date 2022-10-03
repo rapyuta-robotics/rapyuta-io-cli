@@ -1,0 +1,7 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Disk"
+metadata:
+  name: "small-pvc-4"
+spec:
+  runtime: cloud
+  capacity: 4

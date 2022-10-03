@@ -33,4 +33,4 @@ def rapyuta_agent_logs(device_name: str, device_guid: str) -> None:
         os.system('ssh -p {} -o StrictHostKeyChecking=no root@localhost tail -f /var/log/salt/minion'.format(local_port))
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

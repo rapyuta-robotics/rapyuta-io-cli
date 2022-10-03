@@ -50,7 +50,7 @@ def list_config(device_name: str, device_guid: str) -> None:
         _display_config_list(config_variables, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_config.command('create')
@@ -70,7 +70,7 @@ def create_config(device_name: str, device_guid: str, key: str, value: str) -> N
         click.secho('Config Variable added successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_config.command('update')
@@ -88,7 +88,7 @@ def update_config(device_name: str, device_guid: str, key: str, value: str) -> N
         click.secho('Config variable updated successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 @device_config.command('delete')
@@ -105,7 +105,7 @@ def delete_config(device_name: str, device_guid: str, key: str) -> None:
         click.secho('Config variable deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_config_list(config_variables: typing.List[DeviceConfig], show_header: bool = True) -> None:

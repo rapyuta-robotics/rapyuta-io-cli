@@ -37,7 +37,7 @@ def inspect_package(format_type: str, package_name: str, package_guid: str) -> N
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def make_package_inspectable(package: Package) -> dict:

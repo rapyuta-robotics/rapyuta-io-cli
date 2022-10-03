@@ -17,19 +17,19 @@ from riocli.config import Configuration
 
 
 @click.command()
-def logout():
+@click.pass_context
+def logout(ctx: click.Context):
     """
     Log out from the Rapyuta.io account using the CLI.
     """
 
-    config = Configuration()
-    if not config.exists:
+    if not ctx.obj.exists:
         return
 
-    config.data.pop('auth_token', None)
-    config.data.pop('password', None)
-    config.data.pop('email_id', None)
-    config.data.pop('project_id', None)
-    config.save()
+    ctx.obj.data.pop('auth_token', None)
+    ctx.obj.data.pop('password', None)
+    ctx.obj.data.pop('email_id', None)
+    ctx.obj.data.pop('project_id', None)
+    ctx.obj.save()
 
     click.secho('Logged out successfully!', fg='green')

@@ -16,6 +16,7 @@ import click
 from riocli.auth.login import select_project
 from riocli.auth.util import get_token
 from riocli.config import Configuration
+from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
 _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa"]
@@ -23,37 +24,38 @@ _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa"]
 
 @click.command('environment', hidden=True)
 @click.argument('name', type=str)
-def environment(name: str):
+@click.pass_context
+def environment(ctx: click.Context, name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use)
     """
 
-    config = Configuration()
+    ctx = get_root_context(ctx)
 
     if name == 'ga':
-        config.data.pop('environment', None)
-        config.data.pop('catalog_host', None)
-        config.data.pop('core_api_host', None)
-        config.data.pop('rip_host', None)
+        ctx.obj.data.pop('environment', None)
+        ctx.obj.data.pop('catalog_host', None)
+        ctx.obj.data.pop('core_api_host', None)
+        ctx.obj.data.pop('rip_host', None)
     else:
-        _configure_environment(config, name)
+        _configure_environment(ctx.obj, name)
 
-    config.data.pop('project_id', None)
-    email = config.data.get('email_id', None)
-    password = config.data.get('password', None)
-    config.save()
+    ctx.obj.data.pop('project_id', None)
+    email = ctx.obj.data.get('email_id', None)
+    password = ctx.obj.data.get('password', None)
+    ctx.obj.save()
 
-    config.data['auth_token'] = get_token(email, password)
+    ctx.obj.data['auth_token'] = get_token(email, password)
 
-    select_project(config)
-    config.save()
+    select_project(ctx.obj)
+    ctx.obj.save()
 
 
 def _validate_environment(name: str) -> bool:
     valid = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
     if not valid:
         click.secho('Invalid staging environment!', fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _configure_environment(config: Configuration, name: str) -> None:

@@ -37,4 +37,4 @@ def delete_deployment(force: bool, deployment_name: str, deployment_guid: str) -
         click.secho('Deployment deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

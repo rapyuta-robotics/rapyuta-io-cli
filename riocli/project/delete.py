@@ -36,4 +36,4 @@ def delete_project(force: bool, project_name: str, project_guid: str) -> None:
         click.secho('Project deleted successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

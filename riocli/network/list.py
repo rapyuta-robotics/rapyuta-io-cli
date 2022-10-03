@@ -40,7 +40,7 @@ def list_networks(network: str) -> None:
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def _display_network_list(

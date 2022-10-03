@@ -34,7 +34,7 @@ def scp(source, destination) -> None:
         if src_device_guid is None and dest_device_guid is None:
             click.secho('One of source or destination paths should be a remote path of format '
                         '<device-id|device-name>:path', fg='red')
-            exit(1)
+            raise SystemExit(1)
 
         if src_device_guid is not None:
             copy_from_device(src_device_guid, src, dest)
@@ -43,4 +43,4 @@ def scp(source, destination) -> None:
             copy_to_device(dest_device_guid, src, dest)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)

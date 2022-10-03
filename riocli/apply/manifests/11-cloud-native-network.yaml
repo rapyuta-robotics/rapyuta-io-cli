@@ -1,0 +1,9 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "cloud-native-network"
+spec:
+  runtime: "cloud"
+  type: "native"
+  rosDistro: "melodic"
+  resourceLimits: "xSmall"

@@ -1,0 +1,10 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "apply-device-preinstalled"
+  project: "project-guid"
+spec:
+  python: "3"
+  rosDistro: "melodic"
+  preinstalled:
+    enabled: True

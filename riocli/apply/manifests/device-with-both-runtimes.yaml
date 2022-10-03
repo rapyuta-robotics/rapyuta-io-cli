@@ -1,0 +1,13 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "apply-device-both"
+  project: "project-guid"
+spec:
+  python: "3"
+  rosDistro: "melodic"
+  preinstalled:
+    enabled: True
+    catkinWorkspace: "/home/rapyuta/catkin_ws"
+  docker:
+    enabled: True

@@ -40,7 +40,7 @@ def install_product(rrn: str, version: str, dry_run: bool, ignore_missing: bool,
     """
     if not dependency_file and not rrn:
         click.secho('Either one of RRN or Dependency Filename must be provided', fg='red')
-        exit(1)
+        raise SystemExit(1)
     try:
         if dependency_file is not None:
             dependencies = parse_dependency_file(dependency_file)
@@ -49,7 +49,7 @@ def install_product(rrn: str, version: str, dry_run: bool, ignore_missing: bool,
             single_product(rrn, version, dry_run, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
-        exit(1)
+        raise SystemExit(1)
 
 
 def bulk_product(products: dict, dry_run: bool, ignore_missing: bool) -> None:

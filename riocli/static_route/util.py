@@ -56,8 +56,7 @@ def find_static_route_guid(client: Client, name: str) -> str:
         if route.urlPrefix == name or route.urlString == name:
             return route.guid
 
-    click.secho("Static route not found", fg='red')
-    exit(1)
+    raise StaticRouteNotFound()
 
 
 def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
@@ -74,3 +73,8 @@ def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
             '{:<36} {:<25} {:36} {:36} {:32}'.
             format(route.guid, route.urlPrefix, route.urlString, route.creator,
                    route.CreatedAt))
+
+class StaticRouteNotFound(Exception):
+    def __init__(self, message='secret not found'):
+        self.message = message
+        super().__init__(self.message)
