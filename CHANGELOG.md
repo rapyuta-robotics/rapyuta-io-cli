@@ -1,3 +1,19 @@
+# [0.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.3.1...v0.4.0) (2022-10-03)
+
+
+### Bug Fixes
+
+* **network:** handles network not found correctly ([#22](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/22)) ([b38c7a0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b38c7a04e6d3672254537eacec23cea1e04f8ff2))
+* **shell:** Fixed a bug which causes REPL to close in case of exception. ([e8dc6f0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e8dc6f06cb57aab42dce55f4d7d5b2f468d3a9d1))
+
+
+### Features
+
+* **apply:** adds support for apply command ([#30](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/30)) ([f6ae40d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f6ae40dac8dfdff2343fa52b299fa4bd0dfc7be0)), closes [#39](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/39)
+* **auth:** adds support for non-interactive login ([#32](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/32)) ([8c8c460](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8c8c46084487d7b50d09cad6fdb97b2d54326746))
+* **project:** adds highlight for current project in list output ([ce348da](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ce348da36a2d61ec6709d34ff46f1ff0289aa986))
+* **shell:** adds improvements in repl session ([b7a481e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7a481e58635f1c0f40ae79a5240f928b4a95683))
+
 ## [0.3.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.3.0...v0.3.1) (2022-03-29)
 
 
