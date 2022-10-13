@@ -18,6 +18,8 @@ from riocli.device.tools.device_init import device_init
 from riocli.device.tools.forward import port_forward
 from riocli.device.tools.rapyuta_logs import rapyuta_agent_logs
 from riocli.device.tools.ssh import ssh_authorize_key, device_ssh
+from riocli.device.tools.run import run
+
 from .scp import scp
 from .service import service
 
@@ -39,3 +41,4 @@ tools.add_command(ssh_authorize_key)
 tools.add_command(service)
 tools.add_command(port_forward)
 tools.add_command(rapyuta_agent_logs)
+tools.add_command(run)
