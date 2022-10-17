@@ -21,9 +21,9 @@ from riocli.project.util import name_to_organization_guid
 
 @click.command('create')
 @click.argument('project-name', type=str)
-@click.option('--organization-name', help='Pass organization name for which project needs to be created. Default will be current organization')
+@click.option('--organization', 'organization_name', help='Pass organization name for which project needs to be created. Default will be current organization')
 @name_to_organization_guid
-def create_project(project_name: str, organization_name: str, organization_guid: str) -> None:
+def create_project(project_name: str, organization: str, organization_name: str) -> None:
     """
     Creates a new project
     """
