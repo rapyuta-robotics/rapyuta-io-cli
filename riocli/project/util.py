@@ -18,6 +18,7 @@ import click
 from rapyuta_io import Client
 
 from riocli.config import new_client
+from riocli.utils.selector import show_selection
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -63,11 +64,22 @@ def get_project_name(client: Client, guid: str) -> str:
 
 def find_organization_guid(client: Client, name: str) -> str:
     organizations = client.get_user_organizations()
+    options = {}
+
     for organization in organizations:
         if organization.name == name:
-            return organization.guid
+            options[organization.guid] = '{} ({})'.format(organization.name, organization.url)
 
-    raise Exception("User is not part of organization: {}".format(name))
+    if len(options) == 1:
+        return list(options.keys())[0]
+
+    if len(options) == 0:
+        raise Exception("User is not part of organization: {}".format(name))
+
+    choice = show_selection(options, header='Following packages were found with the same name')
+    return choice
+
+
 
 def get_organization_name(client: Client, guid: str) -> str:
     organizations = client.get_user_organizations()
@@ -75,7 +87,7 @@ def get_organization_name(client: Client, guid: str) -> str:
         if organization.guid == guid:
             return organization.name
 
-    raise Exception("User is not part of organization with guid: {}".format(guid))
+    raise OrganizationNotFound("User is not part of organization with guid: {}".format(guid))
 
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
@@ -96,7 +108,7 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
                 raise SystemExit(1)
 
         kwargs['organization_name'] = name
-        kwargs['organization_guid'] = guid    
+        kwargs['organization'] = guid    
         f(**kwargs)
 
     return decorated
@@ -104,5 +116,10 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
 
 class ProjectNotFound(Exception):
     def __init__(self, message='project not found'):
+        self.message = message
+        super().__init__(self.message)
+
+class OrganizationNotFound(Exception):
+    def __init__(self, message='organization not found'):
         self.message = message
         super().__init__(self.message)
