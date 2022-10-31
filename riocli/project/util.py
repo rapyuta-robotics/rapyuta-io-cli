@@ -93,7 +93,7 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any):
         client = new_client(with_project=False)
-        name = kwargs.pop('organization_name')
+        name = kwargs.get('organization_name') or kwargs.pop('organization')
         guid = None
         
         if name:
@@ -106,9 +106,8 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
             except Exception as e:
                 click.secho(str(e), fg='red')
                 raise SystemExit(1)
-
         kwargs['organization_name'] = name
-        kwargs['organization'] = guid    
+        kwargs['organization_guid'] = guid    
         f(**kwargs)
 
     return decorated
