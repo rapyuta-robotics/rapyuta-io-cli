@@ -145,9 +145,9 @@ class Package(Model):
         if 'ros' in self.spec:
             component_obj.ros.isRos = True
             component_obj.ros.ros_distro  = self.spec.ros.version
-            pkg_object.inboundROSInterfaces = munchify({})
+            pkg_object.plans[0].inboundROSInterfaces = munchify({})
             
-            pkg_object.inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
+            pkg_object.plans[0].inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
             if 'rosEndpoints' in self.spec.ros:
                 component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
