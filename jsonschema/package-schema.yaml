@@ -183,7 +183,7 @@ definitions:
           memory:
             type: number
             min: 256
-            max: 32678
+            max: 32768
     required:
       - type
     dependencies:
