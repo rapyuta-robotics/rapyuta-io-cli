@@ -112,7 +112,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "staticroute": lambda x: munchify(x)['guid'],
             "build": lambda x: munchify(x)['guid'],
             "deployment": lambda x: munchify(x)['deploymentId'],
-            "network": lambda x: munchify(x)['guid'],
+            "network": lambda x: munchify(x).guid,
             "disk": lambda x: munchify(x)['internalDeploymentGUID'], #This is only temporarity like this
             "device": lambda x: munchify(x)['uuid']
         }
