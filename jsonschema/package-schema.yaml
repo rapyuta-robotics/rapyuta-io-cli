@@ -473,6 +473,113 @@ definitions:
                 enum:
                   - action
 
+  rosbagJobSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      recordOptions:
+        "$ref": "#/definitions/rosbagRecordOptionsSpec"
+      uploadOptions:
+        "$ref": "#/definitions/rosbagUploadOptionsSpec"
+      overrideOptions:
+        "$ref": "#/definitions/rosbagOverrideOptionsSpec"
+    required:
+      - name
+      - recordOptions
+
+  rosbagRecordOptionsSpec:
+    type: object
+    properties:
+      allTopics:
+        type: boolean
+      topics:
+        type: array
+        items:
+          type: string
+      topicIncludeRegex:
+        type: array
+        items:
+          type: string
+      topicExcludeRegex:
+        type: string
+      maxMessageCount:
+        type: integer
+      node:
+        type: string
+      compression:
+        type: string
+        enum:
+          - BZ2
+          - LZ4
+      maxSplits:
+        type: integer
+      maxSplitSize:
+        type: integer
+      chunkSize:
+        type: integer
+      prefix:
+        type: string
+      maxSplitDuration:
+        type: integer
+      maxSplitDurationUnit:
+        type: string
+        enum:
+          - m
+          - h
+
+  rosbagUploadOptionsSpec:
+    type: object
+    properties:
+      maxUploadRate:
+        type: integer
+        default: 1048576
+      purgeAfter:
+        type: boolean
+      uploadType:
+        type: string
+        enum:
+          - OnStop
+          - Continuous
+          - OnDemand
+        default: OnDemand
+      onDemandOpts:
+        type: object
+        "$ref": "#/definitions/rosbagOnDemandUploadOptionsSpec"
+
+  rosbagOnDemandUploadOptionsSpec:
+    type: object
+    properties:
+      timeRange:
+        type: object
+        properties:
+          from:
+            type: integer
+          to:
+            type: integer
+
+  rosbagOverrideOptionsSpec:
+    type: object
+    properties:
+      topicOverrideInfo:
+        type: array
+        items:
+          "$ref": "#/definitions/rosbagTopicOverrideInfoSpec"
+      excludeTopics:
+        type: array
+        items:
+          type: string
+
+  rosbagTopicOverrideInfoSpec:
+    type: object
+    properties:
+      topicName:
+        type: string
+      recordFrequency:
+        type: integer
+      latched:
+        type: boolean
+
   stringMap:
     type: object
     additionalProperties:
