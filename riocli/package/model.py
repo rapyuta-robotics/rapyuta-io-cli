@@ -32,11 +32,12 @@ class Package(Model):
         'never': RestartPolicy.Never,
         'onfailure': RestartPolicy.OnFailure
     }
+
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client):
-        guid, obj = self.rc.find_depends({"kind":  self.kind.lower(), "nameOrGUID": self.metadata.name},
+        guid, obj = self.rc.find_depends({"kind": self.kind.lower(), "nameOrGUID": self.metadata.name},
                                          self.metadata.version)
         if not guid:
             return False
@@ -44,19 +45,18 @@ class Package(Model):
         return obj
 
     def create_object(self, client: Client):
-        # click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         pkg_object = munchify({
             'name': 'default',
             'packageVersion': 'v1.0.0',
             'apiVersion': "2.1.0",
             'plans': [
                 {
-                     "inboundROSInterfaces": {
+                    "inboundROSInterfaces": {
                         "anyIncomingScopedOrTargetedRosConfig": False
                     },
                     'singleton': False,
                     'bindable': True,
-                    'name' : 'default',
+                    'name': 'default',
                     'dependentDeployments': [],
                     'exposedParameters': [],
                     'components': [
@@ -65,34 +65,32 @@ class Package(Model):
             ],
         })
         component_obj = munchify({
-                            'requiredRuntime': 'cloud',
-                            'architecture': 'amd64',
-                            'executables': [],
-                            'parameters': [],
-                            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
-                            'exposedParameters': [],
-                            'metadata': {},
-                        })
-        
+            'requiredRuntime': 'cloud',
+            'architecture': 'amd64',
+            'executables': [],
+            'parameters': [],
+            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
+            'exposedParameters': [],
+            'metadata': {},
+            'rosBagJobDefs': []
+        })
+
         # metadata
         # ✓ name, ✓ description, ✓ version
-        
+
         pkg_object.name = self.metadata.name
         pkg_object.packageVersion = self.metadata.version
-        
+
         if 'description' in self.metadata:
             pkg_object.description = self.metadata.description
-        
-        
+
         # spec
         # executables
-        component_obj.name = 'default' #self.metadata.name #package == component in the single component model
-        
+        component_obj.name = 'default'  # self.metadata.name #package == component in the single component model
+
         # TODO validate transform.  specially nested secret. 
         component_obj.executables = list(map(self._map_executable, self.spec.executables))
         component_obj.requiredRuntime = self.spec.runtime
-        
-
 
         # ✓ parameters
         # TODO validate transform.  
@@ -111,9 +109,10 @@ class Package(Model):
             for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
                 if os.environ.get('DEBUG'):
                     print(entry.name)
-                exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
+                exposed_parameters.append(
+                    {'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
             pkg_object.plans[0].exposedParameters = exposed_parameters
-            
+
         # device
         #  ✓ arch, ✓ restart
         if self.spec.runtime == 'device':
@@ -121,7 +120,7 @@ class Package(Model):
             component_obj.architecture = self.spec.device.arch
             if 'restart' in self.spec.device:
                 component_obj.restart_policy = self.RESTART_POLICY[self.spec.device.restart.lower()]
-        
+
         # cloud
         #  ✓ replicas
         #  ✓ endpoints
@@ -133,9 +132,9 @@ class Package(Model):
                 component_obj.cloudInfra.replicas = 1
 
         if 'endpoints' in self.spec:
-            endpoints =  list(map(self._map_endpoints, self.spec.endpoints))
+            endpoints = list(map(self._map_endpoints, self.spec.endpoints))
             component_obj.cloudInfra.endpoints = endpoints
-        
+
         # ros:
         #  ✓ isros
         #  ✓ topic
@@ -144,20 +143,21 @@ class Package(Model):
         #   rosbagjob
         if 'ros' in self.spec:
             component_obj.ros.isRos = True
-            component_obj.ros.ros_distro  = self.spec.ros.version
+            component_obj.ros.ros_distro = self.spec.ros.version
             pkg_object.inboundROSInterfaces = munchify({})
-            
+
             pkg_object.inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
             if 'rosEndpoints' in self.spec.ros:
                 component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
                 component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
-        
+
+        component_obj.rosBagJobDefs = list(map(self._map_rosbag_job_def, self.spec.rosBagJobDefs))
+
         pkg_object.plans[0].components = [component_obj]
         # return package
         # print(json.dumps(pkg_object))
         return client.create_package(pkg_object)
-        
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
@@ -181,43 +181,42 @@ class Package(Model):
         return return_list
 
     def _map_executable(self, exec):
-        
+
         exec_object = munchify({
             "name": exec.name,
             "simulationOptions": {
-                "simulation": exec.simulation if 'simulation' in exec  else False
+                "simulation": exec.simulation if 'simulation' in exec else False
             }
         })
-        
+
         if 'limits' in exec:
             exec_object.limits = {
                 "cpu": exec.limits.cpu,
                 "memory": exec.limits.memory
             }
-            
+
         if exec.runAsBash:
             if 'command' in exec:
                 exec_object.cmd = ['/bin/bash', '-c', exec.command]
         else:
-            #TODO verify this is right for secret?
+            # TODO verify this is right for secret?
             if 'command' in exec:
                 exec_object.cmd = [exec.command]
 
-        
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
             if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
-                secret_guid, secret =  self.rc.find_depends(exec.docker.pullSecret.depends)
+                secret_guid, secret = self.rc.find_depends(exec.docker.pullSecret.depends)
                 exec_object.secret = secret_guid
-            
+
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid
-            #TODO verify this is right for secret?
+            # TODO verify this is right for secret?
             # if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                # exec_object.secret = exec.docker.pullSecret.depends.guid
-        
-        #TODO handle preinstalled
-        
+            # exec_object.secret = exec.docker.pullSecret.depends.guid
+
+        # TODO handle preinstalled
+
         return exec_object
 
     def _map_endpoints(self, endpoint):
@@ -226,16 +225,30 @@ class Package(Model):
         if 'tls-tcp' in proto:
             proto = 'tcp'
 
-        
         if 'range' in endpoint.type:
             proto = proto.replace("-range", '')
             return {
-                "name": endpoint.name, "exposeExternally": exposedExternally, 
+                "name": endpoint.name, "exposeExternally": exposedExternally,
                 "portRange": endpoint.portRange, "proto": proto.upper()}
         else:
             return {
-                "name": endpoint.name, "exposeExternally": exposedExternally, 
+                "name": endpoint.name, "exposeExternally": exposedExternally,
                 "port": endpoint.port, "targetPort": endpoint.targetPort, "proto": proto.upper()}
+
+    @staticmethod
+    def _map_rosbag_job_def(rosbag_job):
+        rosbag_job_object = munchify({
+            "name": rosbag_job.name,
+            "recordOptions": rosbag_job.recordOptions,
+        })
+
+        if rosbag_job.uploadOptions:
+            rosbag_job_object.uploadOptions = rosbag_job.uploadOptions
+
+        if rosbag_job.overrideOptions:
+            rosbag_job_object.overrideOptions = rosbag_job.overrideOptions
+
+        return rosbag_job_object
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

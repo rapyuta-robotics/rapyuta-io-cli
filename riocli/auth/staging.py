@@ -61,9 +61,6 @@ def _validate_environment(name: str) -> bool:
 def _configure_environment(config: Configuration, name: str) -> None:
     _validate_environment(name)
 
-    # Named Staging environments don't have hyphen in the name. Ephemeral environments do.
-    name = name+'-' if name.startswith('pr') else name
-
     catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     rip = 'https://{}rip.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)

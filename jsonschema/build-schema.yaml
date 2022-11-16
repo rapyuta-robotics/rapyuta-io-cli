@@ -72,7 +72,6 @@ definitions:
     required:
       - buildMethod
       - repository
-      - image
     dependencies:
       buildMethod:
         oneOf:

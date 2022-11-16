@@ -1,4 +1,4 @@
-VERSION = "2.16.1"
+VERSION = "2.16.2"
 import re
 from fastjsonschema import JsonSchemaValueException
 
@@ -17,12 +17,12 @@ def validate(data, custom_formats={}, name_prefix=None):
 
 def validate___definitions_package(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/rosbagJobSpec'}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['apiVersion', 'kind', 'metadata', 'spec']):
-            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
+            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/rosbagJobSpec'}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
         data_keys = set(data.keys())
         if "apiVersion" in data_keys:
             data_keys.remove("apiVersion")
@@ -48,7 +48,7 @@ def validate___definitions_package(data, custom_formats={}, name_prefix=None):
 
 def validate___definitions_componentspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', 'properties': {'enabled': {'type': 'boolean', 'default': False}}, 'dependencies': {'enabled': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'type': 'boolean', 'enum': [True]}, 'version': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'inboundScopedTargeted': {'type': 'boolean', 'default': False}, 'rosEndpoints': {'type': 'array', 'items': {'$ref': '#/definitions/rosEndpointSpec'}}}}]}}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}}}]}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', 'properties': {'enabled': {'type': 'boolean', 'default': False}}, 'dependencies': {'enabled': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'type': 'boolean', 'enum': [True]}, 'version': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'inboundScopedTargeted': {'type': 'boolean', 'default': False}, 'rosEndpoints': {'type': 'array', 'items': {'$ref': '#/definitions/rosEndpointSpec'}}}}]}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         if "runtime" in data:
@@ -150,6 +150,242 @@ def validate___definitions_componentspec(data, custom_formats={}, name_prefix=No
             data_keys.remove("ros")
             data__ros = data["ros"]
             validate___definitions_roscomponentspec(data__ros, custom_formats, (name_prefix or "data") + ".ros")
+        if "rosBagJobDefs" in data_keys:
+            data_keys.remove("rosBagJobDefs")
+            data__rosBagJobDefs = data["rosBagJobDefs"]
+            if not isinstance(data__rosBagJobDefs, (list, tuple)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".rosBagJobDefs must be array", value=data__rosBagJobDefs, name="" + (name_prefix or "data") + ".rosBagJobDefs", definition={'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}, rule='type')
+            data__rosBagJobDefs_is_list = isinstance(data__rosBagJobDefs, (list, tuple))
+            if data__rosBagJobDefs_is_list:
+                data__rosBagJobDefs_len = len(data__rosBagJobDefs)
+                for data__rosBagJobDefs_x, data__rosBagJobDefs_item in enumerate(data__rosBagJobDefs):
+                    validate___definitions_rosbagjobspec(data__rosBagJobDefs_item, custom_formats, (name_prefix or "data") + ".rosBagJobDefs[{data__rosBagJobDefs_x}]")
+    return data
+
+def validate___definitions_rosbagjobspec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'type': 'object', 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, 'uploadOptions': {'type': 'object', 'properties': {'maxUploadRate': {'type': 'integer', 'default': 1048576}, 'purgeAfter': {'type': 'boolean'}, 'uploadType': {'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, 'onDemandOpts': {'type': 'object', '$ref': '#/definitions/rosbagOnDemandUploadOptionsSpec'}}}, 'overrideOptions': {'type': 'object', 'properties': {'topicOverrideInfo': {'type': 'array', 'items': {'$ref': '#/definitions/rosbagTopicOverrideInfoSpec'}}, 'excludeTopics': {'type': 'array', 'items': {'type': 'string'}}}}}, 'required': ['name', 'recordOptions']}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_len = len(data)
+        if not all(prop in data for prop in ['name', 'recordOptions']):
+            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['name', 'recordOptions'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'type': 'object', 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, 'uploadOptions': {'type': 'object', 'properties': {'maxUploadRate': {'type': 'integer', 'default': 1048576}, 'purgeAfter': {'type': 'boolean'}, 'uploadType': {'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, 'onDemandOpts': {'type': 'object', '$ref': '#/definitions/rosbagOnDemandUploadOptionsSpec'}}}, 'overrideOptions': {'type': 'object', 'properties': {'topicOverrideInfo': {'type': 'array', 'items': {'$ref': '#/definitions/rosbagTopicOverrideInfoSpec'}}, 'excludeTopics': {'type': 'array', 'items': {'type': 'string'}}}}}, 'required': ['name', 'recordOptions']}, rule='required')
+        data_keys = set(data.keys())
+        if "name" in data_keys:
+            data_keys.remove("name")
+            data__name = data["name"]
+            if not isinstance(data__name, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".name must be string", value=data__name, name="" + (name_prefix or "data") + ".name", definition={'type': 'string'}, rule='type')
+        if "recordOptions" in data_keys:
+            data_keys.remove("recordOptions")
+            data__recordOptions = data["recordOptions"]
+            validate___definitions_rosbagrecordoptionsspec(data__recordOptions, custom_formats, (name_prefix or "data") + ".recordOptions")
+        if "uploadOptions" in data_keys:
+            data_keys.remove("uploadOptions")
+            data__uploadOptions = data["uploadOptions"]
+            validate___definitions_rosbaguploadoptionsspec(data__uploadOptions, custom_formats, (name_prefix or "data") + ".uploadOptions")
+        if "overrideOptions" in data_keys:
+            data_keys.remove("overrideOptions")
+            data__overrideOptions = data["overrideOptions"]
+            validate___definitions_rosbagoverrideoptionsspec(data__overrideOptions, custom_formats, (name_prefix or "data") + ".overrideOptions")
+    return data
+
+def validate___definitions_rosbagoverrideoptionsspec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'topicOverrideInfo': {'type': 'array', 'items': {'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, 'excludeTopics': {'type': 'array', 'items': {'type': 'string'}}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "topicOverrideInfo" in data_keys:
+            data_keys.remove("topicOverrideInfo")
+            data__topicOverrideInfo = data["topicOverrideInfo"]
+            if not isinstance(data__topicOverrideInfo, (list, tuple)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicOverrideInfo must be array", value=data__topicOverrideInfo, name="" + (name_prefix or "data") + ".topicOverrideInfo", definition={'type': 'array', 'items': {'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, rule='type')
+            data__topicOverrideInfo_is_list = isinstance(data__topicOverrideInfo, (list, tuple))
+            if data__topicOverrideInfo_is_list:
+                data__topicOverrideInfo_len = len(data__topicOverrideInfo)
+                for data__topicOverrideInfo_x, data__topicOverrideInfo_item in enumerate(data__topicOverrideInfo):
+                    validate___definitions_rosbagtopicoverrideinfospec(data__topicOverrideInfo_item, custom_formats, (name_prefix or "data") + ".topicOverrideInfo[{data__topicOverrideInfo_x}]")
+        if "excludeTopics" in data_keys:
+            data_keys.remove("excludeTopics")
+            data__excludeTopics = data["excludeTopics"]
+            if not isinstance(data__excludeTopics, (list, tuple)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".excludeTopics must be array", value=data__excludeTopics, name="" + (name_prefix or "data") + ".excludeTopics", definition={'type': 'array', 'items': {'type': 'string'}}, rule='type')
+            data__excludeTopics_is_list = isinstance(data__excludeTopics, (list, tuple))
+            if data__excludeTopics_is_list:
+                data__excludeTopics_len = len(data__excludeTopics)
+                for data__excludeTopics_x, data__excludeTopics_item in enumerate(data__excludeTopics):
+                    if not isinstance(data__excludeTopics_item, (str)):
+                        raise JsonSchemaValueException("" + (name_prefix or "data") + ".excludeTopics[{data__excludeTopics_x}]".format(**locals()) + " must be string", value=data__excludeTopics_item, name="" + (name_prefix or "data") + ".excludeTopics[{data__excludeTopics_x}]".format(**locals()) + "", definition={'type': 'string'}, rule='type')
+    return data
+
+def validate___definitions_rosbagtopicoverrideinfospec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "topicName" in data_keys:
+            data_keys.remove("topicName")
+            data__topicName = data["topicName"]
+            if not isinstance(data__topicName, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicName must be string", value=data__topicName, name="" + (name_prefix or "data") + ".topicName", definition={'type': 'string'}, rule='type')
+        if "recordFrequency" in data_keys:
+            data_keys.remove("recordFrequency")
+            data__recordFrequency = data["recordFrequency"]
+            if not isinstance(data__recordFrequency, (int)) and not (isinstance(data__recordFrequency, float) and data__recordFrequency.is_integer()) or isinstance(data__recordFrequency, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".recordFrequency must be integer", value=data__recordFrequency, name="" + (name_prefix or "data") + ".recordFrequency", definition={'type': 'integer'}, rule='type')
+        if "latched" in data_keys:
+            data_keys.remove("latched")
+            data__latched = data["latched"]
+            if not isinstance(data__latched, (bool)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".latched must be boolean", value=data__latched, name="" + (name_prefix or "data") + ".latched", definition={'type': 'boolean'}, rule='type')
+    return data
+
+def validate___definitions_rosbaguploadoptionsspec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'maxUploadRate': {'type': 'integer', 'default': 1048576}, 'purgeAfter': {'type': 'boolean'}, 'uploadType': {'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, 'onDemandOpts': {'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}}}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "maxUploadRate" in data_keys:
+            data_keys.remove("maxUploadRate")
+            data__maxUploadRate = data["maxUploadRate"]
+            if not isinstance(data__maxUploadRate, (int)) and not (isinstance(data__maxUploadRate, float) and data__maxUploadRate.is_integer()) or isinstance(data__maxUploadRate, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxUploadRate must be integer", value=data__maxUploadRate, name="" + (name_prefix or "data") + ".maxUploadRate", definition={'type': 'integer', 'default': 1048576}, rule='type')
+        else: data["maxUploadRate"] = 1048576
+        if "purgeAfter" in data_keys:
+            data_keys.remove("purgeAfter")
+            data__purgeAfter = data["purgeAfter"]
+            if not isinstance(data__purgeAfter, (bool)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".purgeAfter must be boolean", value=data__purgeAfter, name="" + (name_prefix or "data") + ".purgeAfter", definition={'type': 'boolean'}, rule='type')
+        if "uploadType" in data_keys:
+            data_keys.remove("uploadType")
+            data__uploadType = data["uploadType"]
+            if not isinstance(data__uploadType, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".uploadType must be string", value=data__uploadType, name="" + (name_prefix or "data") + ".uploadType", definition={'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, rule='type')
+            if data__uploadType not in ['OnStop', 'Continuous', 'OnDemand']:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".uploadType must be one of ['OnStop', 'Continuous', 'OnDemand']", value=data__uploadType, name="" + (name_prefix or "data") + ".uploadType", definition={'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, rule='enum')
+        else: data["uploadType"] = 'OnDemand'
+        if "onDemandOpts" in data_keys:
+            data_keys.remove("onDemandOpts")
+            data__onDemandOpts = data["onDemandOpts"]
+            validate___definitions_rosbagondemanduploadoptionsspec(data__onDemandOpts, custom_formats, (name_prefix or "data") + ".onDemandOpts")
+    return data
+
+def validate___definitions_rosbagondemanduploadoptionsspec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "timeRange" in data_keys:
+            data_keys.remove("timeRange")
+            data__timeRange = data["timeRange"]
+            if not isinstance(data__timeRange, (dict)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange must be object", value=data__timeRange, name="" + (name_prefix or "data") + ".timeRange", definition={'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}, rule='type')
+            data__timeRange_is_dict = isinstance(data__timeRange, dict)
+            if data__timeRange_is_dict:
+                data__timeRange_keys = set(data__timeRange.keys())
+                if "from" in data__timeRange_keys:
+                    data__timeRange_keys.remove("from")
+                    data__timeRange__from = data__timeRange["from"]
+                    if not isinstance(data__timeRange__from, (int)) and not (isinstance(data__timeRange__from, float) and data__timeRange__from.is_integer()) or isinstance(data__timeRange__from, bool):
+                        raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange.from must be integer", value=data__timeRange__from, name="" + (name_prefix or "data") + ".timeRange.from", definition={'type': 'integer'}, rule='type')
+                if "to" in data__timeRange_keys:
+                    data__timeRange_keys.remove("to")
+                    data__timeRange__to = data__timeRange["to"]
+                    if not isinstance(data__timeRange__to, (int)) and not (isinstance(data__timeRange__to, float) and data__timeRange__to.is_integer()) or isinstance(data__timeRange__to, bool):
+                        raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange.to must be integer", value=data__timeRange__to, name="" + (name_prefix or "data") + ".timeRange.to", definition={'type': 'integer'}, rule='type')
+    return data
+
+def validate___definitions_rosbagrecordoptionsspec(data, custom_formats={}, name_prefix=None):
+    if not isinstance(data, (dict)):
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, rule='type')
+    data_is_dict = isinstance(data, dict)
+    if data_is_dict:
+        data_keys = set(data.keys())
+        if "allTopics" in data_keys:
+            data_keys.remove("allTopics")
+            data__allTopics = data["allTopics"]
+            if not isinstance(data__allTopics, (bool)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".allTopics must be boolean", value=data__allTopics, name="" + (name_prefix or "data") + ".allTopics", definition={'type': 'boolean'}, rule='type')
+        if "topics" in data_keys:
+            data_keys.remove("topics")
+            data__topics = data["topics"]
+            if not isinstance(data__topics, (list, tuple)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topics must be array", value=data__topics, name="" + (name_prefix or "data") + ".topics", definition={'type': 'array', 'items': {'type': 'string'}}, rule='type')
+            data__topics_is_list = isinstance(data__topics, (list, tuple))
+            if data__topics_is_list:
+                data__topics_len = len(data__topics)
+                for data__topics_x, data__topics_item in enumerate(data__topics):
+                    if not isinstance(data__topics_item, (str)):
+                        raise JsonSchemaValueException("" + (name_prefix or "data") + ".topics[{data__topics_x}]".format(**locals()) + " must be string", value=data__topics_item, name="" + (name_prefix or "data") + ".topics[{data__topics_x}]".format(**locals()) + "", definition={'type': 'string'}, rule='type')
+        if "topicIncludeRegex" in data_keys:
+            data_keys.remove("topicIncludeRegex")
+            data__topicIncludeRegex = data["topicIncludeRegex"]
+            if not isinstance(data__topicIncludeRegex, (list, tuple)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicIncludeRegex must be array", value=data__topicIncludeRegex, name="" + (name_prefix or "data") + ".topicIncludeRegex", definition={'type': 'array', 'items': {'type': 'string'}}, rule='type')
+            data__topicIncludeRegex_is_list = isinstance(data__topicIncludeRegex, (list, tuple))
+            if data__topicIncludeRegex_is_list:
+                data__topicIncludeRegex_len = len(data__topicIncludeRegex)
+                for data__topicIncludeRegex_x, data__topicIncludeRegex_item in enumerate(data__topicIncludeRegex):
+                    if not isinstance(data__topicIncludeRegex_item, (str)):
+                        raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicIncludeRegex[{data__topicIncludeRegex_x}]".format(**locals()) + " must be string", value=data__topicIncludeRegex_item, name="" + (name_prefix or "data") + ".topicIncludeRegex[{data__topicIncludeRegex_x}]".format(**locals()) + "", definition={'type': 'string'}, rule='type')
+        if "topicExcludeRegex" in data_keys:
+            data_keys.remove("topicExcludeRegex")
+            data__topicExcludeRegex = data["topicExcludeRegex"]
+            if not isinstance(data__topicExcludeRegex, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicExcludeRegex must be string", value=data__topicExcludeRegex, name="" + (name_prefix or "data") + ".topicExcludeRegex", definition={'type': 'string'}, rule='type')
+        if "maxMessageCount" in data_keys:
+            data_keys.remove("maxMessageCount")
+            data__maxMessageCount = data["maxMessageCount"]
+            if not isinstance(data__maxMessageCount, (int)) and not (isinstance(data__maxMessageCount, float) and data__maxMessageCount.is_integer()) or isinstance(data__maxMessageCount, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxMessageCount must be integer", value=data__maxMessageCount, name="" + (name_prefix or "data") + ".maxMessageCount", definition={'type': 'integer'}, rule='type')
+        if "node" in data_keys:
+            data_keys.remove("node")
+            data__node = data["node"]
+            if not isinstance(data__node, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".node must be string", value=data__node, name="" + (name_prefix or "data") + ".node", definition={'type': 'string'}, rule='type')
+        if "compression" in data_keys:
+            data_keys.remove("compression")
+            data__compression = data["compression"]
+            if not isinstance(data__compression, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".compression must be string", value=data__compression, name="" + (name_prefix or "data") + ".compression", definition={'type': 'string', 'enum': ['BZ2', 'LZ4']}, rule='type')
+            if data__compression not in ['BZ2', 'LZ4']:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".compression must be one of ['BZ2', 'LZ4']", value=data__compression, name="" + (name_prefix or "data") + ".compression", definition={'type': 'string', 'enum': ['BZ2', 'LZ4']}, rule='enum')
+        if "maxSplits" in data_keys:
+            data_keys.remove("maxSplits")
+            data__maxSplits = data["maxSplits"]
+            if not isinstance(data__maxSplits, (int)) and not (isinstance(data__maxSplits, float) and data__maxSplits.is_integer()) or isinstance(data__maxSplits, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxSplits must be integer", value=data__maxSplits, name="" + (name_prefix or "data") + ".maxSplits", definition={'type': 'integer'}, rule='type')
+        if "maxSplitSize" in data_keys:
+            data_keys.remove("maxSplitSize")
+            data__maxSplitSize = data["maxSplitSize"]
+            if not isinstance(data__maxSplitSize, (int)) and not (isinstance(data__maxSplitSize, float) and data__maxSplitSize.is_integer()) or isinstance(data__maxSplitSize, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxSplitSize must be integer", value=data__maxSplitSize, name="" + (name_prefix or "data") + ".maxSplitSize", definition={'type': 'integer'}, rule='type')
+        if "chunkSize" in data_keys:
+            data_keys.remove("chunkSize")
+            data__chunkSize = data["chunkSize"]
+            if not isinstance(data__chunkSize, (int)) and not (isinstance(data__chunkSize, float) and data__chunkSize.is_integer()) or isinstance(data__chunkSize, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".chunkSize must be integer", value=data__chunkSize, name="" + (name_prefix or "data") + ".chunkSize", definition={'type': 'integer'}, rule='type')
+        if "prefix" in data_keys:
+            data_keys.remove("prefix")
+            data__prefix = data["prefix"]
+            if not isinstance(data__prefix, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".prefix must be string", value=data__prefix, name="" + (name_prefix or "data") + ".prefix", definition={'type': 'string'}, rule='type')
+        if "maxSplitDuration" in data_keys:
+            data_keys.remove("maxSplitDuration")
+            data__maxSplitDuration = data["maxSplitDuration"]
+            if not isinstance(data__maxSplitDuration, (int)) and not (isinstance(data__maxSplitDuration, float) and data__maxSplitDuration.is_integer()) or isinstance(data__maxSplitDuration, bool):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxSplitDuration must be integer", value=data__maxSplitDuration, name="" + (name_prefix or "data") + ".maxSplitDuration", definition={'type': 'integer'}, rule='type')
+        if "maxSplitDurationUnit" in data_keys:
+            data_keys.remove("maxSplitDurationUnit")
+            data__maxSplitDurationUnit = data["maxSplitDurationUnit"]
+            if not isinstance(data__maxSplitDurationUnit, (str)):
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxSplitDurationUnit must be string", value=data__maxSplitDurationUnit, name="" + (name_prefix or "data") + ".maxSplitDurationUnit", definition={'type': 'string', 'enum': ['m', 'h']}, rule='type')
+            if data__maxSplitDurationUnit not in ['m', 'h']:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".maxSplitDurationUnit must be one of ['m', 'h']", value=data__maxSplitDurationUnit, name="" + (name_prefix or "data") + ".maxSplitDurationUnit", definition={'type': 'string', 'enum': ['m', 'h']}, rule='enum')
     return data
 
 def validate___definitions_roscomponentspec(data, custom_formats={}, name_prefix=None):

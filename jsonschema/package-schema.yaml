@@ -60,6 +60,12 @@ definitions:
       ros:
         type: object
         "$ref": "#/definitions/rosComponentSpec"
+
+      rosBagJobDefs:
+        type: array
+        items:
+          "$ref": "#/definitions/rosbagJobSpec"
+
     dependencies:
       runtime:
         oneOf:
