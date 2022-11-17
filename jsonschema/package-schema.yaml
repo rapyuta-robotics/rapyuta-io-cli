@@ -61,11 +61,6 @@ definitions:
         type: object
         "$ref": "#/definitions/rosComponentSpec"
 
-      rosBagJobDefs:
-        type: array
-        items:
-          "$ref": "#/definitions/rosbagJobSpec"
-
     dependencies:
       runtime:
         oneOf:
@@ -80,11 +75,14 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceExecutableSpec"
-
               environmentArgs:
                 type: array
                 items:
                   "$ref": "#/definitions/environmentSpec"
+              rosBagJobDefs:
+                type: array
+                items:
+                  "$ref": "#/definitions/deviceROSBagJobSpec"
 
           - properties:
               runtime:
@@ -108,6 +106,11 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/endpointSpec"
+
+              rosBagJobDefs:
+                type: array
+                items:
+                  "$ref": "#/definitions/cloudROSBagJobSpec"
 
   deviceExecutableSpec:
     type: object
@@ -221,7 +224,7 @@ definitions:
                 type: object
                 properties:
                   depends:
-                    "$ref": "#/definitions/secretDepends"
+                    "$ref": "#/definitions/buildDepends"
                 required:
                   - depends
           - properties:
@@ -479,7 +482,20 @@ definitions:
                 enum:
                   - action
 
-  rosbagJobSpec:
+  cloudROSBagJobSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      recordOptions:
+        "$ref": "#/definitions/rosbagRecordOptionsSpec"
+      overrideOptions:
+        "$ref": "#/definitions/rosbagOverrideOptionsSpec"
+    required:
+      - name
+      - recordOptions
+
+  deviceROSBagJobSpec:
     type: object
     properties:
       name:
@@ -496,6 +512,14 @@ definitions:
 
   rosbagRecordOptionsSpec:
     type: object
+    oneOf:
+      - required:
+          - allTopics
+      - anyOf:
+          - required:
+              - topics
+          - required:
+              - topicIncludeRegex
     properties:
       allTopics:
         type: boolean

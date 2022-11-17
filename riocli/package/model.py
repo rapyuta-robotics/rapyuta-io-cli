@@ -141,8 +141,7 @@ class Package(Model):
         #  ✓ service
         #  ✓ action
         #   rosbagjob
-        if 'ros' in self.spec:
-            component_obj.ros.isRos = True
+        if 'ros' in self.spec and self.spec.ros.enabled:
             component_obj.ros.ros_distro = self.spec.ros.version
             pkg_object.inboundROSInterfaces = munchify({})
 
@@ -152,7 +151,8 @@ class Package(Model):
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
                 component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
 
-        component_obj.rosBagJobDefs = list(map(self._map_rosbag_job_def, self.spec.rosBagJobDefs))
+        if 'rosBagJobDefs' in self.spec:
+            component_obj.rosBagJobDefs = list(map(self._map_rosbag_job_def, self.spec.rosBagJobDefs))
 
         pkg_object.plans[0].components = [component_obj]
         # return package
