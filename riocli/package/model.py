@@ -49,16 +49,19 @@ class Package(Model):
             'name': 'default',
             'packageVersion': 'v1.0.0',
             'apiVersion': "2.1.0",
+            'description': '',
+            'bindable': True,
             'plans': [
                 {
                      "inboundROSInterfaces": {
                         "anyIncomingScopedOrTargetedRosConfig": False
                     },
                     'singleton': False,
-                    'bindable': True,
-                    'name' : 'default',
+                    'metadata': {},
+                    'name': 'default',
                     'dependentDeployments': [],
                     'exposedParameters': [],
+                    'includePackages': [],
                     'components': [
                     ]
                 }
@@ -71,7 +74,8 @@ class Package(Model):
                             'parameters': [],
                             'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
                             'exposedParameters': [],
-                            'metadata': {},
+                            'includePackages': [],
+                            'rosBagJobDefs':[]
                         })
         
         # metadata
@@ -90,6 +94,9 @@ class Package(Model):
         
         # TODO validate transform.  specially nested secret. 
         component_obj.executables = list(map(self._map_executable, self.spec.executables))
+        for exec in component_obj.executables:
+            if hasattr(exec, 'cmd') is False:
+                setattr(exec, 'cmd', [])
         component_obj.requiredRuntime = self.spec.runtime
         
 
@@ -143,7 +150,7 @@ class Package(Model):
         #  ✓ action
         #   rosbagjob
         if 'ros' in self.spec:
-            component_obj.ros.isRos = True
+            component_obj.ros.isROS = True
             component_obj.ros.ros_distro  = self.spec.ros.version
             pkg_object.plans[0].inboundROSInterfaces = munchify({})
             
