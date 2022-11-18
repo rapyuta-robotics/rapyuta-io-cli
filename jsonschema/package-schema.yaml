@@ -68,6 +68,11 @@ definitions:
               runtime:
                 enum:
                   - device
+              ros:
+                type: object
+                enabled:
+                  enum:
+                    - true
               device:
                 type: object
                 "$ref": "#/definitions/deviceComponentInfoSpec"
@@ -587,6 +592,11 @@ definitions:
             type: integer
           to:
             type: integer
+        required:
+          - from
+          - to
+    required:
+      - timeRange
 
   rosbagOverrideOptionsSpec:
     type: object
@@ -602,6 +612,13 @@ definitions:
 
   rosbagTopicOverrideInfoSpec:
     type: object
+    oneOf:
+      - required:
+          - topicName
+          - recordFrequency
+      - required:
+          - topicName
+          - latched
     properties:
       topicName:
         type: string

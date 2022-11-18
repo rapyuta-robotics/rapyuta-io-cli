@@ -142,6 +142,7 @@ class Package(Model):
         #  ✓ action
         #   rosbagjob
         if 'ros' in self.spec and self.spec.ros.enabled:
+            component_obj.ros.isRos = True
             component_obj.ros.ros_distro = self.spec.ros.version
             pkg_object.inboundROSInterfaces = munchify({})
 

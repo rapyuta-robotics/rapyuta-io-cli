@@ -20,6 +20,9 @@ from rapyuta_io.clients.catalog_client import Package
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
 from rapyuta_io.clients.routed_network import RoutedNetwork
+from rapyuta_io.clients.rosbag import ROSBagJob, ROSBagOptions, ROSBagCompression, UploadOptions, \
+    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo, \
+    ROSBagMaxSplitDurationUnit
 
 from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.deployment.validation import validate
@@ -44,14 +47,14 @@ class Deployment(Model):
 
     def create_object(self, client: Client) -> typing.Any:
         pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
-        
+
         if pkg_guid:
             pkg = client.get_package(pkg_guid)
         pkg.update()
 
         default_plan = pkg['plans'][0]
         internal_component = default_plan['internalComponents'][0]
-            
+
         __planId = default_plan['planId']
         __componentName = internal_component.componentName
         runtime = internal_component['runtime']
@@ -88,12 +91,18 @@ class Deployment(Model):
         if 'rosNetworks' in self.spec:
             for network_depends in self.spec.rosNetworks:
                 network_guid, network_obj = self.rc.find_depends(network_depends.depends)
-                
+
                 if type(network_obj) == RoutedNetwork:
-                    provision_config.add_routed_network(network_obj, network_interface=network_depends.get('interface', None))
+                    provision_config.add_routed_network(network_obj,
+                                                        network_interface=network_depends.get('interface', None))
                 if type(network_obj) == NativeNetwork:
-                    provision_config.add_native_network(network_obj, network_interface=network_depends.get('interface', None))
-        
+                    provision_config.add_native_network(network_obj,
+                                                        network_interface=network_depends.get('interface', None))
+
+        if 'rosBagJobDefs' in self.spec:
+            for req_job in self.spec.rosBagJobDefs:
+                provision_config.add_rosbag_job(__componentName, self._form_rosbag_job(req_job))
+
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
                 for stroute in self.spec.staticRoutes:
@@ -116,7 +125,6 @@ class Deployment(Model):
                     disk = client.get_volume_instance(disk_guid)
                     provision_config.mount_volume(__componentName, volume=disk,
                                                   executable_mounts=disk_mounts[disk_guid])
-        
 
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(self.spec.device.depends)
@@ -210,3 +218,81 @@ class Deployment(Model):
                 guid = find_static_route_guid(client, name)
             static_route = client.get_static_route(route_guid=guid)
             prov_config.add_static_route(component_name=component, endpoint_name=route.name, static_route=static_route)
+
+    def _form_rosbag_job(self, req_job):
+        rosbag_job_kw_args = {
+            'name': req_job.name,
+            'rosbag_options': ROSBagOptions(
+                all_topics=req_job.recordOptions.get('allTopics'),
+                topics=req_job.recordOptions.get('topics'),
+                topic_include_regex=req_job.recordOptions.get('topicIncludeRegex'),
+                topic_exclude_regex=req_job.recordOptions.get('topicExcludeRegex'),
+                max_message_count=req_job.recordOptions.get('maxMessageCount'),
+                node=req_job.recordOptions.get('node'),
+                compression=ROSBagCompression(req_job.recordOptions.compression) if hasattr(
+                    req_job.recordOptions, 'compression'
+                ) else None,
+                max_splits=req_job.recordOptions.get('maxSplits'),
+                max_split_size=req_job.recordOptions.get('maxSplitSize'),
+                chunk_size=req_job.recordOptions.get('chunkSize'),
+                max_split_duration=req_job.recordOptions.get('maxSplitDuration'),
+                max_split_duration_unit=ROSBagMaxSplitDurationUnit(
+                    req_job.recordOptions.maxSplitDurationUnit
+                ) if hasattr(req_job.recordOptions, 'maxSplitDurationUnit') else None
+            )}
+
+        if 'uploadOptions' in req_job:
+            rosbag_job_kw_args['upload_options'] = self._form_rosbag_upload_options(req_job.uploadOptions)
+
+        if 'overrideOptions' in req_job:
+            rosbag_job_kw_args['override_options'] = self._form_rosbag_override_options(req_job.overrideOptions)
+
+        return ROSBagJob(**rosbag_job_kw_args)
+
+    @staticmethod
+    def _form_rosbag_upload_options(upload_options):
+        upload_options_kw_args = {
+            'max_upload_rate': upload_options.maxUploadRate,
+            'upload_type': ROSBagUploadTypes(upload_options.uploadType),
+        }
+
+        if 'purgeAfter' in upload_options:
+            upload_options_kw_args['purge_after'] = upload_options.purgeAfter
+
+        if 'onDemandOpts' in upload_options:
+            time_range = ROSBagTimeRange(
+                from_time=upload_options.onDemandOpts.timeRange['from'],
+                to_time=upload_options.onDemandOpts.timeRange['to']
+            )
+
+            upload_options_kw_args['on_demand_options'] = ROSBagOnDemandUploadOptions(time_range)
+
+        return UploadOptions(**upload_options_kw_args)
+
+    @staticmethod
+    def _form_rosbag_override_options(override_options):
+        override_options_kw_args = {}
+
+        if 'topicOverrideInfo' in override_options:
+            override_infos = []
+            for info in override_options.topicOverrideInfo:
+                topic_override_info_kw_args = {
+                    'topic_name': info.topicName
+                }
+
+                if 'recordFrequency' in info:
+                    topic_override_info_kw_args['record_frequency'] = info.recordFrequency
+
+                if 'latched' in info:
+                    topic_override_info_kw_args['latched'] = info.latched
+
+                override_info = TopicOverrideInfo(**topic_override_info_kw_args)
+
+                override_infos.append(override_info)
+
+            override_options_kw_args['topic_override_info'] = override_infos
+
+        if 'excludeTopics' in override_options:
+            override_options_kw_args['exclude_topics'] = override_options.excludeTopics
+
+        return OverrideOptions(**override_options_kw_args)

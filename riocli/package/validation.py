@@ -17,12 +17,12 @@ def validate(data, custom_formats={}, name_prefix=None):
 
 def validate___definitions_package(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/deviceROSBagJobSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/cloudROSBagJobSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'ros': {'type': 'object', 'enabled': {'enum': [True]}}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/deviceROSBagJobSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/cloudROSBagJobSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_len = len(data)
         if not all(prop in data for prop in ['apiVersion', 'kind', 'metadata', 'spec']):
-            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/deviceROSBagJobSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/cloudROSBagJobSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
+            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['apiVersion', 'kind', 'metadata', 'spec'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'apiVersion': {'const': 'apiextensions.rapyuta.io/v1', 'default': 'apiextensions.rapyuta.io/v1'}, 'kind': {'const': 'Package', 'default': 'Package'}, 'metadata': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'version': {'type': 'string'}, 'tag': {'type': 'string'}, 'description': {'type': 'string'}, 'guid': {'$ref': '#/definitions/packageGUID'}, 'creator': {'$ref': '#/definitions/uuid'}, 'project': {'$ref': '#/definitions/projectGUID'}, 'labels': {'$ref': '#/definitions/stringMap', 'uniqueItems': True}}, 'required': ['name', 'version']}, 'spec': {'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', '$ref': '#/definitions/rosComponentSpec'}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'ros': {'type': 'object', 'enabled': {'enum': [True]}}, 'device': {'type': 'object', '$ref': '#/definitions/deviceComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/deviceExecutableSpec'}}, 'environmentArgs': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/deviceROSBagJobSpec'}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', '$ref': '#/definitions/cloudComponentInfoSpec'}, 'executables': {'type': 'array', 'items': {'$ref': '#/definitions/cloudExecutableSpec'}}, 'environmentVars': {'type': 'array', 'items': {'$ref': '#/definitions/environmentSpec'}}, 'endpoints': {'type': 'array', 'items': {'$ref': '#/definitions/endpointSpec'}}, 'rosBagJobDefs': {'type': 'array', 'items': {'$ref': '#/definitions/cloudROSBagJobSpec'}}}}]}}}}, 'required': ['apiVersion', 'kind', 'metadata', 'spec']}, rule='required')
         data_keys = set(data.keys())
         if "apiVersion" in data_keys:
             data_keys.remove("apiVersion")
@@ -48,7 +48,7 @@ def validate___definitions_package(data, custom_formats={}, name_prefix=None):
 
 def validate___definitions_componentspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', 'properties': {'enabled': {'type': 'boolean', 'default': False}}, 'dependencies': {'enabled': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'type': 'boolean', 'enum': [True]}, 'version': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'inboundScopedTargeted': {'type': 'boolean', 'default': False}, 'rosEndpoints': {'type': 'array', 'items': {'$ref': '#/definitions/rosEndpointSpec'}}}}]}}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}]}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'runtime': {'type': 'string', 'enum': ['device', 'cloud'], 'default': 'cloud'}, 'ros': {'type': 'object', 'properties': {'enabled': {'type': 'boolean', 'default': False}}, 'dependencies': {'enabled': {'oneOf': [{'properties': {'enabled': {'enum': [False]}}}, {'properties': {'enabled': {'type': 'boolean', 'enum': [True]}, 'version': {'type': 'string', 'enum': ['kinetic', 'melodic', 'noetic'], 'default': 'melodic'}, 'inboundScopedTargeted': {'type': 'boolean', 'default': False}, 'rosEndpoints': {'type': 'array', 'items': {'$ref': '#/definitions/rosEndpointSpec'}}}}]}}}}, 'dependencies': {'runtime': {'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'ros': {'type': 'object', 'enabled': {'enum': [True]}}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}]}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         if "runtime" in data:
@@ -63,6 +63,11 @@ def validate___definitions_componentspec(data, custom_formats={}, name_prefix=No
                             data__runtime = data["runtime"]
                             if data__runtime not in ['device']:
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".runtime must be one of ['device']", value=data__runtime, name="" + (name_prefix or "data") + ".runtime", definition={'enum': ['device']}, rule='enum')
+                        if "ros" in data_keys:
+                            data_keys.remove("ros")
+                            data__ros = data["ros"]
+                            if not isinstance(data__ros, (dict)):
+                                raise JsonSchemaValueException("" + (name_prefix or "data") + ".ros must be object", value=data__ros, name="" + (name_prefix or "data") + ".ros", definition={'type': 'object', 'enabled': {'enum': [True]}}, rule='type')
                         if "device" in data_keys:
                             data_keys.remove("device")
                             data__device = data["device"]
@@ -156,7 +161,7 @@ def validate___definitions_componentspec(data, custom_formats={}, name_prefix=No
                     data_one_of_count1 += 1
                 except JsonSchemaValueException: pass
             if data_one_of_count1 != 1:
-                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count1) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}]}, rule='oneOf')
+                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count1) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'runtime': {'enum': ['device']}, 'ros': {'type': 'object', 'enabled': {'enum': [True]}}, 'device': {'type': 'object', 'properties': {'arch': {'type': 'string', 'enum': ['arm32v7', 'arm64v8', 'amd64'], 'default': 'amd64'}, 'restart': {'type': 'string', 'default': 'always', 'enum': ['always', 'never', 'onfailure']}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'$ref': '#/definitions/secretDepends'}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentArgs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'uploadOptions': {'$ref': '#/definitions/rosbagUploadOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}, {'properties': {'runtime': {'enum': ['cloud']}, 'cloud': {'type': 'object', 'properties': {'replicas': {'type': 'number', 'default': 1}}}, 'executables': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/secretDepends'}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'$ref': '#/definitions/buildDepends'}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}}, 'environmentVars': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}}, 'endpoints': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 443}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'$ref': '#/definitions/portNumber', 'default': 80}, 'targetPort': {'$ref': '#/definitions/portNumber'}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}}, 'rosBagJobDefs': {'type': 'array', 'items': {'type': 'object', 'properties': {'name': {'type': 'string'}, 'recordOptions': {'$ref': '#/definitions/rosbagRecordOptionsSpec'}, 'overrideOptions': {'$ref': '#/definitions/rosbagOverrideOptionsSpec'}}, 'required': ['name', 'recordOptions']}}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "runtime" in data_keys:
             data_keys.remove("runtime")
@@ -362,7 +367,7 @@ def validate___definitions_cloudrosbagjobspec(data, custom_formats={}, name_pref
 
 def validate___definitions_rosbagoverrideoptionsspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'topicOverrideInfo': {'type': 'array', 'items': {'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, 'excludeTopics': {'type': 'array', 'items': {'type': 'string'}}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'topicOverrideInfo': {'type': 'array', 'items': {'type': 'object', 'oneOf': [{'required': ['topicName', 'recordFrequency']}, {'required': ['topicName', 'latched']}], 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, 'excludeTopics': {'type': 'array', 'items': {'type': 'string'}}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_keys = set(data.keys())
@@ -370,7 +375,7 @@ def validate___definitions_rosbagoverrideoptionsspec(data, custom_formats={}, na
             data_keys.remove("topicOverrideInfo")
             data__topicOverrideInfo = data["topicOverrideInfo"]
             if not isinstance(data__topicOverrideInfo, (list, tuple)):
-                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicOverrideInfo must be array", value=data__topicOverrideInfo, name="" + (name_prefix or "data") + ".topicOverrideInfo", definition={'type': 'array', 'items': {'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, rule='type')
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".topicOverrideInfo must be array", value=data__topicOverrideInfo, name="" + (name_prefix or "data") + ".topicOverrideInfo", definition={'type': 'array', 'items': {'type': 'object', 'oneOf': [{'required': ['topicName', 'recordFrequency']}, {'required': ['topicName', 'latched']}], 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}}, rule='type')
             data__topicOverrideInfo_is_list = isinstance(data__topicOverrideInfo, (list, tuple))
             if data__topicOverrideInfo_is_list:
                 data__topicOverrideInfo_len = len(data__topicOverrideInfo)
@@ -391,7 +396,28 @@ def validate___definitions_rosbagoverrideoptionsspec(data, custom_formats={}, na
 
 def validate___definitions_rosbagtopicoverrideinfospec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'oneOf': [{'required': ['topicName', 'recordFrequency']}, {'required': ['topicName', 'latched']}], 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}, rule='type')
+    data_one_of_count4 = 0
+    if data_one_of_count4 < 2:
+        try:
+            data_is_dict = isinstance(data, dict)
+            if data_is_dict:
+                data_len = len(data)
+                if not all(prop in data for prop in ['topicName', 'recordFrequency']):
+                    raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['topicName', 'recordFrequency'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'required': ['topicName', 'recordFrequency']}, rule='required')
+            data_one_of_count4 += 1
+        except JsonSchemaValueException: pass
+    if data_one_of_count4 < 2:
+        try:
+            data_is_dict = isinstance(data, dict)
+            if data_is_dict:
+                data_len = len(data)
+                if not all(prop in data for prop in ['topicName', 'latched']):
+                    raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['topicName', 'latched'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'required': ['topicName', 'latched']}, rule='required')
+            data_one_of_count4 += 1
+        except JsonSchemaValueException: pass
+    if data_one_of_count4 != 1:
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count4) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'oneOf': [{'required': ['topicName', 'recordFrequency']}, {'required': ['topicName', 'latched']}], 'properties': {'topicName': {'type': 'string'}, 'recordFrequency': {'type': 'integer'}, 'latched': {'type': 'boolean'}}}, rule='oneOf')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_keys = set(data.keys())
@@ -415,43 +441,43 @@ def validate___definitions_rosbagtopicoverrideinfospec(data, custom_formats={}, 
 def validate___definitions_rosbagrecordoptionsspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
         raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'oneOf': [{'required': ['allTopics']}, {'anyOf': [{'required': ['topics']}, {'required': ['topicIncludeRegex']}]}], 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, rule='type')
-    data_one_of_count4 = 0
-    if data_one_of_count4 < 2:
+    data_one_of_count5 = 0
+    if data_one_of_count5 < 2:
         try:
             data_is_dict = isinstance(data, dict)
             if data_is_dict:
                 data_len = len(data)
                 if not all(prop in data for prop in ['allTopics']):
                     raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['allTopics'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'required': ['allTopics']}, rule='required')
-            data_one_of_count4 += 1
+            data_one_of_count5 += 1
         except JsonSchemaValueException: pass
-    if data_one_of_count4 < 2:
+    if data_one_of_count5 < 2:
         try:
-            data_any_of_count5 = 0
-            if not data_any_of_count5:
+            data_any_of_count6 = 0
+            if not data_any_of_count6:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_len = len(data)
                         if not all(prop in data for prop in ['topics']):
                             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['topics'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'required': ['topics']}, rule='required')
-                    data_any_of_count5 += 1
+                    data_any_of_count6 += 1
                 except JsonSchemaValueException: pass
-            if not data_any_of_count5:
+            if not data_any_of_count6:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
                         data_len = len(data)
                         if not all(prop in data for prop in ['topicIncludeRegex']):
                             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['topicIncludeRegex'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'required': ['topicIncludeRegex']}, rule='required')
-                    data_any_of_count5 += 1
+                    data_any_of_count6 += 1
                 except JsonSchemaValueException: pass
-            if not data_any_of_count5:
+            if not data_any_of_count6:
                 raise JsonSchemaValueException("" + (name_prefix or "data") + " cannot be validated by any definition", value=data, name="" + (name_prefix or "data") + "", definition={'anyOf': [{'required': ['topics']}, {'required': ['topicIncludeRegex']}]}, rule='anyOf')
-            data_one_of_count4 += 1
+            data_one_of_count5 += 1
         except JsonSchemaValueException: pass
-    if data_one_of_count4 != 1:
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count4) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'oneOf': [{'required': ['allTopics']}, {'anyOf': [{'required': ['topics']}, {'required': ['topicIncludeRegex']}]}], 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, rule='oneOf')
+    if data_one_of_count5 != 1:
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count5) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'oneOf': [{'required': ['allTopics']}, {'anyOf': [{'required': ['topics']}, {'required': ['topicIncludeRegex']}]}], 'properties': {'allTopics': {'type': 'boolean'}, 'topics': {'type': 'array', 'items': {'type': 'string'}}, 'topicIncludeRegex': {'type': 'array', 'items': {'type': 'string'}}, 'topicExcludeRegex': {'type': 'string'}, 'maxMessageCount': {'type': 'integer'}, 'node': {'type': 'string'}, 'compression': {'type': 'string', 'enum': ['BZ2', 'LZ4']}, 'maxSplits': {'type': 'integer'}, 'maxSplitSize': {'type': 'integer'}, 'chunkSize': {'type': 'integer'}, 'prefix': {'type': 'string'}, 'maxSplitDuration': {'type': 'integer'}, 'maxSplitDurationUnit': {'type': 'string', 'enum': ['m', 'h']}}}, rule='oneOf')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_keys = set(data.keys())
@@ -547,8 +573,8 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
         if not all(prop in data for prop in ['name', 'type']):
             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['name', 'type'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'external-http', 'enum': ['external-http', 'external-https', 'external-tls-tcp', 'internal-tcp', 'internal-udp', 'internal-tcp-range', 'internal-udp-range']}}, 'required': ['name', 'type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}}}, rule='required')
         if "type" in data:
-            data_one_of_count6 = 0
-            if data_one_of_count6 < 2:
+            data_one_of_count7 = 0
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -570,9 +596,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             data_keys.remove("targetPort")
                             data__targetPort = data["targetPort"]
                             validate___definitions_portnumber(data__targetPort, custom_formats, (name_prefix or "data") + ".targetPort")
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -594,9 +620,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             data_keys.remove("targetPort")
                             data__targetPort = data["targetPort"]
                             validate___definitions_portnumber(data__targetPort, custom_formats, (name_prefix or "data") + ".targetPort")
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -618,9 +644,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             data_keys.remove("targetPort")
                             data__targetPort = data["targetPort"]
                             validate___definitions_portnumber(data__targetPort, custom_formats, (name_prefix or "data") + ".targetPort")
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -642,9 +668,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             data_keys.remove("targetPort")
                             data__targetPort = data["targetPort"]
                             validate___definitions_portnumber(data__targetPort, custom_formats, (name_prefix or "data") + ".targetPort")
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -666,9 +692,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             data_keys.remove("targetPort")
                             data__targetPort = data["targetPort"]
                             validate___definitions_portnumber(data__targetPort, custom_formats, (name_prefix or "data") + ".targetPort")
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -687,9 +713,9 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             if not isinstance(data__portRange, (str)):
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".portRange must be string", value=data__portRange, name="" + (name_prefix or "data") + ".portRange", definition={'type': 'string', 'default': '22,80, 1024-1030'}, rule='type')
                         else: data["portRange"] = '22,80, 1024-1030'
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 < 2:
+            if data_one_of_count7 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -708,10 +734,10 @@ def validate___definitions_endpointspec(data, custom_formats={}, name_prefix=Non
                             if not isinstance(data__portRange, (str)):
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".portRange must be string", value=data__portRange, name="" + (name_prefix or "data") + ".portRange", definition={'type': 'string', 'default': '53,1024-1025'}, rule='type')
                         else: data["portRange"] = '53,1024-1025'
-                    data_one_of_count6 += 1
+                    data_one_of_count7 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count6 != 1:
-                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count6) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}, rule='oneOf')
+            if data_one_of_count7 != 1:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count7) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['external-http']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-https']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['external-tls-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-udp']}, 'port': {'type': 'integer', 'min': 1, 'max': 65531}, 'targetPort': {'type': 'integer', 'min': 1, 'max': 65531}}, 'required': ['port', 'targetPort']}, {'properties': {'type': {'enum': ['internal-tcp-range']}, 'portRange': {'type': 'string', 'default': '22,80, 1024-1030'}}, 'required': ['portRange']}, {'properties': {'type': {'enum': ['internal-udp-range']}, 'portRange': {'type': 'string', 'default': '53,1024-1025'}}, 'required': ['portRange']}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "name" in data_keys:
             data_keys.remove("name")
@@ -742,8 +768,8 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}, name_pre
         if not all(prop in data for prop in ['type']):
             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['type'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}, 'simulation': {'type': 'boolean', 'default': False}, 'limits': {'type': 'object', 'properties': {'cpu': {'type': 'number', 'min': 0.1, 'max': 8}, 'memory': {'type': 'number', 'min': 256, 'max': 32678}}}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
         if "type" in data:
-            data_one_of_count7 = 0
-            if data_one_of_count7 < 2:
+            data_one_of_count8 = 0
+            if data_one_of_count8 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -784,9 +810,9 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}, name_pre
                                             data__docker__pullSecret_keys.remove("depends")
                                             data__docker__pullSecret__depends = data__docker__pullSecret["depends"]
                                             validate___definitions_secretdepends(data__docker__pullSecret__depends, custom_formats, (name_prefix or "data") + ".docker.pullSecret.depends")
-                    data_one_of_count7 += 1
+                    data_one_of_count8 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count7 < 2:
+            if data_one_of_count8 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -811,9 +837,9 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}, name_pre
                                     data__build_keys.remove("depends")
                                     data__build__depends = data__build["depends"]
                                     validate___definitions_builddepends(data__build__depends, custom_formats, (name_prefix or "data") + ".build.depends")
-                    data_one_of_count7 += 1
+                    data_one_of_count8 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count7 < 2:
+            if data_one_of_count8 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -823,10 +849,10 @@ def validate___definitions_cloudexecutablespec(data, custom_formats={}, name_pre
                             data__type = data["type"]
                             if data__type not in ['preInstalled']:
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".type must be one of ['preInstalled']", value=data__type, name="" + (name_prefix or "data") + ".type", definition={'enum': ['preInstalled']}, rule='enum')
-                    data_one_of_count7 += 1
+                    data_one_of_count8 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count7 != 1:
-                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count7) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
+            if data_one_of_count8 != 1:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count8) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "name" in data_keys:
             data_keys.remove("name")
@@ -966,7 +992,7 @@ def validate___definitions_devicerosbagjobspec(data, custom_formats={}, name_pre
 
 def validate___definitions_rosbaguploadoptionsspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'maxUploadRate': {'type': 'integer', 'default': 1048576}, 'purgeAfter': {'type': 'boolean'}, 'uploadType': {'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, 'onDemandOpts': {'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}}}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'maxUploadRate': {'type': 'integer', 'default': 1048576}, 'purgeAfter': {'type': 'boolean'}, 'uploadType': {'type': 'string', 'enum': ['OnStop', 'Continuous', 'OnDemand'], 'default': 'OnDemand'}, 'onDemandOpts': {'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}, 'required': ['from', 'to']}}, 'required': ['timeRange']}}}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
         data_keys = set(data.keys())
@@ -997,17 +1023,23 @@ def validate___definitions_rosbaguploadoptionsspec(data, custom_formats={}, name
 
 def validate___definitions_rosbagondemanduploadoptionsspec(data, custom_formats={}, name_prefix=None):
     if not isinstance(data, (dict)):
-        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}}}, rule='type')
+        raise JsonSchemaValueException("" + (name_prefix or "data") + " must be object", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}, 'required': ['from', 'to']}}, 'required': ['timeRange']}, rule='type')
     data_is_dict = isinstance(data, dict)
     if data_is_dict:
+        data_len = len(data)
+        if not all(prop in data for prop in ['timeRange']):
+            raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['timeRange'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'timeRange': {'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}, 'required': ['from', 'to']}}, 'required': ['timeRange']}, rule='required')
         data_keys = set(data.keys())
         if "timeRange" in data_keys:
             data_keys.remove("timeRange")
             data__timeRange = data["timeRange"]
             if not isinstance(data__timeRange, (dict)):
-                raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange must be object", value=data__timeRange, name="" + (name_prefix or "data") + ".timeRange", definition={'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}}, rule='type')
+                raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange must be object", value=data__timeRange, name="" + (name_prefix or "data") + ".timeRange", definition={'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}, 'required': ['from', 'to']}, rule='type')
             data__timeRange_is_dict = isinstance(data__timeRange, dict)
             if data__timeRange_is_dict:
+                data__timeRange_len = len(data__timeRange)
+                if not all(prop in data__timeRange for prop in ['from', 'to']):
+                    raise JsonSchemaValueException("" + (name_prefix or "data") + ".timeRange must contain ['from', 'to'] properties", value=data__timeRange, name="" + (name_prefix or "data") + ".timeRange", definition={'type': 'object', 'properties': {'from': {'type': 'integer'}, 'to': {'type': 'integer'}}, 'required': ['from', 'to']}, rule='required')
                 data__timeRange_keys = set(data__timeRange.keys())
                 if "from" in data__timeRange_keys:
                     data__timeRange_keys.remove("from")
@@ -1030,8 +1062,8 @@ def validate___definitions_environmentspec(data, custom_formats={}, name_prefix=
         if not all(prop in data for prop in ['name']):
             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['name'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'description': {'type': 'string'}, 'default': {'type': 'string'}, 'exposed': {'type': 'boolean', 'default': False}}, 'required': ['name'], 'dependencies': {'exposed': {'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}}}, rule='required')
         if "exposed" in data:
-            data_one_of_count8 = 0
-            if data_one_of_count8 < 2:
+            data_one_of_count9 = 0
+            if data_one_of_count9 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -1049,9 +1081,9 @@ def validate___definitions_environmentspec(data, custom_formats={}, name_prefix=
                             data__exposedName = data["exposedName"]
                             if not isinstance(data__exposedName, (str)):
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".exposedName must be string", value=data__exposedName, name="" + (name_prefix or "data") + ".exposedName", definition={'type': 'string'}, rule='type')
-                    data_one_of_count8 += 1
+                    data_one_of_count9 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count8 < 2:
+            if data_one_of_count9 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -1061,10 +1093,10 @@ def validate___definitions_environmentspec(data, custom_formats={}, name_prefix=
                             data__exposed = data["exposed"]
                             if data__exposed not in [False]:
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".exposed must be one of [False]", value=data__exposed, name="" + (name_prefix or "data") + ".exposed", definition={'enum': [False]}, rule='enum')
-                    data_one_of_count8 += 1
+                    data_one_of_count9 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count8 != 1:
-                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count8) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}, rule='oneOf')
+            if data_one_of_count9 != 1:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count9) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'exposed': {'enum': [True]}, 'exposedName': {'type': 'string'}}, 'required': ['exposedName']}, {'properties': {'exposed': {'enum': [False]}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "name" in data_keys:
             data_keys.remove("name")
@@ -1098,8 +1130,8 @@ def validate___definitions_deviceexecutablespec(data, custom_formats={}, name_pr
         if not all(prop in data for prop in ['type']):
             raise JsonSchemaValueException("" + (name_prefix or "data") + " must contain ['type'] properties", value=data, name="" + (name_prefix or "data") + "", definition={'type': 'object', 'properties': {'name': {'type': 'string'}, 'type': {'type': 'string', 'default': 'docker', 'enum': ['docker', 'build', 'preInstalled']}, 'command': {'type': 'string'}, 'runAsBash': {'type': 'boolean', 'default': True}}, 'required': ['type'], 'dependencies': {'type': {'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}}}, rule='required')
         if "type" in data:
-            data_one_of_count9 = 0
-            if data_one_of_count9 < 2:
+            data_one_of_count10 = 0
+            if data_one_of_count10 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -1129,9 +1161,9 @@ def validate___definitions_deviceexecutablespec(data, custom_formats={}, name_pr
                                     data__docker_keys.remove("pullSecret")
                                     data__docker__pullSecret = data__docker["pullSecret"]
                                     validate___definitions_secretdepends(data__docker__pullSecret, custom_formats, (name_prefix or "data") + ".docker.pullSecret")
-                    data_one_of_count9 += 1
+                    data_one_of_count10 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count9 < 2:
+            if data_one_of_count10 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -1156,9 +1188,9 @@ def validate___definitions_deviceexecutablespec(data, custom_formats={}, name_pr
                                     data__build_keys.remove("depends")
                                     data__build__depends = data__build["depends"]
                                     validate___definitions_builddepends(data__build__depends, custom_formats, (name_prefix or "data") + ".build.depends")
-                    data_one_of_count9 += 1
+                    data_one_of_count10 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count9 < 2:
+            if data_one_of_count10 < 2:
                 try:
                     data_is_dict = isinstance(data, dict)
                     if data_is_dict:
@@ -1168,10 +1200,10 @@ def validate___definitions_deviceexecutablespec(data, custom_formats={}, name_pr
                             data__type = data["type"]
                             if data__type not in ['preInstalled']:
                                 raise JsonSchemaValueException("" + (name_prefix or "data") + ".type must be one of ['preInstalled']", value=data__type, name="" + (name_prefix or "data") + ".type", definition={'enum': ['preInstalled']}, rule='enum')
-                    data_one_of_count9 += 1
+                    data_one_of_count10 += 1
                 except JsonSchemaValueException: pass
-            if data_one_of_count9 != 1:
-                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count9) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
+            if data_one_of_count10 != 1:
+                raise JsonSchemaValueException("" + (name_prefix or "data") + " must be valid exactly by one definition" + (" (" + str(data_one_of_count10) + " matches found)"), value=data, name="" + (name_prefix or "data") + "", definition={'oneOf': [{'properties': {'type': {'enum': ['docker']}, 'docker': {'type': 'object', 'properties': {'image': {'type': 'string'}, 'pullSecret': {'properties': {'kind': {'const': 'secret', 'default': 'secret'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['image']}}}, {'properties': {'type': {'enum': ['build']}, 'build': {'type': 'object', 'properties': {'depends': {'properties': {'kind': {'const': 'build', 'default': 'build'}, 'nameOrGUID': {'type': 'string'}, 'guid': {'type': 'string'}}}}, 'required': ['depends']}}}, {'properties': {'type': {'enum': ['preInstalled']}}}]}, rule='oneOf')
         data_keys = set(data.keys())
         if "name" in data_keys:
             data_keys.remove("name")
