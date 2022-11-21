@@ -243,10 +243,10 @@ class Package(Model):
             "recordOptions": rosbag_job.recordOptions,
         })
 
-        if rosbag_job.uploadOptions:
+        if 'uploadOptions' in rosbag_job:
             rosbag_job_object.uploadOptions = rosbag_job.uploadOptions
 
-        if rosbag_job.overrideOptions:
+        if 'overrideOptions' in rosbag_job:
             rosbag_job_object.overrideOptions = rosbag_job.overrideOptions
 
         return rosbag_job_object
