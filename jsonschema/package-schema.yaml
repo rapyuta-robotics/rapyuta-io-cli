@@ -557,11 +557,6 @@ definitions:
         type: string
       maxSplitDuration:
         type: integer
-      maxSplitDurationUnit:
-        type: string
-        enum:
-          - m
-          - h
 
   rosbagUploadOptionsSpec:
     type: object

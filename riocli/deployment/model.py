@@ -235,10 +235,7 @@ class Deployment(Model):
                 max_splits=req_job.recordOptions.get('maxSplits'),
                 max_split_size=req_job.recordOptions.get('maxSplitSize'),
                 chunk_size=req_job.recordOptions.get('chunkSize'),
-                max_split_duration=req_job.recordOptions.get('maxSplitDuration'),
-                max_split_duration_unit=ROSBagMaxSplitDurationUnit(
-                    req_job.recordOptions.maxSplitDurationUnit
-                ) if hasattr(req_job.recordOptions, 'maxSplitDurationUnit') else None
+                max_split_duration=req_job.recordOptions.get('maxSplitDuration')
             )}
 
         if 'uploadOptions' in req_job:
