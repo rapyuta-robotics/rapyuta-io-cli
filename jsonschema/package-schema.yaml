@@ -556,7 +556,7 @@ definitions:
       prefix:
         type: string
       maxSplitDuration:
-        type: integer
+        type: number
 
   rosbagUploadOptionsSpec:
     type: object
