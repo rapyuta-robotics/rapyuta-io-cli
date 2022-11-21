@@ -57,6 +57,8 @@ setup(
         "six>=1.13.0",
         "tabulate>=0.8.0",
         "urllib3>=1.23",
+        "pyrfc3339==1.1",
+        "click-option-group>=0.5.5"
     ],
     setup_requires=["flake8"],
 )
