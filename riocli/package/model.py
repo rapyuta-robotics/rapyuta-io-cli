@@ -49,32 +49,35 @@ class Package(Model):
             'name': 'default',
             'packageVersion': 'v1.0.0',
             'apiVersion': "2.1.0",
+            'description': '',
+            'bindable': True,
             'plans': [
                 {
                     "inboundROSInterfaces": {
                         "anyIncomingScopedOrTargetedRosConfig": False
                     },
                     'singleton': False,
-                    'bindable': True,
+                    'metadata': {},
                     'name': 'default',
                     'dependentDeployments': [],
                     'exposedParameters': [],
+                    'includePackages': [],
                     'components': [
                     ]
                 }
             ],
         })
         component_obj = munchify({
-            'requiredRuntime': 'cloud',
-            'architecture': 'amd64',
-            'executables': [],
-            'parameters': [],
-            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
-            'exposedParameters': [],
-            'metadata': {},
-            'rosBagJobDefs': []
-        })
-
+                            'requiredRuntime': 'cloud',
+                            'architecture': 'amd64',
+                            'executables': [],
+                            'parameters': [],
+                            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
+                            'exposedParameters': [],
+                            'includePackages': [],
+                            'rosBagJobDefs':[]
+                        })
+        
         # metadata
         # ✓ name, ✓ description, ✓ version
 
@@ -90,6 +93,9 @@ class Package(Model):
 
         # TODO validate transform.  specially nested secret. 
         component_obj.executables = list(map(self._map_executable, self.spec.executables))
+        for exec in component_obj.executables:
+            if hasattr(exec, 'cmd') is False:
+                setattr(exec, 'cmd', [])
         component_obj.requiredRuntime = self.spec.runtime
 
         # ✓ parameters
@@ -142,11 +148,11 @@ class Package(Model):
         #  ✓ action
         #   rosbagjob
         if 'ros' in self.spec and self.spec.ros.enabled:
-            component_obj.ros.isRos = True
+            component_obj.ros.isROS = True
             component_obj.ros.ros_distro = self.spec.ros.version
-            pkg_object.inboundROSInterfaces = munchify({})
+            pkg_object.plans[0].inboundROSInterfaces = munchify({})
 
-            pkg_object.inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
+            pkg_object.plans[0].inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
             if 'rosEndpoints' in self.spec.ros:
                 component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))

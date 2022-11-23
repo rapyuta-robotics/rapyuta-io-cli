@@ -78,14 +78,14 @@ class Applier(object):
         return self.graph.static_order()
 
     def apply(self, *args, **kwargs):
-        WORKERS =  int(kwargs.get('workers', self.DEFAULT_MAX_WORKERS))
-        if WORKERS == 1 :
+        kwargs['workers'] = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
+        if kwargs['workers'] == 1 :
             return self.apply_sync(*args, **kwargs)
         else:
             return self.apply_async(*args, **kwargs)
 
     def apply_async(self, *args, **kwargs):
-        WORKERS =  kwargs.get('workers', self.DEFAULT_MAX_WORKERS)
+        WORKERS = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
         task_queue = queue.Queue()
         done_queue    = queue.Queue()
 
@@ -105,7 +105,7 @@ class Applier(object):
         
         
         worker_list = []
-        for worker_id in range(0, WORKERS - 1):
+        for worker_id in range(0, WORKERS):
             worker_list.append(threading.Thread(target=worker, daemon=True))
             worker_list[worker_id].start()
         
