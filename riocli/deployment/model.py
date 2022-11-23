@@ -21,8 +21,7 @@ from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
 from rapyuta_io.clients.routed_network import RoutedNetwork
 from rapyuta_io.clients.rosbag import ROSBagJob, ROSBagOptions, ROSBagCompression, UploadOptions, \
-    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo, \
-    ROSBagMaxSplitDurationUnit
+    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo
 
 from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.deployment.validation import validate
