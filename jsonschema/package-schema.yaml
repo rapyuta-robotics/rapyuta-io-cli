@@ -68,11 +68,6 @@ definitions:
               runtime:
                 enum:
                   - device
-              ros:
-                type: object
-                enabled:
-                  enum:
-                    - true
               device:
                 type: object
                 "$ref": "#/definitions/deviceComponentInfoSpec"
