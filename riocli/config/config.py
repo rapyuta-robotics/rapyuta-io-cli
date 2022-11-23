@@ -73,6 +73,9 @@ class Configuration(object):
         if with_project and project is None:
             raise NoProjectSelected
 
+        if not with_project:
+            project = None
+
         return Client(auth_token=token, project=project)
 
     def get_auth_header(self) -> dict:

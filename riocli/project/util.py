@@ -18,6 +18,7 @@ import click
 from rapyuta_io import Client
 
 from riocli.config import new_client
+from riocli.utils.selector import show_selection
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -61,8 +62,63 @@ def get_project_name(client: Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.name
 
+def find_organization_guid(client: Client, name: str) -> str:
+    organizations = client.get_user_organizations()
+    options = {}
+
+    for organization in organizations:
+        if organization.name == name:
+            options[organization.guid] = '{} ({})'.format(organization.name, organization.url)
+
+    if len(options) == 1:
+        return list(options.keys())[0]
+
+    if len(options) == 0:
+        raise Exception("User is not part of organization: {}".format(name))
+
+    choice = show_selection(options, header='Following packages were found with the same name')
+    return choice
+
+
+
+def get_organization_name(client: Client, guid: str) -> str:
+    organizations = client.get_user_organizations()
+    for organization in organizations:
+        if organization.guid == guid:
+            return organization.name
+
+    raise OrganizationNotFound("User is not part of organization with guid: {}".format(guid))
+
+def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
+    @functools.wraps(f)
+    def decorated(**kwargs: typing.Any):
+        client = new_client(with_project=False)
+        name = kwargs.get('organization_name') or kwargs.pop('organization')
+        guid = None
+        
+        if name:
+            try:
+                if name.startswith('org-'):
+                    guid = name
+                    name = get_organization_name(client, guid)
+                else:
+                    guid = find_organization_guid(client, name)
+            except Exception as e:
+                click.secho(str(e), fg='red')
+                raise SystemExit(1)
+        kwargs['organization_name'] = name
+        kwargs['organization_guid'] = guid    
+        f(**kwargs)
+
+    return decorated
+
 
 class ProjectNotFound(Exception):
     def __init__(self, message='project not found'):
+        self.message = message
+        super().__init__(self.message)
+
+class OrganizationNotFound(Exception):
+    def __init__(self, message='organization not found'):
         self.message = message
         super().__init__(self.message)
