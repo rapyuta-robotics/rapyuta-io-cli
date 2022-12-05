@@ -27,8 +27,8 @@ munch = ">=2.4.0"
 pyyaml = ">=5.4.1"
 rapyuta-io = ">=1.5.0"
 tabulate = ">=0.8.0"
-pyrfc3339 = "==1.1"
-click-option-group = "==0.5.5"
+pyrfc3339 = ">=1.1"
+click-option-group = ">=0.5.5"
 
 [requires]
 python_version = "3"
