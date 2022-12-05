@@ -98,8 +98,8 @@ class Deployment(Model):
                     provision_config.add_native_network(network_obj,
                                                         network_interface=network_depends.get('interface', None))
 
-        if 'rosBagJobDefs' in self.spec:
-            for req_job in self.spec.rosBagJobDefs:
+        if 'rosBagJobs' in self.spec:
+            for req_job in self.spec.rosBagJobs:
                 provision_config.add_rosbag_job(__componentName, self._form_rosbag_job(req_job))
 
         if self.spec.runtime == 'cloud':

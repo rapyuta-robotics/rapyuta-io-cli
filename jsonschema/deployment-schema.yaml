@@ -150,7 +150,7 @@ definitions:
                 items:
                   "$ref": "#/definitions/deviceNetworkAttachSpec"
 
-              rosBagJobDefs:
+              rosBagJobs:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
@@ -181,7 +181,7 @@ definitions:
                 items:
                   "$ref": "#/definitions/cloudNetworkAttachSpec"
 
-              rosBagJobDefs:
+              rosBagJobs:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudROSBagJobSpec"
