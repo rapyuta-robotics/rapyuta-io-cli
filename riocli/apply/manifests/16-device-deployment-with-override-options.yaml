@@ -1,0 +1,33 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name:  device-with-override-options
+  depends:
+    kind: package
+    nameOrGUID: "pkg-epzkouhcwgqkbmibexugvlob"
+    version: "v1.0.0"
+spec:
+    runtime: device
+    device:
+        depends:
+          kind: device
+          nameOrGUID: device1
+    rosBagJobs:
+        -   name: "testbag"
+            recordOptions:
+                topicIncludeRegex:
+                        - "/telemetry"
+                maxSplits: 5
+                compression: LZ4
+                maxSplitDuration: 180
+            uploadOptions:
+                uploadType: "Continuous"
+            overrideOptions:
+                topicOverrideInfo:
+                        - topicName: "/topic1"
+                          recordFrequency: 10
+                        - topicName: "/topic2"
+                          latched: True
+                excludeTopics:
+                        - "/topic3"
+                        - "/topic4"
