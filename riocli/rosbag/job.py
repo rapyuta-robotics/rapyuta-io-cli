@@ -22,6 +22,7 @@ from rapyuta_io.clients.rosbag import ROSBagOptions, ROSBagJob, ROSBagCompressio
 
 from riocli.config import new_client
 from riocli.deployment.util import name_to_guid as deployment_name_to_guid
+from riocli.rosbag.util import ROSBagJobNotFound
 
 
 @click.group(
@@ -177,7 +178,7 @@ def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str
         with spinner():
             rosbag_jobs = client.list_rosbag_jobs(deployment_id=deployment_guid, guids=[job_guid])
             if len(rosbag_jobs) == 0:
-                raise Exception('Rosbag Job not found')
+                raise ROSBagJobNotFound()
 
             kw_args = {}
 
