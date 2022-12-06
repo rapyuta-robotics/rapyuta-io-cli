@@ -37,6 +37,7 @@ def environment(ctx: click.Context, name: str):
         ctx.obj.data.pop('catalog_host', None)
         ctx.obj.data.pop('core_api_host', None)
         ctx.obj.data.pop('rip_host', None)
+        ctx.obj.data.pop('v2api_host', None)
     else:
         _configure_environment(ctx.obj, name)
 
@@ -62,13 +63,15 @@ def _configure_environment(config: Configuration, name: str) -> None:
     _validate_environment(name)
 
     # Named Staging environments don't have hyphen in the name. Ephemeral environments do.
-    name = name+'-' if name.startswith('pr') else name
+    # name = name+'-' if name.startswith('pr') else name
 
     catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     rip = 'https://{}rip.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
+    v2api = 'https://{}api.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
 
     config.data['environment'] = name
     config.data['catalog_host'] = catalog
     config.data['core_api_host'] = core
     config.data['rip_host'] = rip
+    config.data['v2api_host'] = v2api

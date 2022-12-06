@@ -12,26 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import glob
+import os
+
 
 def parse_varidac_pathargs(pathItem):
     glob_files = []
     abs_path = os.path.abspath(pathItem)
-    #make it absolte
-    # does the path exist. 
+    # make it absolte
+    # does the path exist.
     #     is it a dir?  scan recursively
     #     not a dir but has  special charaters in it?  [*?^!]
     #        assume its a valid glob, use it to glob recursively
     #      if all else fails
-    #        consider it a file path directly. 
+    #        consider it a file path directly.
     if os.path.exists(abs_path):
         if os.path.isdir(abs_path):
-            #TODO: Should we keep this recursive?
+            # TODO: Should we keep this recursive?
             glob_files = glob.glob(abs_path + "/**/*", recursive=True)
         else:
             glob_files = glob.glob(abs_path, recursive=True)
     return glob_files
+
 
 def process_files_values_secrets(files, values, secrets):
     glob_files = []
@@ -52,5 +54,5 @@ def process_files_values_secrets(files, values, secrets):
         if abs_secrets in glob_files:
             glob_files.remove(abs_secrets)
 
-    glob_files = list(set(glob_files))        
+    glob_files = list(set(glob_files))
     return glob_files, abs_values, abs_secret

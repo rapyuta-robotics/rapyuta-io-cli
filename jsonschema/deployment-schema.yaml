@@ -105,6 +105,12 @@ definitions:
           nameOrGUID:
             type: string
 
+  managedServiceSpec:
+    type: object
+    properties:
+      depends:
+        "$ref": "#/definitions/managedServiceDepends"
+
   componentSpec:
     properties:
       runtime:
@@ -175,6 +181,11 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudNetworkAttachSpec"
+
+              managedServices:
+                type: array
+                items:
+                  "$ref": "#/definitions/managedServiceSpec"
 
   stringMap:
     type: object
@@ -273,3 +284,14 @@ definitions:
         type: string
       guid:
         type: string
+  managedServiceDepends:
+    properties:
+      kind:
+        const: managedservice
+        default: managedservice
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+
+
