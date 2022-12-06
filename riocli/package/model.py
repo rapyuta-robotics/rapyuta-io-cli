@@ -159,7 +159,7 @@ class Package(Model):
                 component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
 
         if 'rosBagJobDefs' in self.spec:
-            component_obj.rosBagJobDefs = list(map(self._map_rosbag_job_def, self.spec.rosBagJobDefs))
+            component_obj.rosBagJobDefs = self.spec.rosBagJobDefs
 
         pkg_object.plans[0].components = [component_obj]
         # return package
