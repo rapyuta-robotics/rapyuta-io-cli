@@ -3,10 +3,10 @@ kind: "Build"
 metadata:
   name: "docker-build"
 spec:
-  recipe: "Docker"
+  buildMethod: "Docker"
   architecture: "amd64"
-  git:
-    repository: "https://github.com/rapyuta-robotics/io_tutorial.git"
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorial.git"
     # gitRef: "master"
     # secret: "secret-guid"
   # dockerfile: "Dockerfile"

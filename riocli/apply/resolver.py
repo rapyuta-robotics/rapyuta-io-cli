@@ -148,7 +148,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": self._generate_find_guid_functor(),
             "package": lambda name, obj_list, version: filter(lambda x: name == x.name and version == x['packageVersion'], obj_list),
             "staticroute": lambda name, obj_list: filter(lambda x: name == '-'.join(x.urlPrefix.split('-')[:-1]), obj_list),
-            "build": self._generate_find_guid_functor(),
+            "build": self._generate_find_guid_functor(name_field='buildName'),
             "deployment": self._generate_find_guid_functor(),
             "network": self._generate_find_guid_functor(),
             "disk": self._generate_find_guid_functor(),

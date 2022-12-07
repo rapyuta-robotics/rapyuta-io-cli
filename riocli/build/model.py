@@ -45,7 +45,7 @@ class Build(Model):
 
     def to_v1(self) -> v1Build:
         build_opts = None
-        if self.spec.recipe == 'Source' and self.spec.get('catkinParameters', None):
+        if self.spec.buildMethod == 'Source' and self.spec.get('catkinParameters', None):
             catkin_opts = []
             for each in self.spec.catkinParameters:
                 catkin_opt = CatkinOption(rosPkgs=each.get('rosPackages', None),
@@ -56,13 +56,15 @@ class Build(Model):
                 catkin_opts.append(catkin_opt)
             build_opts = BuildOptions(catkin_opts)
 
-        return v1Build(buildName=self.metadata.name, strategyType=self.spec.recipe, repository=self.spec.git.repository,
-                       architecture=self.spec.architecture, rosDistro=self.spec.get('rosDistro', ''),
-                       isRos=self.spec.get('rosDistro', '') != '', dockerPullSecret=self.spec.get('pullSecret', ''),
-                       contextDir=self.spec.get('contextDir', ''), dockerFilePath=self.spec.get('dockerfile', ''),
-                       dockerPushRepository=self.spec.get('pushSecret', ''), branch=self.spec.git.get('gitRef', ''),
-                       triggerName=self.spec.get('triggerName', ''), tagName=self.spec.get('tagName', ''),
-                       buildOptions=build_opts)
+        return v1Build(
+            buildName=self.metadata.name, strategyType=self.spec.buildMethod, repository=self.spec.repository.url,
+            architecture=self.spec.architecture, rosDistro=self.spec.get('rosDistro', ''),
+            isRos=self.spec.get('rosDistro', '') != '', dockerPullSecret=self.spec.get('pullSecret', ''),
+            contextDir=self.spec.get('contextDir', ''), dockerFilePath=self.spec.get('dockerfile', ''),
+            dockerPushRepository=self.spec.get('pushSecret', ''), branch=self.spec.repository.get('ref', ''),
+            triggerName=self.spec.get('triggerName', ''), tagName=self.spec.get('tagName', ''),
+            buildOptions=build_opts
+        )
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
