@@ -62,6 +62,7 @@ def get_project_name(client: Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.name
 
+
 def find_organization_guid(client: Client, name: str) -> str:
     organizations = client.get_user_organizations()
     options = {}
@@ -80,7 +81,6 @@ def find_organization_guid(client: Client, name: str) -> str:
     return choice
 
 
-
 def get_organization_name(client: Client, guid: str) -> str:
     organizations = client.get_user_organizations()
     for organization in organizations:
@@ -89,13 +89,14 @@ def get_organization_name(client: Client, guid: str) -> str:
 
     raise OrganizationNotFound("User is not part of organization with guid: {}".format(guid))
 
+
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any):
         client = new_client(with_project=False)
-        name = kwargs.get('organization_name') or kwargs.pop('organization')
+        name = kwargs.get('organization_name')
         guid = None
-        
+
         if name:
             try:
                 if name.startswith('org-'):
@@ -107,7 +108,7 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
                 click.secho(str(e), fg='red')
                 raise SystemExit(1)
         kwargs['organization_name'] = name
-        kwargs['organization_guid'] = guid    
+        kwargs['organization_guid'] = guid
         f(**kwargs)
 
     return decorated
@@ -117,6 +118,7 @@ class ProjectNotFound(Exception):
     def __init__(self, message='project not found'):
         self.message = message
         super().__init__(self.message)
+
 
 class OrganizationNotFound(Exception):
     def __init__(self, message='organization not found'):
