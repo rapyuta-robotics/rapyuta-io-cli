@@ -3,10 +3,10 @@ kind: "Build"
 metadata:
   name: "catkin-build"
 spec:
-  recipe: "Source"
+  buildMethod: "Source"
   architecture: "amd64"
-  git:
-    repository: "https://github.com/rapyuta-robotics/io_tutorials"
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorials"
     # gitRef: "master"
     # secret: "secret-guid"
   # contextDir: "talker/talker"

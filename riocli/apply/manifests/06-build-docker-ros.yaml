@@ -5,9 +5,12 @@ metadata:
 spec:
   recipe: "Docker"
   architecture: "amd64"
-  git:
-    repository: "https://github.com/rapyuta-robotics/io_tutorial.git"
+
     # gitRef: "master"
     # secret: "secret-guid"
   # contextDir: "talker/talker"
   rosDistro: "melodic"
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorials.git"
+  buildMethod: "Source"
+
