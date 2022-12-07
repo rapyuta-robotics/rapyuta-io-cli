@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
-import pyrfc3339
+
 import click
+import pyrfc3339
 from click_help_colors import HelpColorsGroup
-from click_option_group import optgroup, AllOptionGroup
 from click_spinner import spinner
 from rapyuta_io.clients.rosbag import ROSBagOptions, ROSBagJob, ROSBagCompression, ROSBagJobStatus, ROSBagUploadTypes, \
     ROSBagOnDemandUploadOptions, ROSBagTimeRange
@@ -126,20 +126,18 @@ def job_list(deployment_guid: str, deployment_name: str,
         raise SystemExit(1)
 
 
-@rosbag_job.command('patch')
+@rosbag_job.command('trigger')
 @click.argument('deployment-name')
 @click.argument('job-guid')
-@click.option('--upload-mode', help='Change upload mode', type=click.Choice([t for t in ROSBagUploadTypes]))
-@optgroup.group('OnDemand Upload Mode Options', cls=AllOptionGroup)
-@optgroup.option('--upload-from', help='Rosbags recorded after or at this time are uploaded. Specify time in RFC 3339 '
-                                       'format (1985-04-12T23:20:50.52Z)')
-@optgroup.option('--upload-to', help='Rosbags recorded before or at this time are uploaded. Specify time in RFC 3339 '
-                                     'format (1985-04-12T23:20:50.52Z)')
+@click.option('--upload-from', help='Rosbags recorded after or at this time are uploaded. Specify time in RFC 3339 '
+                                    'format (1985-04-12T23:20:50.52Z)', required=True)
+@click.option('--upload-to', help='Rosbags recorded before or at this time are uploaded. Specify time in RFC 3339 '
+                                  'format (1985-04-12T23:20:50.52Z)', required=True)
 @deployment_name_to_guid
-def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str, upload_mode: str,
+def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str,
                        upload_from: str, upload_to: str) -> None:
     """
-    Patch Rosbag job
+    Trigger Rosbag Upload
 
     Here are some examples of RFC3339 date/time format that can be given to '--upload-from' &
     '--upload-to' options
@@ -180,22 +178,47 @@ def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str
             if len(rosbag_jobs) == 0:
                 raise ROSBagJobNotFound()
 
-            kw_args = {}
-
-            if upload_mode:
-                kw_args['upload_type'] = upload_mode
-            if upload_from and upload_to:
-                time_range = ROSBagTimeRange(
-                    from_time=int(pyrfc3339.parse(upload_from).timestamp()),
-                    to_time=int(pyrfc3339.parse(upload_to).timestamp())
+            if rosbag_jobs[0].upload_options and \
+                    rosbag_jobs[0].upload_options.upload_type != ROSBagUploadTypes.ON_DEMAND:
+                click.secho(
+                    "Warning: this job does not have OnDemand upload type so triggering will not have any effect but,"
+                    " it will take into effect when job's upload type is changed to OnDemand", fg='yellow'
                 )
-                on_demand_options = ROSBagOnDemandUploadOptions(time_range)
 
-                kw_args['on_demand_options'] = on_demand_options
+            time_range = ROSBagTimeRange(
+                from_time=int(pyrfc3339.parse(upload_from).timestamp()),
+                to_time=int(pyrfc3339.parse(upload_to).timestamp())
+            )
+            on_demand_options = ROSBagOnDemandUploadOptions(time_range)
 
-            rosbag_jobs[0].patch(**kw_args)
+            rosbag_jobs[0].patch(on_demand_options=on_demand_options)
 
-        click.secho('Rosbag Job patched successfully', fg='green')
+        click.secho('Rosbag upload triggered successfully', fg='green')
+    except Exception as e:
+        click.secho(str(e), fg='red')
+        raise SystemExit(1)
+
+
+@rosbag_job.command('update')
+@click.argument('deployment-name')
+@click.argument('job-guid')
+@click.option('--upload-mode', help='Change upload mode',
+              type=click.Choice([t for t in ROSBagUploadTypes]), required=True)
+@deployment_name_to_guid
+def update_job(deployment_guid: str, deployment_name: str, job_guid: str, upload_mode: str) -> None:
+    """
+    Update the Rosbag Job
+    """
+    try:
+        client = new_client()
+        with spinner():
+            rosbag_jobs = client.list_rosbag_jobs(deployment_id=deployment_guid, guids=[job_guid])
+            if len(rosbag_jobs) == 0:
+                raise ROSBagJobNotFound()
+
+            rosbag_jobs[0].patch(upload_type=upload_mode)
+
+        click.secho('Rosbag Job updated successfully', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
@@ -219,4 +242,3 @@ def _display_rosbag_job_list(jobs: typing.List[ROSBagJob], show_header: bool = T
             job.component_type.name,
             'None' if job.device_id is None else job.device_id,
         ))
-
