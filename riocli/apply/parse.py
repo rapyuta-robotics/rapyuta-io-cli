@@ -27,6 +27,7 @@ from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
+from riocli.utils import dump_all_yaml
 from riocli.utils import run_bash
 from riocli.utils.mermaid import mermaid_link, mermaid_safe
 
@@ -138,7 +139,11 @@ class Applier(object):
             if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                 self._delete_manifest(obj, *args, **kwargs)
 
-    def parse_dependencies(self, check_missing=True, delete=False):
+    def print_resolved_manifests(self):
+        manifests = [o for _, o in self.objects.items()]
+        dump_all_yaml(manifests)
+
+    def parse_dependencies(self, check_missing=True, delete=False, template=False):
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
@@ -157,12 +162,13 @@ class Applier(object):
                 action = 'DELETE'
             kind = node.split(":")[0]
             expected_time = round(
-                self.EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
+                self.EXPECTED_TIME.get(kind.lower(), 5) / 60, 2)
             total_time = total_time + expected_time
             resource_list.append([node, action, expected_time])
 
-        self._display_context(
-            total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
+        if not template:
+            self._display_context(
+                total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
 
         if check_missing:
             missing_resources = []
@@ -172,7 +178,7 @@ class Applier(object):
 
             if missing_resources:
                 click.secho("missing resources found in yaml. " +
-                            "Plese ensure the following are either available in your yaml" +
+                            "Please ensure the following are either available in your yaml" +
                             "or created on the server. {}".format(set(missing_resources)), fg="red")
                 raise SystemExit(1)
 
@@ -269,7 +275,7 @@ class Applier(object):
     def _add_graph_edge(self, dependent_key, key):
         self.graph.add(dependent_key, key)
         self.diagram.append('\t{}[{}] --> {}[{}] '.format(mermaid_safe(key),
-                            key, mermaid_safe(dependent_key), dependent_key))
+                                                          key, mermaid_safe(dependent_key), dependent_key))
 
     # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
@@ -372,7 +378,7 @@ class Applier(object):
             ['Resources', total_objects],
         ]
         click.echo(tabulate(context, headers=headers,
-                   tablefmt='simple', numalign='center'))
+                            tablefmt='simple', numalign='center'))
 
         # Display Resource Inventory
         headers = []
@@ -382,7 +388,7 @@ class Applier(object):
         col, _ = get_terminal_size()
         click.secho(" " * col, bg='blue')
         click.echo(tabulate(resource_list, headers=headers,
-                   tablefmt='simple', numalign='center'))
+                            tablefmt='simple', numalign='center'))
         click.secho(" " * col, bg='blue')
 
     @staticmethod

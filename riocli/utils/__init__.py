@@ -34,6 +34,13 @@ def inspect_with_format(obj: typing.Any, format_type: str):
         raise Exception('Invalid format')
 
 
+def dump_all_yaml(objs: typing.List):
+    """
+    Dump multiple documents as YAML separated by triple dash (---)
+    """
+    click.echo(yaml.dump_all(objs, allow_unicode=True, explicit_start=True))
+
+
 def run_bash(cmd, bg=False):
     cmd_parts = shlex.split(cmd)
 

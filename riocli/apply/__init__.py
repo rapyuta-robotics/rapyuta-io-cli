@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
-from click_help_colors import HelpColorsCommand
 from typing import Iterable
 
+import click
+from click_help_colors import HelpColorsCommand
+
+from riocli.apply.explain import explain
+from riocli.apply.template import template
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
-from riocli.apply.explain import explain
 
 
 @click.command(
