@@ -25,6 +25,7 @@ from riocli.config.config import Configuration
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
+from riocli.managedservice.model import ManagedService
 from riocli.network.model import Network
 from riocli.package.model import Package
 from riocli.project.model import Project
@@ -37,7 +38,8 @@ class _Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(
+                _Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -52,6 +54,7 @@ class ResolverCache(object, metaclass=_Singleton):
         'Package': Package,
         'Disk': Disk,
         'Deployment': Deployment,
+        "ManagedService": ManagedService
     }
 
     KIND_REGEX = {
@@ -66,6 +69,7 @@ class ResolverCache(object, metaclass=_Singleton):
         "network": "^net-[a-z]{24}$",
         "device": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
         "user": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+        "managedservice": "^[a-zA-Z][a-zA-Z0-9_-]$"
     }
 
     GUID_KEYS = ['guid', 'GUID', 'uuid', 'ID', 'Id', 'id']
@@ -90,12 +94,12 @@ class ResolverCache(object, metaclass=_Singleton):
     def find_depends(self, depends, *args):
         if 'depGuid' in depends and depends['kind'] == 'disk':
             return depends['depGuid'], None
-        elif 'guid' in depends and depends['kind'] != 'network':
+        elif 'guid' in depends and depends['kind'] not in ('network', 'managedservice'):
             return depends['guid'], None
-        
         elif 'nameOrGUID' in depends:
             obj_list = self._list_functors(depends['kind'])()
-            obj_match = list(self._find_functors(depends['kind'])(depends['nameOrGUID'], obj_list, *args))
+            obj_match = list(self._find_functors(depends['kind'])(
+                depends['nameOrGUID'], obj_list, *args))
             if not obj_list or (isinstance(obj_list, list) and len(obj_list) == 0):
                 return None, None
             if obj_match and isinstance(obj_match, list) and len(obj_match) > 0:
@@ -112,9 +116,11 @@ class ResolverCache(object, metaclass=_Singleton):
             "staticroute": lambda x: munchify(x)['guid'],
             "build": lambda x: munchify(x)['guid'],
             "deployment": lambda x: munchify(x)['deploymentId'],
-            "network": lambda x: munchify(x).guid,
-            "disk": lambda x: munchify(x)['internalDeploymentGUID'], #This is only temporarity like this
-            "device": lambda x: munchify(x)['uuid']
+            "network": lambda x: munchify(x)['guid'],
+            # This is only temporarily like this
+            "disk": lambda x: munchify(x)['internalDeploymentGUID'],
+            "device": lambda x: munchify(x)['uuid'],
+            "managedservice": lambda x: munchify(x)['metadata']['name'],
         }
         return mapping[kind]
 
@@ -131,6 +137,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "network": self._list_networks,
             "disk": self._list_disks,
             "device": self.client.get_all_devices,
+            "managedservice": self._list_managedservices,
         }
 
         return mapping[kind]
@@ -146,6 +153,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "network": self._generate_find_guid_functor(),
             "disk": self._generate_find_guid_functor(),
             "device": self._generate_find_guid_functor(),
+            "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
         }
 
         return mapping[kind]
@@ -163,19 +171,26 @@ class ResolverCache(object, metaclass=_Singleton):
 
         if routed:
             networks.extend(routed)
+
         return networks
 
     def _list_disks(self):
         config = Configuration()
-        catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
+        catalog_host = config.data.get(
+            'catalog_host', 'https://gacatalog.apps.rapyuta.io')
         url = '{}/disk'.format(catalog_host)
         headers = config.get_auth_header()
-        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
             raise Exception(err_msg)
         return munchify(data)
+
+    def _list_managedservices(self):
+        instances = ManagedService.list_instances()
+        return munchify(instances)
 
     @classmethod
     def _maybe_guid(cls, kind: str, name_or_guid: str) -> typing.Union[str, None]:

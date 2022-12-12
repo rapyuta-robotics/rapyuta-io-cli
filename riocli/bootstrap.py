@@ -40,6 +40,7 @@ from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
+from riocli.managedservice import managedservice
 
 
 @with_plugins(iter_entry_points('riocli.plugins'))
@@ -92,3 +93,4 @@ cli.add_command(parameter)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
+cli.add_command(managedservice)

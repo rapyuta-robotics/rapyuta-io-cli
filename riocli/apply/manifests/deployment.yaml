@@ -40,3 +40,7 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "routed"
+  managedServices:
+    - depends:
+        kind: managedservice
+        nameOrGUID: "test-service"

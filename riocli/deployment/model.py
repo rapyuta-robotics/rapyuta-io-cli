@@ -115,7 +115,7 @@ class Deployment(Model):
                 disk_mounts = {}
                 for vol in self.spec.volumes:
                     disk_guid, disk = self.rc.find_depends(vol.depends)
-                    if not disk_guid in disk_mounts:
+                    if disk_guid not in disk_mounts:
                         disk_mounts[disk_guid] = []
 
                     disk_mounts[disk_guid].append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
@@ -124,6 +124,17 @@ class Deployment(Model):
                     disk = client.get_volume_instance(disk_guid)
                     provision_config.mount_volume(__componentName, volume=disk,
                                                   executable_mounts=disk_mounts[disk_guid])
+
+            # TODO: Managed Services is currently limited to `cloud` deployments
+            # since we don't expose `elasticsearch` outside Openshift. This may
+            # change in the future.
+            if 'managedServices' in self.spec:
+                managed_services = []
+                for managed_service in self.spec.managedServices:
+                    managed_services.append({
+                        "instance": managed_service.depends.nameOrGUID,
+                    })
+                provision_config.context["managedServices"] = managed_services
 
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(self.spec.device.depends)
