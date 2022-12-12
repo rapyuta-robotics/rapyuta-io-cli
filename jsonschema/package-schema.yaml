@@ -79,7 +79,7 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/environmentSpec"
-              rosBagJobDefs:
+              rosBagJobs:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
@@ -107,7 +107,7 @@ definitions:
                 items:
                   "$ref": "#/definitions/endpointSpec"
 
-              rosBagJobDefs:
+              rosBagJobs:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudROSBagJobSpec"

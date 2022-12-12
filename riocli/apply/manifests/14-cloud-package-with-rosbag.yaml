@@ -11,7 +11,7 @@ spec:
     replicas: 1
   ros:
           enabled: True
-  rosBagJobDefs:
+  rosBagJobs:
             -   name: "testbag"
                 recordOptions:
                     topicIncludeRegex:
@@ -37,4 +37,4 @@ spec:
       build:
           depends:
                   kind: build
-                  nameOrGUID: "build-cpjfkfjbzfewonpkriosmavf"
+                  nameOrGUID: "build-fshjqzkbqlqwvgsksiioweuk"

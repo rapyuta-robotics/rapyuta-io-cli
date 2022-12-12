@@ -158,8 +158,8 @@ class Package(Model):
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
                 component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
 
-        if 'rosBagJobDefs' in self.spec:
-            component_obj.rosBagJobDefs = self.spec.rosBagJobDefs
+        if 'rosBagJobs' in self.spec:
+            component_obj.rosBagJobDefs = self.spec.rosBagJobs
 
         pkg_object.plans[0].components = [component_obj]
         # return package
@@ -241,21 +241,6 @@ class Package(Model):
             return {
                 "name": endpoint.name, "exposeExternally": exposedExternally,
                 "port": endpoint.port, "targetPort": endpoint.targetPort, "proto": proto.upper()}
-
-    @staticmethod
-    def _map_rosbag_job_def(rosbag_job):
-        rosbag_job_object = munchify({
-            "name": rosbag_job.name,
-            "recordOptions": rosbag_job.recordOptions,
-        })
-
-        if 'uploadOptions' in rosbag_job:
-            rosbag_job_object.uploadOptions = rosbag_job.uploadOptions
-
-        if 'overrideOptions' in rosbag_job:
-            rosbag_job_object.overrideOptions = rosbag_job.overrideOptions
-
-        return rosbag_job_object
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

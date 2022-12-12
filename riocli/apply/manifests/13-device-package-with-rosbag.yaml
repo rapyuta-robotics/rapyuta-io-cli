@@ -12,7 +12,7 @@ spec:
           restart: "always"
   ros:
           enabled: True
-  rosBagJobDefs:
+  rosBagJobs:
         -   name: "testbag"
             recordOptions:
                 allTopics: True
