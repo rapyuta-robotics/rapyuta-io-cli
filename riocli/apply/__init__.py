@@ -67,7 +67,7 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
 @click.argument('files', nargs=-1)
 def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """
-    Apply resource manifests
+    Removes resources defined in the manifest
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)
