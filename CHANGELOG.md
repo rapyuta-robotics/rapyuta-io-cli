@@ -1,3 +1,18 @@
+# [0.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.5.0...v0.6.0) (2022-12-14)
+
+
+### Bug Fixes
+
+* **build:** fixes broken apply for builds ([a68f7d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a68f7d077e4f4442952f61556bd4b9204cc63fe8))
+* **project:** fixes project creation ([e89a1b4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e89a1b41b610981828a49c5d42dc1bde72a3cb31))
+
+
+### Features
+
+* **managedservice:** add support for rapyuta.io `managedservices` ([7aff123](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7aff123997502af885138260dd1b7037160fc42c))
+* **rosbags:** adds support in apply packages and deployment, and adds rosbag job update and trigger upload. ([875d50f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/875d50fd4486dd93514f36a3871a3bf9f7841344))
+* **template:** add helm3 template like support ([ceb12c5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ceb12c5c12b20618769a44435b946dd73695f661))
+
 # [0.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.4.0...v0.5.0) (2022-11-23)
 
 
