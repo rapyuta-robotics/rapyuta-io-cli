@@ -73,7 +73,7 @@ class ResolverCache(object, metaclass=_Singleton):
     }
 
     GUID_KEYS = ['guid', 'GUID', 'uuid', 'ID', 'Id', 'id']
-    NAME_KEYS = ['name', 'urlPrefix']
+    NAME_KEYS = ['name', 'urlPrefix', 'buildName']
 
     def __init__(self, client):
         self.client = client

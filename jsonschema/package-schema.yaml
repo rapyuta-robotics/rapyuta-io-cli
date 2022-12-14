@@ -60,6 +60,7 @@ definitions:
       ros:
         type: object
         "$ref": "#/definitions/rosComponentSpec"
+
     dependencies:
       runtime:
         oneOf:
@@ -74,11 +75,14 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceExecutableSpec"
-
               environmentArgs:
                 type: array
                 items:
                   "$ref": "#/definitions/environmentSpec"
+              rosBagJobs:
+                type: array
+                items:
+                  "$ref": "#/definitions/deviceROSBagJobSpec"
 
           - properties:
               runtime:
@@ -102,6 +106,11 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/endpointSpec"
+
+              rosBagJobs:
+                type: array
+                items:
+                  "$ref": "#/definitions/cloudROSBagJobSpec"
 
   deviceExecutableSpec:
     type: object
@@ -215,7 +224,7 @@ definitions:
                 type: object
                 properties:
                   depends:
-                    "$ref": "#/definitions/secretDepends"
+                    "$ref": "#/definitions/buildDepends"
                 required:
                   - depends
           - properties:
@@ -472,6 +481,141 @@ definitions:
               type:
                 enum:
                   - action
+
+  cloudROSBagJobSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      recordOptions:
+        "$ref": "#/definitions/rosbagRecordOptionsSpec"
+      overrideOptions:
+        "$ref": "#/definitions/rosbagOverrideOptionsSpec"
+    required:
+      - name
+      - recordOptions
+
+  deviceROSBagJobSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      recordOptions:
+        "$ref": "#/definitions/rosbagRecordOptionsSpec"
+      uploadOptions:
+        "$ref": "#/definitions/rosbagUploadOptionsSpec"
+      overrideOptions:
+        "$ref": "#/definitions/rosbagOverrideOptionsSpec"
+    required:
+      - name
+      - recordOptions
+
+  rosbagRecordOptionsSpec:
+    type: object
+    oneOf:
+      - required:
+          - allTopics
+      - anyOf:
+          - required:
+              - topics
+          - required:
+              - topicIncludeRegex
+    properties:
+      allTopics:
+        type: boolean
+      topics:
+        type: array
+        items:
+          type: string
+      topicIncludeRegex:
+        type: array
+        items:
+          type: string
+      topicExcludeRegex:
+        type: string
+      maxMessageCount:
+        type: integer
+      node:
+        type: string
+      compression:
+        type: string
+        enum:
+          - BZ2
+          - LZ4
+      maxSplits:
+        type: integer
+      maxSplitSize:
+        type: integer
+      chunkSize:
+        type: integer
+      prefix:
+        type: string
+      maxSplitDuration:
+        type: integer
+
+  rosbagUploadOptionsSpec:
+    type: object
+    properties:
+      maxUploadRate:
+        type: integer
+        default: 1048576
+      purgeAfter:
+        type: boolean
+      uploadType:
+        type: string
+        enum:
+          - OnStop
+          - Continuous
+          - OnDemand
+        default: OnDemand
+      onDemandOpts:
+        type: object
+        "$ref": "#/definitions/rosbagOnDemandUploadOptionsSpec"
+
+  rosbagOnDemandUploadOptionsSpec:
+    type: object
+    properties:
+      timeRange:
+        type: object
+        properties:
+          from:
+            type: integer
+          to:
+            type: integer
+        required:
+          - from
+          - to
+    required:
+      - timeRange
+
+  rosbagOverrideOptionsSpec:
+    type: object
+    properties:
+      topicOverrideInfo:
+        type: array
+        items:
+          "$ref": "#/definitions/rosbagTopicOverrideInfoSpec"
+      excludeTopics:
+        type: array
+        items:
+          type: string
+
+  rosbagTopicOverrideInfoSpec:
+    type: object
+    oneOf:
+      - required:
+          - topicName
+          - recordFrequency
+      - required:
+          - topicName
+          - latched
+    properties:
+      topicName:
+        type: string
+      recordFrequency:
+        type: integer
+      latched:
+        type: boolean
 
   stringMap:
     type: object

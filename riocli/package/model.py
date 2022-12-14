@@ -32,11 +32,12 @@ class Package(Model):
         'never': RestartPolicy.Never,
         'onfailure': RestartPolicy.OnFailure
     }
+
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client):
-        guid, obj = self.rc.find_depends({"kind":  self.kind.lower(), "nameOrGUID": self.metadata.name},
+        guid, obj = self.rc.find_depends({"kind": self.kind.lower(), "nameOrGUID": self.metadata.name},
                                          self.metadata.version)
         if not guid:
             return False
@@ -44,7 +45,6 @@ class Package(Model):
         return obj
 
     def create_object(self, client: Client):
-        # click.secho('{}/{} {} created'.format(self.apiVersion, self.kind, self.metadata.name), fg='green')
         pkg_object = munchify({
             'name': 'default',
             'packageVersion': 'v1.0.0',
@@ -53,7 +53,7 @@ class Package(Model):
             'bindable': True,
             'plans': [
                 {
-                     "inboundROSInterfaces": {
+                    "inboundROSInterfaces": {
                         "anyIncomingScopedOrTargetedRosConfig": False
                     },
                     'singleton': False,
@@ -80,26 +80,23 @@ class Package(Model):
         
         # metadata
         # ✓ name, ✓ description, ✓ version
-        
+
         pkg_object.name = self.metadata.name
         pkg_object.packageVersion = self.metadata.version
-        
+
         if 'description' in self.metadata:
             pkg_object.description = self.metadata.description
-        
-        
+
         # spec
         # executables
-        component_obj.name = 'default' #self.metadata.name #package == component in the single component model
-        
+        component_obj.name = 'default'  # self.metadata.name #package == component in the single component model
+
         # TODO validate transform.  specially nested secret. 
         component_obj.executables = list(map(self._map_executable, self.spec.executables))
         for exec in component_obj.executables:
             if hasattr(exec, 'cmd') is False:
                 setattr(exec, 'cmd', [])
         component_obj.requiredRuntime = self.spec.runtime
-        
-
 
         # ✓ parameters
         # TODO validate transform.  
@@ -118,9 +115,10 @@ class Package(Model):
             for entry in filter(lambda x: 'exposed' in x and x.exposed, self.spec.environmentVars):
                 if os.environ.get('DEBUG'):
                     print(entry.name)
-                exposed_parameters.append({'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
+                exposed_parameters.append(
+                    {'component': component_obj.name, 'param': entry.name, 'targetParam': entry.exposedName})
             pkg_object.plans[0].exposedParameters = exposed_parameters
-            
+
         # device
         #  ✓ arch, ✓ restart
         if self.spec.runtime == 'device':
@@ -128,7 +126,7 @@ class Package(Model):
             component_obj.architecture = self.spec.device.arch
             if 'restart' in self.spec.device:
                 component_obj.restart_policy = self.RESTART_POLICY[self.spec.device.restart.lower()]
-        
+
         # cloud
         #  ✓ replicas
         #  ✓ endpoints
@@ -140,31 +138,33 @@ class Package(Model):
                 component_obj.cloudInfra.replicas = 1
 
         if 'endpoints' in self.spec:
-            endpoints =  list(map(self._map_endpoints, self.spec.endpoints))
+            endpoints = list(map(self._map_endpoints, self.spec.endpoints))
             component_obj.cloudInfra.endpoints = endpoints
-        
+
         # ros:
         #  ✓ isros
         #  ✓ topic
         #  ✓ service
         #  ✓ action
         #   rosbagjob
-        if 'ros' in self.spec:
+        if 'ros' in self.spec and self.spec.ros.enabled:
             component_obj.ros.isROS = True
-            component_obj.ros.ros_distro  = self.spec.ros.version
+            component_obj.ros.ros_distro = self.spec.ros.version
             pkg_object.plans[0].inboundROSInterfaces = munchify({})
-            
+
             pkg_object.plans[0].inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
             if 'rosEndpoints' in self.spec.ros:
                 component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))
                 component_obj.ros.actions = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'action'))
-        
+
+        if 'rosBagJobs' in self.spec:
+            component_obj.rosBagJobDefs = self.spec.rosBagJobs
+
         pkg_object.plans[0].components = [component_obj]
         # return package
         # print(json.dumps(pkg_object))
         return client.create_package(pkg_object)
-        
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
@@ -188,43 +188,42 @@ class Package(Model):
         return return_list
 
     def _map_executable(self, exec):
-        
+
         exec_object = munchify({
             "name": exec.name,
             "simulationOptions": {
-                "simulation": exec.simulation if 'simulation' in exec  else False
+                "simulation": exec.simulation if 'simulation' in exec else False
             }
         })
-        
+
         if 'limits' in exec:
             exec_object.limits = {
                 "cpu": exec.limits.cpu,
                 "memory": exec.limits.memory
             }
-            
+
         if exec.runAsBash:
             if 'command' in exec:
                 exec_object.cmd = ['/bin/bash', '-c', exec.command]
         else:
-            #TODO verify this is right for secret?
+            # TODO verify this is right for secret?
             if 'command' in exec:
                 exec_object.cmd = [exec.command]
 
-        
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
             if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
-                secret_guid, secret =  self.rc.find_depends(exec.docker.pullSecret.depends)
+                secret_guid, secret = self.rc.find_depends(exec.docker.pullSecret.depends)
                 exec_object.secret = secret_guid
-            
+
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid
-            #TODO verify this is right for secret?
+            # TODO verify this is right for secret?
             # if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-                # exec_object.secret = exec.docker.pullSecret.depends.guid
-        
-        #TODO handle preinstalled
-        
+            # exec_object.secret = exec.docker.pullSecret.depends.guid
+
+        # TODO handle preinstalled
+
         return exec_object
 
     def _map_endpoints(self, endpoint):
@@ -233,15 +232,14 @@ class Package(Model):
         if 'tls-tcp' in proto:
             proto = 'tcp'
 
-        
         if 'range' in endpoint.type:
             proto = proto.replace("-range", '')
             return {
-                "name": endpoint.name, "exposeExternally": exposedExternally, 
+                "name": endpoint.name, "exposeExternally": exposedExternally,
                 "portRange": endpoint.portRange, "proto": proto.upper()}
         else:
             return {
-                "name": endpoint.name, "exposeExternally": exposedExternally, 
+                "name": endpoint.name, "exposeExternally": exposedExternally,
                 "port": endpoint.port, "targetPort": endpoint.targetPort, "proto": proto.upper()}
 
     @classmethod
