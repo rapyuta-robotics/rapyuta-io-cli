@@ -1,0 +1,32 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package" #We will create a package
+metadata:
+  name: "rosbag-dev"
+  version: "1.0.0"
+  labels:
+    app: test
+spec:
+  runtime: "device"
+  device:
+          arch: "amd64"
+          restart: "always"
+  ros:
+          enabled: True
+  rosBagJobs:
+        -   name: "testbag"
+            recordOptions:
+                allTopics: True
+                maxSplits: 5
+                compression: LZ4
+                maxSplitDuration: 1
+            uploadOptions:
+                uploadType: "OnDemand"
+  executables:
+    - name: "exec"
+      type: build
+      command: "roslaunch talker talker.launch"
+      runAsBash: False
+      build:
+          depends:
+                  kind: build
+                  nameOrGUID: "build-jtmnspmxafziwbrfjknnvyaf"

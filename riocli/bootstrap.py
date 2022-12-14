@@ -22,15 +22,16 @@ from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
-from riocli.chart import chart
-from riocli.apply import apply, explain, delete
+from riocli.apply import apply, explain, delete, template
 from riocli.auth import auth
 from riocli.build import build
+from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
+from riocli.managedservice import managedservice
 from riocli.marketplace import marketplace
 from riocli.network import network
 from riocli.package import package
@@ -92,3 +93,5 @@ cli.add_command(parameter)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
+cli.add_command(managedservice)
+cli.add_command(template)

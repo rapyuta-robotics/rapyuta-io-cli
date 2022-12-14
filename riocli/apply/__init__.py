@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
-from click_help_colors import HelpColorsCommand
 from typing import Iterable
 
+import click
+from click_help_colors import HelpColorsCommand
+
+from riocli.apply.explain import explain
+from riocli.apply.template import template
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
-from riocli.apply.explain import explain
+
 
 @click.command(
     'apply',
@@ -35,20 +38,20 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
     """
     Apply resource manifests
     """
-    glob_files, abs_values, abs_secrets = process_files_values_secrets(files, values, secrets)
+    glob_files, abs_values, abs_secrets = process_files_values_secrets(
+        files, values, secrets)
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')
         raise SystemExit(1)
-    
+
     click.secho("----- Files Processed ----", fg="yellow")
     for file in glob_files:
         click.secho(file, fg="yellow")
-    
-    
+
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
-    
+
     rc.apply(dryrun=dryrun, workers=workers)
 
 
@@ -64,9 +67,10 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
 @click.argument('files', nargs=-1)
 def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """
-    Apply resource manifests
+    Removes resources defined in the manifest
     """
-    glob_files, abs_values, abs_secrets = process_files_values_secrets(files, values, secrets)
+    glob_files, abs_values, abs_secrets = process_files_values_secrets(
+        files, values, secrets)
 
     if len(glob_files) == 0:
         click.secho('no files specified', fg='red')

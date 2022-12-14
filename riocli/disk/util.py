@@ -56,7 +56,7 @@ def get_disk_name(client: Client, guid: str) -> str:
 
 
 def find_disk_guid(client: Client, name: str) -> str:
-    try: 
+    try:
         disks = _api_call(HttpMethod.GET)
         for disk in disks:
             if disk['name'] == name:
@@ -68,14 +68,16 @@ def find_disk_guid(client: Client, name: str) -> str:
 
 def _api_call(method: str, guid: typing.Union[str, None] = None,
               payload: typing.Union[typing.Dict, None] = None, load_response: bool = True,
-) -> typing.Any:
+              ) -> typing.Any:
     config = Configuration()
-    catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
+    catalog_host = config.data.get(
+        'catalog_host', 'https://gacatalog.apps.rapyuta.io')
     url = '{}/disk'.format(catalog_host)
     if guid:
         url = '{}/{}'.format(url, guid)
     headers = config.get_auth_header()
-    response = RestClient(url).method(method).headers(headers).execute(payload=payload)
+    response = RestClient(url).method(method).headers(
+        headers).execute(payload=payload)
     data = None
     err_msg = 'error in the api call'
     if load_response:

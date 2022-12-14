@@ -1,0 +1,40 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package" #We will create a package
+metadata:
+  name: "rosbag-cloud"
+  version: "1.0.0"
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  ros:
+          enabled: True
+  rosBagJobs:
+            -   name: "testbag"
+                recordOptions:
+                    topicIncludeRegex:
+                            - "/telemetry"
+                    maxSplits: 5
+                    maxSplitSize: 10
+                uploadOptions:
+                    uploadType: "OnDemand"
+                overrideOptions:
+                    topicOverrideInfo:
+                            - topicName: "/topic1"
+                              recordFrequency: 10
+                            - topicName: "/topic2"
+                              latched: True
+                    excludeTopics:
+                            - "/topic3"
+                            - "/topic4"
+  executables:
+    - name: "exec"
+      type: build
+      command: "roslaunch talker talker.launch"
+      runAsBash: False
+      build:
+          depends:
+                  kind: build
+                  nameOrGUID: "build-fshjqzkbqlqwvgsksiioweuk"

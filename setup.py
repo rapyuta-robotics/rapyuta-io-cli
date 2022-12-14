@@ -51,12 +51,13 @@ setup(
         "python-dateutil>=2.8.2",
         "pytz",
         "pyyaml>=5.4.1",
-        "rapyuta-io==1.5.0",
+        "rapyuta-io==1.7.0",
         "requests>=2.20.0",
         "setuptools",
         "six>=1.13.0",
         "tabulate>=0.8.0",
         "urllib3>=1.23",
+        "pyrfc3339>=1.1"
     ],
     setup_requires=["flake8"],
 )

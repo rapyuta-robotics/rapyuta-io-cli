@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import copy
 import json
+import os
 import queue
 import threading
 import typing
@@ -27,11 +27,13 @@ from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
+from riocli.utils import dump_all_yaml
 from riocli.utils import run_bash
 from riocli.utils.mermaid import mermaid_link, mermaid_safe
-    
+
+
 class Applier(object):
-    DEFAULT_MAX_WORKERS=6
+    DEFAULT_MAX_WORKERS = 6
 
     EXPECTED_TIME = {
         "organization": 3,
@@ -65,29 +67,31 @@ class Applier(object):
             self.environment = jinja2.Environment()
 
         if values:
-            self.values = self._load_file_content(values, is_value=True, is_secret=False)[0]
-        
-        if secrets:
-            self.secrets = self._load_file_content(secrets, is_value=True, is_secret=True)[0]
+            self.values = self._load_file_content(
+                values, is_value=True, is_secret=False)[0]
 
+        if secrets:
+            self.secrets = self._load_file_content(
+                secrets, is_value=True, is_secret=True)[0]
 
         self._process_file_list(files)
-    
-    #Public Functions
+
+    # Public Functions
     def order(self):
         return self.graph.static_order()
 
     def apply(self, *args, **kwargs):
-        kwargs['workers'] = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
-        if kwargs['workers'] == 1 :
+        kwargs['workers'] = int(kwargs.get('workers')
+                                or self.DEFAULT_MAX_WORKERS)
+        if kwargs['workers'] == 1:
             return self.apply_sync(*args, **kwargs)
-        else:
-            return self.apply_async(*args, **kwargs)
+
+        return self.apply_async(*args, **kwargs)
 
     def apply_async(self, *args, **kwargs):
         WORKERS = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
         task_queue = queue.Queue()
-        done_queue    = queue.Queue()
+        done_queue = queue.Queue()
 
         def worker():
             while True:
@@ -97,27 +101,27 @@ class Applier(object):
                     try:
                         self._apply_manifest(obj, *args, **kwargs)
                     except Exception as ex:
-                        click.secho('[Err] Object "{}" apply failed. Apply will not progress further.'.format(obj, str(ex)))
+                        click.secho(
+                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(obj, str(ex)))
                         raise ex
 
                 task_queue.task_done()
                 done_queue.put(obj)
-        
-        
+
         worker_list = []
         for worker_id in range(0, WORKERS):
             worker_list.append(threading.Thread(target=worker, daemon=True))
             worker_list[worker_id].start()
-        
+
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
                 # if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                 task_queue.put(obj)
-            
+
             done_obj = done_queue.get()
             self.graph.done(done_obj)
-        
+
         task_queue.join()
 
     def apply_sync(self, *args, **kwargs):
@@ -128,15 +132,18 @@ class Applier(object):
                     self._apply_manifest(obj, *args, **kwargs)
                 self.graph.done(obj)
 
-
     def delete(self, *args, **kwargs):
         delete_order = list(self.graph.static_order())
         delete_order.reverse()
         for obj in delete_order:
             if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                 self._delete_manifest(obj, *args, **kwargs)
-   
-    def parse_dependencies(self, check_missing=True, delete=False):
+
+    def print_resolved_manifests(self):
+        manifests = [o for _, o in self.objects.items()]
+        dump_all_yaml(manifests)
+
+    def parse_dependencies(self, check_missing=True, delete=False, template=False):
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
@@ -149,17 +156,20 @@ class Applier(object):
         total_time = 0
 
         for node in copy.deepcopy(self.graph).static_order():
-            
+
             action = 'CREATE' if not self.resolved_objects[node]['src'] == 'remote' else 'UPDATE'
             if delete:
                 action = 'DELETE'
             kind = node.split(":")[0]
-            expected_time = round(self.EXPECTED_TIME.get(kind.lower(), 5)/60, 2)
+            expected_time = round(
+                self.EXPECTED_TIME.get(kind.lower(), 5) / 60, 2)
             total_time = total_time + expected_time
             resource_list.append([node, action, expected_time])
 
-        self._display_context(total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
-     
+        if not template:
+            self._display_context(
+                total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
+
         if check_missing:
             missing_resources = []
             for key, item in self.resolved_objects.items():
@@ -167,12 +177,12 @@ class Applier(object):
                     missing_resources.append(key)
 
             if missing_resources:
-                click.secho("missing resources found in yaml. " + \
-                            "Plese ensure the following are either available in your yaml" + \
+                click.secho("missing resources found in yaml. " +
+                            "Please ensure the following are either available in your yaml" +
                             "or created on the server. {}".format(set(missing_resources)), fg="red")
                 raise SystemExit(1)
 
-    #Manifest Operations via base.py
+    # Manifest Operations via base.py
     def _apply_manifest(self, obj_key, *args, **kwargs):
         obj = self.objects[obj_key]
         cls = ResolverCache.get_model(obj)
@@ -187,8 +197,8 @@ class Applier(object):
         setattr(ist, 'rc', ResolverCache(self.client))
         ist.delete(self.client, obj, *args, **kwargs)
 
+    # File Loading Operations
 
-    #File Loading Operations
     def _process_file_list(self, files):
         for f in files:
             data = self._load_file_content(f)
@@ -213,9 +223,9 @@ class Applier(object):
                 data = opened.read()
         else:
             data = run_bash('sops -d {}'.format(file_name))
-            
+
         # TODO: If no Kind in yaml/json, then skip
-        if not (is_value  or is_secret):
+        if not (is_value or is_secret):
             if self.environment or file_name.endswith('.j2'):
                 template = self.environment.from_string(data)
                 template_args = self.values
@@ -224,9 +234,10 @@ class Applier(object):
                 try:
                     data = template.render(**template_args)
                 except Exception as ex:
-                    click.secho('{} yaml parsing error. Msg: {}'.format(file_name, str(ex)))
+                    click.secho('{} yaml parsing error. Msg: {}'.format(
+                        file_name, str(ex)))
                     raise ex
-                
+
                 file_name = file_name.rstrip('.j2')
 
         loaded_data = []
@@ -236,16 +247,18 @@ class Applier(object):
                 loaded = json.loads(data)
                 loaded_data.append(loaded)
             except json.JSONDecodeError as ex:
-                ex_message = '{} yaml parsing error. Msg: {}'.format(file_name, str(ex))
+                ex_message = '{} yaml parsing error. Msg: {}'.format(
+                    file_name, str(ex))
                 raise Exception(ex_message)
 
         elif file_name.endswith('yaml') or file_name.endswith('yml'):
             try:
                 loaded = yaml.safe_load_all(data)
                 loaded_data = list(loaded)
-                
+
             except yaml.YAMLError as e:
-                ex_message = '{} yaml parsing error. Msg: {}'.format(file_name, str(e))
+                ex_message = '{} yaml parsing error. Msg: {}'.format(
+                    file_name, str(e))
                 raise Exception(ex_message)
 
         if not loaded_data:
@@ -253,17 +266,18 @@ class Applier(object):
 
         return loaded_data
 
+    # Graph Operations
 
-    #Graph Operations    
     def _add_graph_node(self, key):
         self.graph.add(key)
-        self.diagram.append('\t{}[{}]'.format( mermaid_safe(key), key))
+        self.diagram.append('\t{}[{}]'.format(mermaid_safe(key), key))
 
     def _add_graph_edge(self, dependent_key, key):
         self.graph.add(dependent_key, key)
-        self.diagram.append('\t{}[{}] --> {}[{}] '.format( mermaid_safe(key), key, mermaid_safe(dependent_key), dependent_key))
+        self.diagram.append('\t{}[{}] --> {}[{}] '.format(mermaid_safe(key),
+                                                          key, mermaid_safe(dependent_key), dependent_key))
 
-    #Dependency Resolution
+    # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
         for key, value in model.items():
             if key == "depends":
@@ -299,33 +313,37 @@ class Applier(object):
             obj_name = self._get_attr(obj, ResolverCache.NAME_KEYS)
 
             if kind == 'package':
-                if (guid and obj_guid == guid):
-                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                if guid and obj_guid == guid:
+                    self._add_remote_object_to_resolve_tree(
+                        dependent_key, obj_guid, dependency, obj)
 
                 if (name_or_guid == obj_name) and (
                         'version' in dependency and obj['packageVersion'] == dependency.get('version')):
-                    self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                    self._add_remote_object_to_resolve_tree(
+                        dependent_key, obj_guid, dependency, obj)
 
             # Special handling for Static route since it doesn't have a name field.
             # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
             elif kind == 'staticroute' and name_or_guid in obj_name:
-                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                self._add_remote_object_to_resolve_tree(
+                    dependent_key, obj_guid, dependency, obj)
 
             elif (guid and obj_guid == guid) or (name_or_guid == obj_name):
-                self._add_remote_object_to_resolve_tree(dependent_key, obj_guid, dependency, obj)
+                self._add_remote_object_to_resolve_tree(
+                    dependent_key, obj_guid, dependency, obj)
 
         self.dependencies[kind][name_or_guid] = {'local': True}
         self._add_graph_edge(dependent_key, key)
 
         if key not in self.resolved_objects:
             self.resolved_objects[key] = {'src': 'missing'}
-    
+
     def _add_remote_object_to_resolve_tree(self, dependent_key, guid, dependency, obj):
         kind = dependency.get('kind')
         name_or_guid = dependency.get('nameOrGUID')
         key = '{}:{}'.format(kind, name_or_guid)
-
-        self.dependencies[kind][name_or_guid] = {'guid': guid, 'raw': obj, 'local': False}
+        self.dependencies[kind][name_or_guid] = {
+            'guid': guid, 'raw': obj, 'local': False}
         if key not in self.resolved_objects:
             self.resolved_objects[key] = {}
         self.resolved_objects[key]['guid'] = guid
@@ -333,7 +351,7 @@ class Applier(object):
         self.resolved_objects[key]['src'] = 'remote'
 
         self._add_graph_edge(dependent_key, key)
-        
+
         dependency['guid'] = guid
         if kind.lower() == "disk":
             dependency['depGuid'] = obj['internalDeploymentGUID']
@@ -345,10 +363,10 @@ class Applier(object):
         if not self.dependencies.get(kind):
             self.dependencies[kind] = {}
 
-    #Utils
+    # Utils
     def _display_context(self, total_time: int, total_objects: int, resource_list: typing.List) -> None:
         # Display context
-           
+
         if os.environ.get('MERMAID'):
             diagram_link = mermaid_link("\n".join(self.diagram))
             click.launch(diagram_link)
@@ -359,7 +377,8 @@ class Applier(object):
             ['Files', len(self.files)],
             ['Resources', total_objects],
         ]
-        click.echo(tabulate(context, headers=headers, tablefmt='simple', numalign='center'))
+        click.echo(tabulate(context, headers=headers,
+                            tablefmt='simple', numalign='center'))
 
         # Display Resource Inventory
         headers = []
@@ -368,14 +387,22 @@ class Applier(object):
 
         col, _ = get_terminal_size()
         click.secho(" " * col, bg='blue')
-        click.echo(tabulate(resource_list, headers=headers, tablefmt='simple', numalign='center'))
+        click.echo(tabulate(resource_list, headers=headers,
+                            tablefmt='simple', numalign='center'))
         click.secho(" " * col, bg='blue')
 
     @staticmethod
     def _get_attr(obj, accept_keys):
+        metadata = None
+
+        if hasattr(obj, 'metadata'):
+            metadata = getattr(obj, 'metadata')
+
         for key in accept_keys:
             if hasattr(obj, key):
                 return getattr(obj, key)
+            if metadata is not None and hasattr(metadata, key):
+                return getattr(metadata, key)
 
         raise Exception('guid resolve failed')
 

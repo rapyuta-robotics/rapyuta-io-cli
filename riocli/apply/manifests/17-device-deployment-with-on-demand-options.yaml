@@ -1,0 +1,27 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name:  device-with-on-demand-opts
+  depends:
+    kind: package
+    nameOrGUID: "pkg-zofyhzjewrdlxpykebzbrzrb"
+    version: "v1.0.0"
+spec:
+    runtime: device
+    device:
+        depends:
+          kind: device
+          nameOrGUID: device1
+    rosBagJobs:
+        -   name: "testbag"
+            recordOptions:
+                allTopics: True
+                maxSplits: 10
+                compression: LZ4
+                maxSplitDuration: 1
+            uploadOptions:
+                uploadType: "OnDemand"
+                onDemandOpts:
+                    timeRange:
+                        from: 10
+                        to: 11
