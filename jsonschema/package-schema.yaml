@@ -465,7 +465,7 @@ definitions:
                 type: string
                 enum:
                   - low
-                  - medium
+                  - med
                   - hi
                   - max
                 default: low
