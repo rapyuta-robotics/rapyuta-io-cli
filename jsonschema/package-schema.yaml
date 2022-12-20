@@ -142,7 +142,7 @@ definitions:
                 type: object
                 properties:
                   image:
-                    type: string
+                    "$ref": "#/definitions/imageName"
                   pullSecret:
                     "$ref": "#/definitions/secretDepends"
                 required:
@@ -206,7 +206,7 @@ definitions:
                 type: object
                 properties:
                   image:
-                    type: string
+                    "$ref": "#/definitions/imageName"
                   pullSecret:
                     type: object
                     properties:
@@ -648,6 +648,9 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  imageName:
+    type: string
+    pattern: ^([\w.\-_]+((?::\d+|)(?=/[a-z0-9._-]+/[a-z0-9._-]+))|)(?:/|)([a-z0-9.\-_]+(?:/[a-z0-9.\-_]+|))(:([\w.\-_]{1,127})|)$
 
   buildDepends:
     properties:
