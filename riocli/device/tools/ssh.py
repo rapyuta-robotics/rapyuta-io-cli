@@ -50,17 +50,22 @@ def device_ssh(device_name: str, device_guid: str, user: str, local_port: int, r
 
 
 @click.command('ssh-authorize')
+@click.option('--user', '-u', default='root', help='User for which SSH keys are added')
 @click.argument('device-name', type=str)
 @click.argument('public-key-file', default="~/.ssh/id_rsa.pub", type=click.Path(exists=True))
 @name_to_guid
-def ssh_authorize_key(device_name: str, device_guid: str, public_key_file: click.Path) -> None:
+def ssh_authorize_key(device_name: str, device_guid: str, user: str, public_key_file: click.Path) -> None:
     """
     Authorize Public SSH Key
     """
     try:
         temp_path = "/tmp/{}".format(random_string(8, 5))
         copy_to_device(device_guid, public_key_file, temp_path)
-        run_on_device(device_guid=device_guid, command=['cat', temp_path, '>>', '/root/.ssh/authorized_keys'])
+        if user != "root":
+            command=['cat', temp_path, '>>', '/home/' + user + '/.ssh/authorized_keys']
+        else:
+            command=['cat', temp_path, '>>', '/root/.ssh/authorized_keys']
+        run_on_device(device_guid=device_guid, command=command, user=user)
         click.secho('Keys added successfully!', fg='green')
     except Exception as e:
         click.secho(str(e), fg='red')
