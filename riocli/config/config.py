@@ -35,7 +35,8 @@ class Configuration(object):
             "project_id": "<project-guid>"
         }
     """
-    APP_NAME = "rio-cli"
+    APP_NAME = 'rio-cli'
+    PIPING_SERVER = 'https://piping-server-v0-rapyuta-infra.apps.okd4v2.okd4beta.rapyuta.io'
 
     def __init__(self, filepath: str = None):
         self.filepath = filepath
@@ -101,7 +102,4 @@ class Configuration(object):
 
     @property
     def piping_server(self):
-        if 'piping_server' in self.data:
-            return self.data['piping_server']
-        
-        return 'https://piping-axylr.ep-r.io'
+        return self.data.get('piping_server', self.PIPING_SERVER)
