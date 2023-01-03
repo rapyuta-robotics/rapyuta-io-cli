@@ -42,11 +42,9 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
 
 def display_deployment_list(deployments: typing.List[Deployment], show_header: bool = True):
     if show_header:
-        click.secho('{:29} {:<25} {:<24} {:40}'.format('Deployment ID', 'Name', 'Phase', 'Package Name'), fg='yellow')
+        click.secho('{:29} {:<25} {:<24} {:40}'.format('Deployment ID', 'Name', 'Phase', 'Package'), fg='yellow')
 
     for deployment in deployments:
-        if deployment.is_partial:
-            deployment.refresh()
-
+        package_name_version = "{} ({})".format(deployment.packageName, deployment.packageVersion)
         click.secho('{:29} {:<25} {:<24} {:40}'.format(deployment.deploymentId, deployment.name,
-                                                       deployment.phase, deployment.packageName))
+                                                       deployment.phase, package_name_version))
