@@ -64,5 +64,6 @@ def _display_package_list(
                     description = description[:truncate_limit] + '..'
                 if len(name) > truncate_limit:
                     name = name[:truncate_limit] + '..'
+
             click.echo('{:30} {:10} {:34} {:<48}'.
                        format(name, package.packageVersion, package.packageId, description))

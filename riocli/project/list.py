@@ -28,6 +28,7 @@ def list_project(ctx: click.Context) -> None:
     try:
         client = new_client(with_project=False)
         projects = client.list_projects()
+        projects = sorted(projects, key=lambda p: p.name.lower())
         current = ctx.obj.data.get('project_id', None)
         _display_project_list(projects, current, show_header=True)
     except Exception as e:
@@ -45,5 +46,6 @@ def _display_project_list(projects: typing.List[Project], current: str = None, s
         fg = None
         if project.guid == current:
             fg = 'green'
+
         click.secho('{:40} {:<25} {:<24} {:40}'.format(project.guid, project.name,
                                                        project.created_at, project.creator), fg=fg)

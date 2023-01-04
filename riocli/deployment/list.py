@@ -34,6 +34,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     try:
         client = new_client()
         deployments = client.get_all_deployments(device_id=device, phases=phase)
+        deployments = sorted(deployments, key=lambda d: d.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')

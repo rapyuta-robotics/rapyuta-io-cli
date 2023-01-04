@@ -37,6 +37,7 @@ def list_networks(network: str) -> None:
         if network in ['native', 'both']:
             networks += client.list_native_networks()
 
+        networks = sorted(networks, key=lambda n: n.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -48,7 +49,7 @@ def _display_network_list(
         show_header: bool = True,
 ) -> None:
     if show_header:
-        click.secho('{:29} {:<15} {:8} {:8} {:20}'.
+        click.secho('{:29} {:<25} {:8} {:8} {:20}'.
                     format('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase'),
                     fg='yellow')
 
@@ -64,5 +65,5 @@ def _display_network_list(
 
         if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
             continue
-        click.secho('{:29} {:<15} {:8} {:8} {:20}'.
+        click.secho('{:29} {:<25} {:8} {:8} {:20}'.
                     format(network.guid, network.name, network.runtime, network_type, phase))
