@@ -27,6 +27,7 @@ def list_devices() -> None:
     try:
         client = new_client()
         devices = client.get_all_devices()
+        devices = sorted(devices, key=lambda d: d.name.lower())
         _display_device_list(devices, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')

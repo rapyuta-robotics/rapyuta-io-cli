@@ -35,6 +35,8 @@ def select_project(config: Configuration, project: str = None) -> None:
         project_guid = project if project.startswith('project-') else find_project_guid(client, project)
 
     projects = client.list_projects()
+    # Sort projects based on their names for an easier selection
+    projects = sorted(projects, key=lambda p: p.name.lower())
     project_map = dict()
 
     for project in projects:

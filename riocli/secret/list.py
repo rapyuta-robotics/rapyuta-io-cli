@@ -29,6 +29,7 @@ def list_secrets(secret_type: typing.Union[str, typing.Tuple[str]]) -> None:
     try:
         client = new_client()
         secrets = client.list_secrets()
+        secrets = sorted(secrets, key=lambda s: s.name.lower())
         _display_secret_list(secrets, secret_type, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')

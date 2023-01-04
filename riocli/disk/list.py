@@ -26,6 +26,7 @@ def list_disks() -> None:
     """
     try:
         disks = _api_call(HttpMethod.GET)
+        disks = sorted(disks, key=lambda d: d['name'].lower())
         _display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
