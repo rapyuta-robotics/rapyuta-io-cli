@@ -14,9 +14,9 @@
 import typing
 
 import click
-from tabulate import tabulate
 
 from riocli.managedservice.util import ManagedServicesClient
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -34,17 +34,16 @@ def list_instances() -> None:
 
 
 def _display_instances(instances: typing.Any):
-    headers = [click.style(h, fg='yellow')
-               for h in ("Provider", "Name", "Created At", "Labels")]
+    headers = ("Provider", "Name", "Created At", "Labels")
 
-    table = []
+    data = []
     for i in instances:
         m = i['metadata']
-        table.append([
+        data.append([
             i['spec']['provider'],
             m['name'],
             m['created_at'],
             m['labels']
         ])
 
-    click.echo(tabulate(table, headers=headers, tablefmt='simple'))
+    tabulate_data(data, headers)

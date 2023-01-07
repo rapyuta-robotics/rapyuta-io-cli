@@ -22,6 +22,7 @@ from uuid import UUID
 import click
 import yaml
 from click_help_colors import HelpColorsGroup
+from tabulate import tabulate
 
 
 def inspect_with_format(obj: typing.Any, format_type: str):
@@ -95,3 +96,17 @@ def is_valid_uuid(uuid_to_test, version=4):
     except ValueError:
         return False
     return str(uuid_obj) == uuid_to_test
+
+
+def tabulate_data(data: typing.List[typing.List], headers: typing.List[str] = None):
+    """
+    Prints data in tabular format
+    """
+    # https://github.com/astanin/python-tabulate#table-format
+    table_format = 'simple'
+    header_foreground = 'yellow'
+
+    if headers:
+        headers = [click.style(h, fg=header_foreground) for h in headers]
+
+    click.echo(tabulate(data, headers=headers, tablefmt=table_format))

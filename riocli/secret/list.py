@@ -17,6 +17,7 @@ import click
 from rapyuta_io import Secret
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -41,14 +42,15 @@ def _display_secret_list(
         secret_type: typing.Union[str, typing.Tuple[str]],
         show_header: bool = True,
 ) -> None:
+    headers = []
     if show_header:
-        click.secho('{:<32} {:<28} {:28} {:28} {:28}'.
-                    format('Secret ID', 'Secret Name', 'Type', 'Created_At', 'Creator'),
-                    fg='yellow')
+        headers = ('Secret ID', 'Secret Name', 'Type', 'Created_At', 'Creator')
 
+    data = []
     for secret in secrets:
         for prefix in secret_type:
             if secret.secret_type.name.lower().find(prefix) != -1:
-                click.secho('{:<32} {:<28} {:28} {:28} {:28}'.
-                            format(secret.guid, secret.name, secret.secret_type.name.lower(),
-                                   secret.created_at, secret.creator))
+                data.append([secret.guid, secret.name, secret.secret_type.name.lower(),
+                             secret.created_at, secret.creator])
+
+    tabulate_data(data, headers)

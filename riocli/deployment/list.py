@@ -17,6 +17,7 @@ import click
 from rapyuta_io.clients.deployment import Deployment
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -42,10 +43,14 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
 
 
 def display_deployment_list(deployments: typing.List[Deployment], show_header: bool = True):
+    headers = []
     if show_header:
-        click.secho('{:29} {:<25} {:<24} {:40}'.format('Deployment ID', 'Name', 'Phase', 'Package'), fg='yellow')
+        headers = ('Deployment ID', 'Name', 'Phase', 'Package')
 
+    data = []
     for deployment in deployments:
         package_name_version = "{} ({})".format(deployment.packageName, deployment.packageVersion)
-        click.secho('{:29} {:<25} {:<24} {:40}'.format(deployment.deploymentId, deployment.name,
-                                                       deployment.phase, package_name_version))
+        data.append([deployment.deploymentId, deployment.name,
+                     deployment.phase, package_name_version])
+
+    tabulate_data(data, headers=headers)

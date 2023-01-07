@@ -19,6 +19,7 @@ from rapyuta_io.clients.device import QoS, TopicKind
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -99,14 +100,18 @@ def _display_topic_list(status: TopicsStatus, show_header: bool = True) -> None:
     else:
         click.secho('ROS Master is {}'.format(click.style('Down', fg='red')))
 
+    headers = []
     if show_header:
-        click.secho('{:<64} {:10} {:15}'.format('Name', 'Type', 'Status'), fg='yellow')
+        headers = ('Name', 'Type', 'Status')
 
+    data = []
     for topic in status.Subscribed.metric:
-        click.secho("{:<64} {:10} {:15}".format(topic.name, 'Metric', 'Subscribed'))
+        data.append([topic.name, 'Metric', 'Subscribed'])
 
     for topic in status.Subscribed.log:
-        click.secho("{:<64} {:10} {:15}".format(topic.name, 'Log', 'Subscribed'))
+        data.append([topic.name, 'Log', 'Subscribed'])
 
     for topic in status.Unsubscribed:
-        click.secho("{:<64} {:10} {:<16}".format(topic, '', 'Un-Subscribed'))
+        data.append([topic, '', 'Un-Subscribed'])
+
+    tabulate_data(data, headers)
