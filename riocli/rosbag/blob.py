@@ -20,6 +20,7 @@ from rapyuta_io.clients.rosbag import ROSBagBlobStatus, ROSBagBlob
 from rapyuta_io.utils import ResourceNotFoundError
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -100,22 +101,19 @@ def blob_list(guids: typing.List[str], deployment_ids: typing.List[str], compone
 
 
 def _display_rosbag_blob_list(blobs: typing.List[ROSBagBlob], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        header = '{:<45} {:<10} {:<15} {:20} {:20} {:40}'.format(
-            'GUID',
-            'Job ID',
-            'Blob Ref ID',
-            'Status',
-            'Component Type',
-            'Device ID',
-        )
-        click.secho(header, fg='yellow')
+        header = ('GUID', 'Job ID', 'Blob Ref ID', 'Status', 'Component Type', 'Device ID')
+
+    data = []
     for blob in blobs:
-        click.secho('{:<45} {:<10} {:<15} {:20} {:20} {:40}'.format(
+        data.append([
             blob.guid,
             blob.job_id,
             blob.blob_ref_id,
             blob.status,
             blob.component_type.name,
-            'None' if blob.device_id is None else blob.device_id,
-        ))
+            'None' if blob.device_id is None else blob.device_id
+        ])
+
+    tabulate_data(data, headers)

@@ -23,6 +23,7 @@ from rapyuta_io.clients.rosbag import ROSBagOptions, ROSBagJob, ROSBagCompressio
 from riocli.config import new_client
 from riocli.deployment.util import name_to_guid as deployment_name_to_guid
 from riocli.rosbag.util import ROSBagJobNotFound
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -225,20 +226,18 @@ def update_job(deployment_guid: str, deployment_name: str, job_guid: str, upload
 
 
 def _display_rosbag_job_list(jobs: typing.List[ROSBagJob], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        header = '{:<35} {:<25} {:<15} {:20} {:40}'.format(
-            'GUID',
-            'Name',
-            'Status',
-            'Component Type',
-            'Device ID',
-        )
-        click.secho(header, fg='yellow')
+        headers = ('GUID', 'Name', 'Status', 'Component Type', 'Device ID')
+
+    data = []
     for job in jobs:
-        click.secho('{:<35} {:<25} {:<15} {:20} {:40}'.format(
+        data.append([
             job.guid,
             job.name,
             job.status,
             job.component_type.name,
             'None' if job.device_id is None else job.device_id,
-        ))
+        ])
+
+    tabulate_data(data, headers)

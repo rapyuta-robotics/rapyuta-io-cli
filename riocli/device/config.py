@@ -20,6 +20,7 @@ from rapyuta_io import DeviceConfig
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -109,11 +110,13 @@ def delete_config(device_name: str, device_guid: str, key: str) -> None:
 
 
 def _display_config_list(config_variables: typing.List[DeviceConfig], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.echo(click.style("{:40} {:40}".format('Key', 'Value'), fg='yellow'))
+        headers = ('Key', 'Value')
 
-    for cfg in config_variables:
-        click.echo("{:40} {:40}".format(cfg.key, cfg.value))
+    data = [[c.key, c.value] for c in config_variables]
+
+    tabulate_data(data, headers)
 
 
 def _update_config_variable(device_guid: str, key: str, value: str) -> None:

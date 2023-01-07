@@ -14,7 +14,7 @@
 import typing
 
 import click
-from tabulate import tabulate
+from riocli.utils import tabulate_data
 
 from riocli.managedservice.util import ManagedServicesClient
 
@@ -34,12 +34,12 @@ def list_providers() -> None:
 
 
 def _display_providers(providers: typing.Any):
-    headers = [click.style(h, fg='yellow') for h in ('Provider Name',)]
+    headers = ['Provider Name']
 
-    table = []
+    data = []
     for provider in providers:
         if provider['name'] == 'dummy':
             continue
-        table.append([provider['name']])
+        data.append([provider['name']])
 
-    click.echo(tabulate(table, headers=headers, tablefmt='simple'))
+    tabulate_data(data, headers)

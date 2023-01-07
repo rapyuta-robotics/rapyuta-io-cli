@@ -20,6 +20,7 @@ from rapyuta_io import Label
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -109,11 +110,13 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
 
 
 def _display_label_list(labels: typing.List[Label], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.echo(click.style("{:40} {:40}".format('Key', 'Value'), fg='yellow'))
+        headers = ('Key', 'Value')
 
-    for label in labels:
-        click.echo("{:40} {:40}".format(label.key, label.value))
+    data = [[l.key, l.value] for l in labels]
+
+    tabulate_data(data, headers)
 
 
 def _update_label(device_guid: str, key: str, value: str) -> None:
