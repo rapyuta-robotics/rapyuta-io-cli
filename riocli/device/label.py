@@ -16,8 +16,8 @@ import typing
 import click
 from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
-
 from rapyuta_io import Label
+
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
 

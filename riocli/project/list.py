@@ -46,4 +46,4 @@ def _display_project_list(projects: typing.List[Project], current: str = None, s
         if project.guid == current:
             fg = 'green'
         click.secho('{:40} {:<25} {:<24} {:40}'.format(project.guid, project.name,
-                                                      project.created_at, project.creator), fg=fg)
+                                                       project.created_at, project.creator), fg=fg)

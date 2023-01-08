@@ -98,4 +98,4 @@ def _display_metric_list(metrics: typing.List[Metric], show_header: bool = True)
 
     for metric in metrics:
         click.secho('{:30} {:10} {:15}'.format(metric.name, metric.kind.capitalize(),
-                                              metric.status.capitalize()))
+                                               metric.status.capitalize()))

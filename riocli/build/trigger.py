@@ -13,8 +13,8 @@
 # limitations under the License.
 import click
 from click_spinner import spinner
-
 from rapyuta_io import BuildOperation, BuildOperationInfo
+
 from riocli.build.logs import stream_build_logs
 from riocli.build.util import name_to_guid
 from riocli.config import new_client

@@ -27,11 +27,11 @@ def show_selection(ranger: Union[list, dict], header: str = '', prompt: str = 'S
 def _show_selection_list(ranger: list, header: str, prompt: str):
     fmt = header
     for idx, opt in enumerate(ranger):
-        fmt = '{}\n{}) {}'.format(fmt, idx+1, opt)
+        fmt = '{}\n{}) {}'.format(fmt, idx + 1, opt)
 
     fmt = '{}\n{}'.format(fmt, prompt)
     choice = click.prompt(fmt, type=types.IntParamType())
-    return ranger[choice-1]
+    return ranger[choice - 1]
 
 
 def _show_selection_dict(ranger: dict, header: str, prompt: str):
@@ -39,8 +39,8 @@ def _show_selection_dict(ranger: dict, header: str, prompt: str):
     fmt = header
     for idx, key in enumerate(ranger):
         options.append(key)
-        fmt = '{}\n{}) {} - {}'.format(fmt, idx+1, key, ranger[key])
+        fmt = '{}\n{}) {} - {}'.format(fmt, idx + 1, key, ranger[key])
 
     fmt = '{}\n{}'.format(fmt, prompt)
     choice = click.prompt(fmt, type=types.IntParamType())
-    return options[choice-1]
+    return options[choice - 1]

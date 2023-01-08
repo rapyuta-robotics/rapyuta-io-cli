@@ -8,25 +8,25 @@ metadata:
 spec:
   runtime: "device"
   device:
-          arch: "amd64"
-          restart: "always"
+    arch: "amd64"
+    restart: "always"
   ros:
-          enabled: True
+    enabled: True
   rosBagJobs:
-        -   name: "testbag"
-            recordOptions:
-                allTopics: True
-                maxSplits: 5
-                compression: LZ4
-                maxSplitDuration: 1
-            uploadOptions:
-                uploadType: "OnDemand"
+    - name: "testbag"
+      recordOptions:
+        allTopics: True
+        maxSplits: 5
+        compression: LZ4
+        maxSplitDuration: 1
+      uploadOptions:
+        uploadType: "OnDemand"
   executables:
     - name: "exec"
       type: build
       command: "roslaunch talker talker.launch"
       runAsBash: False
       build:
-          depends:
-                  kind: build
-                  nameOrGUID: "build-jtmnspmxafziwbrfjknnvyaf"
+        depends:
+          kind: build
+          nameOrGUID: "build-jtmnspmxafziwbrfjknnvyaf"

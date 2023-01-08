@@ -18,8 +18,8 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.apply.explain import explain
-from riocli.apply.template import template
 from riocli.apply.parse import Applier
+from riocli.apply.template import template
 from riocli.apply.util import process_files_values_secrets
 
 
@@ -30,9 +30,12 @@ from riocli.apply.util import process_files_values_secrets
     help_options_color='green',
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
-@click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
-@click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
-@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.", type=int)
+@click.option('--values', '-v',
+              help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+@click.option('--secrets', '-s',
+              help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.",
+              type=int)
 @click.argument('files', nargs=-1)
 def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6) -> None:
     """
@@ -62,8 +65,10 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
     help_options_color='green',
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
-@click.option('--values', '-v', help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
-@click.option('--secrets', '-s', help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--values', '-v',
+              help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+@click.option('--secrets', '-s',
+              help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
 @click.argument('files', nargs=-1)
 def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
     """

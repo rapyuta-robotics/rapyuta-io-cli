@@ -1,8 +1,5 @@
-from urllib.parse import quote, unquote
 import base64
-import zlib
 import json
-
 
 
 def mermaid_safe(s: str):
@@ -19,7 +16,6 @@ def js_bytes_to_string(data):
 
 def js_btoa(data):
     return base64.b64encode(data)
-
 
 
 # def js_encode_uri_component(data):
@@ -49,7 +45,7 @@ def mermaid_link(diagram):
     obj = {
         "code": diagram,
         "mermaid": {
-             "theme": "default"
+            "theme": "default"
         },
         "updateEditor": False,
         "autoSync": True,
@@ -57,9 +53,5 @@ def mermaid_link(diagram):
     }
     json_str = json.dumps(obj)
     json_bytes = js_string_to_byte(json_str)
-    encoded_uri =  js_btoa( json_bytes )
-    return  "https://mermaid.live/view#base64:{}".format(js_bytes_to_string(encoded_uri))
-
-
-
- 
+    encoded_uri = js_btoa(json_bytes)
+    return "https://mermaid.live/view#base64:{}".format(js_bytes_to_string(encoded_uri))

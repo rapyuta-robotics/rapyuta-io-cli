@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 
 import click
-from riocli.marketplace.util import api_call
 from rapyuta_io.utils.rest_client import HttpMethod
 
+from riocli.marketplace.util import api_call
 
 _LIST_URL_FMT = 'marketplace/products'
 

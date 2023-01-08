@@ -8,7 +8,7 @@ metadata:
     kind: package
     nameOrGUID: sootballs_db
     version: "v1.0.11"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud

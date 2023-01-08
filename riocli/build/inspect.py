@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-
 from rapyuta_io import Build
+
 from riocli.build.util import name_to_guid
 from riocli.config import new_client
 from riocli.utils import inspect_with_format

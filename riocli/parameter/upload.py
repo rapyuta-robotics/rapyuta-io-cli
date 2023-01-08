@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from email.policy import default
-import json
-from riocli.parameter.utils import compile_local_configurations
-from xmlrpc.client import Boolean
 import os
 from shutil import copyfile
 from tempfile import mkdtemp
+from xmlrpc.client import Boolean
+
 import click
 import yaml
 from click_spinner import spinner
 
 from riocli.config import new_client
+from riocli.parameter.utils import compile_local_configurations
 
 
 @click.command('upload')
@@ -31,9 +30,9 @@ from riocli.config import new_client
               help='Path for the Parameters Directory file')
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
               help='Directory names to upload')
-@click.option('--delete-existing', is_flag=True, 
-              help='Overwrite existing parameter tree')              
-def upload_configurations(paths: click.Path, tree_names:str = None,  delete_existing: Boolean = False) -> None:
+@click.option('--delete-existing', is_flag=True,
+              help='Overwrite existing parameter tree')
+def upload_configurations(paths: click.Path, tree_names: str = None, delete_existing: Boolean = False) -> None:
     """
     Upload a set of configurations to IO.
 
@@ -42,18 +41,18 @@ def upload_configurations(paths: click.Path, tree_names:str = None,  delete_exis
     try:
         client = new_client()
         uploaded_configuration = None
-    
+
         with spinner():
             paths = list(paths)
             print(tree_names)
-            
+
             configurations = compile_local_configurations(paths, tree_names=tree_names)
-            d_tmp = mkdtemp() # Temporary directory to hold the merged configurations
-            rev_paths = list(reversed(paths)) # path list in reverse order
+            d_tmp = mkdtemp()  # Temporary directory to hold the merged configurations
+            rev_paths = list(reversed(paths))  # path list in reverse order
             print(configurations.items())
             for rel_file_path, configuration in configurations.items():
                 file_path = os.path.join(d_tmp, rel_file_path)
-                file_name, file_extension = os.path.splitext(file_path) # f is a file name with extension
+                file_name, file_extension = os.path.splitext(file_path)  # f is a file name with extension
                 print(".")
                 try:
                     os.makedirs(os.path.dirname(file_path))
@@ -70,16 +69,16 @@ def upload_configurations(paths: click.Path, tree_names:str = None,  delete_exis
                         try:
                             copyfile(src, file_path)
                         except IOError as e:
-                        # file not found in this directory, try the next
+                            # file not found in this directory, try the next
                             click.secho(str(e), fg='red')
                             raise SystemExit(1)
                         else:
                             # copied the file, break out of the loop
                             click.secho("Copied file '{}' to '{}'".format(src, file_path))
                             break
-            
+
             uploaded_configuration = client.upload_configurations(d_tmp, delete_existing_trees=delete_existing)
-        
+
         if upload_configurations:
             click.secho('Parameter uploaded successfully!', fg='green')
             return upload_configurations
@@ -91,5 +90,3 @@ def upload_configurations(paths: click.Path, tree_names:str = None,  delete_exis
         click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-

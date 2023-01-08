@@ -16,12 +16,13 @@ from click_spinner import spinner
 from rapyuta_io.clients.project import Project
 
 from riocli.config import new_client
-from riocli.deployment.util import name_to_guid
 from riocli.project.util import name_to_organization_guid
+
 
 @click.command('create')
 @click.argument('project-name', type=str)
-@click.option('--organization', 'organization_name', help='Pass organization name for which project needs to be created. Default will be current organization')
+@click.option('--organization', 'organization_name',
+              help='Pass organization name for which project needs to be created. Default will be current organization')
 @name_to_organization_guid
 def create_project(project_name: str, organization_guid: str, organization_name: str) -> None:
     """

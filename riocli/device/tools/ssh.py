@@ -30,7 +30,8 @@ from riocli.utils.ssh_tunnel import get_free_tcp_port
               help='Flag to enable X Forwarding over SSH')
 @click.argument('device-name', type=str)
 @name_to_guid
-def device_ssh(device_name: str, device_guid: str, user: str, local_port: int, remote_port: int, x_forward: bool) -> None:
+def device_ssh(device_name: str, device_guid: str, user: str, local_port: int, remote_port: int,
+               x_forward: bool) -> None:
     """
     SSH to the Device
     """
@@ -62,9 +63,9 @@ def ssh_authorize_key(device_name: str, device_guid: str, user: str, public_key_
         temp_path = "/tmp/{}".format(random_string(8, 5))
         copy_to_device(device_guid, public_key_file, temp_path)
         if user != "root":
-            command=['cat', temp_path, '>>', '/home/' + user + '/.ssh/authorized_keys']
+            command = ['cat', temp_path, '>>', '/home/' + user + '/.ssh/authorized_keys']
         else:
-            command=['cat', temp_path, '>>', '/root/.ssh/authorized_keys']
+            command = ['cat', temp_path, '>>', '/root/.ssh/authorized_keys']
         run_on_device(device_guid=device_guid, command=command, user=user)
         click.secho('Keys added successfully!', fg='green')
     except Exception as e:

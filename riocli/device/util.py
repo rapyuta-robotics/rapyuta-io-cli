@@ -131,6 +131,7 @@ def is_remote_path(src, devices=[]):
                         return device.uuid, Path(parts[1]).absolute().as_posix()
     return None, src
 
+
 class DeviceNotFound(Exception):
     def __init__(self, message='device not found'):
         self.message = message

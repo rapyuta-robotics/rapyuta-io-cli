@@ -13,8 +13,6 @@
 # limitations under the License.
 import click
 
-from riocli.config import Configuration
-
 
 @click.command()
 @click.pass_context

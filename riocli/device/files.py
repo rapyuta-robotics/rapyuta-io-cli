@@ -51,7 +51,7 @@ def list_uploads(device_name: str, device_guid: str) -> None:
 
 
 @device_uploads.command('create')
-@click.option('--max-upload-rate', type=int, default=1*1024*1024,
+@click.option('--max-upload-rate', type=int, default=1 * 1024 * 1024,
               help='Network bandwidth limit to be used for upload (Bytes per second)')
 @click.option('--override', is_flag=True, default=False, help='Flag to override destination file')
 @click.option('--purge', is_flag=True, default=False, help='Flag to enable purging the file, after it is uploaded')
@@ -176,5 +176,4 @@ def _display_upload_list(uploads: LogUploads, show_header: bool = True) -> None:
 
     for upload in uploads:
         click.secho('{:34} {:20} {:16} {:<12}'.format(upload.request_uuid, upload.filename, upload.status,
-                                                            upload.total_size))
-
+                                                      upload.total_size))

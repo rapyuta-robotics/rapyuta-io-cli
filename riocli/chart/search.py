@@ -62,7 +62,7 @@ def list_charts() -> None:
     for name, chart in index['entries'].items():
         for version in chart:
             entries.append(version)
-    
+
     _display_entries(munchify(entries))
 
 
@@ -72,6 +72,6 @@ def _display_entries(entries: typing.List) -> None:
         headers.append(click.style(header, fg='yellow'))
 
     for entry in entries:
-        table.append([entry.get('name'), entry.get('version'),entry.get('description'), entry.get('created')])
+        table.append([entry.get('name'), entry.get('version'), entry.get('description'), entry.get('created')])
 
     click.echo(tabulate(table, headers=headers, tablefmt='simple'))

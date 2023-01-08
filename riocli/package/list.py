@@ -55,7 +55,6 @@ def _display_package_list(
         filtered_pkg.sort(key=lambda x: x.packageVersion)
         package_dict[pkgName] = filtered_pkg
 
-    
     for pkgName, pkgVersionList in package_dict.items():
         for package in pkgVersionList:
             description = package.description
@@ -66,4 +65,4 @@ def _display_package_list(
                 if len(name) > truncate_limit:
                     name = name[:truncate_limit] + '..'
             click.echo('{:30} {:10} {:34} {:<48}'.
-                   format(name, package.packageVersion, package.packageId, description))
+                       format(name, package.packageVersion, package.packageId, description))

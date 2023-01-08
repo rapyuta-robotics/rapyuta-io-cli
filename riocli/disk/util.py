@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
 import json
 import typing
-import functools
-import click
 
+import click
 from rapyuta_io import Client
 from rapyuta_io.utils.rest_client import RestClient, HttpMethod
 

@@ -13,11 +13,9 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Client
-from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion, DeviceRuntime
+from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
-from riocli.device.util import find_device_guid, DeviceNotFound
 from riocli.device.validation import validate
 from riocli.model import Model
 
