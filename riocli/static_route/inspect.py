@@ -50,5 +50,3 @@ def make_static_route_inspectable(static_route_data: StaticRoute) -> dict:
         'project': static_route_data.projectGUID,
         'metadata': static_route_data.metadata.__dict__,
     }
-
-

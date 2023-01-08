@@ -15,16 +15,17 @@ import json
 import typing
 
 import click
-
 from rapyuta_io import Command
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+
 from riocli.config import Configuration, new_client
 
 _CLOUD_RUN_REMOTE_COMMAND = '{}/serviceinstance/{}/cmd'
 
 
-def run_on_cloud(deployment_guid: str, comp_id: str, exec_id: str, pod_name: str, command: typing.List[str]) -> (str, str):
+def run_on_cloud(deployment_guid: str, comp_id: str, exec_id: str, pod_name: str, command: typing.List[str]) -> (
+str, str):
     """
     run_on_cloud uses the RunCommand API of the IOBroker to execute arbitrary commands on the cloud deployment
     containers.

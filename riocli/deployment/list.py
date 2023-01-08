@@ -14,8 +14,8 @@
 import typing
 
 import click
-
 from rapyuta_io.clients.deployment import Deployment
+
 from riocli.config import new_client
 
 

@@ -15,9 +15,9 @@ import typing
 
 import click
 
+from riocli.device.util import name_to_guid as device_name_to_guid
 from riocli.network.native_network import create_native_network
 from riocli.network.routed_network import create_routed_network
-from riocli.device.util import name_to_guid as device_name_to_guid
 
 
 @click.command('create')

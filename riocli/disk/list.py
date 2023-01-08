@@ -14,7 +14,6 @@
 import typing
 
 import click
-from rapyuta_io import Build
 from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.disk.util import _api_call

@@ -33,6 +33,7 @@ def network() -> None:
     """
     pass
 
+
 network.add_command(create_network)
 network.add_command(delete_network)
 network.add_command(list_networks)

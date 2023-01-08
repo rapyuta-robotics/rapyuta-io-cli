@@ -17,7 +17,6 @@ import shlex
 import string
 import subprocess
 import typing
-from socket import socket
 from uuid import UUID
 
 import click

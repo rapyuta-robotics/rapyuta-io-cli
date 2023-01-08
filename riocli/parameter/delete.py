@@ -12,16 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from email.policy import default
-import json
-from riocli.parameter.utils import compile_local_configurations
-from xmlrpc.client import Boolean
-import os
-from shutil import copyfile
-from tempfile import mkdtemp
 import click
-import yaml
-from click_spinner import spinner
 
 from riocli.config import new_client
 
@@ -29,7 +20,7 @@ from riocli.config import new_client
 @click.command('delete')
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
               help='Directory names to upload')
-def delete_configurations(tree_names:str = None) -> None:
+def delete_configurations(tree_names: str = None) -> None:
     """
     Upload a set of configurations to IO.
 
@@ -42,5 +33,3 @@ def delete_configurations(tree_names:str = None) -> None:
         click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-

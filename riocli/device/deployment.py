@@ -40,5 +40,3 @@ def list_deployments(device_name: str, device_guid: str) -> None:
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-

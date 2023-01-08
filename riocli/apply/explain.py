@@ -32,7 +32,7 @@ def explain(resource: str, templates: str = None) -> None:
         path = Path(templates)
     else:
         path = Path(__file__).parent.joinpath('manifests')
-    
+
     for each in path.glob('**/*'):
         if resource in each.name:
             with open(each) as f:

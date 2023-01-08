@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import yaml
 from copy import copy, deepcopy
+
 import six
+import yaml
 
 
 # To run docstring tests
@@ -22,34 +23,34 @@ import six
 
 # Copyright Ferry Boender, released under the MIT license.
 def deep_merge(tgt, src):
-	"""Deep update target dict with src
-	For each k,v in src: if k doesn't exist in target, it is deep copied from
-	src to target. Otherwise, if v is a list, target[k] is replaced with
-	src[k]. If v is a set, target[k] is updated with v, If v is a dict,
-	recursively deep-update it.
+    """Deep update target dict with src
+    For each k,v in src: if k doesn't exist in target, it is deep copied from
+    src to target. Otherwise, if v is a list, target[k] is replaced with
+    src[k]. If v is a set, target[k] is updated with v, If v is a dict,
+    recursively deep-update it.
 
-	Examples:
-	>>> t = {'name': 'Ferry', 'hobbies': ['programming', 'sci-fi']}
-	>>> print deep_merge(t, {'hobbies': ['gaming']})
-	{'name': 'Ferry', 'hobbies': ['gaming']}
-	"""
-	target = deepcopy(tgt)
-	for k, v in six.iteritems(src):
-		if type(v) == list:
-			target[k] = deepcopy(v)
-		elif type(v) == dict:
-			if not k in target:
-				target[k] = deepcopy(v)
-			else:
-				target[k] = deep_merge(target[k], v)
-		elif type(v) == set:
-			if not k in target:
-				target[k] = v.copy()
-			else:
-				target[k].update(v.copy())
-		else:
-			target[k] = copy(v)
-	return target
+    Examples:
+    >>> t = {'name': 'Ferry', 'hobbies': ['programming', 'sci-fi']}
+    >>> print deep_merge(t, {'hobbies': ['gaming']})
+    {'name': 'Ferry', 'hobbies': ['gaming']}
+    """
+    target = deepcopy(tgt)
+    for k, v in six.iteritems(src):
+        if type(v) == list:
+            target[k] = deepcopy(v)
+        elif type(v) == dict:
+            if not k in target:
+                target[k] = deepcopy(v)
+            else:
+                target[k] = deep_merge(target[k], v)
+        elif type(v) == set:
+            if not k in target:
+                target[k] = v.copy()
+            else:
+                target[k].update(v.copy())
+        else:
+            target[k] = copy(v)
+    return target
 
 
 def compile_local_configurations(paths, tree_names=None):
@@ -72,7 +73,6 @@ def compile_local_configurations(paths, tree_names=None):
     return configurations
 
 
-
 def parse_configurations(root_dir, tree_names=None):
     """
     Parse the configurations and return as a dict
@@ -81,9 +81,9 @@ def parse_configurations(root_dir, tree_names=None):
 
     for root, dirs, files in os.walk(root_dir, followlinks=True):
         for f in files:
-            file_name, file_extension = os.path.splitext(f) # f is a file name with extension
+            file_name, file_extension = os.path.splitext(f)  # f is a file name with extension
 
-            relpath = root[len(root_dir)+1:] # get relative path without leading /
+            relpath = root[len(root_dir) + 1:]  # get relative path without leading /
 
             # Only upload certain sub-directories
             if tree_names:
@@ -101,10 +101,8 @@ def parse_configurations(root_dir, tree_names=None):
     return configurations
 
 
-
 def show_configurations(args):
     """
     Show the local IO configuration
     """
     return compile_local_configurations(paths=args.paths, tree_names=args.configurations)
-

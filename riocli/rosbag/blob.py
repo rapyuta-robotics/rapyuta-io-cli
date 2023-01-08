@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
-import click
 
-from rapyuta_io.clients.rosbag import ROSBagBlobStatus, ROSBagBlob
-from rapyuta_io.utils import ResourceNotFoundError
+import click
 from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
+from rapyuta_io.clients.rosbag import ROSBagBlobStatus, ROSBagBlob
+from rapyuta_io.utils import ResourceNotFoundError
 
 from riocli.config import new_client
 

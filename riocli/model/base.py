@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import typing
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -31,7 +30,7 @@ DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
     columns, _ = get_terminal_size()
     time = datetime.now().isoformat('T')
-    spacer = ' '*(int(columns) - len(msg + right_msg + time) - 12)
+    spacer = ' ' * (int(columns) - len(msg + right_msg + time) - 12)
     msg = prompt.format(msg, spacer, right_msg, time)
     click.secho(msg, fg=fg)
 

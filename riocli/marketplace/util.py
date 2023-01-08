@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import typing
+
 import click
 import yaml
-import json
-from riocli.utils import inspect_with_format
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+
 from riocli.config import Configuration
 
 

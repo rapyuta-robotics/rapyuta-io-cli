@@ -55,5 +55,3 @@ device.add_command(inspect_device)
 device.add_command(create_device)
 device.add_command(device_uploads)
 device.add_command(tools)
-
-

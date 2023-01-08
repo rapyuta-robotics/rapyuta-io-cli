@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_spinner import spinner
-from riocli.marketplace.util import parse_dependency_file, api_call, match_dependencies, display_products
 from rapyuta_io.utils.rest_client import HttpMethod
-from riocli.utils import inspect_with_format
+
+from riocli.marketplace.util import parse_dependency_file, api_call, match_dependencies, display_products
 
 _RESOLVE_SINGLE_PRODUCT_URL_FMT = 'marketplace/product/{}/resolve/{}'
 _INSTALL_SINGLE_PRODUCT_URL_FMT = 'marketplace/product/{}/install/{}'
@@ -94,6 +93,3 @@ def single_product_install(rrn: str, version: str) -> None:
         url_format = _INSTALL_SINGLE_PRODUCT_URL_FMT.format(rrn, version)
         api_call(url_format, HttpMethod.GET)
     click.secho('package installed successfully', fg='green')
-
-
-

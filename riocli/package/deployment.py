@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from rapyuta_io.clients.deployment import Deployment
 
 from riocli.config import new_client
 from riocli.deployment.list import display_deployment_list

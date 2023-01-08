@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from time import sleep
 import typing
+from time import sleep
 
 import click
 import click_spinner
@@ -20,7 +20,7 @@ from munch import munchify
 from rapyuta_io import Client
 from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.disk.util import _api_call, find_disk_guid, DiskNotFound
+from riocli.disk.util import _api_call
 from riocli.model import Model
 
 
@@ -44,13 +44,14 @@ class Disk(Model):
         with click_spinner.spinner():
             result = _api_call(HttpMethod.POST, payload=payload)
             result = munchify(result)
-            disk_dep_guid, disk = self.rc.find_depends({'kind': self.kind.lower(), 'nameOrGUID':self.metadata.name})
+            disk_dep_guid, disk = self.rc.find_depends({'kind': self.kind.lower(), 'nameOrGUID': self.metadata.name})
             volume_instance = client.get_volume_instance(disk_dep_guid)
             try:
                 volume_instance.poll_deployment_till_ready(sleep_interval=5)
                 return result
             except Exception as e:
-                click.secho(">> Warning: Error Polling for disk ({}:{})".format(self.kind.lower(), self.metadata.name), fg="yellow")
+                click.secho(">> Warning: Error Polling for disk ({}:{})".format(self.kind.lower(), self.metadata.name),
+                            fg="yellow")
             return result
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
@@ -71,7 +72,6 @@ class Disk(Model):
                 sleep(sleep_interval)
                 continue
 
-
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
         pass
@@ -79,5 +79,3 @@ class Disk(Model):
     @staticmethod
     def validate(d):
         pass
-
-

@@ -13,12 +13,10 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Client
 from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
 from riocli.model import Model
-from riocli.static_route.util import StaticRouteNotFound
 from riocli.static_route.validation import validate
 
 

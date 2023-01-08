@@ -19,8 +19,8 @@ from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs
 from riocli.deployment.ssh import ssh_init, ssh_deployment
-from riocli.deployment.wait import wait_for_deployment
 from riocli.deployment.status import status
+from riocli.deployment.wait import wait_for_deployment
 
 
 @click.group(
