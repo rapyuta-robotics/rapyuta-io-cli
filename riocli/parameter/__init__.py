@@ -15,6 +15,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.parameter.apply import apply_configurations
 from riocli.parameter.diff import diff_configurations
 from riocli.parameter.download import download_configurations
 from riocli.parameter.upload import upload_configurations
@@ -40,3 +41,4 @@ def parameter() -> None:
 parameter.add_command(upload_configurations)
 parameter.add_command(download_configurations)
 parameter.add_command(diff_configurations)
+parameter.add_command(apply_configurations)
