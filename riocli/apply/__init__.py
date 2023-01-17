@@ -36,8 +36,10 @@ from riocli.apply.util import process_files_values_secrets
               help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
 @click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.",
               type=int)
+@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
 @click.argument('files', nargs=-1)
-def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6) -> None:
+def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6,
+          silent: bool = False) -> None:
     """
     Apply resource manifests
     """
@@ -55,6 +57,9 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
 
+    if not silent:
+        click.confirm("Do you want to proceed?", default=True, abort=True)
+
     rc.apply(dryrun=dryrun, workers=workers)
 
 
@@ -69,8 +74,9 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
               help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
 @click.option('--secrets', '-s',
               help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
 @click.argument('files', nargs=-1)
-def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False) -> None:
+def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, silent: bool = False) -> None:
     """
     Removes resources defined in the manifest
     """
@@ -83,4 +89,8 @@ def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False
 
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies(check_missing=False, delete=True)
+
+    if not silent:
+        click.confirm("Do you want to proceed?", default=True, abort=True)
+
     rc.delete(dryrun=dryrun)
