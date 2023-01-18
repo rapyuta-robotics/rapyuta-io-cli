@@ -187,12 +187,14 @@ definitions:
         properties:
           cpu:
             type: number
-            min: 0.1
-            max: 8
+            min: 0.025
+            max: 8.000
+            multipleOf: 0.025
           memory:
             type: number
-            min: 256
+            min: 128
             max: 32768
+            multipleOf: 128
     required:
       - type
     dependencies:
