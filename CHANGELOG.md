@@ -1,3 +1,33 @@
+# [1.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.6.0...v1.0.0) (2023-02-07)
+
+
+### Bug Fixes
+
+* **config:** update default piping server address ([e3a4ed4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e3a4ed4bc203d004706bcb38c04cd07856ac215a))
+* **deployment:** speed up  command ([37843fa](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/37843fa601309ebce1105ecb9d67ad54b0501e3f))
+* **package:** rename topic qos from medium to med ([cb8fd68](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/cb8fd68482d06e165bda7e1ebde0362f09818159))
+* **package:** update executable limits validation ([4a65759](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4a65759fd4348a05564d6bd5317c1209ca5c841e))
+* **package:** validate `image` name for executables ([#82](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/82)) ([c01127b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c01127b0f69182127ecf1a562367b6bd68cd1065))
+
+
+### Features
+
+* **apply:** confirms before apply and delete ([363fd87](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/363fd87c6f8f867c39678c21118cd8fc8e341383))
+* **auth:** support io-dev environment ([#81](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/81)) ([2a9e4b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2a9e4b6c61c738afe5c87924e24f7b5ac724bed5))
+* **cli:** sort lists based on human-readable names ([6f46cc1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6f46cc14b3a569a5498e8be6d507ece083f1b266))
+* **cli:** tabulate list commands ([53b840e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/53b840e3998aebfe6d82a31949613cb2da97f8fd))
+* **device:** add support for user-specific ssh-key ([f1cf8d5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f1cf8d552a8ec8ba589e259defbb0d0b6af81d88))
+* **parameters:** apply config parameters to devices ([35f5a03](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/35f5a034f2bbe5cafe8159b195a6a045b4304102))
+* **rosbag:** adds rosbag job inspect command ([8d5556e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8d5556ef64ce8a22719ac9b8ab70eb0766888324))
+
+
+### BREAKING CHANGES
+
+* **apply:** adds confirmation before the `rio apply` and `rio
+delete`. This may break rio cli integration in other tools. Please
+update your code to include --silent flag for apply and delete commands
+to bypass confirmation prompts.
+
 # [0.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.5.0...v0.6.0) (2022-12-14)
 
 
