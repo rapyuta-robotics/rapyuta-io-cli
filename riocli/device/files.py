@@ -20,6 +20,7 @@ from rapyuta_io.clients import LogsUploadRequest, LogUploads, SharedURL
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid, name_to_request_id
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -51,7 +52,7 @@ def list_uploads(device_name: str, device_guid: str) -> None:
 
 
 @device_uploads.command('create')
-@click.option('--max-upload-rate', type=int, default=1*1024*1024,
+@click.option('--max-upload-rate', type=int, default=1 * 1024 * 1024,
               help='Network bandwidth limit to be used for upload (Bytes per second)')
 @click.option('--override', is_flag=True, default=False, help='Flag to override destination file')
 @click.option('--purge', is_flag=True, default=False, help='Flag to enable purging the file, after it is uploaded')
@@ -169,12 +170,10 @@ def shared_url(device_name: str, device_guid: str, file_name: str, request_id: s
 
 
 def _display_upload_list(uploads: LogUploads, show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.secho('{:34} {:20} {:16} {:<12}'.
-                    format('Upload ID', 'Name', 'Status', 'Total Size'),
-                    fg='yellow')
+        headers = ('Upload ID', 'Name', 'Status', 'Total Size')
 
-    for upload in uploads:
-        click.secho('{:34} {:20} {:16} {:<12}'.format(upload.request_uuid, upload.filename, upload.status,
-                                                            upload.total_size))
+    data = [[u.request_uuid, u.filename, u.status, u.total_size] for u in uploads]
 
+    tabulate_data(data, headers)

@@ -74,6 +74,7 @@ def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
             format(route.guid, route.urlPrefix, route.urlString, route.creator,
                    route.CreatedAt))
 
+
 class StaticRouteNotFound(Exception):
     def __init__(self, message='secret not found'):
         self.message = message

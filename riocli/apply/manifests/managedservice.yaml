@@ -6,4 +6,4 @@ metadata:
     creator: riocli
 spec:
   provider: elasticsearch
-  config: {}
+  config: { }

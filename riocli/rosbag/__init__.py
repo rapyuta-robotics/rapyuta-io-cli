@@ -33,5 +33,3 @@ def rosbag() -> None:
 
 rosbag.add_command(rosbag_job)
 rosbag.add_command(rosbag_blob)
-
-

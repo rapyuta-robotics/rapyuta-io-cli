@@ -19,7 +19,7 @@ metadata:
     kind: package
     nameOrGUID: "MinIO File Server"
     version: "v1.0.11"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud
@@ -50,7 +50,7 @@ metadata:
     kind: package
     nameOrGUID: sootballs_db
     version: "v1.0.11"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud
@@ -83,7 +83,7 @@ metadata:
     kind: package
     nameOrGUID: "sootballs_ims"
     version: "v1.14.0-rc4-6"
-  labels: 
+  labels:
     app: ims
 spec:
   runtime: cloud

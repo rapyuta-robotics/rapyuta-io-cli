@@ -14,7 +14,6 @@
 import click
 
 from riocli.auth.util import get_token
-from riocli.config import Configuration
 from riocli.exceptions import LoggedOut
 
 

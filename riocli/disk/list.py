@@ -14,10 +14,10 @@
 import typing
 
 import click
-from rapyuta_io import Build
 from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.disk.util import _api_call
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -27,6 +27,7 @@ def list_disks() -> None:
     """
     try:
         disks = _api_call(HttpMethod.GET)
+        disks = sorted(disks, key=lambda d: d['name'].lower())
         _display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -34,10 +35,10 @@ def list_disks() -> None:
 
 
 def _display_disk_list(disks: typing.Any, show_header: bool = True):
+    headers = []
     if show_header:
-        click.secho('{:30} {:25} {:12} {:8} {:<64}'.format('Disk ID', 'Name', 'Status', 'Capacity', 'Used By'),
-                    fg='yellow')
+        headers = ('Disk ID', 'Name', 'Status', 'Capacity', 'Used By')
 
-    for disk in disks:
-        click.secho('{:30} {:25} {:12} {:8} {:<64}'.format(disk['guid'], disk['name'], disk['status'], disk['capacity'],
-                                                           disk['usedBy']))
+    data = [[d['guid'], d['name'], d['status'], d['capacity'], d['usedBy']] for d in disks]
+
+    tabulate_data(data, headers)

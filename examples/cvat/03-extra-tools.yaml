@@ -9,7 +9,7 @@ metadata:
   labels:
     app: cvat
 spec:
-  depends: 
+  depends:
     - kind: deployment
       nameOrGUID: cvat_db
   runtime: cloud
@@ -17,7 +17,7 @@ spec:
     - name: PGADMIN_DEFAULT_PASSWORD
       value: "pgadmin"
     - name: PGADMIN_DEFAULT_EMAIL
-      value: "pgadmin@rapyuta-robotics.com"    
+      value: "pgadmin@rapyuta-robotics.com"
   volumes:
     - execName: cvat_server
       mountPath: "/home/django/user_data"

@@ -11,19 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from textwrap import indent
-import typing
-import json
 import os
+import typing
 
-import click
 from munch import munchify
-from rapyuta_io import Project as v1Project, Client
+from rapyuta_io import Client
+from rapyuta_io.clients.package import RestartPolicy
 
 from riocli.model import Model
 # from riocli.package.util import find_project_guid, ProjectNotFound
 from riocli.package.validation import validate
-from rapyuta_io.clients.package import RestartPolicy
 
 
 class Package(Model):
@@ -68,16 +65,16 @@ class Package(Model):
             ],
         })
         component_obj = munchify({
-                            'requiredRuntime': 'cloud',
-                            'architecture': 'amd64',
-                            'executables': [],
-                            'parameters': [],
-                            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
-                            'exposedParameters': [],
-                            'includePackages': [],
-                            'rosBagJobDefs':[]
-                        })
-        
+            'requiredRuntime': 'cloud',
+            'architecture': 'amd64',
+            'executables': [],
+            'parameters': [],
+            'ros': {'services': [], 'topics': [], 'isROS': False, 'actions': []},
+            'exposedParameters': [],
+            'includePackages': [],
+            'rosBagJobDefs': []
+        })
+
         # metadata
         # ✓ name, ✓ description, ✓ version
 
@@ -152,7 +149,8 @@ class Package(Model):
             component_obj.ros.ros_distro = self.spec.ros.version
             pkg_object.plans[0].inboundROSInterfaces = munchify({})
 
-            pkg_object.plans[0].inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
+            pkg_object.plans[
+                0].inboundROSInterfaces.anyIncomingScopedOrTargetedRosConfig = self.spec.ros.inboundScopedTargeted if 'inboundScopedTargeted' in self.spec.ros else False
             if 'rosEndpoints' in self.spec.ros:
                 component_obj.ros.topics = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'topic'))
                 component_obj.ros.services = list(self._get_rosendpoint_struct(self.spec.ros.rosEndpoints, 'service'))

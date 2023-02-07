@@ -13,11 +13,9 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Project as v1Project, Client
 
 from riocli.model import Model
-from riocli.project.util import find_project_guid, ProjectNotFound
 from riocli.project.validation import validate
 
 

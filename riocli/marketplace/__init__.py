@@ -14,10 +14,9 @@
 import click
 from click_help_colors import HelpColorsGroup
 
-
-from riocli.marketplace.list import list_marketplace
 from riocli.marketplace.inspect import inspect_marketplace
 from riocli.marketplace.install import install_product
+from riocli.marketplace.list import list_marketplace
 
 
 @click.group(
@@ -37,4 +36,3 @@ def marketplace():
 marketplace.add_command(list_marketplace)
 marketplace.add_command(inspect_marketplace)
 marketplace.add_command(install_product)
-

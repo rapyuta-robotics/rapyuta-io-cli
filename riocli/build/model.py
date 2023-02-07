@@ -13,10 +13,8 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Build as v1Build, Client, BuildOptions, CatkinOption
 
-from riocli.build.util import find_build_guid, BuildNotFound
 from riocli.build.validation import validate
 from riocli.model import Model
 

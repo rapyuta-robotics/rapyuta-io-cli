@@ -50,14 +50,14 @@ spec:
       docker:
         image: "rrdockerhub/sootballs:1.14.0-rc4"
         pullSecret:
-          depends:  
+          depends:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge remote_ui.launch"
       limits:
         cpu: 2
         memory: 8192
-      
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"
@@ -139,7 +139,7 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge default.launch --wait"
-      
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"
@@ -186,7 +186,7 @@ spec:
             kind: secret
             nameOrGUID: sootballs
       command: "roslaunch sootballs_applications_edge default.launch --wait"
-      
+
   environmentVars:
     - name: "IMS_AUTH_USERNAME"
       description: "Username to authenticate to IMS"

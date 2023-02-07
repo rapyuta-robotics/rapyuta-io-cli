@@ -103,6 +103,3 @@ service.add_command(status_all)
 service.add_command(reload)
 service.add_command(force_reload)
 service.add_command(restart)
-
-
-

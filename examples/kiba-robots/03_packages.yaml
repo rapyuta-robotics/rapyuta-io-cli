@@ -44,7 +44,7 @@ spec:
       default: ims_db
     - name: CELERY_BROKER_URL
     - name: CELERY_RESULT_BACKEND
-    
+
   endpoints:
     - name: IMS_URL
       type: external-https
@@ -137,7 +137,7 @@ kind: "Package"
 metadata:
   name: sootballs_wcs
   version: v1.14.0-rc4-2
-  description: Sootballs WCS package 
+  description: Sootballs WCS package
   labels:
     app: wcs
 spec:

@@ -18,8 +18,8 @@ from pathlib import Path
 import click
 from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
-
 from rapyuta_io import SecretConfigDocker, Secret, SecretConfigSourceSSHAuth
+
 from riocli.config import new_client
 from riocli.utils import random_string, run_bash
 from riocli.utils.selector import show_selection

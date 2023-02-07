@@ -13,12 +13,10 @@
 # limitations under the License.
 import typing
 
-import click
 from rapyuta_io import Secret as v1Secret, SecretConfigDocker, SecretConfigSourceBasicAuth, \
     SecretConfigSourceSSHAuth, Client
 
 from riocli.model import Model
-from riocli.secret.util import find_secret_guid, SecretNotFound
 from riocli.secret.validation import validate
 
 
@@ -51,7 +49,8 @@ class Secret(Model):
             return self._git_secret_to_v1()
 
     def _docker_secret_to_v1(self) -> v1Secret:
-        config = SecretConfigDocker(self.spec.docker.username, self.spec.docker.password, self.spec.docker.email, self.spec.docker.registry)
+        config = SecretConfigDocker(self.spec.docker.username, self.spec.docker.password, self.spec.docker.email,
+                                    self.spec.docker.registry)
         return v1Secret(self.metadata.name, config)
 
     def _git_secret_to_v1(self) -> v1Secret:

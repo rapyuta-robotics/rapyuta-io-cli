@@ -23,6 +23,8 @@ from rapyuta_io.clients.rosbag import ROSBagOptions, ROSBagJob, ROSBagCompressio
 from riocli.config import new_client
 from riocli.deployment.util import name_to_guid as deployment_name_to_guid
 from riocli.rosbag.util import ROSBagJobNotFound
+from riocli.utils import inspect_with_format
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -74,6 +76,24 @@ def job_create(name: str, deployment_id: str, component_instance_id: str, all_to
         with spinner():
             client.create_rosbag_job(rosbag_job)
         click.secho('Rosbag Job created successfully', fg='green')
+    except Exception as e:
+        click.secho(str(e), fg='red')
+        raise SystemExit(1)
+
+
+@rosbag_job.command('inspect')
+@click.option('--format', '-f', 'format_type',
+              type=click.Choice(['json', 'yaml'], case_sensitive=False), default='yaml')
+@click.argument('job-guid', type=str)
+def job_inspect(job_guid: str, format_type: str) -> None:
+    """
+    Inspect a ROSbag job
+    """
+    try:
+        client = new_client()
+        job = client.get_rosbag_job(job_guid)
+        job = make_rosbag_job_inspectable(job)
+        inspect_with_format(job, format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
@@ -225,20 +245,35 @@ def update_job(deployment_guid: str, deployment_name: str, job_guid: str, upload
 
 
 def _display_rosbag_job_list(jobs: typing.List[ROSBagJob], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        header = '{:<35} {:<25} {:<15} {:20} {:40}'.format(
-            'GUID',
-            'Name',
-            'Status',
-            'Component Type',
-            'Device ID',
-        )
-        click.secho(header, fg='yellow')
+        headers = ('GUID', 'Name', 'Status', 'Component Type', 'Device ID')
+
+    data = []
     for job in jobs:
-        click.secho('{:<35} {:<25} {:<15} {:20} {:40}'.format(
+        data.append([
             job.guid,
             job.name,
             job.status,
             job.component_type.name,
             'None' if job.device_id is None else job.device_id,
-        ))
+        ])
+
+    tabulate_data(data, headers)
+
+
+def make_rosbag_job_inspectable(job: ROSBagJob) -> typing.Dict:
+    return {
+        "name": job.name,
+        "status": job.status,
+        "project": job.project,
+        "device_id": job.device_id,
+        "package_id": job.package_id,
+        "component_id": job.component_id,
+        "deployment_id": job.deployment_id,
+        "component_type": job.component_type,
+        "rosbag_options": job.rosbag_options,
+        "upload_options": job.upload_options,
+        "override_options": job.override_options,
+        "component_instance_id": job.component_instance_id,
+    }

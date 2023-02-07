@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 
 import click
 from rapyuta_io.utils.rest_client import HttpMethod
+
 from riocli.marketplace.util import api_call
 from riocli.utils import inspect_with_format
 
@@ -41,4 +41,3 @@ def inspect_marketplace(format_type: str, rrn: str, version: str = None) -> None
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-

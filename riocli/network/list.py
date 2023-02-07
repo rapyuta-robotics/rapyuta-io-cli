@@ -19,6 +19,7 @@ from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -37,6 +38,7 @@ def list_networks(network: str) -> None:
         if network in ['native', 'both']:
             networks += client.list_native_networks()
 
+        networks = sorted(networks, key=lambda n: n.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -47,11 +49,11 @@ def _display_network_list(
         networks: typing.List[typing.Union[RoutedNetwork, NativeNetwork]],
         show_header: bool = True,
 ) -> None:
+    headers = []
     if show_header:
-        click.secho('{:29} {:<15} {:8} {:8} {:20}'.
-                    format('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase'),
-                    fg='yellow')
+        headers = ('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase')
 
+    data = []
     for network in networks:
         phase = None
         network_type = None
@@ -64,5 +66,6 @@ def _display_network_list(
 
         if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
             continue
-        click.secho('{:29} {:<15} {:8} {:8} {:20}'.
-                    format(network.guid, network.name, network.runtime, network_type, phase))
+        data.append([network.guid, network.name, network.runtime, network_type, phase])
+
+    tabulate_data(data, headers)

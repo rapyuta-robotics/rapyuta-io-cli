@@ -17,6 +17,7 @@ import click
 from rapyuta_io import Project
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -28,6 +29,7 @@ def list_project(ctx: click.Context) -> None:
     try:
         client = new_client(with_project=False)
         projects = client.list_projects()
+        projects = sorted(projects, key=lambda p: p.name.lower())
         current = ctx.obj.data.get('project_id', None)
         _display_project_list(projects, current, show_header=True)
     except Exception as e:
@@ -36,14 +38,20 @@ def list_project(ctx: click.Context) -> None:
 
 
 def _display_project_list(projects: typing.List[Project], current: str = None, show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.secho('{:40} {:<25} {:<27} {:40}'.
-                    format('Project ID', 'Project Name', 'Created At', 'Creator'),
-                    fg='yellow')
+        headers = ('Project ID', 'Project Name', 'Created At', 'Creator')
 
+    data = []
     for project in projects:
         fg = None
         if project.guid == current:
             fg = 'green'
-        click.secho('{:40} {:<25} {:<24} {:40}'.format(project.guid, project.name,
-                                                      project.created_at, project.creator), fg=fg)
+
+        data.append([
+            click.style(v, fg=fg)
+            for v in (project.guid, project.name,
+                      project.created_at, project.creator)
+        ])
+
+    tabulate_data(data, headers)

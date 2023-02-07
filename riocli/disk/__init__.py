@@ -15,8 +15,8 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.disk.create import create_disk
-from riocli.disk.list import list_disks
 from riocli.disk.delete import delete_disk
+from riocli.disk.list import list_disks
 
 
 @click.group(
@@ -35,4 +35,4 @@ def disk() -> None:
 disk.add_command(list_disks)
 disk.add_command(create_disk)
 disk.add_command(delete_disk)
-#disk.add_command(inspect_project)
+# disk.add_command(inspect_project)

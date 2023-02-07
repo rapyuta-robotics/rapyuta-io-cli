@@ -17,6 +17,7 @@ import click
 from rapyuta_io.clients.package import Package
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -40,10 +41,9 @@ def _display_package_list(
         show_header: bool = True,
         truncate_limit: int = 48,
 ) -> None:
+    headers = []
     if show_header:
-        click.secho('{:30} {:10} {:34} {:<48}'.
-                    format('Name', 'Version', 'Package ID', 'Description'),
-                    fg='yellow')
+        headers = ('Name', 'Version', 'Package ID', 'Description')
 
     # Show IO Packages first
     iter_pkg = list(map(lambda x: x.packageName, packages))
@@ -55,7 +55,7 @@ def _display_package_list(
         filtered_pkg.sort(key=lambda x: x.packageVersion)
         package_dict[pkgName] = filtered_pkg
 
-    
+    data = []
     for pkgName, pkgVersionList in package_dict.items():
         for package in pkgVersionList:
             description = package.description
@@ -65,5 +65,7 @@ def _display_package_list(
                     description = description[:truncate_limit] + '..'
                 if len(name) > truncate_limit:
                     name = name[:truncate_limit] + '..'
-            click.echo('{:30} {:10} {:34} {:<48}'.
-                   format(name, package.packageVersion, package.packageId, description))
+
+            data.append([name, package.packageVersion, package.packageId, description])
+
+    tabulate_data(data, headers=headers)

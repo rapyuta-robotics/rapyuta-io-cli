@@ -17,6 +17,7 @@ import click
 from rapyuta_io import Build
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -37,11 +38,15 @@ def list_builds(status: typing.List[str]) -> None:
 
 
 def _display_build_list(builds: typing.List[Build], show_header: bool = True):
+    headers = []
     if show_header:
-        click.secho('{:32} {:25} {:15} {:9} {:<64}'.format('Build ID', 'Name', 'Status', 'Strategy', 'Repository'),
-                    fg='yellow')
+        headers = ('Build ID', 'Name', 'Status', 'Strategy', 'Repository')
 
+    data = []
     for build in builds:
-        click.secho('{:32} {:25} {:15} {:9} {:<64}'.format(build.guid, build.buildName, build.status,
-                                                           build.buildInfo.strategyType.value,
-                                                           build.buildInfo.repository))
+        data.append([
+            build.guid, build.buildName, build.status,
+            build.buildInfo.strategyType.value, build.buildInfo.repository
+        ])
+
+    tabulate_data(data, headers)

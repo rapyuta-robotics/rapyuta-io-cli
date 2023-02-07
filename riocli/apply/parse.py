@@ -18,7 +18,6 @@ import queue
 import threading
 import typing
 from graphlib import TopologicalSorter
-from shutil import get_terminal_size
 
 import click
 import jinja2
@@ -28,6 +27,7 @@ from tabulate import tabulate
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.utils import dump_all_yaml
+from riocli.utils import print_separator
 from riocli.utils import run_bash
 from riocli.utils.mermaid import mermaid_link, mermaid_safe
 
@@ -385,11 +385,10 @@ class Applier(object):
         for header in ['Resource', 'Action', 'Expected Time (mins)']:
             headers.append(click.style(header, fg='yellow', bold=True))
 
-        col, _ = get_terminal_size()
-        click.secho(" " * col, bg='blue')
+        print_separator()
         click.echo(tabulate(resource_list, headers=headers,
                             tablefmt='simple', numalign='center'))
-        click.secho(" " * col, bg='blue')
+        print_separator()
 
     @staticmethod
     def _get_attr(obj, accept_keys):

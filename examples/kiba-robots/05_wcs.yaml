@@ -12,7 +12,7 @@ metadata:
     kind: package
     nameOrGUID: sootballs_wcs
     version: "v1.14.0-rc4-2"
-  labels: 
+  labels:
     app: wcs
 spec:
   runtime: cloud

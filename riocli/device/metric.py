@@ -21,6 +21,7 @@ from rapyuta_io.clients.device import SystemMetric
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
+from riocli.utils import tabulate_data
 
 
 @click.group(
@@ -93,9 +94,10 @@ def unsubscribe_metrics(device_name: str, device_guid: str, metric: str) -> None
 
 
 def _display_metric_list(metrics: typing.List[Metric], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.secho('{:30} {:10} {:15}'.format('Name', 'Type', 'Status'), fg='yellow')
+        headers = ('Name', 'Type', 'Status')
 
-    for metric in metrics:
-        click.secho('{:30} {:10} {:15}'.format(metric.name, metric.kind.capitalize(),
-                                              metric.status.capitalize()))
+    data = [[m.name, m.kind.capitalize(), m.status.capitalize()] for m in metrics]
+
+    tabulate_data(data, headers)

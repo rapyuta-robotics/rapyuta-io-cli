@@ -17,6 +17,7 @@ import click
 from rapyuta_io.clients import Device
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 
 
 @click.command('list')
@@ -27,6 +28,7 @@ def list_devices() -> None:
     try:
         client = new_client()
         devices = client.get_all_devices()
+        devices = sorted(devices, key=lambda d: d.name.lower())
         _display_device_list(devices, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -34,8 +36,10 @@ def list_devices() -> None:
 
 
 def _display_device_list(devices: typing.List[Device], show_header: bool = True) -> None:
+    headers = []
     if show_header:
-        click.secho('{:<38} {:<28} {:15}'.format('Device ID', 'Name', 'Status'), fg='yellow')
+        headers = ('Device ID', 'Name', 'Status')
 
-    for device in devices:
-        click.echo('{:38} {:<28} {:15}'.format(device.uuid, device.name, device.status))
+    data = [[d.uuid, d.name, d.status] for d in devices]
+
+    tabulate_data(data, headers)

@@ -42,7 +42,7 @@ metadata:
   labels:
     app: cvat
 spec:
-  depends: 
+  depends:
     - kind: deployment
       nameOrGUID: cvat_db
   runtime: cloud
@@ -50,7 +50,7 @@ spec:
     - name: DJANGO_MODWSGI_EXTRA_ARGS
       value: " "
     - name: ALLOWED_HOSTS
-      value: "*"    
+      value: "*"
   volumes:
     - execName: cvat_server
       mountPath: "/home/django/user_data"

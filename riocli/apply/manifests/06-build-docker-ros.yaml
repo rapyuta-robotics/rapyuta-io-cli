@@ -6,8 +6,8 @@ spec:
   recipe: "Docker"
   architecture: "amd64"
 
-    # gitRef: "master"
-    # secret: "secret-guid"
+  # gitRef: "master"
+  # secret: "secret-guid"
   # contextDir: "talker/talker"
   rosDistro: "melodic"
   repository:

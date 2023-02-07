@@ -29,5 +29,3 @@ def list_static_routes() -> None:
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-

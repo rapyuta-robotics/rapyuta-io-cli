@@ -16,10 +16,10 @@ import typing
 import click
 from click_help_colors import HelpColorsCommand
 from munch import munchify
-from tabulate import tabulate
 from yaml import safe_dump_all
 
 from riocli.chart.util import find_chart, fetch_index
+from riocli.utils import tabulate_data
 
 
 @click.command(
@@ -62,16 +62,14 @@ def list_charts() -> None:
     for name, chart in index['entries'].items():
         for version in chart:
             entries.append(version)
-    
+
     _display_entries(munchify(entries))
 
 
 def _display_entries(entries: typing.List) -> None:
-    headers, table = [], []
-    for header in ['Name', 'Version', 'Description', 'Created At']:
-        headers.append(click.style(header, fg='yellow'))
+    headers = ['Name', 'Version', 'Created At', 'Description']
 
-    for entry in entries:
-        table.append([entry.get('name'), entry.get('version'),entry.get('description'), entry.get('created')])
+    data = [[e.get('name'), e.get('version'), e.get('created'), e.get('description')]
+            for e in entries]
 
-    click.echo(tabulate(table, headers=headers, tablefmt='simple'))
+    tabulate_data(data, headers)

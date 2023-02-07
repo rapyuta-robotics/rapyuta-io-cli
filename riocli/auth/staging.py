@@ -19,7 +19,7 @@ from riocli.config import Configuration
 from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
-_NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa"]
+_NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 
 
 @click.command('environment', hidden=True)
@@ -61,9 +61,6 @@ def _validate_environment(name: str) -> bool:
 
 def _configure_environment(config: Configuration, name: str) -> None:
     _validate_environment(name)
-
-    # Named Staging environments don't have hyphen in the name. Ephemeral environments do.
-    # name = name+'-' if name.startswith('pr') else name
 
     catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)

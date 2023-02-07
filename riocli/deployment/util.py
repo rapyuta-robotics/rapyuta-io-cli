@@ -16,7 +16,6 @@ import functools
 import typing
 
 import click
-
 from rapyuta_io import Client, DeploymentPhaseConstants
 from rapyuta_io.clients import Device
 from rapyuta_io.clients.package import ExecutableMount
@@ -63,8 +62,8 @@ def get_deployment_name(client: Client, guid: str) -> str:
 
 def find_deployment_guid(client: Client, name: str) -> str:
     find_func = functools.partial(client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING])
+                                  phases=[DeploymentPhaseConstants.SUCCEEDED,
+                                          DeploymentPhaseConstants.PROVISIONING])
     deployments = find_func()
     for deployment in deployments:
         if deployment.name == name:
@@ -99,7 +98,7 @@ def select_details(deployment_guid, component_name=None, exec_name=None) -> (str
         if executable.id == exec_meta.id:
             exec_status = executable
 
-    if len(exec_status.metadata) == 1: # If there is a single pod
+    if len(exec_status.metadata) == 1:  # If there is a single pod
         pod_name = exec_status.metadata[0].podName
     else:
         pods = [p.podName for p in exec_status.metadata[0]]

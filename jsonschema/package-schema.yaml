@@ -142,7 +142,7 @@ definitions:
                 type: object
                 properties:
                   image:
-                    type: string
+                    "$ref": "#/definitions/imageName"
                   pullSecret:
                     "$ref": "#/definitions/secretDepends"
                 required:
@@ -187,12 +187,14 @@ definitions:
         properties:
           cpu:
             type: number
-            min: 0.1
-            max: 8
+            min: 0.025
+            max: 8.000
+            multipleOf: 0.025
           memory:
             type: number
-            min: 256
+            min: 128
             max: 32768
+            multipleOf: 128
     required:
       - type
     dependencies:
@@ -206,7 +208,7 @@ definitions:
                 type: object
                 properties:
                   image:
-                    type: string
+                    "$ref": "#/definitions/imageName"
                   pullSecret:
                     type: object
                     properties:
@@ -465,7 +467,7 @@ definitions:
                 type: string
                 enum:
                   - low
-                  - medium
+                  - med
                   - hi
                   - max
                 default: low
@@ -648,6 +650,9 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  imageName:
+    type: string
+    pattern: ^([a-zA-Z0-9])([\w.\-_]+((?::\d+|)(?=/[a-z0-9._-]+/[a-z0-9._-]+))|)(?:/|)([a-z0-9.\-_]+(?:/[a-z0-9.\-_]+|))(:([\w.\-_]{1,126})|)$
 
   buildDepends:
     properties:
