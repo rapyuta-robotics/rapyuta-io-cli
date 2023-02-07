@@ -17,6 +17,7 @@ import shlex
 import string
 import subprocess
 import typing
+from shutil import get_terminal_size
 from uuid import UUID
 
 import click
@@ -110,3 +111,11 @@ def tabulate_data(data: typing.List[typing.List], headers: typing.List[str] = No
         headers = [click.style(h, fg=header_foreground) for h in headers]
 
     click.echo(tabulate(data, headers=headers, tablefmt=table_format))
+
+
+def print_separator(color: str = 'blue'):
+    """
+    Prints a separator
+    """
+    col, _ = get_terminal_size()
+    click.secho(" " * col, bg=color)
