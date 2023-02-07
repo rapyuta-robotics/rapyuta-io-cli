@@ -1,3 +1,33 @@
+# [0.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.5.0...v0.6.0) (2022-12-14)
+
+
+### Bug Fixes
+
+* **build:** fixes broken apply for builds ([a68f7d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a68f7d077e4f4442952f61556bd4b9204cc63fe8))
+* **project:** fixes project creation ([e89a1b4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e89a1b41b610981828a49c5d42dc1bde72a3cb31))
+
+
+### Features
+
+* **managedservice:** add support for rapyuta.io `managedservices` ([7aff123](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7aff123997502af885138260dd1b7037160fc42c))
+* **rosbags:** adds support in apply packages and deployment, and adds rosbag job update and trigger upload. ([875d50f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/875d50fd4486dd93514f36a3871a3bf9f7841344))
+* **template:** add helm3 template like support ([ceb12c5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ceb12c5c12b20618769a44435b946dd73695f661))
+
+# [0.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.4.0...v0.5.0) (2022-11-23)
+
+
+### Bug Fixes
+
+* **apply:** fixes apply without workers flag behaviour ([a6b1d71](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a6b1d71fa37b12d26d627428d1fdc8cd163418eb))
+* **apply:** fixes guid_functor for network ([0831a0c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0831a0c929d436361eade5338b540efe034ad08c))
+* **config:** new_client without project now does not read project from config ([7c2c5fd](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7c2c5fd3c9330f4df38e7160083cbcd81a8a7fb4))
+* **package:** fixes several issues with rending packages from apply manifests ([c1acc1e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c1acc1eae09c8002df7cfb0e92aa0526f4d721d4))
+
+
+### Features
+
+* **project:** adds support for specifying organization in create project command ([#54](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/54)) ([39f19b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/39f19b6548df7478f85cb78a864365597774fb3a)), closes [#48](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/48)
+
 # [0.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.3.1...v0.4.0) (2022-10-03)
 
 
