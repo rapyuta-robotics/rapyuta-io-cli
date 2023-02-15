@@ -8,8 +8,8 @@ definitions:
     type: object
     properties:
       apiVersion:
-        const: apiextensions.rapyuta.io/v1
-        default: apiextensions.rapyuta.io/v1
+        const: api.rapyuta.io/v2
+        default: api.rapyuta.io/v2
       kind:
         const: Project
       metadata:
@@ -30,10 +30,12 @@ definitions:
         type: string
       guid:
         "$ref": "#/definitions/projectGUID"
-      creator:
+      creatorGUID:
         "$ref": "#/definitions/uuid"
-      project:
+      projectGUID:
         "$ref": "#/definitions/projectGUID"
+      organizationGUID:
+        "$ref": "#/definitions/organizationGUID"
       labels:
         "$ref": "#/definitions/stringMap"
         uniqueItems: true
@@ -42,6 +44,9 @@ definitions:
   projectGUID:
     type: string
     pattern: "^project-[a-z]{24}$"
+  organizationGUID:
+    type: string
+    pattern: "^org-[a-z]{24}$"
   stringMap:
     type: object
     additionalProperties:
@@ -55,33 +60,46 @@ definitions:
       users:
         type: array
         items:
-          type: string
+          "$ref": "#/definitions/user"
+      userGroups:
+        type: array
+        items:
+          "$ref": "#/definitions/userGroup"
+      features:
+        type: object
+        properties:
+          vpn:
+            type: boolean
+          tracing:
+            type: boolean
+  userGroup:
+    type: object
+    properties:
+      name:
+        type: string
+      userGroupGUID:
+        type: string
     required:
-      - users
+      - name
   user:
     type: object
     properties:
-      email_id:
+      emailID:
         type: string
-      first_name:
+      firstName:
         type: string
-      last_name:
+      lastName:
         type: string
-      guid:
+      userGUID:
         "$ref": "#/definitions/uuid"
-      state:
-        type: string
     required:
-      - guid
-      - state
-      - email_id
+      - emailID
   projectStatus:
     type: object
     properties:
-      users:
-        type: array
-        items:
-          "$ref": "#/definitions/user"
-        uniqueItems: true
-    required:
-      - users
+      status:
+        type: string
+      vpn:
+        type: string
+      tracing:
+        type: string

@@ -14,8 +14,9 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import select_project, get_token
+from riocli.auth.util import select_project, get_token, select_organization
 from riocli.utils.context import get_root_context
+from riocli.utils import  print_separator
 
 
 @click.command(
@@ -24,15 +25,18 @@ from riocli.utils.context import get_root_context
     help_options_color='green',
 )
 @click.option('--email', type=str,
-              help='Email of the Rapyuta.io account')
+              help='Email of the rapyuta.io account')
 @click.option('--password', type=str,
-              help='Password for the Rapyuta.io account')
+              help='Password for the rapyuta.io account')
+@click.option('--organization', type=str, default=None,
+              help='Context will be set to the organization after authentication')
 @click.option('--project', type=str, default=None,
-              help='Context will be set to the Project after authentication')
+              help='Context will be set to the project after authentication')
 @click.option('--interactive/--no-interactive', is_flag=True, type=bool, default=True,
               help='Make login interactive')
 @click.pass_context
-def login(ctx: click.Context, email: str, password: str, project: str, interactive: bool):
+def login(ctx: click.Context, email: str, password: str,
+          organization: str, project: str, interactive: bool):
     """
     Log into the Rapyuta.io account using the CLI. This is required to use most of the
     functionalities of the CLI.
@@ -45,6 +49,7 @@ def login(ctx: click.Context, email: str, password: str, project: str, interacti
     if not email:
         click.secho('email not specified')
         raise SystemExit(1)
+
     if not password:
         click.secho('password not specified')
         raise SystemExit(1)
@@ -65,6 +70,7 @@ def login(ctx: click.Context, email: str, password: str, project: str, interacti
         click.echo('Logged in successfully!')
         return
 
-    select_project(ctx.obj, project=project)
+    organization = select_organization(ctx.obj, organization=organization)
+    select_project(ctx.obj, project=project, organization=organization)
     ctx.obj.save()
     click.echo('Logged in successfully!')

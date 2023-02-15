@@ -36,11 +36,11 @@ def _show_selection_list(ranger: list, header: str, prompt: str):
 
 def _show_selection_dict(ranger: dict, header: str, prompt: str):
     options = []
-    fmt = header
+    fmt = click.style(header, fg='yellow')
     for idx, key in enumerate(ranger):
         options.append(key)
         fmt = '{}\n{}) {} - {}'.format(fmt, idx + 1, key, ranger[key])
 
-    fmt = '{}\n{}'.format(fmt, prompt)
+    fmt = '{}\n{}'.format(fmt, click.style(prompt, fg='blue'))
     choice = click.prompt(fmt, type=types.IntParamType())
     return options[choice - 1]

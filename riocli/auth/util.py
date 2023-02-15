@@ -23,30 +23,67 @@ from riocli.project.util import find_project_guid
 from riocli.utils.selector import show_selection
 
 
-def select_project(config: Configuration, project: str = None) -> None:
+def select_organization(config: Configuration, organization: str = None) -> str:
+    client = config.new_client(with_project=False)
+
+    org_guid = None
+    if organization:
+        org_guid = organization if organization.startswith('org-') else None
+
+    # fetch user organizations and sort them on their name
+    organizations = client.get_user_organizations()
+    organizations = sorted(organizations, key=lambda org: org.name.lower())
+
+    org_map = {o.guid: o.name for o in organizations}
+
+    if not org_guid:
+        org_guid = show_selection(org_map, "Select an organization:")
+
+    if org_guid and org_guid not in org_map:
+        click.secho('invalid organization guid', fg='red')
+        raise SystemExit(1)
+
+    config.data['organization_id'] = org_guid
+    config.data['organization_name'] = org_map[org_guid]
+
+    return org_guid
+
+
+def select_project(config: Configuration, project: str = None, organization: str = None) -> None:
     """
     Launches the project selection prompt by listing all the projects.
     Sets the choice in the given configuration.
     """
-    client = config.new_client(with_project=False)
+    client = config.new_v2_client(with_project=False)
 
     project_guid = None
     if project:
-        project_guid = project if project.startswith('project-') else find_project_guid(client, project)
+        project_guid = (project if project.startswith('project-') else
+                        find_project_guid(client, project, organization=organization))
 
-    projects = client.list_projects()
+    projects = client.list_projects(organization_guid=organization)
+    if len(projects) == 0:
+        click.secho("There are no projects in this organization", fg='black', bg='white')
+        return
+
     # Sort projects based on their names for an easier selection
-    projects = sorted(projects, key=lambda p: p.name.lower())
+    projects = sorted(projects, key=lambda p: p.metadata.name.lower())
     project_map = dict()
 
     for project in projects:
-        project_map[project.guid] = project.name
+        project_map[project.metadata.guid] = project.metadata.name
 
     if not project_guid:
         project_guid = show_selection(project_map, header='Select the project to activate')
 
     config.data['project_id'] = project_guid
     config.data['project_name'] = project_map[project_guid]
+
+    confirmation = "Your project has been set to '{}' in the organization '{}'".format(
+        config.data['project_name'], config.data['organization_name'],
+    )
+
+    click.secho(confirmation, fg='green')
 
 
 def get_token(email: str, password: str) -> str:
