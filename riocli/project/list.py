@@ -14,44 +14,55 @@
 import typing
 
 import click
+from munch import unmunchify
 from rapyuta_io import Project
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
+from riocli.project.util import name_to_organization_guid
 from riocli.utils import tabulate_data
 
 
 @click.command('list')
+@click.option('--organization', 'organization_name',
+              help='Pass organization name for which project needs to be created. Default will be current organization')
+@click.option('--wide', '-w', is_flag=True, default=False, help='Print more details', type=bool)
 @click.pass_context
-def list_project(ctx: click.Context) -> None:
+@name_to_organization_guid
+def list_project(ctx: click.Context = None, organization_guid: str = None,
+                 organization_name: str = None, wide: bool = False) -> None:
     """
     List all the projects you are part of
     """
     try:
-        client = new_client(with_project=False)
-        projects = client.list_projects()
-        projects = sorted(projects, key=lambda p: p.name.lower())
+        client = new_v2_client(with_project=False)
+        projects = client.list_projects(organization_guid=organization_guid)
+        projects = sorted(projects, key=lambda p: p.metadata.name.lower())
         current = ctx.obj.data.get('project_id', None)
-        _display_project_list(projects, current, show_header=True)
+        _display_project_list(projects, current, show_header=True, wide=wide)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
 
 
-def _display_project_list(projects: typing.List[Project], current: str = None, show_header: bool = True) -> None:
+def _display_project_list(projects: typing.List[Project], current: str = None,
+                          show_header: bool = True, wide: bool = False) -> None:
     headers = []
     if show_header:
-        headers = ('Project ID', 'Project Name', 'Created At', 'Creator')
+        headers = ['Project ID', 'Project Name', 'Status']
+        if wide:
+            headers.extend(['Created At', 'Creator', "Features"])
 
     data = []
     for project in projects:
+        metadata = project.metadata
         fg = None
-        if project.guid == current:
+        if metadata.guid == current:
             fg = 'green'
 
-        data.append([
-            click.style(v, fg=fg)
-            for v in (project.guid, project.name,
-                      project.created_at, project.creator)
-        ])
+        row = [metadata.guid, metadata.name, project.status.status]
+        if wide:
+            row.extend([metadata.createdAt, metadata.creatorGUID,
+                        unmunchify(project.spec.features)])
+        data.append([click.style(v, fg=fg) for v in row])
 
     tabulate_data(data, headers)

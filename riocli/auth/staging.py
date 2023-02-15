@@ -13,7 +13,7 @@
 # limitations under the License.
 import click
 
-from riocli.auth.login import select_project
+from riocli.auth.login import select_project, select_organization
 from riocli.auth.util import get_token
 from riocli.config import Configuration
 from riocli.utils.context import get_root_context
@@ -48,7 +48,8 @@ def environment(ctx: click.Context, name: str):
 
     ctx.obj.data['auth_token'] = get_token(email, password)
 
-    select_project(ctx.obj)
+    organization = select_organization(ctx.obj)
+    select_project(ctx.obj, organization=organization)
     ctx.obj.save()
 
 

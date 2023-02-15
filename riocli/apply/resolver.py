@@ -21,6 +21,7 @@ from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.build.model import Build
+from riocli.config import new_v2_client
 from riocli.config.config import Configuration
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
@@ -77,6 +78,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
     def __init__(self, client):
         self.client = client
+        self.v2client = new_v2_client()
 
     @functools.lru_cache()
     def list_objects(self, kind):
@@ -111,7 +113,7 @@ class ResolverCache(object, metaclass=_Singleton):
     def _guid_functor(self, kind):
         mapping = {
             'secret': lambda x: munchify(x).guid,
-            "project": lambda x: munchify(x).guid,
+            "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['id'],
             "staticroute": lambda x: munchify(x)['guid'],
             "build": lambda x: munchify(x)['guid'],
@@ -127,7 +129,7 @@ class ResolverCache(object, metaclass=_Singleton):
     def _list_functors(self, kind):
         mapping = {
             'secret': self.client.list_secrets,
-            "project": self.client.list_projects,
+            "project": self.v2client.list_projects,
             "package": self.client.get_all_packages,
             "staticroute": self.client.get_all_static_routes,
             "build": self.client.list_builds,
@@ -145,7 +147,7 @@ class ResolverCache(object, metaclass=_Singleton):
     def _find_functors(self, kind):
         mapping = {
             'secret': self._generate_find_guid_functor(),
-            "project": self._generate_find_guid_functor(),
+            "project": lambda name, projects: filter(lambda i: i.metadata.name == name, projects),
             "package": lambda name, obj_list, version: filter(
                 lambda x: name == x.name and version == x['packageVersion'], obj_list),
             "staticroute": lambda name, obj_list: filter(lambda x: name == '-'.join(x.urlPrefix.split('-')[:-1]),

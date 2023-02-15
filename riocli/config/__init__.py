@@ -24,3 +24,15 @@ def new_client(config_inst: Configuration = None, with_project: bool = True):
         config_inst = Configuration()
 
     return config_inst.new_client(with_project=with_project)
+
+
+def new_v2_client(config_inst: Configuration = None, with_project: bool = True):
+    """
+        new_v2_client is a simple wrapper around the Configuration's new_v2_client method. It can be called
+        directly without initializing the Configuration first. It initializes the Configuration if not
+        given already and then calls its new_client method.
+        """
+    if not config_inst:
+        config_inst = Configuration()
+
+    return config_inst.new_v2_client(with_project=with_project)

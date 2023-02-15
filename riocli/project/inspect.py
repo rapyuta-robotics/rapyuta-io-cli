@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from rapyuta_io import Project
-from rapyuta_io.clients.project import User
+from munch import unmunchify
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.project.util import name_to_guid
 from riocli.utils import inspect_with_format
 
@@ -30,36 +29,9 @@ def inspect_project(format_type: str, project_name: str, project_guid: str) -> N
     Inspect the project resource
     """
     try:
-        client = new_client(with_project=False)
+        client = new_v2_client(with_project=False)
         project = client.get_project(project_guid)
-        data = make_project_inspectable(project)
-        inspect_with_format(data, format_type)
+        inspect_with_format(unmunchify(project), format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-
-def make_project_inspectable(obj: Project) -> dict:
-    user_data = []
-    for user in obj.users:
-        user_data.append(make_user_inspectable(user))
-
-    return {
-        'created_at': obj.created_at,
-        'updated_at': obj.updated_at,
-        'creator': obj.creator,
-        'deleted_at': obj.deleted_at,
-        'guid': obj.guid,
-        'name': obj.name,
-        'users': user_data,
-    }
-
-
-def make_user_inspectable(obj: User) -> dict:
-    return {
-        'guid': obj.guid,
-        'email_id': obj.email_id,
-        'first_name': obj.first_name,
-        'last_name': obj.last_name,
-        'state': obj.state,
-    }
