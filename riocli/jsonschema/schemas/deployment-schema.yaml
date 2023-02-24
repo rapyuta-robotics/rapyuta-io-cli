@@ -170,6 +170,17 @@ definitions:
                 enum:
                   - cloud
 
+              features:
+                type: object
+                properties:
+                  vpn:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                    required:
+                      - enabled
+
               envArgs:
                 type: array
                 items:
