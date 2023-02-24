@@ -28,9 +28,9 @@ from tabulate import tabulate
 
 def inspect_with_format(obj: typing.Any, format_type: str):
     if format_type == 'json':
-        click.echo(json.dumps(obj, indent=4))
+        click.echo_via_pager(json.dumps(obj, indent=4))
     elif format_type == 'yaml':
-        click.echo(yaml.dump(obj, allow_unicode=True))
+        click.echo_via_pager(yaml.dump(obj, allow_unicode=True))
     else:
         raise Exception('Invalid format')
 
@@ -39,8 +39,13 @@ def dump_all_yaml(objs: typing.List):
     """
     Dump multiple documents as YAML separated by triple dash (---)
     """
-    click.echo(yaml.safe_dump_all(objs, allow_unicode=True,
-                                  explicit_start=True))
+    click.echo_via_pager(
+        yaml.safe_dump_all(
+            documents=objs,
+            allow_unicode=True,
+            explicit_start=True
+        )
+    )
 
 
 def run_bash(cmd, bg=False):
