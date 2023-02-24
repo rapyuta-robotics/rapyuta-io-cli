@@ -1,4 +1,5 @@
 import json
+import typing
 
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
@@ -120,5 +121,75 @@ class Client(metaclass=_Singleton):
         if not response.ok:
             err_msg = data.get('error')
             raise Exception("projects: {}".format(err_msg))
+
+        return munchify(data)
+
+    def list_providers(self) -> typing.List:
+        url = "{}/v2/managedservices/providers/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data.get('items', []))
+
+    def list_instances(self) -> typing.List:
+        url = "{}/v2/managedservices/".format(self._host)
+        headers = self._config.get_auth_header()
+        offset = 0
+        result = []
+        while True:
+            response = RestClient(url).method(HttpMethod.GET).query_param({
+                "continue": offset,
+            }).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("managedservice: {}".format(err_msg))
+            instances = data.get('items', [])
+            if not instances:
+                break
+            offset = data['metadata']['continue']
+            result.extend(instances)
+
+        return munchify(sorted(result, key=lambda x: x['metadata']['name']))
+
+    def get_instance(self, instance_name: str) -> Munch:
+        url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_instance(self, instance: typing.Dict) -> Munch:
+        url = "{}/v2/managedservices/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=instance)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_instance(self, instance_name) -> Munch:
+        url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
 
         return munchify(data)
