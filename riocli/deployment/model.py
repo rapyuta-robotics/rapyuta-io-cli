@@ -64,11 +64,11 @@ class Deployment(Model):
         runtime = internal_component['runtime']
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
-            click.secho('>> runtime mismatch => ' +
-                        'deployment:{}.runtime !== package:{}.runtime '.format(
-                            self.metadata.name, pkg['packageName']
-                        ), fg='red'
-                        )
+            click.secho(
+                '>> runtime mismatch => ' +
+                'deployment:{}.runtime !== package:{}.runtime '.format(
+                    self.metadata.name, pkg['packageName']
+                ), fg='red')
             return
 
         provision_config = pkg.get_provision_configuration(__planId)
@@ -142,15 +142,26 @@ class Deployment(Model):
                     })
                 provision_config.context['managedServices'] = managed_services
 
+            # inject the vpn managedservice instance if the flag is set to
+            # true. 'rio-internal-headscale' is the default vpn instance
+            if 'features' in self.spec:
+                if 'vpn' in self.spec.features and self.spec.features.vpn.enabled:
+                    provision_config.context['managedServices'] = [{
+                        "instance": "rio-internal-headscale"
+                    }]
+
         if self.spec.runtime == 'device':
-            device_guid, device = self.rc.find_depends(self.spec.device.depends)
+            device_guid, device = self.rc.find_depends(
+                self.spec.device.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
-            provision_config.add_device(__componentName, device=device, set_component_alias=False)
+            provision_config.add_device(__componentName, device=device,
+                                        set_component_alias=False)
 
             if 'restart' in self.spec:
                 provision_config.add_restart_policy(
-                    __componentName, self.RESTART_POLICY[self.spec.restart.lower()])
+                    __componentName,
+                    self.RESTART_POLICY[self.spec.restart.lower()])
 
             # Add Network
             # if self.spec.rosNetworks:
