@@ -57,7 +57,7 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
 
-    if not silent:
+    if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
     rc.apply(dryrun=dryrun, workers=workers)
@@ -90,7 +90,7 @@ def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies(check_missing=False, delete=True)
 
-    if not silent:
+    if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
     rc.delete(dryrun=dryrun)
