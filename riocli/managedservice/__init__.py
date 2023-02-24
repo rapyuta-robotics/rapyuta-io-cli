@@ -14,6 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.managedservice.delete import delete_instance
 from riocli.managedservice.inspect import inspect_instance
 from riocli.managedservice.list import list_instances
 from riocli.managedservice.list_providers import list_providers
@@ -35,6 +36,7 @@ def managedservice() -> None:
     pass
 
 
+managedservice.add_command(delete_instance)
 managedservice.add_command(list_providers)
 managedservice.add_command(list_instances)
 managedservice.add_command(inspect_instance)
