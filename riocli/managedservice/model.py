@@ -13,18 +13,18 @@
 # limitations under the License.
 import typing
 
-from munch import munchify
+from munch import munchify, unmunchify
 from rapyuta_io import Client
 
+from riocli.config import new_v2_client
 from riocli.jsonschema.validate import load_schema
-from riocli.managedservice.util import ManagedServicesClient
 from riocli.model import Model
 
 
 class ManagedService(Model):
     def find_object(self, client: Client) -> typing.Any:
         name = self.metadata.name
-        client = ManagedServicesClient()
+        client = new_v2_client()
 
         try:
             instance = client.get_instance(name)
@@ -33,20 +33,23 @@ class ManagedService(Model):
             return False
 
     def create_object(self, client: Client) -> typing.Any:
-        client = ManagedServicesClient()
-        result = client.create_instance(self)
+        client = new_v2_client()
+
+        ms = unmunchify(self)
+        ms.pop('rc', None)
+        result = client.create_instance(ms)
         return munchify(result)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        client = ManagedServicesClient()
+        client = new_v2_client()
         client.delete_instance(obj.metadata.name)
 
     @staticmethod
     def list_instances():
-        client = ManagedServicesClient()
+        client = new_v2_client()
         return client.list_instances()
 
     @classmethod

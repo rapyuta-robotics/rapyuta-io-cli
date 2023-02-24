@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import click
+from munch import unmunchify
 
-from riocli.managedservice.util import ManagedServicesClient
+from riocli.config import new_v2_client
 from riocli.utils import inspect_with_format
 
 
@@ -22,14 +23,14 @@ from riocli.utils import inspect_with_format
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('instance-name', required=True)
-def inspect_instance(format_type: str, instance_name: str) -> None:
+def inspect_instance(format_type: str, instance_name: str):
     """
     Inspect a managedservice instance
     """
     try:
-        client = ManagedServicesClient()
+        client = new_v2_client()
         instance = client.get_instance(instance_name)
-        inspect_with_format(instance, format_type)
+        inspect_with_format(unmunchify(instance), format_type)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
