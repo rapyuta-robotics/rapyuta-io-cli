@@ -159,8 +159,7 @@ class Package(Model):
             component_obj.rosBagJobDefs = self.spec.rosBagJobs
 
         pkg_object.plans[0].components = [component_obj]
-        # return package
-        # print(json.dumps(pkg_object))
+
         return client.create_package(pkg_object)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:

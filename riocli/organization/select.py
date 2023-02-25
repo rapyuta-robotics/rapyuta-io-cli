@@ -14,8 +14,8 @@
 import click
 
 from riocli.auth.util import select_project
-from riocli.utils.context import get_root_context
 from riocli.project.util import name_to_organization_guid
+from riocli.utils.context import get_root_context
 
 
 @click.command('select')

@@ -17,9 +17,7 @@
 # Args
 #    path,  tree_names,  delete_existing=True|False
 # -----------------------------------------------------------------------------
-import filecmp
 import os.path
-import typing
 from difflib import unified_diff
 from filecmp import dircmp
 from tempfile import TemporaryDirectory

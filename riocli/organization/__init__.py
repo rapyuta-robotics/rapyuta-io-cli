@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.organization.list import list_organizations
-from riocli.organization.select import  select_organization
+from riocli.organization.select import select_organization
 
 
 @click.group(
