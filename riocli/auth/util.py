@@ -19,7 +19,7 @@ from rapyuta_io import Client
 from rapyuta_io.utils import UnauthorizedError
 
 from riocli.config import Configuration
-from riocli.project.util import find_project_guid
+from riocli.project.util import find_project_guid, find_organization_guid
 from riocli.utils.selector import show_selection
 
 
@@ -27,8 +27,10 @@ def select_organization(config: Configuration, organization: str = None) -> str:
     client = config.new_client(with_project=False)
 
     org_guid = None
+
     if organization:
-        org_guid = organization if organization.startswith('org-') else None
+        org_guid = organization if organization.startswith(
+            'org-') else find_organization_guid(client, name=organization)
 
     # fetch user organizations and sort them on their name
     organizations = client.get_user_organizations()
@@ -63,6 +65,8 @@ def select_project(config: Configuration, project: str = None, organization: str
 
     projects = client.list_projects(organization_guid=organization)
     if len(projects) == 0:
+        config.data['project_id'] = ""
+        config.data['project_name'] = ""
         click.secho("There are no projects in this organization", fg='black', bg='white')
         return
 
