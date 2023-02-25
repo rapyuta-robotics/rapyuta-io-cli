@@ -34,6 +34,7 @@ from riocli.disk import disk
 from riocli.managedservice import managedservice
 from riocli.marketplace import marketplace
 from riocli.network import network
+from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
 from riocli.project import project
@@ -95,3 +96,4 @@ cli.add_command(shell)
 cli.add_command(deprecated_repl)
 cli.add_command(managedservice)
 cli.add_command(template)
+cli.add_command(organization)
