@@ -216,7 +216,7 @@ class Applier(object):
             self.objects[key] = data
             self.resolved_objects[key] = {'src': 'local', 'manifest': data}
         except KeyError:
-            print("key error {}".format(data))
+            click.secho("Key error {}".format(data), fg='red')
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):

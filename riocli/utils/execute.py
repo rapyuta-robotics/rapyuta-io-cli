@@ -25,7 +25,7 @@ _CLOUD_RUN_REMOTE_COMMAND = '{}/serviceinstance/{}/cmd'
 
 
 def run_on_cloud(deployment_guid: str, comp_id: str, exec_id: str, pod_name: str, command: typing.List[str]) -> (
-str, str):
+        str, str):
     """
     run_on_cloud uses the RunCommand API of the IOBroker to execute arbitrary commands on the cloud deployment
     containers.
