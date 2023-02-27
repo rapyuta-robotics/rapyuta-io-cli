@@ -14,6 +14,7 @@
 import errno
 import json
 import os
+import uuid
 
 from click import get_app_dir
 from rapyuta_io import Client
@@ -121,3 +122,11 @@ class Configuration(object):
     @property
     def piping_server(self):
         return self.data.get('piping_server', self.PIPING_SERVER)
+
+    @property
+    def machine_id(self):
+        if 'machine_id' not in self.data:
+            self.data['machine_id'] = str(uuid.uuid4())
+            self.save()
+
+        return self.data.get('machine_id')

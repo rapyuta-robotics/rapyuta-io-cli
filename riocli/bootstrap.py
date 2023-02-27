@@ -42,6 +42,7 @@ from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
+from riocli.vpn import vpn
 
 
 @with_plugins(iter_entry_points('riocli.plugins'))
@@ -97,3 +98,4 @@ cli.add_command(deprecated_repl)
 cli.add_command(managedservice)
 cli.add_command(template)
 cli.add_command(organization)
+cli.add_command(vpn)

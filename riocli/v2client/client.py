@@ -193,3 +193,48 @@ class Client(metaclass=_Singleton):
             raise Exception("managedservice: {}".format(err_msg))
 
         return munchify(data)
+
+    def create_instance_binding(self, instance_name, binding: dict) -> Munch:
+        """
+        Create a new managed service instance binding
+        """
+        url = "{}/v2/managedservices/{}/bindings/".format(self._host, instance_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.POST).headers(headers).execute(payload=binding)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_instance_binding(self, instance_name: str, binding_name: str) -> Munch:
+        """
+        Get a managed service instance binding
+        """
+        url = "{}/v2/managedservices/{}/bindings/{}/".format(self._host, instance_name, binding_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_instance_binding(self, instance_name: str, binding_name: str) -> Munch:
+        """
+        Delete a managed service instance binding
+        """
+        url = "{}/v2/managedservices/{}/bindings/{}/".format(self._host, instance_name, binding_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("managedservice: {}".format(err_msg))
+
+        return munchify(data)

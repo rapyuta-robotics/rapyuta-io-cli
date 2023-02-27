@@ -48,15 +48,28 @@ def dump_all_yaml(objs: typing.List):
     )
 
 
-def run_bash(cmd, bg=False):
+def run_bash_with_return_code(cmd, bg=False) -> (str, int):
     cmd_parts = shlex.split(cmd)
 
     if bg is True:
-        bg_output = subprocess.Popen(cmd_parts)
-        output = str(bg_output.stdout).strip()
+        output = subprocess.Popen(cmd_parts)
+        stdout = str(output.stdout).strip()
+        ret_code = output.returncode
     else:
-        output = subprocess.run(cmd_parts, stdout=subprocess.PIPE).stdout.decode('utf-8')
-    return output.strip()
+        output = subprocess.run(cmd_parts, stdout=subprocess.PIPE)
+        stdout = output.stdout.decode('utf-8')
+        ret_code = output.returncode
+
+    return stdout.strip(), ret_code
+
+
+def run_bash(cmd, bg=False) -> str:
+    """
+    Runs a bash command and returns the output only
+    """
+    output, _ = run_bash_with_return_code(cmd, bg)
+
+    return output
 
 
 riocli_group_opts = {
