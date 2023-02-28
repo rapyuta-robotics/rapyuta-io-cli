@@ -1,3 +1,17 @@
+# Copyright 2023 Rapyuta Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import typing
 
@@ -16,6 +30,9 @@ class _Singleton(type):
 
 
 class Client(metaclass=_Singleton):
+    """
+    v2 API Client
+    """
     PROD_V2API_URL = "https://api.rapyuta.io"
 
     def __init__(self, config, auth_token: str, project: str = None):
@@ -25,7 +42,7 @@ class Client(metaclass=_Singleton):
         self._project = project
         self._token = auth_token
 
-    def _get_auth_token(self):
+    def _get_auth_token(self) -> typing.Text:
         return "Bearer {}".format(self._token)
 
     # Project APIs
@@ -72,7 +89,10 @@ class Client(metaclass=_Singleton):
 
         return munchify(result)
 
-    def get_project(self, project_guid: str):
+    def get_project(self, project_guid: str) -> Munch:
+        """
+        Get a project by its GUID
+        """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
@@ -85,7 +105,10 @@ class Client(metaclass=_Singleton):
 
         return munchify(data)
 
-    def create_project(self, spec: dict):
+    def create_project(self, spec: dict) -> Munch:
+        """
+        Create a new project
+        """
         url = "{}/v2/projects/".format(self._host)
         headers = {"Authorization": self._get_auth_token()}
         response = RestClient(url).method(HttpMethod.POST).headers(
@@ -98,7 +121,10 @@ class Client(metaclass=_Singleton):
 
         return munchify(data)
 
-    def update_project(self, project_guid: str, spec: dict):
+    def update_project(self, project_guid: str, spec: dict) -> Munch:
+        """
+        Update an existing project
+        """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
         headers = {"Authorization": self._get_auth_token()}
         response = RestClient(url).method(HttpMethod.PUT).headers(
@@ -111,7 +137,10 @@ class Client(metaclass=_Singleton):
 
         return munchify(data)
 
-    def delete_project(self, project_guid: str):
+    def delete_project(self, project_guid: str) -> Munch:
+        """
+        Delete a project by its GUID
+        """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
         headers = {"Authorization": self._get_auth_token()}
         response = RestClient(url).method(
@@ -124,7 +153,11 @@ class Client(metaclass=_Singleton):
 
         return munchify(data)
 
+    # ManagedService APIs
     def list_providers(self) -> typing.List:
+        """
+        List all managedservice provider
+        """
         url = "{}/v2/managedservices/providers/".format(self._host)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
@@ -137,6 +170,9 @@ class Client(metaclass=_Singleton):
         return munchify(data.get('items', []))
 
     def list_instances(self) -> typing.List:
+        """
+        List all managedservice instances in a project
+        """
         url = "{}/v2/managedservices/".format(self._host)
         headers = self._config.get_auth_header()
         offset = 0
@@ -158,6 +194,9 @@ class Client(metaclass=_Singleton):
         return munchify(sorted(result, key=lambda x: x['metadata']['name']))
 
     def get_instance(self, instance_name: str) -> Munch:
+        """
+        Get a managedservice instance by instance_name
+        """
         url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
@@ -198,7 +237,8 @@ class Client(metaclass=_Singleton):
         """
         Create a new managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/".format(self._host, instance_name)
+        url = "{}/v2/managedservices/{}/bindings/".format(
+            self._host, instance_name)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.POST).headers(headers).execute(payload=binding)
@@ -213,7 +253,8 @@ class Client(metaclass=_Singleton):
         """
         Get a managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/{}/".format(self._host, instance_name, binding_name)
+        url = "{}/v2/managedservices/{}/bindings/{}/".format(
+            self._host, instance_name, binding_name)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
@@ -228,7 +269,8 @@ class Client(metaclass=_Singleton):
         """
         Delete a managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/{}/".format(self._host, instance_name, binding_name)
+        url = "{}/v2/managedservices/{}/bindings/{}/".format(
+            self._host, instance_name, binding_name)
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
