@@ -50,7 +50,8 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def find_project_guid(client: v2Client, name: str, organization: str = None) -> str:
+def find_project_guid(client: v2Client, name: str,
+                      organization: str = None) -> str:
     projects = client.list_projects(organization_guid=organization)
     for project in projects:
         if project.metadata.name == name:
@@ -70,7 +71,8 @@ def find_organization_guid(client: Client, name: str) -> str:
 
     for organization in organizations:
         if organization.name == name:
-            options[organization.guid] = '{} ({})'.format(organization.name, organization.url)
+            options[organization.guid] = '{} ({})'.format(organization.name,
+                                                          organization.url)
 
     if len(options) == 1:
         return list(options.keys())[0]
@@ -78,7 +80,8 @@ def find_organization_guid(client: Client, name: str) -> str:
     if len(options) == 0:
         raise Exception("User is not part of organization: {}".format(name))
 
-    choice = show_selection(options, header='Following packages were found with the same name')
+    choice = show_selection(options,
+                            header='Following packages were found with the same name')
     return choice
 
 
@@ -88,7 +91,8 @@ def get_organization_name(client: Client, guid: str) -> str:
         if organization.guid == guid:
             return organization.name
 
-    raise OrganizationNotFound("User is not part of organization with guid: {}".format(guid))
+    raise OrganizationNotFound(
+        "User is not part of organization with guid: {}".format(guid))
 
 
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:

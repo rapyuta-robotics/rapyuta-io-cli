@@ -28,7 +28,9 @@ def delete_project(force: bool, project_name: str, project_guid: str) -> None:
     Deletes the project from the Platform
     """
     if not force:
-        click.confirm('Deleting project {} ({})'.format(project_name, project_guid), abort=True)
+        click.confirm(
+            'Deleting project {} ({})'.format(project_name, project_guid),
+            abort=True)
 
     try:
         client = new_v2_client()

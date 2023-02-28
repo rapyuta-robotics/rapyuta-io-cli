@@ -25,7 +25,8 @@ from riocli.utils import tabulate_data
 @click.command('list')
 @click.option('--organization', 'organization_name',
               help='Pass organization name for which project needs to be created. Default will be current organization')
-@click.option('--wide', '-w', is_flag=True, default=False, help='Print more details', type=bool)
+@click.option('--wide', '-w', is_flag=True, default=False,
+              help='Print more details', type=bool)
 @click.pass_context
 @name_to_organization_guid
 def list_project(ctx: click.Context = None, organization_guid: str = None,
@@ -45,7 +46,8 @@ def list_project(ctx: click.Context = None, organization_guid: str = None,
 
 
 def _display_project_list(projects: typing.List[Project], current: str = None,
-                          show_header: bool = True, wide: bool = False) -> None:
+                          show_header: bool = True,
+                          wide: bool = False) -> None:
     headers = []
     if show_header:
         headers = ['Project ID', 'Project Name', 'Status']

@@ -24,7 +24,8 @@ from riocli.utils import inspect_with_format
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('project-name', type=str)
 @name_to_guid
-def inspect_project(format_type: str, project_name: str, project_guid: str) -> None:
+def inspect_project(format_type: str, project_name: str,
+                    project_guid: str) -> None:
     """
     Inspect the project resource
     """
