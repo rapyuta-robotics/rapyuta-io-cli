@@ -44,12 +44,11 @@ def upload_configurations(paths: click.Path, tree_names: str = None, delete_exis
 
         with spinner():
             paths = list(paths)
-            print(tree_names)
 
             configurations = compile_local_configurations(paths, tree_names=tree_names)
             d_tmp = mkdtemp()  # Temporary directory to hold the merged configurations
             rev_paths = list(reversed(paths))  # path list in reverse order
-            print(configurations.items())
+
             for rel_file_path, configuration in configurations.items():
                 file_path = os.path.join(d_tmp, rel_file_path)
                 file_name, file_extension = os.path.splitext(file_path)  # f is a file name with extension
@@ -77,7 +76,7 @@ def upload_configurations(paths: click.Path, tree_names: str = None, delete_exis
                             click.secho("Copied file '{}' to '{}'".format(src, file_path))
                             break
 
-            uploaded_configuration = client.upload_configurations(d_tmp, delete_existing_trees=delete_existing)
+            uploaded_configuration = client.upload_configurations(d_tmp, delete_existing_trees=delete_existing, as_folder=True)
 
         if upload_configurations:
             click.secho('Parameter uploaded successfully!', fg='green')
