@@ -21,10 +21,10 @@ from rapyuta_io.clients.deployment import DeploymentNotRunningException
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
     ExecutableMount
-from rapyuta_io.clients.rosbag import ROSBagJob, ROSBagOptions, \
-    ROSBagCompression, UploadOptions, \
-    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, \
-    OverrideOptions, TopicOverrideInfo
+from rapyuta_io.clients.rosbag import (
+    ROSBagJob, ROSBagOptions, ROSBagCompression,
+    UploadOptions, ROSBagOnDemandUploadOptions, ROSBagTimeRange,
+    ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo)
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
 from riocli.deployment.errors import ERRORS
@@ -43,24 +43,24 @@ class Deployment(Model):
     }
 
     def find_object(self, client: Client) -> typing.Any:
-        guid, obj = self.rc.find_depends({'kind': 'deployment', 'nameOrGUID': self.metadata.name})
-        if not guid:
-            return False
-
-        return obj
+        guid, obj = self.rc.find_depends(
+            {"kind": "deployment", "nameOrGUID": self.metadata.name})
+        return obj if guid else False
 
     def create_object(self, client: Client) -> typing.Any:
-        pkg_guid, pkg = self.rc.find_depends(self.metadata.depends, self.metadata.depends.version)
+        pkg_guid, pkg = self.rc.find_depends(self.metadata.depends,
+                                             self.metadata.depends.version)
 
         if pkg_guid:
             pkg = client.get_package(pkg_guid)
         pkg.update()
 
         default_plan = pkg['plans'][0]
+        plan_id = default_plan['planId']
         internal_component = default_plan['internalComponents'][0]
-
-        __planId = default_plan['planId']
-        __componentName = internal_component.componentName
+        component_name = internal_component.componentName
+        component = default_plan['components']['components'][0]
+        executables = component['executables']
         runtime = internal_component['runtime']
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
@@ -71,7 +71,7 @@ class Deployment(Model):
                 ), fg='red')
             return
 
-        provision_config = pkg.get_provision_configuration(__planId)
+        provision_config = pkg.get_provision_configuration(plan_id)
 
         # add label
         if 'labels' in self.metadata:
@@ -81,7 +81,8 @@ class Deployment(Model):
         # Add envArgs
         if 'envArgs' in self.spec:
             for items in self.spec.envArgs:
-                provision_config.add_parameter(__componentName, items.name, items.value)
+                provision_config.add_parameter(component_name, items.name,
+                                               items.value)
 
         # Add Dependent Deployment
         if 'depends' in self.spec:
@@ -105,7 +106,8 @@ class Deployment(Model):
 
         if 'rosBagJobs' in self.spec:
             for req_job in self.spec.rosBagJobs:
-                provision_config.add_rosbag_job(__componentName, self._form_rosbag_job(req_job))
+                provision_config.add_rosbag_job(component_name,
+                                                self._form_rosbag_job(req_job))
 
         if self.spec.runtime == 'cloud':
             if 'staticRoutes' in self.spec:
@@ -113,7 +115,8 @@ class Deployment(Model):
                     route_guid, route = self.rc.find_depends(stroute.depends)
                     if route is None and route_guid:
                         route = client.get_static_route(route_guid)
-                    provision_config.add_static_route(__componentName, stroute.name, route)
+                    provision_config.add_static_route(component_name,
+                                                      stroute.name, route)
 
             # Add Disk
             if 'volumes' in self.spec:
@@ -128,8 +131,9 @@ class Deployment(Model):
 
                 for disk_guid in disk_mounts.keys():
                     disk = client.get_volume_instance(disk_guid)
-                    provision_config.mount_volume(__componentName, volume=disk,
-                                                  executable_mounts=disk_mounts[disk_guid])
+                    provision_config.mount_volume(component_name, volume=disk,
+                                                  executable_mounts=
+                                                  disk_mounts[disk_guid])
 
             # TODO: Managed Services is currently limited to `cloud` deployments
             # since we don't expose `elasticsearch` outside Openshift. This may
@@ -150,37 +154,66 @@ class Deployment(Model):
                         "instance": "rio-internal-headscale"
                     }]
 
+                if 'params' in self.spec.features and self.spec.features.params.enabled:
+                    component_id = internal_component.componentId
+                    tree_names = self.spec.features.params.get('trees', [])
+                    disable_sync = self.spec.features.params.get('disableSync',
+                                                                 False)
+
+                    args = []
+                    for e in executables:
+                        args.append({
+                            'executableId': e['id'],
+                            'paramTreeNames': tree_names,
+                            'enableParamSync': not disable_sync
+                        })
+
+                    context = provision_config.context
+                    if 'component_context' not in context:
+                        context['component_context'] = {}
+
+                    component_context = context['component_context']
+                    if component_id not in component_context:
+                        component_context[component_id] = {}
+
+                    component_context[component_id][
+                        'param_sync_exec_args'] = args
+
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(
                 self.spec.device.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
-            provision_config.add_device(__componentName, device=device,
-                                        set_component_alias=False)
+
+            provision_config.add_device(
+                component_name,
+                device=device,
+                set_component_alias=False
+            )
 
             if 'restart' in self.spec:
                 provision_config.add_restart_policy(
-                    __componentName,
+                    component_name,
                     self.RESTART_POLICY[self.spec.restart.lower()])
-
-            # Add Network
-            # if self.spec.rosNetworks:
-            # for network in self.spec.rosNetworks:
-            # network_type =
 
             # Add Disk
             exec_mounts = []
             if 'volumes' in self.spec:
                 for vol in self.spec.volumes:
-                    exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+                    exec_mounts.append(
+                        ExecutableMount(vol.execName, vol.mountPath,
+                                        vol.subPath))
+
             if len(exec_mounts) > 0:
                 provision_config = add_mount_volume_provision_config(
-                    provision_config, __componentName, device, exec_mounts)
+                    provision_config, component_name, device, exec_mounts)
 
-        provision_config.set_component_alias(__componentName, self.metadata.name)
+        provision_config.set_component_alias(component_name,
+                                             self.metadata.name)
 
         if os.environ.get('DEBUG'):
             print(provision_config)
+
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
@@ -191,11 +224,10 @@ class Deployment(Model):
             raise e
 
         deployment.get_status()
+
         return deployment
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        if 'depends' in self.spec:
-            pass
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
