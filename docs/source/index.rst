@@ -57,17 +57,24 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
 .. toctree::
    :maxdepth: 1
 
+   Apply <apply>
    Authentication <auth>
    Build <build>
+   Chart <chart>
    Completion <completion>
    Deployment <deployment>
    Device <device>
+   Disk <disk>
+   ManagedService <managedservice>
    Network <network>
+   Organization <organization>
    Package <package>
+   Parameter <parameter>
    Project <project>
    Rosbag  <rosbag>
    Secret <secret>
-   Static Routes <static_route>
+   Static Route <static_route>
+   VPN <vpn>
 
 
 
