@@ -180,7 +180,19 @@ definitions:
                         type: boolean
                     required:
                       - enabled
-
+                  params:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      trees:
+                        type: array
+                        items:
+                          type: string
+                      disableSync:
+                        type: boolean
+                    required:
+                      - enabled
               envArgs:
                 type: array
                 items:
