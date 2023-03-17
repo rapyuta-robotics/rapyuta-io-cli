@@ -89,38 +89,40 @@ class Applier(object):
         return self.apply_async(*args, **kwargs)
 
     def apply_async(self, *args, **kwargs):
-        WORKERS = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
+        workers = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
         task_queue = queue.Queue()
         done_queue = queue.Queue()
 
         def worker():
             while True:
-                obj = task_queue.get()
-                if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
-                    # click.secho("obj {} is being aplied".format(obj))
+                o = task_queue.get()
+                if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
                     try:
-                        self._apply_manifest(obj, *args, **kwargs)
+                        self._apply_manifest(o, *args, **kwargs)
                     except Exception as ex:
                         click.secho(
-                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(obj, str(ex)))
-                        raise ex
+                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(o, str(ex)))
+                        done_queue.put(ex)
+                        continue
 
                 task_queue.task_done()
-                done_queue.put(obj)
+                done_queue.put(o)
 
         worker_list = []
-        for worker_id in range(0, WORKERS):
+        for worker_id in range(workers):
             worker_list.append(threading.Thread(target=worker, daemon=True))
             worker_list[worker_id].start()
 
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
-                # if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
                 task_queue.put(obj)
 
             done_obj = done_queue.get()
-            self.graph.done(done_obj)
+            if not isinstance(done_obj, Exception):
+                self.graph.done(done_obj)
+            else:
+                raise Exception(done_obj)
 
         task_queue.join()
 
