@@ -26,7 +26,8 @@ from riocli.utils import tabulate_data, print_separator
               help='Tree names to apply')
 @click.option('--retry-limit', type=click.INT, default=0,
               help='Retry limit')
-@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+              help="Skip confirmation")
 def apply_configurations(devices: typing.List, tree_names: str = None, retry_limit: int = 0,
                          silent: bool = False) -> None:
     """
@@ -43,16 +44,13 @@ def apply_configurations(devices: typing.List, tree_names: str = None, retry_lim
         else:
             device_ids = {v.uuid: k for k, v in device_map.items()}
 
-        if len(device_ids) == 0:
+        if not device_ids:
             click.secho("invalid devices or no device is currently online", fg='red')
             raise SystemExit(1)
 
         click.secho('Online Devices: {}'.format(','.join(device_ids.values())), fg='green')
 
-        printable_tree_names = "*all*"
-        if len(tree_names) > 0:
-            printable_tree_names = ','.join(tree_names)
-
+        printable_tree_names = ','.join(tree_names) if tree_names != "" else "*all*"
         click.secho('Config Trees: {}'.format(printable_tree_names), fg='green')
 
         if not silent:
@@ -76,4 +74,4 @@ def apply_configurations(devices: typing.List, tree_names: str = None, retry_lim
     except IOError as e:
         click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        raise SystemExit(1) from e

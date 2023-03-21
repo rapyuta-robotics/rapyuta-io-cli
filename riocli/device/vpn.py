@@ -29,7 +29,8 @@ from riocli.utils import tabulate_data
 @click.option('--devices', type=click.STRING, multiple=True, default=(),
               help='Device names to toggle VPN client')
 @click.argument('enable', type=click.BOOL)
-@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+              help="Skip confirmation")
 def toggle_vpn(devices: typing.List, enable: bool, silent: bool = False) -> None:
     """
     Enable or disable VPN client on the device
@@ -80,7 +81,7 @@ def toggle_vpn(devices: typing.List, enable: bool, silent: bool = False) -> None
         tabulate_data(result, headers=["Device", "Status"])
     except Exception as e:
         click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 
 def process_devices(online_devices, devices) -> typing.List:
@@ -106,7 +107,5 @@ def process_devices(online_devices, devices) -> typing.List:
 
 
 def print_final_devices(final) -> None:
-    data = []
-    for device in final:
-        data.append([device.uuid, device.name, device.status])
+    data = [[device.uuid, device.name, device.status] for device in final]
     tabulate_data(data, headers=["UUID", "Name", "Status"])
