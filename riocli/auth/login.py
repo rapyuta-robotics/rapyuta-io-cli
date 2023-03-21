@@ -30,12 +30,12 @@ LOGIN_SUCCESS = click.style('Logged in successfully!', fg='green')
 @click.option('--password', type=str,
               help='Password for the rapyuta.io account')
 @click.option('--organization', type=str, default=None,
-              help='Context will be set to the organization after authentication')
+              help=('Context will be set to the organization after '
+                    'authentication'))
 @click.option('--project', type=str, default=None,
               help='Context will be set to the project after authentication')
-@click.option('--interactive/--no-interactive',
-              '--interactive/--silent', is_flag=True,
-              type=bool, default=True,
+@click.option('--interactive/--no-interactive', '--interactive/--silent',
+              is_flag=True, type=bool, default=True,
               help='Make login interactive')
 @click.pass_context
 def login(
