@@ -13,79 +13,79 @@
 # limitations under the License.
 
 import os
+import typing
 from shutil import copyfile
 from tempfile import mkdtemp
-from xmlrpc.client import Boolean
 
 import click
 import yaml
 from click_spinner import spinner
+from directory_tree import display_tree
 
 from riocli.config import new_client
 from riocli.parameter.utils import compile_local_configurations
 
 
 @click.command('upload')
-@click.option('--paths', type=click.Path(), default=["."], multiple=True,
-              help='Path for the Parameters Directory file')
+@click.option('--paths', type=click.Path(exists=True, readable=True), default=["."], multiple=True,
+              help='Path for the config parameters directory')
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
               help='Directory names to upload')
 @click.option('--delete-existing', is_flag=True,
-              help='Overwrite existing parameter tree')
-def upload_configurations(paths: click.Path, tree_names: str = None, delete_existing: Boolean = False) -> None:
+              help='Overwrite existing config tree')
+def upload_configurations(paths: typing.List[click.Path], tree_names: str = None,
+                          delete_existing: bool = False) -> None:
     """
-    Upload a set of configurations to IO.
-
-    Compile the IO configurations from the paths provided. Output to a temporary directory. Upload the directory.
+    Upload a set of configurations to IO
     """
     try:
         client = new_client()
-        uploaded_configuration = None
+
+        paths = list(paths)
+        rev_paths = list(reversed(paths))  # path list in reverse order
+
+        configurations = compile_local_configurations(paths, tree_names=tree_names)
+        d_tmp = mkdtemp()  # Temporary directory to hold the merged configurations
+
+        for rel_file_path, configuration in configurations.items():
+            file_path = os.path.join(d_tmp, rel_file_path)
+            file_name, file_extension = os.path.splitext(file_path)
+
+            try:
+                os.makedirs(os.path.dirname(file_path))
+            except OSError:
+                pass
+
+            if file_extension == '.yaml':
+                with open(file_path, 'w') as fp:
+                    fp.write(yaml.safe_dump(configuration, indent=4))
+                    # click.secho("Wrote YAML file '{}'".format(file_path))
+            else:
+                for src_path in rev_paths:
+                    src = os.path.abspath(os.path.join(str(src_path), rel_file_path))
+                    try:
+                        copyfile(src, file_path)
+                    except IOError as e:
+                        # file not found in this directory, try the next
+                        click.secho(str(e), fg='red')
+                        raise SystemExit(1)
+                    else:
+                        # copied the file, break out of the loop
+                        # click.secho("Copied file '{}' to '{}'".format(src, file_path))
+                        break
+
+        click.secho('The following tree will be uploaded', fg='cyan')
+        display_tree(d_tmp)
 
         with spinner():
-            paths = list(paths)
+            uploaded_configuration = client.upload_configurations(
+                d_tmp, delete_existing_trees=delete_existing, as_folder=True)
 
-            configurations = compile_local_configurations(paths, tree_names=tree_names)
-            d_tmp = mkdtemp()  # Temporary directory to hold the merged configurations
-            rev_paths = list(reversed(paths))  # path list in reverse order
+            if not uploaded_configuration:
+                click.secho("❌ Failed to upload configuration parameters", fg='red')
+                raise SystemExit(1)
 
-            for rel_file_path, configuration in configurations.items():
-                file_path = os.path.join(d_tmp, rel_file_path)
-                file_name, file_extension = os.path.splitext(file_path)  # f is a file name with extension
-                print(".")
-                try:
-                    os.makedirs(os.path.dirname(file_path))
-                except OSError:
-                    pass
-
-                if file_extension == '.yaml':
-                    with open(file_path, 'w') as fp:
-                        fp.write(yaml.safe_dump(configuration, indent=4))
-                        click.secho("Wrote file '{}'".format(file_path))
-                else:
-                    for src_path in rev_paths:
-                        src = os.path.abspath(os.path.join(src_path, rel_file_path))
-                        try:
-                            copyfile(src, file_path)
-                        except IOError as e:
-                            # file not found in this directory, try the next
-                            click.secho(str(e), fg='red')
-                            raise SystemExit(1)
-                        else:
-                            # copied the file, break out of the loop
-                            click.secho("Copied file '{}' to '{}'".format(src, file_path))
-                            break
-
-            uploaded_configuration = client.upload_configurations(d_tmp, delete_existing_trees=delete_existing, as_folder=True)
-
-        if upload_configurations:
-            click.secho('Parameter uploaded successfully!', fg='green')
-            return upload_configurations
-        else:
-            click.secho(str(e), fg='red')
-            raise SystemExit(1)
-
+        click.secho('✅ Configuration parameters uploaded successfully', fg='green')
     except IOError as e:
-        click.secho(str(e.__traceback__), fg='red')
         click.secho(str(e), fg='red')
         raise SystemExit(1)

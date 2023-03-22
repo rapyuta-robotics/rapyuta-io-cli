@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-
 """setup.py: setuptools control."""
 
-
 import re
-from setuptools import setup, find_packages
 
+from setuptools import setup, find_packages
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"', open("riocli/bootstrap.py").read(), re.M
@@ -57,7 +55,8 @@ setup(
         "six>=1.13.0",
         "tabulate>=0.8.0",
         "urllib3>=1.23",
-        "pyrfc3339>=1.1"
+        "pyrfc3339>=1.1",
+        "directory-tree>=0.0.3.1"
     ],
     setup_requires=["flake8"],
 )

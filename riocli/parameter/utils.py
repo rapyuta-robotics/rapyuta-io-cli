@@ -39,12 +39,12 @@ def deep_merge(tgt, src):
         if type(v) == list:
             target[k] = deepcopy(v)
         elif type(v) == dict:
-            if not k in target:
+            if k not in target:
                 target[k] = deepcopy(v)
             else:
                 target[k] = deep_merge(target[k], v)
         elif type(v) == set:
-            if not k in target:
+            if k not in target:
                 target[k] = v.copy()
             else:
                 target[k].update(v.copy())
@@ -61,13 +61,9 @@ def compile_local_configurations(paths, tree_names=None):
     are the relative file path for each config.
     """
     configurations = {}
-    print(paths)
     for path in paths:
         abs_path = os.path.abspath(path)
-        # log.debug("Compiling local configuration directory '{}'".format(abs_path))
         cfg = parse_configurations(abs_path, tree_names)
-        print(configurations)
-        print(cfg)
         configurations = deep_merge(configurations, cfg)
 
     return configurations
