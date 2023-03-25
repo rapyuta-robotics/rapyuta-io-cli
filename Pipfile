@@ -29,6 +29,7 @@ rapyuta-io = ">=1.8.0"
 tabulate = ">=0.8.0"
 pyrfc3339 = ">=1.1"
 directory-tree = ">=0.0.3.1"
+yaspin = ">=2.3.0"
 
 [requires]
 python_version = "3"

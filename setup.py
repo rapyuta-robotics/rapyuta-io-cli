@@ -56,7 +56,8 @@ setup(
         "tabulate>=0.8.0",
         "urllib3>=1.23",
         "pyrfc3339>=1.1",
-        "directory-tree>=0.0.3.1"
+        "directory-tree>=0.0.3.1",
+        "yaspin>=2.3.0"
     ],
     setup_requires=["flake8"],
 )
