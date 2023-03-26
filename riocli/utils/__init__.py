@@ -72,13 +72,18 @@ def run_bash_with_return_code(cmd, bg=False) -> (str, int):
     return stdout.strip(), ret_code
 
 
-def run_bash(cmd, bg=False) -> str:
+def run_bash(cmd, bg=False):
     """
     Runs a bash command and returns the output only
     """
-    output, _ = run_bash_with_return_code(cmd, bg)
-
-    return output
+    cmd_parts = shlex.split(cmd)
+    if bg is True:
+        bg_output = subprocess.Popen(cmd_parts)
+        output = str(bg_output.stdout).strip()
+    else:
+        output = subprocess.run(cmd_parts, stdout=subprocess.PIPE,
+                                check=True).stdout.decode('utf-8')
+    return output.strip()
 
 
 riocli_group_opts = {

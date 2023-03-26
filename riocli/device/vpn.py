@@ -15,23 +15,27 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+from yaspin import kbi_safe_yaspin
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
 
 @click.command(
     'vpn',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green'
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN
 )
 @click.option('--devices', type=click.STRING, multiple=True, default=(),
               help='Device names to toggle VPN client')
 @click.argument('enable', type=click.BOOL)
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
+              type=click.BOOL, default=False,
               help="Skip confirmation")
-def toggle_vpn(devices: typing.List, enable: bool, silent: bool = False) -> None:
+def toggle_vpn(devices: typing.List, enable: bool,
+               silent: bool = False) -> None:
     """
     Enable or disable VPN client on the device
 
@@ -71,10 +75,15 @@ def toggle_vpn(devices: typing.List, enable: bool, silent: bool = False) -> None
                 "\nDo you want to proceed?",
                 default=True, abort=True)
 
+        click.echo("")  # Echo an empty line
+
         result = []
-        for device in final:
-            r = client.toggle_features(device.uuid, [('vpn', enable)])
-            result.append([device.name, r.get('status')])
+        with kbi_safe_yaspin() as spinner:
+            for device in final:
+                spinner.text = 'Updating VPN state on device {}'.format(
+                    click.style(device.name, bold=True, fg=Colors.CYAN))
+                r = client.toggle_features(device.uuid, [('vpn', enable)])
+                result.append([device.name, r.get('status')])
 
         click.echo("")  # Echo an empty line
 
