@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +14,44 @@
 import typing
 
 import click
+from click_help_colors import HelpColorsCommand
 
+from riocli.constants import Colors
 from riocli.device.util import name_to_guid
 from riocli.utils.execute import run_on_device
 
 
-@click.command('execute')
+@click.command(
+    'execute',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--user', default='root')
 @click.option('--shell', default='/bin/bash')
 @click.argument('device-name', type=str)
 @click.argument('command', nargs=-1)
 @name_to_guid
-def execute_command(device_name: str, device_guid: str, user: str, shell: str, command: typing.List[str]):
+def execute_command(
+        device_name: str,
+        device_guid: str,
+        user: str,
+        shell: str,
+        command: typing.List[str]
+) -> None:
     """
     Execute commands on the Device
     """
     try:
-        response = run_on_device(device_guid=device_guid, user=user, shell=shell, command=command, background=False)
+        response = run_on_device(
+            device_guid=device_guid,
+            user=user,
+            shell=shell,
+            command=command,
+            background=False,
+        )
+
         click.secho(response)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        click.secho(str(e), fg=Colors.RED)
+        raise SystemExit(1) from e

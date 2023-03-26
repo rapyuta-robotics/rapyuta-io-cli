@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +14,23 @@
 import typing
 
 import click
+from click_help_colors import HelpColorsCommand
 from click_help_colors import HelpColorsGroup
-from click_spinner import spinner
 from rapyuta_io import DeviceConfig
 
 from riocli.config import new_client
+from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid
 from riocli.utils import tabulate_data
+from riocli.utils.spinner import with_spinner
 
 
 @click.group(
     'config',
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def device_config() -> None:
     """
@@ -37,7 +39,12 @@ def device_config() -> None:
     pass
 
 
-@device_config.command('list')
+@device_config.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_config(device_name: str, device_guid: str) -> None:
@@ -54,59 +61,92 @@ def list_config(device_name: str, device_guid: str) -> None:
         raise SystemExit(1)
 
 
-@device_config.command('create')
+@device_config.command(
+    'create',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @click.argument('key', type=str)
 @click.argument('value', type=str)
 @name_to_guid
-def create_config(device_name: str, device_guid: str, key: str, value: str) -> None:
+@with_spinner(text='Creating new config variable...')
+def create_config(
+        device_name: str,
+        device_guid: str,
+        key: str,
+        value: str,
+        spinner=None,
+) -> None:
     """
-    Create a new config variable on the Device
+    Create a new config variable on the device
     """
     try:
-        with spinner():
-            client = new_client()
-            device = client.get_device(device_id=device_guid)
-            device.add_config_variable(key, value)
-        click.secho('Config Variable added successfully!', fg='green')
+        client = new_client()
+        device = client.get_device(device_id=device_guid)
+        device.add_config_variable(key, value)
+        spinner.text = click.style('Config variable added successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        spinner.text = click.style('Failed to add config variable: {}'.format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
 
 
-@device_config.command('update')
+@device_config.command(
+    'update',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @click.argument('key', type=str)
 @click.argument('value', type=str)
 @name_to_guid
-def update_config(device_name: str, device_guid: str, key: str, value: str) -> None:
+@with_spinner(text='Updating config variable...')
+def update_config(
+        device_name: str,
+        device_guid: str,
+        key: str,
+        value: str,
+        spinner=None,
+) -> None:
     """
-    Update the config variable on the Device
+    Update the config variable on the device
     """
     try:
-        with spinner():
-            _update_config_variable(device_guid, key, value)
-        click.secho('Config variable updated successfully!', fg='green')
+        _update_config_variable(device_guid, key, value)
+        spinner.text = click.style('Config variable updated successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        spinner.text = click.style('Failed to update config variable: {}'.format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
 
 
-@device_config.command('delete')
+@device_config.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @click.argument('key', type=str)
 @name_to_guid
-def delete_config(device_name: str, device_guid: str, key: str) -> None:
+@with_spinner(text='Deleting config variable...')
+def delete_config(device_name: str, device_guid: str, key: str, spinner=None) -> None:
     """
-    Delete the config variable on the Device
+    Delete the config variable on the device
     """
     try:
-        with spinner():
-            _delete_config_variable(device_guid, key)
-        click.secho('Config variable deleted successfully!', fg='green')
+        _delete_config_variable(device_guid, key)
+        spinner.text = click.style('Config variable deleted successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        spinner.text = click.style('Failed to delete config variable: {}'.format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
 
 
 def _display_config_list(config_variables: typing.List[DeviceConfig], show_header: bool = True) -> None:
