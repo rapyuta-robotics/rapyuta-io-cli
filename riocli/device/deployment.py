@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.deployment.list import display_deployment_list
 from riocli.device.util import name_to_guid
 
 
-@click.command('deployments')
+@click.command(
+    'deployments',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_deployments(device_name: str, device_guid: str) -> None:
@@ -38,5 +45,5 @@ def list_deployments(device_name: str, device_guid: str) -> None:
             deployments.append(deployment)
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        click.secho(str(e), fg=Colors.RED)
+        raise SystemExit(1) from e
