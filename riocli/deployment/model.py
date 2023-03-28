@@ -140,7 +140,7 @@ class Deployment(Model):
             device_guid, device = self.rc.find_depends(self.spec.device.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
-            provision_config.add_device(__componentName, device=device)
+            provision_config.add_device(__componentName, device=device, set_component_alias=False)
 
             if 'restart' in self.spec:
                 provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart.lower()])
@@ -158,6 +158,8 @@ class Deployment(Model):
             if len(exec_mounts) > 0:
                 provision_config = add_mount_volume_provision_config(provision_config, __componentName, device,
                                                                      exec_mounts)
+
+        provision_config.set_component_alias(__componentName, self.metadata.name)
 
         if os.environ.get('DEBUG'):
             print(provision_config)
