@@ -15,11 +15,13 @@ import typing
 
 from munch import unmunchify
 from rapyuta_io import Client
+from waiting import wait, TimeoutExpired
 
 from riocli.config import new_v2_client, Configuration
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 
+PROJECT_READY_TIMEOUT = 150
 
 class Project(Model):
 
@@ -48,6 +50,12 @@ class Project(Model):
             'organization_id']
 
         r = client.create_project(project)
+
+        try:
+            wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT, sleep_seconds=(1, 30, 2))
+        except TimeoutExpired as e:
+            raise e
+
         return unmunchify(r)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
@@ -65,6 +73,11 @@ class Project(Model):
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         client = new_v2_client()
         client.delete_project(obj.metadata.guid)
+
+    def is_ready(self) -> bool:
+        client = new_v2_client()
+        projects = client.list_projects(query={"name": self.metadata.name})
+        return projects[0].status.status == 'Success'
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
