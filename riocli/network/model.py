@@ -50,9 +50,12 @@ class Network(Model):
 
     def create_object(self, client: Client) -> Union[NativeNetwork, RoutedNetwork]:
         if self.spec.type == 'routed':
-            return self._create_routed_network(client)
+            network = self._create_routed_network(client)
+            network.poll_routed_network_till_ready()
+            return network
 
         network = client.create_native_network(self.to_v1(client))
+        network.poll_native_network_till_ready()
         return network
 
     def update_object(self, client: Client, obj: Union[RoutedNetwork, NativeNetwork]) -> Any:
