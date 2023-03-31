@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.parameter.apply import apply_configurations
+from riocli.parameter.delete import delete_configurations
 from riocli.parameter.diff import diff_configurations
 from riocli.parameter.download import download_configurations
+from riocli.parameter.list import list_configuration_trees
 from riocli.parameter.upload import upload_configurations
 
 
@@ -42,3 +44,5 @@ parameter.add_command(upload_configurations)
 parameter.add_command(download_configurations)
 parameter.add_command(diff_configurations)
 parameter.add_command(apply_configurations)
+parameter.add_command(list_configuration_trees)
+parameter.add_command(delete_configurations)

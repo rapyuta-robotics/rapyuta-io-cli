@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
+from tempfile import mkdtemp
+from xmlrpc.client import Boolean
+
+import click
+from click_spinner import spinner
+
+from riocli.config import new_client
+from riocli.parameter.utils import display_trees
+
 
 # -----------------------------------------------------------------------------
 #
@@ -19,44 +29,30 @@
 #    path,  tree_names,  delete_existing=True|False
 # -----------------------------------------------------------------------------
 
-from tempfile import mkdtemp
-from typing import Tuple
-from xmlrpc.client import Boolean
-
-import click
-from rapyuta_io.utils.error import APIError, InternalServerError
-
-from riocli.config import new_client
-
 
 @click.command('download')
-@click.option('--path', type=click.Path(dir_okay=True, file_okay=False, writable=True, exists=True, resolve_path=True),
-              default=["."],
-              help='Root Path for the Parameters to be download')
-@click.option('--tree-names', type=click.STRING, multiple=True, default=None,
-              help='Tree names to fetch')
-@click.option('--delete-existing', is_flag=True,
+@click.option('--tree-names', type=click.STRING, multiple=True, default=None, help='Tree names to fetch')
+@click.option('--overwrite', '--delete-existing', 'delete_existing', is_flag=True,
               help='Overwrite existing parameter tree')
-def download_configurations(path: click.Path, tree_names: Tuple = None, delete_existing: Boolean = False) -> None:
+@click.argument('path', type=click.Path(exists=True), required=False)
+def download_configurations(path: str, tree_names: typing.Tuple[str] = None, delete_existing: Boolean = False) -> None:
     """
-    Download the configurations
+    Download the Configuration Parameter trees.
     """
     if path is None:
-        path = mkdtemp()  # Temporary directory to hold the configurations
+        # Not using the Context Manager because we need to persist the Temporary directory.
+        path = mkdtemp()
 
-    tree_names = list(tree_names)
+    click.secho('Downloading at {}'.format(path))
 
     try:
         client = new_client()
 
-        client.download_configurations(str(path), tree_names=tree_names, delete_existing_trees=delete_existing)
+        with spinner():
+            client.download_configurations(path, tree_names=list(tree_names),
+                                           delete_existing_trees=delete_existing)
 
-    except (APIError, InternalServerError) as e:
-        click.secho(f"failed API request {str(e)}", fg='red')
+        click.secho('✅ Configuration Parameters downloaded successfully', fg='green')
+    except Exception as e:
+        click.secho(e, fg='red')
         raise SystemExit(1)
-    except (IOError, OSError) as e:
-        click.secho(f"failed file/directory creation {str(e)}", fg='red')
-        raise SystemExit(1)
-
-    click.secho("Downloaded IO configurations to '{}'".format(path), fg='green')
-    return path
