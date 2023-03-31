@@ -15,21 +15,24 @@ import typing
 
 import click
 from click_spinner import spinner
-from rapyuta_io.clients.native_network import NativeNetwork, Parameters, NativeNetworkLimits
+from rapyuta_io.clients.native_network import NativeNetwork, Parameters
 from rapyuta_io.clients.package import Runtime, ROSDistro
-
+from rapyuta_io.clients.common_models import Limits
 from riocli.config import new_client
 
 
 def create_native_network(name: str, ros: str, device_guid: str = None, network_interface: str = None,
-                          limit: str = None, restart_policy: str = None, **kwargs: typing.Any) -> None:
+                          cpu: float = 0, memory: int = 0, restart_policy: str = None, **kwargs: typing.Any) -> None:
     client = new_client()
 
     ros_distro = ROSDistro(ros)
     runtime = Runtime.CLOUD
 
-    if limit is not None:
-        limit = getattr(NativeNetworkLimits, limit.upper())
+    limit = None
+    if cpu or memory:
+        if device_guid:
+            raise Exception('Native network for device does not support cpu or memory')
+        limit = Limits(cpu, memory)
 
     device = None
     if device_guid:

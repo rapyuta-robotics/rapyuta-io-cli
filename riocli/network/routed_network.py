@@ -17,16 +17,22 @@ import click
 from click_spinner import spinner
 from rapyuta_io import ROSDistro
 from rapyuta_io.clients.package import RestartPolicy
-from rapyuta_io.clients.routed_network import RoutedNetworkLimits, Parameters
-
+from rapyuta_io.clients.routed_network import Parameters
+from rapyuta_io.clients.common_models import Limits
 from riocli.config import new_client
 
 
 def create_routed_network(name: str, ros: str, device_guid: str = None, network_interface: str = None,
-                          limit: str = None, restart_policy: str = None, **kwargs: typing.Any) -> None:
+                          cpu: float = 0, memory: int = 0, restart_policy: str = None, **kwargs: typing.Any) -> None:
     client = new_client()
     ros_distro = ROSDistro(ros)
-    limit = getattr(RoutedNetworkLimits, limit.upper())
+
+    limit = None
+    if cpu or memory:
+        if device_guid:
+            raise Exception('Routed network for device does not support cpu or memory')
+        limit = Limits(cpu, memory)
+
     if restart_policy:
         restart_policy = RestartPolicy(restart_policy)
 
@@ -38,8 +44,9 @@ def create_routed_network(name: str, ros: str, device_guid: str = None, network_
                                                 network_interface=network_interface,
                                                 restart_policy=restart_policy)
         else:
+            parameters = None if not limit else Parameters(limit)
             client.create_cloud_routed_network(name, ros_distro=ros_distro, shared=False,
-                                               parameters=Parameters(limit))
+                                               parameters=parameters)
 
     click.secho('Routed Network created successfully!', fg='green')
 

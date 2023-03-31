@@ -27,9 +27,8 @@ from riocli.network.routed_network import create_routed_network
 @click.option('--ros', help='Version of ROS',
               type=click.Choice(['kinetic', 'melodic', 'noetic']), default='melodic')
 @click.option('--device', 'device_name', help='Device ID of the Device where Network will run (device only)')
-@click.option('--limit', help='Resource Limit for Network (cloud only) '
-                              '[x_small is only available for Native Network]',
-              type=click.Choice(['x_small', 'small', 'medium', 'large']), default='small')
+@click.option('--cpu', help='cpu limit for Network (cloud only) ', type=float)
+@click.option('--memory', help='memory limit for Network (cloud only) ', type=int)
 @click.option('--network-interface', '-nic', type=str,
               help='Network Interface on which Network will listen (device only)')
 @click.option('--restart-policy', help='Restart policy for the Network (device only)',
