@@ -15,10 +15,8 @@ import typing
 from typing import Union, Any, Dict
 
 from rapyuta_io import Client
-from rapyuta_io.clients.native_network import NativeNetwork, \
-    NativeNetworkLimits, Parameters as NativeNetworkParameters
-from rapyuta_io.clients.routed_network import RoutedNetwork, \
-    RoutedNetworkLimits, Parameters as RoutedNetworkParameters
+from rapyuta_io.clients.native_network import NativeNetwork, Parameters as NativeNetworkParameters
+from rapyuta_io.clients.routed_network import RoutedNetwork, Parameters as RoutedNetworkParameters
 
 from riocli.model import Model
 from riocli.network.util import find_network_name, NetworkNotFound
@@ -26,19 +24,6 @@ from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Network(Model):
-    _RoutedNetworkLimits = {
-        'small': RoutedNetworkLimits.SMALL,
-        'medium': RoutedNetworkLimits.MEDIUM,
-        'large': RoutedNetworkLimits.LARGE,
-    }
-
-    _NativeNetworkLimits = {
-        'xSmall': NativeNetworkLimits.X_SMALL,
-        'small': NativeNetworkLimits.SMALL,
-        'medium': NativeNetworkLimits.MEDIUM,
-        'large': NativeNetworkLimits.LARGE,
-
-    }
 
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
@@ -76,6 +61,7 @@ class Network(Model):
     def pre_process(cls, client: Client, d: Dict) -> None:
         pass
 
+
     def to_v1(self, client: Client) -> NativeNetwork:
         if self.spec.runtime == 'cloud':
             limits = self._get_limits()
@@ -105,12 +91,6 @@ class Network(Model):
         return client.create_device_routed_network(name=self.metadata.name, ros_distro=self.spec.rosDistro, shared=True,
                                                    device=device,
                                                    network_interface=self.spec.networkInterface)
-
-    def _get_limits(self) -> Union[RoutedNetworkLimits, NativeNetworkLimits]:
-        if self.spec.type == 'routed':
-            return self._RoutedNetworkLimits[self.spec.resourceLimits]
-        else:
-            return self._NativeNetworkLimits[self.spec.resourceLimits]
 
     @staticmethod
     def validate(data):
