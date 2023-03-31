@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,94 +11,68 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import filecmp
+import json
 import os
-from copy import copy, deepcopy
+import typing
+from filecmp import dircmp
 
-import six
-import yaml
+import click
+from directory_tree import display_tree
+from rapyuta_io.utils import RestClient
 
-
-# To run docstring tests
-# python -m doctest -v doctest_simple.py
-
-# Copyright Ferry Boender, released under the MIT license.
-def deep_merge(tgt, src):
-    """Deep update target dict with src
-    For each k,v in src: if k doesn't exist in target, it is deep copied from
-    src to target. Otherwise, if v is a list, target[k] is replaced with
-    src[k]. If v is a set, target[k] is updated with v, If v is a dict,
-    recursively deep-update it.
-
-    Examples:
-    >>> t = {'name': 'Ferry', 'hobbies': ['programming', 'sci-fi']}
-    >>> print deep_merge(t, {'hobbies': ['gaming']})
-    {'name': 'Ferry', 'hobbies': ['gaming']}
-    """
-    target = deepcopy(tgt)
-    for k, v in six.iteritems(src):
-        if type(v) == list:
-            target[k] = deepcopy(v)
-        elif type(v) == dict:
-            if k not in target:
-                target[k] = deepcopy(v)
-            else:
-                target[k] = deep_merge(target[k], v)
-        elif type(v) == set:
-            if k not in target:
-                target[k] = v.copy()
-            else:
-                target[k].update(v.copy())
-        else:
-            target[k] = copy(v)
-    return target
+from riocli.config import Configuration
 
 
-def compile_local_configurations(paths, tree_names=None):
-    """
-    Iterate over each path in "paths" and merge each
-    Read the configuration files from the repository, merging the warehouse-specific configs
-    over the top of the default configurations. Returns a single dict where the root keys
-    are the relative file path for each config.
-    """
-    configurations = {}
-    for path in paths:
-        abs_path = os.path.abspath(path)
-        cfg = parse_configurations(abs_path, tree_names)
-        configurations = deep_merge(configurations, cfg)
+def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[str]:
+    trees = []
+    for each in os.listdir(root_dir):
+        full_path = os.path.join(root_dir, each)
 
-    return configurations
+        if not os.path.isdir(full_path):
+            continue
 
+        if tree_names and each not in tree_names:
+            continue
 
-def parse_configurations(root_dir, tree_names=None):
-    """
-    Parse the configurations and return as a dict
-    """
-    configurations = {}
+        trees.append(each)
 
-    for root, dirs, files in os.walk(root_dir, followlinks=True):
-        for f in files:
-            file_name, file_extension = os.path.splitext(f)  # f is a file name with extension
-
-            relpath = root[len(root_dir) + 1:]  # get relative path without leading /
-
-            # Only upload certain sub-directories
-            if tree_names:
-                # Check top-level directory against list
-                if relpath.split(os.sep)[0] not in tree_names:
-                    continue
-
-            contents = ""
-            if file_extension == '.yaml':
-                with open(os.path.join(root, f), 'r') as fp:
-                    contents = yaml.safe_load(fp)
-
-            configurations[os.path.join(relpath, f)] = contents
-
-    return configurations
+    return trees
 
 
-def show_configurations(args):
-    """
-    Show the local IO configuration
-    """
-    return compile_local_configurations(paths=args.paths, tree_names=args.configurations)
+def display_trees(root_dir: str, trees: typing.List[str] = []) -> None:
+    for each in trees:
+        tree_out = display_tree(os.path.join(root_dir, each), string_rep=True)
+        click.secho(tree_out, fg='yellow')
+
+
+def _api_call(method: str, name: typing.Union[str, None] = None,
+              payload: typing.Union[typing.Dict, None] = None, load_response: bool = True,
+              ) -> typing.Any:
+    config = Configuration()
+    catalog_host = config.data.get(
+        'core_api_host', 'https://gaapiserver.apps.rapyuta.io')
+    url = '{}/api/paramserver/tree'.format(catalog_host)
+    if name:
+        url = '{}/{}'.format(url, name)
+    headers = config.get_auth_header()
+    response = RestClient(url).method(method).headers( headers).execute(payload=payload)
+    data = None
+    err_msg = 'error in the api call'
+    if load_response:
+        data = json.loads(response.text)
+
+    if not response.ok:
+        err_msg = data.get('error')
+        raise Exception(err_msg)
+    return data
+
+
+class DeepDirCmp(dircmp):
+
+    def phase3(self) -> None:
+        # shallow=False enables the behaviour of matching the File content. The
+        # original dircmp Class only compares os.Stat between the files, and
+        # gives no way to modify the behaviour.
+        f_comp = filecmp.cmpfiles(self.left, self.right, self.common_files, shallow=False)
+        self.same_files, self.diff_files, self.funny_files = f_comp
