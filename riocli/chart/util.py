@@ -3,10 +3,13 @@ import typing
 import requests
 from yaml import safe_load
 
-DEFAULT_REPOSITORY = 'https://rapyuta-robotics.github.io/rapyuta-charts/incubator/index.yaml'
+from riocli.utils import tabulate_data
+
+DEFAULT_REPOSITORY = 'https://rapyuta-robotics.github.io/rapyuta-charts/incubator/index.yaml'  # noqa
 
 
 def find_chart(chart: str) -> typing.List:
+    """Finds a chart in the upstream index."""
     chart, ver = parse_chart(chart)
 
     index = fetch_index()
@@ -24,6 +27,7 @@ def find_chart(chart: str) -> typing.List:
 
 
 def fetch_index(repository=DEFAULT_REPOSITORY) -> typing.Dict:
+    """Fetches the upstream chart index."""
     response = requests.get(repository)
     if not response.ok:
         raise Exception('Fetching index failed: %s'.format(repository))
@@ -61,3 +65,22 @@ def _find_version(entries: typing.List, version: str):
     for entry in entries:
         if entry.get('version') == version:
             return [entry]
+
+
+def print_chart_entries(entries: typing.List, wide: bool = False) -> None:
+    """Prints charts in a tabular format."""
+    entries = sorted(entries, key=lambda x: x.get('name').lower())
+
+    headers = ['Name', 'Version', 'Created At']
+    if wide:
+        headers.append('Description')
+
+    data = []
+    for entry in entries:
+        row = [entry.get('name'), entry.get('version'), entry.get('created')]
+        if wide:
+            row.append(entry.get('description'))
+
+        data.append(row)
+
+    tabulate_data(data, headers)

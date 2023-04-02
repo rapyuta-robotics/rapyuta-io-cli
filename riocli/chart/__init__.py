@@ -16,7 +16,9 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.chart.apply import apply_chart
 from riocli.chart.delete import delete_chart
-from riocli.chart.search import list_charts, search_chart, info_chart
+from riocli.chart.info import info_chart
+from riocli.chart.list import list_charts
+from riocli.chart.search import search_chart
 
 
 @click.group(
@@ -27,7 +29,8 @@ from riocli.chart.search import list_charts, search_chart, info_chart
 )
 def chart() -> None:
     """
-    Rapyuta Charts is a way to package the complete Application for Rapyuta.io Platform.
+    Rapyuta Charts is a way to package the complete Application for
+    Rapyuta.io Platform.
     """
     pass
 

@@ -14,21 +14,27 @@
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
-from riocli.chart.util import find_chart, print_chart_entries
+from riocli.chart.util import fetch_index, print_chart_entries
 
 
 @click.command(
-    'search',
+    'list',
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
-    help='Search for available charts in the repository',
 )
 @click.option('-w', '--wide', is_flag=True, default=False,
               help='Print more details')
-@click.argument('chart', type=str)
-def search_chart(chart: str, wide: bool = False) -> None:
-    """Search for a chart in the chart repo."""
-    versions = find_chart(chart)
-    print_chart_entries(versions, wide=wide)
+def list_charts(wide: bool = False) -> None:
+    """List all available charts."""
+    index = fetch_index()
+    if 'entries' not in index:
+        raise Exception('No entries found!')
+    entries = []
+    for name, chart in index['entries'].items():
+        for version in chart:
+            entries.append(version)
+
+    print_chart_entries(munchify(entries), wide=wide)

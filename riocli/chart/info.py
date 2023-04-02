@@ -15,20 +15,19 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.chart.util import find_chart, print_chart_entries
+from riocli.chart.util import find_chart
+from riocli.utils import dump_all_yaml
 
 
 @click.command(
-    'search',
+    'info',
     cls=HelpColorsCommand,
     help_headers_color='yellow',
     help_options_color='green',
-    help='Search for available charts in the repository',
+    help='Describe the available chart with versions',
 )
-@click.option('-w', '--wide', is_flag=True, default=False,
-              help='Print more details')
 @click.argument('chart', type=str)
-def search_chart(chart: str, wide: bool = False) -> None:
-    """Search for a chart in the chart repo."""
+def info_chart(chart: str) -> None:
+    """Print a chart's details."""
     versions = find_chart(chart)
-    print_chart_entries(versions, wide=wide)
+    dump_all_yaml(versions)
