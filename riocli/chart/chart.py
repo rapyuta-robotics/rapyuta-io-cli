@@ -28,29 +28,45 @@ class Chart(Munch):
         self.tmp_dir = None
         self.downloaded = False
 
-    def apply_chart(self, values: str = None, secrets: str = None, dryrun: bool = None, workers: int = 6):
+    def apply_chart(
+            self,
+            values: str = None,
+            secrets: str = None,
+            dryrun: bool = None,
+            workers: int = 6,
+            silent: bool = False):
         if not self.downloaded:
             self.download_chart()
 
         templates_dir = Path(self.tmp_dir.name, self.name, 'templates')
         if not values:
-            values = Path(self.tmp_dir.name, self.name, 'values.yaml').as_posix()
+            values = Path(self.tmp_dir.name, self.name,
+                          'values.yaml').as_posix()
 
-        apply.callback(values=values, files=[templates_dir], secrets=secrets, dryrun=dryrun, workers=workers)
+        apply.callback(values=values, files=[templates_dir], secrets=secrets,
+                       dryrun=dryrun, workers=workers, silent=silent)
 
-    def delete_chart(self, values: str = None, secrets: str = None, dryrun: bool = None):
+    def delete_chart(
+            self,
+            values: str = None,
+            secrets: str = None,
+            dryrun: bool = None,
+            silent: bool = False):
         if not self.downloaded:
             self.download_chart()
 
         templates_dir = Path(self.tmp_dir.name, self.name, 'templates')
         if not values:
-            values = Path(self.tmp_dir.name, self.name, 'values.yaml').as_posix()
+            values = Path(self.tmp_dir.name, self.name,
+                          'values.yaml').as_posix()
 
-        delete.callback(values=values, files=[templates_dir], secrets=secrets, dryrun=dryrun)
+        delete.callback(values=values, files=[templates_dir], secrets=secrets,
+                        dryrun=dryrun, silent=silent)
 
     def download_chart(self):
         self._create_temp_directory()
-        click.secho('Downloading {}:{} chart in {}'.format(self.name, self.version, self.tmp_dir.name), fg='yellow')
+        click.secho('Downloading {}:{} chart in {}'.format(
+            self.name, self.version, self.tmp_dir.name), fg='cyan')
         chart_filepath = Path(self.tmp_dir.name, self._chart_filename())
 
         with open(chart_filepath, 'wb') as f:
@@ -63,11 +79,10 @@ class Chart(Munch):
     def extract_chart(self):
         try:
             chart_filepath = Path(self.tmp_dir.name, self._chart_filename())
-            chart_tarball = tarfile.open(chart_filepath)
-            chart_tarball.extractall(path=self.tmp_dir.name)
-        finally:
-            if chart_tarball:
-                chart_tarball.close()
+            with tarfile.open(chart_filepath) as tarball:
+                tarball.extractall(path=self.tmp_dir.name)
+        except Exception as e:
+            raise e
 
     def cleanup(self):
         if self.tmp_dir:

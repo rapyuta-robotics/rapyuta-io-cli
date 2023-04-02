@@ -39,7 +39,8 @@ def dump_all_yaml(objs: typing.List):
     """
     Dump multiple documents as YAML separated by triple dash (---)
     """
-    click.echo(yaml.dump_all(objs, allow_unicode=True, explicit_start=True))
+    click.echo(yaml.safe_dump_all(objs, allow_unicode=True,
+                                  explicit_start=True))
 
 
 def run_bash(cmd, bg=False):
