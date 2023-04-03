@@ -1,0 +1,18 @@
+name: Check Commit Hygiene 💬
+
+on:
+  pull_request:
+    branches:
+      - main
+      - devel
+
+jobs:
+  verify:
+    name: Conventional Commits
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      name: Checkout code
+
+    - uses: webiny/action-conventional-commits@v1.1.0
+      name: Check if commit messages are compliant
