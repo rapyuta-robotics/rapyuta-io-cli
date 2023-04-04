@@ -14,6 +14,8 @@ http://gehrcke.de/2014/02/distributing-a-python-command-line-application/
 Rio CLI is available on PyPI index and can be installed directly by running the
 following command.
 
+Add random text
+
 ``` bash
 pip install rapyuta-io-cli
 ```
