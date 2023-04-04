@@ -15,10 +15,13 @@ import typing
 from abc import ABC, abstractmethod
 from datetime import datetime
 from shutil import get_terminal_size
+import yaml
+import os
 
 import click
 from munch import Munch, munchify
 from rapyuta_io import Client
+from pathlib import Path
 
 from riocli.project.util import find_project_guid
 
@@ -26,6 +29,7 @@ prompt = ">> {}{}{} [{}]"  # >> msg  spacer  rigth_msg time
 
 DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
+schema_dir = Path('jsonschema')
 
 def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
     columns, _ = get_terminal_size()

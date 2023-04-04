@@ -15,12 +15,14 @@ import typing
 from typing import Union, Any, Dict
 
 from rapyuta_io import Client
-from rapyuta_io.clients.native_network import NativeNetwork, NativeNetworkLimits, Parameters as NativeNetworkParameters
-from rapyuta_io.clients.routed_network import RoutedNetwork, RoutedNetworkLimits, Parameters as RoutedNetworkParameters
+from rapyuta_io.clients.native_network import NativeNetwork, \
+    NativeNetworkLimits, Parameters as NativeNetworkParameters
+from rapyuta_io.clients.routed_network import RoutedNetwork, \
+    RoutedNetworkLimits, Parameters as RoutedNetworkParameters
 
 from riocli.model import Model
 from riocli.network.util import find_network_name, NetworkNotFound
-from riocli.network.validation import validate
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Network(Model):
@@ -74,10 +76,6 @@ class Network(Model):
     def pre_process(cls, client: Client, d: Dict) -> None:
         pass
 
-    @staticmethod
-    def validate(data) -> None:
-        validate(data)
-
     def to_v1(self, client: Client) -> NativeNetwork:
         if self.spec.runtime == 'cloud':
             limits = self._get_limits()
@@ -113,3 +111,11 @@ class Network(Model):
             return self._RoutedNetworkLimits[self.spec.resourceLimits]
         else:
             return self._NativeNetworkLimits[self.spec.resourceLimits]
+
+    @staticmethod
+    def validate(data):
+        """
+        Validates if network data is matching with its corresponding schema
+        """
+        schema = load_schema('network')
+        validate_manifest(instance=data, schema=schema)
