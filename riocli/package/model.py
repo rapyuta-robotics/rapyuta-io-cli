@@ -19,8 +19,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.package import RestartPolicy
 
 from riocli.model import Model
-# from riocli.package.util import find_project_guid, ProjectNotFound
-from riocli.package.validation import validate
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Package(Model):
@@ -245,5 +244,9 @@ class Package(Model):
         pass
 
     @staticmethod
-    def validate(data) -> None:
-        validate(data)
+    def validate(data):
+        """
+        Validates if package data is matching with its corresponding schema
+        """
+        schema = load_schema('package')
+        validate_manifest(instance=data, schema=schema)

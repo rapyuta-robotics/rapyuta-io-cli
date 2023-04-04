@@ -13,11 +13,12 @@
 # limitations under the License.
 import typing
 
-from rapyuta_io import Secret as v1Secret, SecretConfigDocker, SecretConfigSourceBasicAuth, \
+from rapyuta_io import Secret as v1Secret, SecretConfigDocker, \
+    SecretConfigSourceBasicAuth, \
     SecretConfigSourceSSHAuth, Client
 
 from riocli.model import Model
-from riocli.secret.validation import validate
+from riocli.utils.validate import load_schema, validate_manifest
 
 
 class Secret(Model):
@@ -26,7 +27,8 @@ class Secret(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        _, secret = self.rc.find_depends({'kind': 'secret', 'nameOrGUID': self.metadata.name})
+        _, secret = self.rc.find_depends(
+            {'kind': 'secret', 'nameOrGUID': self.metadata.name})
         if not secret:
             return False
 
@@ -72,5 +74,9 @@ class Secret(Model):
         pass
 
     @staticmethod
-    def validate(data) -> None:
-        validate(data)
+    def validate(data):
+        """
+        Validates if secret data is matching with its corresponding schema
+        """
+        schema = load_schema('secret')
+        validate_manifest(instance=data, schema=schema)

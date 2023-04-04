@@ -17,8 +17,8 @@ from munch import munchify
 from rapyuta_io import Client
 
 from riocli.managedservice.util import ManagedServicesClient
-from riocli.managedservice.validation import validate
 from riocli.model import Model
+from riocli.utils.validate import load_schema, validate_manifest
 
 
 class ManagedService(Model):
@@ -54,5 +54,9 @@ class ManagedService(Model):
         pass
 
     @staticmethod
-    def validate(d):
-        validate(d)
+    def validate(data):
+        """
+        Validates if managedservice data is matching with its corresponding schema
+        """
+        schema = load_schema('managedservice')
+        validate_manifest(instance=data, schema=schema)
