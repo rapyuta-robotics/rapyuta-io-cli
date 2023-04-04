@@ -16,3 +16,5 @@ jobs:
 
     - uses: webiny/action-conventional-commits@v1.1.0
       name: Check if commit messages are compliant
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
