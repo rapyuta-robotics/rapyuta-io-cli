@@ -14,5 +14,7 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout code
 
-    - uses: webiny/action-conventional-commits@v1.1.0
+    - uses: rapyuta-robotics/action-conventional-commits@v1.1.1
       name: Check if commit messages are compliant
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
