@@ -26,12 +26,25 @@
             }
         ],
         [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "scripts/build-rio-appimage.sh ${nextRelease.version}"
+            }
+        ],
+        [
             "@semantic-release/git",
             {
                 "assets": ["CHANGELOG.md", "riocli/bootstrap.py"],
                 "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
             }
         ],
-        "@semantic-release/github"
+        [
+            "@semantic-release/github",
+            {
+              "assets": [
+                  {"path": "scripts/rio*.AppImage"}
+              ]
+            }
+        ]
     ]
 }
