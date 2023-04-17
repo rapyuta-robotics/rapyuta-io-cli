@@ -33,6 +33,7 @@ spec:
         memory: 128 # Unit: MB (Optional)
       docker:
         image: "busybox:latest"
+        imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
         pullSecret:
           depends:
             kind: secret

@@ -212,6 +212,9 @@ class Package(Model):
                 secret_guid, secret = self.rc.find_depends(exec.docker.pullSecret.depends)
                 exec_object.secret = secret_guid
 
+            if exec.docker.get('imagePullPolicy'):
+                exec_object.imagePullPolicy = exec.docker.imagePullPolicy
+
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid
             # TODO verify this is right for secret?
