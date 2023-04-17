@@ -42,7 +42,6 @@ setup(
         "click-plugins>=1.1.1",
         "click>=8.0.1",
         "dictdiffer>=0.9.0",
-        "fastjsonschema>=2.16.1",
         "graphlib-backport>=1.0.3",
         "jinja2>=3.0.1",
         "munch>=2.4.0",
@@ -57,7 +56,8 @@ setup(
         "urllib3>=1.23",
         "pyrfc3339>=1.1",
         "directory-tree>=0.0.3.1",
-        "yaspin>=2.3.0"
+        "yaspin>=2.3.0",
+        "jsonschema>=4.0.0"
     ],
     setup_requires=["flake8"],
 )
