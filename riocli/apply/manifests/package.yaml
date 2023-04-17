@@ -179,6 +179,7 @@ spec:
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
       docker:
         image: "busybox:latest"
+        imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
         pullSecret:
           depends:
             kind: secret
@@ -389,6 +390,7 @@ spec:
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
       docker:
         image: "busybox:latest"
+        imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
         pullSecret:
           depends:
             kind: secret
@@ -442,6 +444,7 @@ spec:
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
       docker:
         image: "busybox:latest"
+        imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
         pullSecret:
           depends:
             kind: secret

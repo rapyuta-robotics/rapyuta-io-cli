@@ -141,6 +141,8 @@ definitions:
                 properties:
                   image:
                     "$ref": "#/definitions/imageName"
+                  imagePullPolicy:
+                    "$ref": "#/definitions/imagePullPolicy"
                   pullSecret:
                     "$ref": "#/definitions/secretDepends"
                 required:
@@ -649,6 +651,13 @@ definitions:
   imageName:
     type: string
     pattern: ^([a-zA-Z0-9])([\w.\-_]+((?::\d+|)(?=/[a-z0-9._-]+/[a-z0-9._-]+))|)(?:/|)([a-z0-9.\-_]+(?:/[a-z0-9.\-_]+|))(:([\w.\-_]{1,126})|)$
+  imagePullPolicy:
+    type: string
+    enum:
+      - Always
+      - IfNotPresent
+      - Never
+    default: IfNotPresent
 
   buildDepends:
     properties:
