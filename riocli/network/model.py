@@ -17,6 +17,7 @@ from typing import Union, Any, Dict
 from rapyuta_io import Client
 from rapyuta_io.clients.native_network import NativeNetwork, Parameters as NativeNetworkParameters
 from rapyuta_io.clients.routed_network import RoutedNetwork, Parameters as RoutedNetworkParameters
+from rapyuta_io.clients.common_models import Limits
 
 from riocli.model import Model
 from riocli.network.util import find_network_name, NetworkNotFound
@@ -72,6 +73,9 @@ class Network(Model):
                                                  network_interface=self.spec.networkInterface)
 
         return NativeNetwork(self.metadata.name, self.spec.runtime.lower(), self.spec.rosDistro, parameters=parameters)
+
+    def _get_limits(self):
+        return Limits(self.spec.resourceLimits['cpu'], self.spec.resourceLimits['memory'])
 
     def _create_routed_network(self, client: Client) -> RoutedNetwork:
         if self.spec.runtime == 'cloud':
