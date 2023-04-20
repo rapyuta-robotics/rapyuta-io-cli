@@ -17,7 +17,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
 from riocli.model import Model
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Device(Model):

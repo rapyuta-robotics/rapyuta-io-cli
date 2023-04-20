@@ -16,7 +16,7 @@ import typing
 from rapyuta_io import Project as v1Project, Client
 
 from riocli.model import Model
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Project(Model):

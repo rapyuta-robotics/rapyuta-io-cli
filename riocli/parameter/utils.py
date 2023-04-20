@@ -37,6 +37,9 @@ def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[st
 
         trees.append(each)
 
+    if tree_names and not trees:
+        raise Exception('specified tree names are invalid')
+
     return trees
 
 

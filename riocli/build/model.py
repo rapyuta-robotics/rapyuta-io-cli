@@ -16,7 +16,7 @@ import typing
 from rapyuta_io import Build as v1Build, Client, BuildOptions, CatkinOption
 
 from riocli.model import Model
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Build(Model):

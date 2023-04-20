@@ -19,7 +19,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.package import RestartPolicy
 
 from riocli.model import Model
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Package(Model):
