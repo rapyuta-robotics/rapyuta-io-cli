@@ -18,7 +18,7 @@ from rapyuta_io import Client
 
 from riocli.managedservice.util import ManagedServicesClient
 from riocli.model import Model
-from riocli.utils.validate import load_schema, validate_manifest
+from riocli.jsonschema.validate import load_schema, validate_manifest
 
 
 class ManagedService(Model):

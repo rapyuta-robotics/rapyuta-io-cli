@@ -32,7 +32,7 @@ from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.model import Model
 from riocli.package.util import find_package_guid
 from riocli.static_route.util import find_static_route_guid
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Deployment(Model):

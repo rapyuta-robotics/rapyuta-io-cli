@@ -25,7 +25,7 @@ def load_schema(resource: str) -> dict:
     """
     Reads JSON schema yaml and returns a dict.
     """
-    schema_dir = Path('jsonschema')
+    schema_dir = Path(__file__).parent.joinpath('schemas')
     with open(schema_dir.joinpath(resource + "-schema.yaml")) as f:
         return yaml.safe_load(f)
 
