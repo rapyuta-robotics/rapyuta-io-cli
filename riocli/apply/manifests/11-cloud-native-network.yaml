@@ -6,4 +6,6 @@ spec:
   runtime: "cloud"
   type: "native"
   rosDistro: "melodic"
-  resourceLimits: "xSmall"
+  resourceLimits:
+    cpu: 0.5
+    memory: 1024

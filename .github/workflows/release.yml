@@ -1,5 +1,8 @@
 name: Release
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   release:
@@ -18,3 +21,6 @@ jobs:
           npx semantic-release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          MINIO_URL: ${{ secrets.MINIO_URL }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET: ${{ secrets.MINIO_SECRET }}

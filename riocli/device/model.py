@@ -16,8 +16,8 @@ import typing
 from rapyuta_io import Client
 from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
-from riocli.device.validation import validate
 from riocli.model import Model
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Device(Model):
@@ -26,7 +26,8 @@ class Device(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        guid, obj = self.rc.find_depends({"kind": "device", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends(
+            {"kind": "device", "nameOrGUID": self.metadata.name})
         if not guid:
             return False
 
@@ -65,5 +66,9 @@ class Device(Model):
         pass
 
     @staticmethod
-    def validate(data) -> None:
-        validate(data)
+    def validate(data):
+        """
+        Validates if device data is matching with its corresponding schema
+        """
+        schema = load_schema('device')
+        validate_manifest(instance=data, schema=schema)

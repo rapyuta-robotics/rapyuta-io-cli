@@ -60,12 +60,6 @@ definitions:
               - deviceGUID
               - networkInterface
 
-  resourceLimits:
-    enum:
-      - xSmall
-      - small
-      - medium
-      - large
   rosDistro:
     enum:
       - melodic
@@ -113,3 +107,16 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  resourceLimits:
+    type: object
+    properties:
+      cpu:
+        type: number
+        multipleOf: 0.025
+      memory:
+        type: number
+        multipleOf: 128
+    required:
+    - cpu
+    - memory

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-
 """setup.py: setuptools control."""
 
-
 import re
-from setuptools import setup, find_packages
 
+from setuptools import setup, find_packages
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"', open("riocli/bootstrap.py").read(), re.M
@@ -44,20 +42,22 @@ setup(
         "click-plugins>=1.1.1",
         "click>=8.0.1",
         "dictdiffer>=0.9.0",
-        "fastjsonschema>=2.16.1",
         "graphlib-backport>=1.0.3",
         "jinja2>=3.0.1",
         "munch>=2.4.0",
         "python-dateutil>=2.8.2",
         "pytz",
         "pyyaml>=5.4.1",
-        "rapyuta-io>=1.8.0",
+        "rapyuta-io>=1.9.0",
         "requests>=2.20.0",
         "setuptools",
         "six>=1.13.0",
         "tabulate>=0.8.0",
         "urllib3>=1.23",
-        "pyrfc3339>=1.1"
+        "pyrfc3339>=1.1",
+        "directory-tree>=0.0.3.1",
+        "yaspin>=2.3.0",
+        "jsonschema>=4.0.0"
     ],
     setup_requires=["flake8"],
 )

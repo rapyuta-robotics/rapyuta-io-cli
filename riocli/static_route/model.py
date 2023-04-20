@@ -17,7 +17,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
 from riocli.model import Model
-from riocli.static_route.validation import validate
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class StaticRoute(Model):
@@ -25,7 +25,8 @@ class StaticRoute(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        _, static_route = self.rc.find_depends({"kind": "staticroute", "nameOrGUID": self.metadata.name})
+        _, static_route = self.rc.find_depends({'kind': 'staticroute',
+                                                'nameOrGUID': self.metadata.name})
         if not static_route:
             return False
 
@@ -46,5 +47,9 @@ class StaticRoute(Model):
         pass
 
     @staticmethod
-    def validate(data) -> None:
-        validate(data)
+    def validate(data):
+        """
+        Validates if static route data is matching with its corresponding schema
+        """
+        schema = load_schema('static_route')
+        validate_manifest(instance=data, schema=schema)

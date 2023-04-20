@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,32 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import click
 from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.parameter.utils import _api_call
+from riocli.utils import tabulate_data
 
 
-@click.command('delete')
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True, default=False,
-              help="Skip confirmation")
-@click.argument('tree', type=click.STRING)
-def delete_configurations(tree: str, silent: bool = False) -> None:
+@click.command('list')
+def list_configuration_trees() -> None:
     """
-    Deletes the Configuration Parameter Tree.
+    List the Configuration Parameter Trees.
     """
-    click.secho('Configuration Parameter {} will be deleted'.format(tree))
-
-    if not silent:
-        click.confirm('Do you want to proceed?', default=True, abort=True)
-
     try:
-        data = _api_call(HttpMethod.DELETE, name=tree)
-        if data.get('data') != 'ok':
+        data = _api_call(HttpMethod.GET)
+        if 'data' not in data:
             raise Exception('Something went wrong!')
 
-    except IOError as e:
-        click.secho(str(e.__traceback__), fg='red')
+        trees = [[tree] for tree in data['data']]
+
+        tabulate_data(trees, headers=['Tree Name'])
+
+    except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)

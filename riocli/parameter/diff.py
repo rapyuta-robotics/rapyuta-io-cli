@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,69 +11,93 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 # -----------------------------------------------------------------------------
 #
 # Configurations
 # Args
 #    path,  tree_names,  delete_existing=True|False
 # -----------------------------------------------------------------------------
-
-from tempfile import mkdtemp
+import filecmp
+import os.path
+import typing
+from difflib import unified_diff
+from filecmp import dircmp
+from tempfile import TemporaryDirectory
 from typing import Tuple
-from xmlrpc.client import Boolean
 
 import click
-from click_spinner import spinner
-from dictdiffer import diff
 from rapyuta_io.utils.error import APIError, InternalServerError
 
 from riocli.config import new_client
-from riocli.parameter.utils import parse_configurations
+from riocli.parameter.utils import filter_trees
 
 
 @click.command('diff')
-@click.option('--path', type=click.Path(dir_okay=True, file_okay=False, writable=True, exists=True, resolve_path=True),
-              default=["."],
-              help='Root Path for the Parameters to be download')
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
               help='Tree names to fetch')
-@click.option('--delete-existing', is_flag=True,
-              help='Overwrite existing parameter tree')
-def diff_configurations(path: click.Path, tree_names: Tuple = None, delete_existing: Boolean = False) -> None:
+@click.argument('path', type=click.Path(exists=True), required=False)
+def diff_configurations(path: str, tree_names: Tuple = None) -> None:
     """
-    Download the configurations
+    Diff between the Local and Cloud Configuration Trees.
     """
-    if path is None:
-        click.secho(f"Base path missing. cannot diff without a local path to compare with remote tree", fg='red')
-        raise SystemExit(1)
+    trees = filter_trees(path, tree_names)
 
     try:
         client = new_client()
-        with spinner():
-            tmppath = mkdtemp()  # Temporary directory to hold the configurations
-            client.download_configurations(tmppath, tree_names=list(tree_names), delete_existing_trees=delete_existing)
-            remote_configuration = parse_configurations(tmppath, tree_names=tree_names)
-            local_configuration = parse_configurations(path, tree_names=tree_names)
-            result = diff(local_configuration, remote_configuration)
-            print("")
-            for entry in result:
-                action, key_path, value_mutation = entry
-                color = 'yellow'
-                action_sybom = "~"
-                if action == 'add':
-                    color = 'green'
-                    action_sybom = "+"
-                if action == "remove":
-                    color = 'red'
-                    action_sybom = "-"
-                click.secho(f"{action_sybom}{action} {'.'.join(key_path)}  {value_mutation}", fg=color)
+        with TemporaryDirectory(prefix='riocli-') as tmp_path:
+            client.download_configurations(tmp_path, tree_names=list(tree_names))
 
-
-
+            for tree in trees:
+                left_tree, right_tree = os.path.join(tmp_path, tree), os.path.join(path, tree)
+                diff_tree(left_tree, right_tree)
     except (APIError, InternalServerError) as e:
-        click.secho(f"failed API request {str(e)}", fg='red')
+        click.secho(str(e), fg='red')
         raise SystemExit(1)
-    except (IOError, OSError) as e:
-        click.secho(f"failed file/directory creation {str(e)}", fg='red')
-        raise SystemExit(1)
+
+
+def diff_tree(left: str, right: str) -> None:
+    comp = dircmp(left, right)
+
+    for f in comp.diff_files:
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        diff_file(remote_file, local_file)
+
+    for f in comp.right_only:
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        changed_file(remote_file, local_file, right_only=True)
+
+    for f in comp.left_only:
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        changed_file(remote_file, local_file, left_only=True)
+
+
+def diff_file(left: str, right: str):
+    try:
+        with open(left, 'r', encoding='utf-8') as left_f:
+            left_lines = left_f.readlines()
+
+        with open(right, 'r', encoding='utf-8') as right_f:
+            right_lines = right_f.readlines()
+    except UnicodeDecodeError:
+        changed_file(left, right, binary=True)
+        return
+
+    diff = unified_diff(left_lines, right_lines, fromfile=left, tofile=right, lineterm='')
+
+    for line in diff:
+        click.secho(line)
+
+
+def changed_file(left: str, right: str, left_only: bool = False, right_only: bool = False, binary: bool = False):
+    click.secho('--- {}'.format(left))
+    click.secho('+++ {}'.format(right))
+
+    if left_only:
+        click.secho('deleted file')
+        click.secho()
+    elif right_only:
+        click.secho('new file')
+        click.secho()
+    elif binary:
+        click.secho('binary file changed')
+        click.secho()

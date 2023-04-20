@@ -16,7 +16,7 @@ import typing
 from rapyuta_io import Project as v1Project, Client
 
 from riocli.model import Model
-from riocli.project.validation import validate
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Project(Model):
@@ -25,7 +25,8 @@ class Project(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        guid, obj = self.rc.find_depends({"kind": "project", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends(
+            {"kind": "project", "nameOrGUID": self.metadata.name})
         if not guid:
             return False
 
@@ -49,5 +50,9 @@ class Project(Model):
         pass
 
     @staticmethod
-    def validate(data) -> None:
-        validate(data)
+    def validate(data):
+        """
+        Validates if project data is matching with its corresponding schema
+        """
+        schema = load_schema('project')
+        validate_manifest(instance=data, schema=schema)

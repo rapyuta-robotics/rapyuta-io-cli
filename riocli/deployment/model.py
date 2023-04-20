@@ -17,17 +17,22 @@ import typing
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
+from rapyuta_io.clients.deployment import DeploymentNotRunningException
 from rapyuta_io.clients.native_network import NativeNetwork
-from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, ExecutableMount
-from rapyuta_io.clients.rosbag import ROSBagJob, ROSBagOptions, ROSBagCompression, UploadOptions, \
-    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo
+from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
+    ExecutableMount
+from rapyuta_io.clients.rosbag import ROSBagJob, ROSBagOptions, \
+    ROSBagCompression, UploadOptions, \
+    ROSBagOnDemandUploadOptions, ROSBagTimeRange, ROSBagUploadTypes, \
+    OverrideOptions, TopicOverrideInfo
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
+from riocli.deployment.errors import ERRORS
 from riocli.deployment.util import add_mount_volume_provision_config
-from riocli.deployment.validation import validate
 from riocli.model import Model
 from riocli.package.util import find_package_guid
 from riocli.static_route.util import find_static_route_guid
+from riocli.utils.validate import validate_manifest, load_schema
 
 
 class Deployment(Model):
@@ -38,7 +43,7 @@ class Deployment(Model):
     }
 
     def find_object(self, client: Client) -> typing.Any:
-        guid, obj = self.rc.find_depends({"kind": "deployment", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends({'kind': 'deployment', 'nameOrGUID': self.metadata.name})
         if not guid:
             return False
 
@@ -59,10 +64,10 @@ class Deployment(Model):
         runtime = internal_component['runtime']
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
-            click.secho('>> runtime mismatch => ' + \
+            click.secho('>> runtime mismatch => ' +
                         'deployment:{}.runtime !== package:{}.runtime '.format(
                             self.metadata.name, pkg['packageName']
-                        ), fg="red"
+                        ), fg='red'
                         )
             return
 
@@ -92,11 +97,11 @@ class Deployment(Model):
                 network_guid, network_obj = self.rc.find_depends(network_depends.depends)
 
                 if type(network_obj) == RoutedNetwork:
-                    provision_config.add_routed_network(network_obj,
-                                                        network_interface=network_depends.get('interface', None))
+                    provision_config.add_routed_network(
+                        network_obj, network_interface=network_depends.get('interface', None))
                 if type(network_obj) == NativeNetwork:
-                    provision_config.add_native_network(network_obj,
-                                                        network_interface=network_depends.get('interface', None))
+                    provision_config.add_native_network(
+                        network_obj, network_interface=network_depends.get('interface', None))
 
         if 'rosBagJobs' in self.spec:
             for req_job in self.spec.rosBagJobs:
@@ -118,7 +123,8 @@ class Deployment(Model):
                     if disk_guid not in disk_mounts:
                         disk_mounts[disk_guid] = []
 
-                    disk_mounts[disk_guid].append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
+                    disk_mounts[disk_guid].append(
+                        ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
 
                 for disk_guid in disk_mounts.keys():
                     disk = client.get_volume_instance(disk_guid)
@@ -132,18 +138,19 @@ class Deployment(Model):
                 managed_services = []
                 for managed_service in self.spec.managedServices:
                     managed_services.append({
-                        "instance": managed_service.depends.nameOrGUID,
+                        'instance': managed_service.depends.nameOrGUID,
                     })
-                provision_config.context["managedServices"] = managed_services
+                provision_config.context['managedServices'] = managed_services
 
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(self.spec.device.depends)
             if device is None and device_guid:
                 device = client.get_device(device_guid)
-            provision_config.add_device(__componentName, device=device)
+            provision_config.add_device(__componentName, device=device, set_component_alias=False)
 
             if 'restart' in self.spec:
-                provision_config.add_restart_policy(__componentName, self.RESTART_POLICY[self.spec.restart.lower()])
+                provision_config.add_restart_policy(
+                    __componentName, self.RESTART_POLICY[self.spec.restart.lower()])
 
             # Add Network
             # if self.spec.rosNetworks:
@@ -156,13 +163,22 @@ class Deployment(Model):
                 for vol in self.spec.volumes:
                     exec_mounts.append(ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
             if len(exec_mounts) > 0:
-                provision_config = add_mount_volume_provision_config(provision_config, __componentName, device,
-                                                                     exec_mounts)
+                provision_config = add_mount_volume_provision_config(
+                    provision_config, __componentName, device, exec_mounts)
+
+        provision_config.set_component_alias(__componentName, self.metadata.name)
 
         if os.environ.get('DEBUG'):
             print(provision_config)
         deployment = pkg.provision(self.metadata.name, provision_config)
-        deployment.poll_deployment_till_ready()
+
+        try:
+            deployment.poll_deployment_till_ready()
+        except DeploymentNotRunningException as e:
+            raise Exception(process_deployment_errors(e)) from e
+        except Exception as e:
+            raise e
+
         deployment.get_status()
         return deployment
 
@@ -177,10 +193,6 @@ class Deployment(Model):
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
         pass
-
-    @staticmethod
-    def validate(data):
-        validate(data)
 
     def _get_package(self, client: Client) -> Package:
         name = self.metadata.depends.nameOrGUID
@@ -227,7 +239,8 @@ class Deployment(Model):
             else:
                 guid = find_static_route_guid(client, name)
             static_route = client.get_static_route(route_guid=guid)
-            prov_config.add_static_route(component_name=component, endpoint_name=route.name, static_route=static_route)
+            prov_config.add_static_route(
+                component_name=component, endpoint_name=route.name, static_route=static_route)
 
     def _form_rosbag_job(self, req_job):
         rosbag_job_kw_args = {
@@ -252,7 +265,8 @@ class Deployment(Model):
             rosbag_job_kw_args['upload_options'] = self._form_rosbag_upload_options(req_job.uploadOptions)
 
         if 'overrideOptions' in req_job:
-            rosbag_job_kw_args['override_options'] = self._form_rosbag_override_options(req_job.overrideOptions)
+            rosbag_job_kw_args['override_options'] = self._form_rosbag_override_options(
+                req_job.overrideOptions)
 
         return ROSBagJob(**rosbag_job_kw_args)
 
@@ -303,3 +317,42 @@ class Deployment(Model):
             override_options_kw_args['exclude_topics'] = override_options.excludeTopics
 
         return OverrideOptions(**override_options_kw_args)
+
+    @staticmethod
+    def validate(data):
+        """
+        Validates if deployment data is matching with its corresponding schema
+        """
+        schema = load_schema('deployment')
+        validate_manifest(instance=data, schema=schema)
+
+
+def process_deployment_errors(e: DeploymentNotRunningException):
+    errors = e.deployment_status.errors
+    err_fmt = '[{}] {}\nAction: {}'
+    support_action = ('Report the issue together with the relevant'
+                      ' details to the support team')
+
+    action, description = '', ''
+    msgs = []
+    for code in errors:
+        if code in ERRORS:
+            description = ERRORS[code]['description']
+            action = ERRORS[code]['action']
+        elif code.startswith('DEP_E2'):
+            description = 'Internal rapyuta.io error in the components deployed on cloud'
+            action = support_action
+        elif code.startswith('DEP_E3'):
+            description = 'Internal rapyuta.io error in the components deployed on a device'
+            action = support_action
+        elif code.startswith('DEP_E4'):
+            description = 'Internal rapyuta.io error'
+            action = support_action
+
+        code = click.style(code, fg='yellow')
+        description = click.style(description, fg='red')
+        action = click.style(action, fg='green')
+
+        msgs.append(err_fmt.format(code, description, action))
+
+    return '\n'.join(msgs)
