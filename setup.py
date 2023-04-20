@@ -20,7 +20,8 @@ setup(
     packages=find_packages(),
     package_data={
         'riocli': [
-            'apply/manifests/*.yaml'
+            'apply/manifests/*.yaml',
+            'jsonschema/schemas/*.yaml'
         ]
     },
     include_package_data=True,

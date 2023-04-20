@@ -20,7 +20,7 @@ from rapyuta_io.clients.routed_network import RoutedNetwork, Parameters as Route
 
 from riocli.model import Model
 from riocli.network.util import find_network_name, NetworkNotFound
-from riocli.utils.validate import validate_manifest, load_schema
+from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Network(Model):

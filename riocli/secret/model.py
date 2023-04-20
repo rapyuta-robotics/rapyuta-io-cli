@@ -18,7 +18,7 @@ from rapyuta_io import Secret as v1Secret, SecretConfigDocker, \
     SecretConfigSourceSSHAuth, Client
 
 from riocli.model import Model
-from riocli.utils.validate import load_schema, validate_manifest
+from riocli.jsonschema.validate import load_schema, validate_manifest
 
 
 class Secret(Model):
