@@ -1,3 +1,12 @@
+## [2.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v2.0.1...v2.0.2) (2023-04-20)
+
+
+### Bug Fixes
+
+* **apply:** fixes the schema not found errors ([d4847a5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d4847a53c7b103e8d4400f5c815ea6e5cb5b60f6))
+* **network:** adds _get_limits method for cloud routed network. ([4751307](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4751307e53f554904184527271b4ba133a5e7d73))
+* **parameter:** handles the non-directory tree names ([bbf65f2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bbf65f22585925241d4a99179025e2ef09c55af1))
+
 # [1.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.6.0...v1.0.0) (2023-02-07)
 
 
