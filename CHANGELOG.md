@@ -1,3 +1,39 @@
+# [2.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v1.0.0...v2.0.0) (2023-04-20)
+
+
+### Bug Fixes
+
+* **apply:** apply_async hangs when worker raises exception ([fc5deee](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fc5deeef9051401c70ca3929ed47762ec52e29c4))
+* **apply:** fixes the schema not found errors ([d4847a5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d4847a53c7b103e8d4400f5c815ea6e5cb5b60f6))
+* **apply:** skips confirmation during dry run ([9e1858a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9e1858a0d3b0943a9b38775f312a6200891cd00a))
+* **deployment:** adds deployment as component alias to avoid conflicts ([861301e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/861301ef58b654836634615b75c7e196fadf4bf9))
+* **gh-actions:** code quality workflow does not comment on pr ([56de428](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/56de428e67f3badc911ccef1dcd8ec900ff591f1))
+* **network:** adds _get_limits method for cloud routed network. ([4751307](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4751307e53f554904184527271b4ba133a5e7d73))
+* **network:** adds wait until network is ready for Apply ([897a134](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/897a134259f15b22dc1b137704e5747914dd3da3))
+* **parameter:** handles the non-directory tree names ([bbf65f2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bbf65f22585925241d4a99179025e2ef09c55af1))
+* **secret:** removes unwanted required field in json schema ([beb1730](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/beb1730b1c4d361c60ab1c2528f0a95cfeb8f2b0))
+* updates conventional-commit workflow ([886e02a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/886e02a6716bfe8644bacbc3ddcc84bcca51b8e6))
+
+
+### Code Refactoring
+
+* **parameter:** improves the user-experience ([b132247](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b13224708c3e8133fd5cc8b9bcdcd3fab01a1d39))
+
+
+### Features
+
+* **apply:** improves validation error messages ([8ce51f4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8ce51f487d9ec6ceffc9a0dd7374dbbaef8ba2be))
+* **deployment:** prints deployment error details ([c3fbf33](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c3fbf3334d7af2181675e2a3084a75ee7378ff05))
+* **network:** adds support for fractional resource limits ([b7e5b57](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7e5b57a653851a06016f067a86ecb23a75f74d6))
+* **parameter:** adds option to upload config as FolderNodes ([28af86e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/28af86e812b3a8154c3f6dfe46073d10eb6b9ae8))
+* **utils:** adds decorator for yaspin spinner ([a4e96a1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a4e96a126954b4d36d3e48df99a3048c3b03951d)), closes [#113](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/113)
+
+
+### BREAKING CHANGES
+
+* **parameter:** This commit changes the public API of the parameter
+command.
+
 # [1.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v0.6.0...v1.0.0) (2023-02-07)
 
 
