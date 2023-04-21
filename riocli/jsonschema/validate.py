@@ -16,8 +16,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import yaml
-
-import jsonschema
+from jsonschema import validators, Draft7Validator
 
 
 @lru_cache(maxsize=None)
@@ -30,8 +29,33 @@ def load_schema(resource: str) -> dict:
         return yaml.safe_load(f)
 
 
+def extend_with_default(validator_class):
+    validate_properties = validator_class.VALIDATORS["properties"]
+
+    def set_defaults(validator, properties, instance, schema):
+        for p, sub_schema in properties.items():
+            if "default" in sub_schema:
+                if isinstance(instance, dict):
+                    instance.setdefault(p, sub_schema["default"])
+                if isinstance(instance, list):
+                    for i in instance:
+                        i.setdefault(p, sub_schema["default"])
+
+        for error in validate_properties(
+                validator, properties, instance, schema,
+        ):
+            yield error
+
+    return validators.extend(
+        validator_class, {"properties": set_defaults},
+    )
+
+
+DefaultValidator = extend_with_default(Draft7Validator)
+
+
 def validate_manifest(instance, schema) -> None:
     """
     Validates a manifest against a JSON schema.
     """
-    jsonschema.validate(instance, schema)
+    DefaultValidator(schema).validate(instance)
