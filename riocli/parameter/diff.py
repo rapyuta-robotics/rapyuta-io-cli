@@ -24,32 +24,46 @@ from tempfile import TemporaryDirectory
 from typing import Tuple
 
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils.error import APIError, InternalServerError
+from yaspin import kbi_safe_yaspin
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.parameter.utils import filter_trees
 
 
-@click.command('diff')
+@click.command(
+    'diff',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
               help='Tree names to fetch')
 @click.argument('path', type=click.Path(exists=True), required=False)
 def diff_configurations(path: str, tree_names: Tuple = None) -> None:
     """
-    Diff between the Local and Cloud Configuration Trees.
+    Diff between the local and cloud configuration trees.
     """
     trees = filter_trees(path, tree_names)
 
     try:
         client = new_client()
         with TemporaryDirectory(prefix='riocli-') as tmp_path:
-            client.download_configurations(tmp_path, tree_names=list(tree_names))
+            with kbi_safe_yaspin(
+                    text="Fetching configurations from the cloud..."):
+                client.download_configurations(
+                    tmp_path,
+                    tree_names=list(tree_names)
+                )
 
             for tree in trees:
-                left_tree, right_tree = os.path.join(tmp_path, tree), os.path.join(path, tree)
+                left_tree = os.path.join(tmp_path, tree)
+                right_tree = os.path.join(path, tree)
                 diff_tree(left_tree, right_tree)
     except (APIError, InternalServerError) as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -57,15 +71,18 @@ def diff_tree(left: str, right: str) -> None:
     comp = dircmp(left, right)
 
     for f in comp.diff_files:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
+            comp.right, f)
         diff_file(remote_file, local_file)
 
     for f in comp.right_only:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
+            comp.right, f)
         changed_file(remote_file, local_file, right_only=True)
 
     for f in comp.left_only:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(comp.right, f)
+        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
+            comp.right, f)
         changed_file(remote_file, local_file, left_only=True)
 
 
@@ -80,13 +97,15 @@ def diff_file(left: str, right: str):
         changed_file(left, right, binary=True)
         return
 
-    diff = unified_diff(left_lines, right_lines, fromfile=left, tofile=right, lineterm='')
+    diff = unified_diff(left_lines, right_lines, fromfile=left, tofile=right,
+                        lineterm='')
 
     for line in diff:
         click.secho(line)
 
 
-def changed_file(left: str, right: str, left_only: bool = False, right_only: bool = False, binary: bool = False):
+def changed_file(left: str, right: str, left_only: bool = False,
+                 right_only: bool = False, binary: bool = False):
     click.secho('--- {}'.format(left))
     click.secho('+++ {}'.format(right))
 
