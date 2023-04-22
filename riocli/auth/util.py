@@ -16,6 +16,7 @@ import os
 import click
 from click_spinner import spinner
 from rapyuta_io import Client
+from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 
 from riocli.config import Configuration
@@ -78,7 +79,8 @@ def select_project(config: Configuration, project: str = None, organization: str
         project_map[project.metadata.guid] = project.metadata.name
 
     if not project_guid:
-        project_guid = show_selection(project_map, header='Select the project to activate')
+        project_guid = show_selection(project_map,
+                                      header='Select the project to activate')
 
     config.data['project_id'] = project_guid
     config.data['project_name'] = project_map[project_guid]
@@ -90,7 +92,14 @@ def select_project(config: Configuration, project: str = None, organization: str
     click.secho(confirmation, fg='green')
 
 
-def get_token(email: str, password: str) -> str:
+TOKEN_LEVELS = {
+    0: AuthTokenLevel.LOW,
+    1: AuthTokenLevel.MED,
+    2: AuthTokenLevel.HIGH
+}
+
+
+def get_token(email: str, password: str, level: int = 1) -> str:
     """
     Generates a new token using email and password.
     """
@@ -100,7 +109,8 @@ def get_token(email: str, password: str) -> str:
 
     try:
         with spinner():
-            token = Client.get_auth_token(email, password)
+            token = Client.get_auth_token(
+                email, password, TOKEN_LEVELS[level])
         return token
     except UnauthorizedError:
         click.secho("incorrect email/password", fg='red')
