@@ -15,6 +15,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.parameter.apply import apply_configurations
 from riocli.parameter.delete import delete_configurations
 from riocli.parameter.diff import diff_configurations
@@ -23,26 +24,22 @@ from riocli.parameter.list import list_configuration_trees
 from riocli.parameter.upload import upload_configurations
 
 
-# from riocli.parameter.diff import diff_configurations
-# from riocli.parameter.download import download_configurations
-
-
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def parameter() -> None:
     """
-    Define groups of executables to deploy together
+    Manage configuration parameters for your devices and deployments
     """
     pass
 
 
-parameter.add_command(upload_configurations)
-parameter.add_command(download_configurations)
 parameter.add_command(diff_configurations)
 parameter.add_command(apply_configurations)
-parameter.add_command(list_configuration_trees)
 parameter.add_command(delete_configurations)
+parameter.add_command(upload_configurations)
+parameter.add_command(download_configurations)
+parameter.add_command(list_configuration_trees)
