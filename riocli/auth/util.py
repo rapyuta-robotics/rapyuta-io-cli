@@ -24,7 +24,8 @@ from riocli.project.util import find_project_guid, find_organization_guid
 from riocli.utils.selector import show_selection
 
 
-def select_organization(config: Configuration, organization: str = None) -> str:
+def select_organization(config: Configuration,
+                        organization: str = None) -> str:
     client = config.new_client(with_project=False)
 
     org_guid = None
@@ -52,7 +53,8 @@ def select_organization(config: Configuration, organization: str = None) -> str:
     return org_guid
 
 
-def select_project(config: Configuration, project: str = None, organization: str = None) -> None:
+def select_project(config: Configuration, project: str = None,
+                   organization: str = None) -> None:
     """
     Launches the project selection prompt by listing all the projects.
     Sets the choice in the given configuration.
@@ -62,13 +64,15 @@ def select_project(config: Configuration, project: str = None, organization: str
     project_guid = None
     if project:
         project_guid = (project if project.startswith('project-') else
-                        find_project_guid(client, project, organization=organization))
+                        find_project_guid(client, project,
+                                          organization=organization))
 
     projects = client.list_projects(organization_guid=organization)
     if len(projects) == 0:
         config.data['project_id'] = ""
         config.data['project_name'] = ""
-        click.secho("There are no projects in this organization", fg='black', bg='white')
+        click.secho("There are no projects in this organization", fg='black',
+                    bg='white')
         return
 
     # Sort projects based on their names for an easier selection
@@ -79,8 +83,8 @@ def select_project(config: Configuration, project: str = None, organization: str
         project_map[project.metadata.guid] = project.metadata.name
 
     if not project_guid:
-        project_guid = show_selection(project_map,
-                                      header='Select the project to activate')
+        project_guid = show_selection(
+            project_map, header='Select the project to activate')
 
     config.data['project_id'] = project_guid
     config.data['project_name'] = project_map[project_guid]
@@ -113,8 +117,29 @@ def get_token(email: str, password: str, level: int = 1) -> str:
                 email, password, TOKEN_LEVELS[level])
         return token
     except UnauthorizedError:
-        click.secho("incorrect email/password", fg='red')
+        click.secho("✘ incorrect email/password", fg='red')
         raise SystemExit(1)
     except Exception as e:
         click.secho(e, fg='red')
         raise SystemExit(1)
+
+
+def validate_token(token: str) -> bool:
+    """Validates an auth token."""
+    config = Configuration()
+    if 'environment' in config.data:
+        os.environ['RIO_CONFIG'] = config.filepath
+
+    client = Client(auth_token=token)
+
+    try:
+        user = client.get_authenticated_user()
+        click.secho('Token belongs to user {}'.format(user.email_id),
+                    fg='cyan')
+        return True
+    except UnauthorizedError:
+        click.secho("✘ incorrect auth token", fg='red')
+        return False
+    except Exception as e:
+        click.secho(e, fg='red')
+        return False

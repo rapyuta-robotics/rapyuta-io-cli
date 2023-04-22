@@ -14,7 +14,12 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import get_token, select_organization, select_project
+from riocli.auth.util import (
+    get_token,
+    select_organization,
+    select_project,
+    validate_token,
+)
 from riocli.utils.context import get_root_context
 
 LOGIN_SUCCESS = click.style('Logged in successfully!', fg='green')
@@ -37,6 +42,8 @@ LOGIN_SUCCESS = click.style('Logged in successfully!', fg='green')
 @click.option('--interactive/--no-interactive', '--interactive/--silent',
               is_flag=True, type=bool, default=True,
               help='Make login interactive')
+@click.option('--auth-token', type=str, default=None,
+              help="Login with auth token only")
 @click.pass_context
 def login(
         ctx: click.Context,
@@ -44,28 +51,38 @@ def login(
         password: str,
         organization: str,
         project: str,
-        interactive: bool
+        interactive: bool,
+        auth_token: str,
 ) -> None:
     """
-    Log into the Rapyuta.io account using the CLI. This is required
-    to use most of the functionalities of the CLI.
+    Log into your rapyuta.io account using the CLI. This is required to
+    use most commands of the CLI.
+    
+    You can log in with your email and password or just with and auth token
+    if you already have one.
     """
-    if interactive:
-        email = email or click.prompt('Email')
-        password = password or click.prompt('Password', hide_input=True)
-
-    if not email:
-        click.secho('email not specified')
-        raise SystemExit(1)
-
-    if not password:
-        click.secho('password not specified')
-        raise SystemExit(1)
-
     ctx = get_root_context(ctx)
-    ctx.obj.data['email_id'] = email
-    ctx.obj.data['password'] = password
-    ctx.obj.data['auth_token'] = get_token(email, password)
+
+    if auth_token:
+        if not validate_token(auth_token):
+            raise SystemExit(1)
+        ctx.obj.data['auth_token'] = auth_token
+    else:
+        if interactive:
+            email = email or click.prompt('Email')
+            password = password or click.prompt('Password', hide_input=True)
+
+        if not email:
+            click.secho('email not specified')
+            raise SystemExit(1)
+
+        if not password:
+            click.secho('password not specified')
+            raise SystemExit(1)
+
+        ctx.obj.data['email_id'] = email
+        ctx.obj.data['password'] = password
+        ctx.obj.data['auth_token'] = get_token(email, password)
 
     # Save if the file does not already exist
     if not ctx.obj.exists or not interactive:

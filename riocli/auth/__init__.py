@@ -24,8 +24,6 @@ from riocli.auth.token import token
 from riocli.config import new_client
 
 
-
-
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
