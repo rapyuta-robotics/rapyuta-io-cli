@@ -29,10 +29,10 @@ from rapyuta_io.clients.routed_network import RoutedNetwork
 
 from riocli.deployment.errors import ERRORS
 from riocli.deployment.util import add_mount_volume_provision_config
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.package.util import find_package_guid
 from riocli.static_route.util import find_static_route_guid
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Deployment(Model):
@@ -324,7 +324,7 @@ class Deployment(Model):
         Validates if deployment data is matching with its corresponding schema
         """
         schema = load_schema('deployment')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)
 
 
 def process_deployment_errors(e: DeploymentNotRunningException):

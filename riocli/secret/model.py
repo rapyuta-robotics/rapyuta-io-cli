@@ -17,8 +17,8 @@ from rapyuta_io import Secret as v1Secret, SecretConfigDocker, \
     SecretConfigSourceBasicAuth, \
     SecretConfigSourceSSHAuth, Client
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import load_schema, validate_manifest
 
 
 class Secret(Model):
@@ -79,4 +79,4 @@ class Secret(Model):
         Validates if secret data is matching with its corresponding schema
         """
         schema = load_schema('secret')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)
