@@ -18,8 +18,8 @@ from munch import munchify
 from rapyuta_io import Client
 from rapyuta_io.clients.package import RestartPolicy
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Package(Model):
@@ -249,4 +249,4 @@ class Package(Model):
         Validates if package data is matching with its corresponding schema
         """
         schema = load_schema('package')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

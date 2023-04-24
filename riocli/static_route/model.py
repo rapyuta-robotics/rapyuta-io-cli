@@ -16,8 +16,8 @@ import typing
 from rapyuta_io import Client
 from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class StaticRoute(Model):
@@ -52,4 +52,4 @@ class StaticRoute(Model):
         Validates if static route data is matching with its corresponding schema
         """
         schema = load_schema('static_route')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

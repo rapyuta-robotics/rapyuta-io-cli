@@ -15,8 +15,8 @@ import typing
 
 from rapyuta_io import Project as v1Project, Client
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Project(Model):
@@ -55,4 +55,4 @@ class Project(Model):
         Validates if project data is matching with its corresponding schema
         """
         schema = load_schema('project')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

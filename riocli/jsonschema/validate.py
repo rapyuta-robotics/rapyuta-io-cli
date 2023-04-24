@@ -11,22 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from functools import lru_cache
+import functools
 from pathlib import Path
 
 import yaml
 from jsonschema import validators, Draft7Validator
-
-
-@lru_cache(maxsize=None)
-def load_schema(resource: str) -> dict:
-    """
-    Reads JSON schema yaml and returns a dict.
-    """
-    schema_dir = Path(__file__).parent.joinpath('schemas')
-    with open(schema_dir.joinpath(resource + "-schema.yaml")) as f:
-        return yaml.safe_load(f)
 
 
 def extend_with_default(validator_class):
@@ -34,12 +23,13 @@ def extend_with_default(validator_class):
 
     def set_defaults(validator, properties, instance, schema):
         for p, sub_schema in properties.items():
-            if "default" in sub_schema:
-                if isinstance(instance, dict):
-                    instance.setdefault(p, sub_schema["default"])
-                if isinstance(instance, list):
-                    for i in instance:
-                        i.setdefault(p, sub_schema["default"])
+            if "default" not in sub_schema:
+                continue
+            if isinstance(instance, dict):
+                instance.setdefault(p, sub_schema["default"])
+            if isinstance(instance, list):
+                for i in instance:
+                    i.setdefault(p, sub_schema["default"])
 
         for error in validate_properties(
                 validator, properties, instance, schema,
@@ -54,8 +44,11 @@ def extend_with_default(validator_class):
 DefaultValidator = extend_with_default(Draft7Validator)
 
 
-def validate_manifest(instance, schema) -> None:
+@functools.lru_cache(maxsize=None)
+def load_schema(resource: str) -> DefaultValidator:
     """
-    Validates a manifest against a JSON schema.
+    Reads JSON schema yaml and returns a validator.
     """
-    DefaultValidator(schema).validate(instance)
+    schema_dir = Path(__file__).parent.joinpath('schemas')
+    with open(schema_dir.joinpath(resource + "-schema.yaml")) as f:
+        return DefaultValidator(yaml.safe_load(f))

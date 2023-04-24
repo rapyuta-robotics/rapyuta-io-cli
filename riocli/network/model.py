@@ -15,13 +15,15 @@ import typing
 from typing import Union, Any, Dict
 
 from rapyuta_io import Client
-from rapyuta_io.clients.native_network import NativeNetwork, Parameters as NativeNetworkParameters
-from rapyuta_io.clients.routed_network import RoutedNetwork, Parameters as RoutedNetworkParameters
 from rapyuta_io.clients.common_models import Limits
+from rapyuta_io.clients.native_network import NativeNetwork, \
+    Parameters as NativeNetworkParameters
+from rapyuta_io.clients.routed_network import RoutedNetwork, \
+    Parameters as RoutedNetworkParameters
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.network.util import find_network_name, NetworkNotFound
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Network(Model):
@@ -102,4 +104,4 @@ class Network(Model):
         Validates if network data is matching with its corresponding schema
         """
         schema = load_schema('network')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)
