@@ -1,0 +1,84 @@
+# Deprecated. Builds support will be removed soon.
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "build-docker"
+spec:
+  buildMethod: "Docker"
+  docker:
+    architecture: "amd64" # Options: [amd64, arm32v7, arm64v8]
+    dockerfile: Dockerfile
+    pullSecret: "secret-guid"
+    isRos: True
+    rosDistro: melodic
+    simulation: False
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorial.git"
+    # gitRef: "master"
+    # secret: "secret-guid"
+  # dockerfile: "Dockerfile"
+  # pullSecret: "secret-guid"
+  # contextDir: "talker/talker"
+  # pushRepository: "rrdockerhub/test"
+  # pushSecret: "secret-guid"
+  # tagName: "tag-name"
+  # triggerName: "trigger-name"
+  # webhookURL: "http://webhook.url"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "docker-ros-build"
+spec:
+  recipe: "Docker"
+  docker:
+    architecture: "amd64" # Options: [amd64, arm32v7, arm64v8]
+    dockerfile: Dockerfile
+    pullSecret: "secret-guid"
+    isRos: True
+    rosDistro: melodic
+    simulation: False
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorials"
+    ref: "master"
+    gitSecret: "secret-guid"
+    contextDir: "talker/talker"
+  image:
+    registry:
+    pushSecret: ""
+    tagName: ""
+    triggerName: ""
+    webhookURL: ""
+  rosDistro: "melodic"
+  buildMethod: "Source"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Build"
+metadata:
+  name: "catkin-build"
+spec:
+  buildMethod: "Source"
+  architecture: "amd64"
+  repository:
+    url: "https://github.com/rapyuta-robotics/io_tutorials"
+    ref: "master"
+    gitSecret: "secret-guid"
+    contextDir: "talker/talker"
+  image:
+    registry:
+    pushSecret: ""
+    tagName: ""
+    triggerName: ""
+    webhookURL: ""
+  catkin:
+    architecture: "amd64" # Options: [amd64, arm32v7, arm64v8]
+    isRos: True
+    rosDistro: melodic
+    simulation: False
+    catkinParameters:
+      - rosPackages: ""
+        cmakeArguments: ""
+        makeArguments: ""
+        catkinMakeArguments: ""
+        blacklist: ""

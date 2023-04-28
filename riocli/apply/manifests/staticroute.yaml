@@ -1,4 +1,7 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
-  name: "unreal-server-apply"
+  name: "staticroute"
+  project: "project-guid"
+  labels:
+    app: test

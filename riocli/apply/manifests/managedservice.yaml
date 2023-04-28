@@ -1,9 +1,10 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: ManagedService
 metadata:
-  name: "elastic-test"
+  name: "managedservice"
+  project: "project-guid"
   labels:
     creator: riocli
 spec:
-  provider: elasticsearch
-  config: { }
+  provider: elasticsearch # Required, Options: [elasticsearch]
+  config: { } # Required

@@ -1,0 +1,132 @@
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "package-ros-device-rosbag" # Required
+  version: "v1.0.0" # Required
+  description: "A RIO device ROS package with rosbag"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: device # Options: [device, cloud(default)]
+  device:
+    arch: amd64 # Options: [arm32v7, arm64v8, amd64]
+    restart: always # Options: [always, never, onfailure]
+  executables: # Required
+    - name: "exec-build"
+      type: build # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      build:
+        depends:
+          kind: build
+          nameOrGUID: "build"
+    - name: "exec-docker"
+      type: docker # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      docker:
+        image: "busybox:latest"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: "secret-docker"
+  environmentArgs:
+    - name: "key1" # Required
+      default: "key1-value"
+      description: "A environment variable"
+      exposed: False
+    - name: "key2" # Required
+      default: "key2-value"
+      description: "A environment variable"
+      exposed: True
+      exposedName: "EXPOSED_KEY2"
+  rosBagJobs: # Not supported with preinstalled executable
+    - name: "testbag1" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+    - name: "testbag2" # Required
+      recordOptions: # Required
+        topics:
+          - "/topic1"
+        topicIncludeRegex:
+          - "/telemetry*"
+        topicExcludeRegex: "/telemetry2*"
+        maxMessageCount: 100 # Valid only with topics or include regex
+        node: "talker" # Valid only with topics or include regex
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+    - name: "testbag3" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+        purgeAfter: False
+        onDemandOpts:
+          timeRange:
+            from: 1682399216 # Unix Timestamp
+            to: 1682399217 # Unix Timestamp
+      overrideOptions:
+        topicOverrideInfo:
+          - topicName: "/topic1"
+            recordFrequency: 10 # Hertz
+          - topicName: "/topic2"
+            latched: True
+        excludeTopics:
+          - "/topic3"
+          - "/topic4"
+  ros:
+    enabled: True
+    version: melodic # Required, Options: [ kinetic, melodic, noetic ]
+    inboundScopedTargeted: False
+    rosEndpoints:
+      - type: topic # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low # Options: [low, med, hi, max]
+      - type: service # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low
+        timeout: 120 # Constraint: timeout > 0
+      - type: action # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False

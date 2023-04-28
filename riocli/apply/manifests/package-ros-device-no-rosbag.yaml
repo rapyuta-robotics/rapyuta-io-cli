@@ -1,0 +1,76 @@
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "package-ros-device-no-rosbag" # Required
+  version: "v1.0.0" # Required
+  description: "A RIO device ROS package without rosbag"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: device # Options: [device, cloud(default)]
+  device:
+    arch: amd64 # Options: [arm32v7, arm64v8, amd64]
+    restart: always # Options: [always, never, onfailure]
+  executables: # Required
+    - name: "exec-build"
+      type: build # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      build:
+        depends:
+          kind: build
+          nameOrGUID: "build"
+    - name: "exec-docker"
+      type: docker # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      docker:
+        image: "busybox:latest"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: "secret-docker"
+    - name: "exec-preInstalled"
+      type: preInstalled # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+  environmentArgs:
+    - name: "key1" # Required
+      default: "key1-value"
+      description: "A environment variable"
+      exposed: False
+    - name: "key2" # Required
+      default: "key2-value"
+      description: "A environment variable"
+      exposed: True
+      exposedName: "EXPOSED_KEY2"
+  ros:
+    enabled: True
+    version: melodic # Required, Options: [ kinetic, melodic, noetic ]
+    inboundScopedTargeted: False
+    rosEndpoints:
+      - type: topic # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low # Options: [low, med, hi, max]
+      - type: service # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low
+        timeout: 120 # Constraint: timeout > 0
+      - type: action # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False

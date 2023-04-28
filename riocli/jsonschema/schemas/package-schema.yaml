@@ -29,8 +29,6 @@ definitions:
         type: string
       version:
         type: string
-      tag:
-        type: string
       description:
         type: string
       guid:
@@ -55,8 +53,6 @@ definitions:
           - device
           - cloud
         default: cloud
-
-      # TODO: validate
       ros:
         type: object
         "$ref": "#/definitions/rosComponentSpec"
@@ -111,6 +107,8 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudROSBagJobSpec"
+            required:
+              - cloud
 
   deviceExecutableSpec:
     type: object
@@ -229,10 +227,6 @@ definitions:
                     "$ref": "#/definitions/buildDepends"
                 required:
                   - depends
-          - properties:
-              type:
-                enum:
-                  - preInstalled
 
   portNumber:
     type: integer
@@ -431,6 +425,8 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/rosEndpointSpec"
+            required:
+              - version
 
   rosEndpointSpec:
     type: object
@@ -713,15 +709,6 @@ definitions:
       kind:
         const: static-route
         default: static-route
-      nameOrGUID:
-        type: string
-      guid:
-        type: string
-  deploymentDepends:
-    properties:
-      kind:
-        const: deployment
-        default: deployment
       nameOrGUID:
         type: string
       guid:

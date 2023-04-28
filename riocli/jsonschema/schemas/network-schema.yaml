@@ -54,7 +54,7 @@ definitions:
                 type: string
               restartPolicy:
                 "$ref": "#/definitions/restartPolicy"
-                default: Always
+                default: always
 
             required:
               - deviceGUID
