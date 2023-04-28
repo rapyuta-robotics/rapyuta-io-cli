@@ -1,0 +1,45 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "device-docker" # Required
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  python: "3"
+  rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
+  docker:
+    enabled: True # Required
+    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "device-preinstalled" # Required
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  python: "3"
+  rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
+  preinstalled:
+    enabled: True # Required
+    catkinWorkspace: "/home/rapyuta/catkin_ws"
+
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "device-hybrid" # Required
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  python: "3"
+  rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
+  docker:
+    enabled: True # Required
+    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
+  preinstalled:
+    enabled: True
+    catkinWorkspace: "/home/rapyuta/catkin_ws"

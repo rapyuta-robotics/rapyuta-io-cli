@@ -1,0 +1,145 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Package"
+metadata:
+  name: "package-ros-cloud" # Required
+  version: "v1.0.0" # Required
+  description: "A RIO cloud ROS package"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: cloud # Options: [device, cloud (default)]
+  cloud:
+    replicas: 1 # Required
+  executables: # Required
+    - name: "exec-build"
+      type: build # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      simulation: False
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      build:
+        depends:
+          kind: build
+          nameOrGUID: "build"
+    - name: "exec-docker"
+      type: docker # Options: [docker (default), build, preInstalled]
+      command: "roslaunch talker talker.launch"
+      runAsBash: True
+      simulation: False
+      limits:
+        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
+        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      docker:
+        image: "busybox:latest"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: "secret-docker"
+  environmentVars:
+    - name: "key1" # Required
+      default: "value1"
+      description: "An environment variable"
+      exposed: False
+    - name: "key2" # Required
+      default: "value2"
+      description: "An environment variable"
+      exposed: True
+      exposedName: "EXPOSED_KEY2"
+  endpoints: # Only cloud runtime have endpoints
+    - name: "HTTP"
+      type: external-http
+      port: 80
+      targetPort: 80
+    - name: "HTTPS"
+      type: external-https
+      port: 443
+      targetPort: 443
+    - name: "TLS-TCP"
+      type: external-tls-tcp
+      port: 443
+      targetPort: 443
+    - name: "TCP"
+      type: internal-tcp
+      port: 80
+      targetPort: 80
+    - name: "UDP"
+      type: internal-udp
+      port: 80
+      targetPort: 80
+    - name: "TCP-RANGE"
+      type: internal-tcp-range
+      portRange: 22,80,1024-1030
+    - name: "UDP-RANGE"
+      type: internal-udp-range
+      portRange: 53,1024-1025
+  rosBagJobs:
+    - name: "testbag1" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+    - name: "testbag2" # Required
+      recordOptions: # Required
+        topics:
+          - "/topic1"
+        topicIncludeRegex:
+          - "/telemetry*"
+        topicExcludeRegex: "/telemetry2*"
+        maxMessageCount: 100 # Valid only with topics or include regex
+        node: "talker" # Valid only with topics or include regex
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+    - name: "testbag3" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      overrideOptions:
+        topicOverrideInfo:
+          - topicName: "/topic1"
+            recordFrequency: 10 # Hertz
+          - topicName: "/topic2"
+            latched: True
+        excludeTopics:
+          - "/topic3"
+          - "/topic4"
+  ros:
+    enabled: True
+    version: melodic # Required, Options: [ kinetic, melodic, noetic ]
+    inboundScopedTargeted: False
+    rosEndpoints:
+      - type: topic # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low # Options: [low, med, hi, max]
+      - type: service # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False
+        qos: low
+        timeout: 120 # Constraint: timeout > 0
+      - type: action # Required, Options: [ topic, service, action ]
+        name: "/telemetry"
+        compression: False
+        scoped: False
+        targeted: False

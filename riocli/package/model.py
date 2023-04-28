@@ -199,7 +199,7 @@ class Package(Model):
                 "memory": exec.limits.memory
             }
 
-        if exec.runAsBash:
+        if exec.get('runAsBash'):
             if 'command' in exec:
                 exec_object.cmd = ['/bin/bash', '-c', exec.command]
         else:

@@ -1,0 +1,90 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: deployment-ros-cloud
+  depends:
+    kind: package
+    nameOrGUID: "package-ros-cloud"
+    version: "v1.0.0"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: cloud # Options: [device, cloud]
+  depends:
+    - kind: deployment
+      nameOrGUID: "dep-guid"
+  envArgs:
+    - name: TEST_KEY
+      value: test_value
+  volumes:
+    - execName: exec-docker
+      mountPath: "/tmp" # Path on container
+      subPath: "/tmp" # Path on volume
+      depends:
+        kind: disk
+        nameOrGUID: "disk"
+  staticRoutes:
+    - name: NAME
+      depends:
+        kind: staticroute
+        nameOrGUID: "staticroute"
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: "network-native-cloud"
+    - depends:
+        kind: network
+        nameOrGUID: "network-routed-cloud"
+      topics:
+        - "/telemetry"
+  managedServices:
+    - depends:
+        kind: managedservice
+        nameOrGUID: "managedservice"
+  rosBagJobs:
+    - name: "testbag1" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+    - name: "testbag2" # Required
+      recordOptions: # Required
+        topics:
+          - "/topic1"
+        topicIncludeRegex:
+          - "/telemetry*"
+        topicExcludeRegex: "/telemetry2*"
+        maxMessageCount: 100 # Valid only with topics or include regex
+        node: "talker" # Valid only with topics or include regex
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+    - name: "testbag3" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      overrideOptions:
+        topicOverrideInfo:
+          - topicName: "/topic1"
+            recordFrequency: 10 # Hertz
+          - topicName: "/topic2"
+            latched: True
+        excludeTopics:
+          - "/topic3"
+          - "/topic4"

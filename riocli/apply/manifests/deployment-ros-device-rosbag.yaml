@@ -1,0 +1,96 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: deployment-ros-device-rosbag
+  depends:
+    kind: package
+    nameOrGUID: "package-ros-device-rosbag"
+    version: "v1.0.0"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: device # Options: [device, cloud]
+  device:
+    depends:
+      kind: device
+      nameOrGUID: device-docker
+  restart: always # Options: [always, onfailure, never]
+  envArgs:
+    - name: TEST_KEY
+      value: test_value
+  volumes:
+    - execName: exec-docker
+      mountPath: "/tmp" # Path on container
+      subPath: "/tmp" # Path on device
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: "network-native-device"
+      interface: eth0
+    - depends:
+        kind: network
+        nameOrGUID: "network-routed-device"
+      topics:
+        - "/telemetry"
+      interface: eth0
+  rosBagJobs:
+    - name: "testbag1" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+    - name: "testbag2" # Required
+      recordOptions: # Required
+        topics:
+          - "/topic1"
+        topicIncludeRegex:
+          - "/telemetry*"
+        topicExcludeRegex: "/telemetry2*"
+        maxMessageCount: 100 # Valid only with topics or include regex
+        node: "talker" # Valid only with topics or include regex
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+    - name: "testbag3" # Required
+      recordOptions: # Required
+        allTopics: True
+        topicExcludeRegex: "/topic1*"
+        compression: "BZ2" # Options: [BZ2, LZ4]
+        maxSplits: 5
+        maxSplitSize: 10 # MB
+        maxSplitDuration: 60 # Minutes
+        chunkSize: 768 # KB
+        prefix: "session1"
+      uploadOptions: # Only for device runtime
+        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
+        maxUploadRate: 1048576 # Bytes
+        purgeAfter: False
+        onDemandOpts:
+          timeRange:
+            from: 1682399216 # Unix Timestamp
+            to: 1682399217 # Unix Timestamp
+      overrideOptions:
+        topicOverrideInfo:
+          - topicName: "/topic1"
+            recordFrequency: 10 # Hertz
+          - topicName: "/topic2"
+            latched: True
+        excludeTopics:
+          - "/topic3"
+          - "/topic4"

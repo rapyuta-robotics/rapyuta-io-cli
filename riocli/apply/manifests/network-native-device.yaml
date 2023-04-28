@@ -1,0 +1,14 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "network-native-device"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  type: "native" # Required, Options: [routed, native]
+  rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
+  runtime: "device" # Required, Options: [cloud, device]
+  deviceGUID: "299a436f-9d7f-4bbf-adce-21be06bfbbce" # Required
+  networkInterface: "eth0" # Required
+  restartPolicy: "always" # Options: [always, never, onFailure]
