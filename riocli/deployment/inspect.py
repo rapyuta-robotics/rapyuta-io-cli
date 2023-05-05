@@ -63,8 +63,9 @@ def make_deployment_inspectable(deployment: Deployment) -> dict:
         'phase': deployment.phase,
         'status': deployment.status,
         'component_info': deployment.componentInfo,
-        'dependent_deployment_status': deployment.dependentDeploymentStatus,
-        'errors': deployment.errors,
-        'package_dependency_status': deployment.packageDependencyStatus,
-        'core_networks': deployment.coreNetworks,
+        'dependent_deployment_status': deployment.get(
+            'dependentDeploymentStatus'),
+        'errors': deployment.get('errors'),
+        'package_dependency_status': deployment.get('packageDependencyStatus'),
+        'core_networks': deployment.get('coreNetworks'),
     }
