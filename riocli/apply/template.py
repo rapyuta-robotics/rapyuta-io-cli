@@ -19,18 +19,21 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.constants import Colors
 
 
 @click.command(
     'template',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 @click.option('--values', '-v',
-              help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+              help='Path to values yaml file. key/values specified in the '
+                   'values file can be used as variables in template YAMLs')
 @click.option('--secrets', '-s',
-              help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
+              help='Secret files are sops encoded value files. riocli '
+                   'expects sops to be authorized for decoding files on this computer')
 @click.argument('files', nargs=-1)
 def template(values: str, secrets: str, files: Iterable[str]) -> None:
     """
@@ -40,7 +43,7 @@ def template(values: str, secrets: str, files: Iterable[str]) -> None:
         files, values, secrets)
 
     if len(glob_files) == 0:
-        click.secho('no files specified', fg='red')
+        click.secho('No files specified', fg=Colors.RED)
         raise SystemExit(1)
 
     rc = Applier(glob_files, abs_values, abs_secrets)

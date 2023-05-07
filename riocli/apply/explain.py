@@ -16,12 +16,14 @@ from pathlib import Path
 import click
 from click_help_colors import HelpColorsCommand
 
+from riocli.constants import Colors, Symbols
+
 
 @click.command(
     'explain',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
     help='Generates a sample resource manifest for the given type'
 )
 @click.option('--templates', help='Alternate root for templates',
@@ -39,5 +41,6 @@ def explain(resource: str, templates: str = None) -> None:
                 click.echo_via_pager(f.readlines())
                 raise SystemExit(0)
 
-    click.secho("[Err] Resource \"{}\" not found".format(resource), fg='red')
+    click.secho('{} Resource "{}" not found'.format(Symbols.ERROR, resource),
+                fg=Colors.RED)
     raise SystemExit(1)
