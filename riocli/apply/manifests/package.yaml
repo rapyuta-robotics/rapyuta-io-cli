@@ -163,9 +163,9 @@ spec:
       type: build # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
-      limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      limits: # Optional
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       build:
         depends:
           kind: build
@@ -174,9 +174,9 @@ spec:
       type: docker # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
-      limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      limits: # Optional
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       docker:
         image: "busybox:latest"
         pullSecret:
@@ -373,9 +373,9 @@ spec:
       type: build # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
-      limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      limits: # Optional
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       build:
         depends:
           kind: build
@@ -384,9 +384,9 @@ spec:
       type: docker # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
-      limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+      limits: # Optional
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       docker:
         image: "busybox:latest"
         pullSecret:
@@ -427,8 +427,8 @@ spec:
       command: "roslaunch talker talker.launch"
       runAsBash: True
       limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       build:
         depends:
           kind: build
@@ -438,8 +438,8 @@ spec:
       command: "roslaunch talker talker.launch"
       runAsBash: True
       limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
       docker:
         image: "busybox:latest"
         pullSecret:
@@ -481,4 +481,5 @@ spec:
         name: "/telemetry"
         compression: False
         scoped: False
+        targeted: False
         targeted: False

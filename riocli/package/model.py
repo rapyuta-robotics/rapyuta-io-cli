@@ -194,8 +194,8 @@ class Package(Model):
 
         if 'limits' in exec:
             exec_object.limits = {
-                "cpu": exec.limits.cpu,
-                "memory": exec.limits.memory
+                'cpu': exec.limits.get('cpu', 0.0),
+                'memory': exec.limits.get('memory', 0)
             }
 
         if exec.get('runAsBash'):
