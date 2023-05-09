@@ -127,6 +127,15 @@ definitions:
       runAsBash:
         type: boolean
         default: True
+      limits:
+        type: object
+        properties:
+          cpu:
+            type: number
+            minimum: 0
+          memory:
+            type: number
+            minimum: 0
     required:
       - type
     dependencies:
@@ -185,11 +194,13 @@ definitions:
         properties:
           cpu:
             type: number
+            default: 0.025
             min: 0.025
             max: 8.000
             multipleOf: 0.025
           memory:
             type: number
+            default: 128
             min: 128
             max: 32768
             multipleOf: 128
