@@ -16,6 +16,7 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.organization.list import list_organizations
 from riocli.organization.select import select_organization
+from riocli.organization.summary import summary
 
 
 @click.group(
@@ -33,3 +34,4 @@ def organization() -> None:
 
 organization.add_command(list_organizations)
 organization.add_command(select_organization)
+organization.add_command(summary)

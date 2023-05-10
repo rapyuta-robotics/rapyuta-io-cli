@@ -34,6 +34,13 @@ def list_disks() -> None:
         raise SystemExit(1)
 
 
+def get_all_disks(project_guid: str = None):
+    headers = {}
+    if project_guid:
+        headers = {'project': project_guid}
+    return _api_call(HttpMethod.GET, headers=headers)
+
+
 def _display_disk_list(disks: typing.Any, show_header: bool = True):
     headers = []
     if show_header:

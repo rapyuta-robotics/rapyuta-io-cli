@@ -66,18 +66,23 @@ def find_disk_guid(client: Client, name: str) -> str:
         raise DiskNotFound()
 
 
-def _api_call(method: str, guid: typing.Union[str, None] = None,
-              payload: typing.Union[typing.Dict, None] = None, load_response: bool = True,
-              ) -> typing.Any:
+def _api_call(
+        method: str,
+        guid: typing.Union[str, None] = None,
+        payload: typing.Union[typing.Dict, None] = None,
+        load_response: bool = True,
+        headers: typing.Dict = None,
+) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
         'catalog_host', 'https://gacatalog.apps.rapyuta.io')
     url = '{}/disk'.format(catalog_host)
     if guid:
         url = '{}/{}'.format(url, guid)
-    headers = config.get_auth_header()
+    _headers = config.get_auth_header()
+    _headers.update(headers)
     response = RestClient(url).method(method).headers(
-        headers).execute(payload=payload)
+        _headers).execute(payload=payload)
     data = None
     err_msg = 'error in the api call'
     if load_response:
