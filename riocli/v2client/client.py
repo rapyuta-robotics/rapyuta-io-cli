@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import http
 import json
 import typing
 
+import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
@@ -27,6 +28,28 @@ class _Singleton(type):
             cls._instances[cls] = super(
                 _Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+def handle_server_errors(response: requests.Response):
+    status_code = response.status_code
+    # 500 Internal Server Error
+    if status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
+        raise Exception('internal server error')
+    # 501 Not Implemented
+    if status_code == http.HTTPStatus.NOT_IMPLEMENTED:
+        raise Exception('not implemented')
+    # 502 Bad Gateway
+    if status_code == http.HTTPStatus.BAD_GATEWAY:
+        raise Exception('bad gateway')
+    # 503 Service Unavailable
+    if status_code == http.HTTPStatus.SERVICE_UNAVAILABLE:
+        raise Exception('service unavailable')
+    # 504 Gateway Timeout
+    if status_code == http.HTTPStatus.GATEWAY_TIMEOUT:
+        raise Exception('gateway timeout')
+    # Anything else that is not known
+    if status_code > 504:
+        raise Exception('unknown server error')
 
 
 class Client(metaclass=_Singleton):
@@ -98,6 +121,8 @@ class Client(metaclass=_Singleton):
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -113,6 +138,8 @@ class Client(metaclass=_Singleton):
         headers = {"Authorization": self._get_auth_token()}
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=spec)
+
+        handle_server_errors(response)
 
         data = json.loads(response.text)
         if not response.ok:
@@ -130,6 +157,8 @@ class Client(metaclass=_Singleton):
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=spec)
 
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -145,6 +174,8 @@ class Client(metaclass=_Singleton):
         headers = {"Authorization": self._get_auth_token()}
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
 
         data = json.loads(response.text)
         if not response.ok:
@@ -162,6 +193,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -201,6 +235,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -214,6 +251,9 @@ class Client(metaclass=_Singleton):
 
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=instance)
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -226,6 +266,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -242,6 +285,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.POST).headers(headers).execute(payload=binding)
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -258,6 +304,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -274,6 +323,9 @@ class Client(metaclass=_Singleton):
         headers = self._config.get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
