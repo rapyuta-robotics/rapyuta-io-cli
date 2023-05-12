@@ -49,5 +49,5 @@ def create_project(ctx: click.Context, project_name: str,
             client.create_project(payload)
         click.secho('Project created successfully!', fg='green')
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho('failed to create project: {}'.format(e), fg='red')
         raise SystemExit(1)
