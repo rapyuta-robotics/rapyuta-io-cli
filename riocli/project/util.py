@@ -17,14 +17,15 @@ import typing
 import click
 from rapyuta_io import Client
 
-from riocli.config import new_client
+from riocli.config import new_client, new_v2_client
 from riocli.utils.selector import show_selection
+from riocli.v2client import Client as v2Client
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any):
-        client = new_client(with_project=False)
+        client = new_v2_client(with_project=False)
         name = kwargs.pop('project_name')
         guid = None
 
@@ -49,18 +50,19 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def find_project_guid(client: Client, name: str) -> str:
-    projects = client.list_projects()
+def find_project_guid(client: v2Client, name: str,
+                      organization: str = None) -> str:
+    projects = client.list_projects(organization_guid=organization)
     for project in projects:
-        if project.name == name:
-            return project.guid
+        if project.metadata.name == name:
+            return project.metadata.guid
 
     raise ProjectNotFound()
 
 
-def get_project_name(client: Client, guid: str) -> str:
+def get_project_name(client: v2Client, guid: str) -> str:
     project = client.get_project(guid)
-    return project.name
+    return project.metadata.name
 
 
 def find_organization_guid(client: Client, name: str) -> str:
@@ -69,7 +71,8 @@ def find_organization_guid(client: Client, name: str) -> str:
 
     for organization in organizations:
         if organization.name == name:
-            options[organization.guid] = '{} ({})'.format(organization.name, organization.url)
+            options[organization.guid] = '{} ({})'.format(organization.name,
+                                                          organization.url)
 
     if len(options) == 1:
         return list(options.keys())[0]
@@ -77,7 +80,8 @@ def find_organization_guid(client: Client, name: str) -> str:
     if len(options) == 0:
         raise Exception("User is not part of organization: {}".format(name))
 
-    choice = show_selection(options, header='Following packages were found with the same name')
+    choice = show_selection(options,
+                            header='Following packages were found with the same name')
     return choice
 
 
@@ -87,12 +91,13 @@ def get_organization_name(client: Client, guid: str) -> str:
         if organization.guid == guid:
             return organization.name
 
-    raise OrganizationNotFound("User is not part of organization with guid: {}".format(guid))
+    raise OrganizationNotFound(
+        "User is not part of organization with guid: {}".format(guid))
 
 
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
+    def decorated(*args: typing.Any, **kwargs: typing.Any):
         client = new_client(with_project=False)
         name = kwargs.get('organization_name')
         guid = None
@@ -109,7 +114,7 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
                 raise SystemExit(1)
         kwargs['organization_name'] = name
         kwargs['organization_guid'] = guid
-        f(**kwargs)
+        f(*args, **kwargs)
 
     return decorated
 

@@ -1,7 +1,10 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Disk"
 metadata:
-  name: "pvc-name"
+  name: "disk"
+  project: "project-guid"
+  labels:
+    app: test
 spec:
   runtime: cloud
-  capacity: 4
+  capacity: 4 #  Options: [4, 8, 16, 32, 64, 128, 256, 512]

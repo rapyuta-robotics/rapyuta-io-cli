@@ -27,6 +27,7 @@ from riocli.device.metric import device_metrics
 from riocli.device.onboard import device_onboard
 from riocli.device.tools import tools
 from riocli.device.topic import device_topics
+from riocli.device.vpn import toggle_vpn
 
 
 @click.group(
@@ -42,16 +43,17 @@ def device():
     pass
 
 
+device.add_command(create_device)
 device.add_command(execute_command)
 device.add_command(delete_device)
 device.add_command(device_config)
 device.add_command(device_onboard)
-device.add_command(list_deployments)
 device.add_command(device_labels)
 device.add_command(device_metrics)
 device.add_command(device_topics)
-device.add_command(list_devices)
-device.add_command(inspect_device)
-device.add_command(create_device)
 device.add_command(device_uploads)
+device.add_command(inspect_device)
+device.add_command(list_deployments)
+device.add_command(list_devices)
 device.add_command(tools)
+device.add_command(toggle_vpn)

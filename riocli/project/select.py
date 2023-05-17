@@ -21,7 +21,8 @@ from riocli.utils.context import get_root_context
 @click.argument('project-name', type=str)
 @name_to_guid
 @click.pass_context
-def select_project(ctx: click.Context, project_name: str, project_guid: str) -> None:
+def select_project(ctx: click.Context, project_name: str,
+                   project_guid: str) -> None:
     """
     Sets the given project in the CLI context. All other resources use this project to act upon.
     """
@@ -29,4 +30,6 @@ def select_project(ctx: click.Context, project_name: str, project_guid: str) -> 
     ctx.obj.data['project_id'] = project_guid
     ctx.obj.data['project_name'] = project_name
     ctx.obj.save()
-    click.secho('Project {} ({}) is selected!'.format(project_name, project_guid), fg='green')
+    click.secho(
+        'Project {} ({}) is selected!'.format(project_name, project_guid),
+        fg='green')

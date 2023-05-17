@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5ee91191cb49d4fa963f6992c9a525dfe1946a4525d618efebdd0a9b52b88bb9"
+            "sha256": "f730b4ccf4aef49daa882b1d3215dbeff5ee400fa59c9ad853523711d443883d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -416,7 +416,7 @@
         },
         "rapyuta-io-cli": {
             "path": ".",
-            "version": "==0.6.0"
+            "version": "==2.0.1"
         },
         "requests": {
             "hashes": [
@@ -473,6 +473,13 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
             "version": "==1.26.15"
+        },
+        "waiting": {
+            "hashes": [
+                "sha256:b641ef3a2382e101d3c4e66494da6fc52b82c325dd04ae341e051b0eec6f30cd"
+            ],
+            "index": "pypi",
+            "version": "==1.4.1"
         },
         "wcwidth": {
             "hashes": [

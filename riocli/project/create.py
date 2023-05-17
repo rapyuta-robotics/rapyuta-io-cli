@@ -13,9 +13,8 @@
 # limitations under the License.
 import click
 from click_spinner import spinner
-from rapyuta_io.clients.project import Project
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.project.util import name_to_organization_guid
 
 
@@ -23,19 +22,32 @@ from riocli.project.util import name_to_organization_guid
 @click.argument('project-name', type=str)
 @click.option('--organization', 'organization_name',
               help='Pass organization name for which project needs to be created. Default will be current organization')
+@click.pass_context
 @name_to_organization_guid
-def create_project(project_name: str, organization_guid: str, organization_name: str) -> None:
+def create_project(ctx: click.Context, project_name: str,
+                   organization_guid: str, organization_name: str) -> None:
     """
     Creates a new project
     """
+    if not organization_guid:
+        organization_guid = ctx.obj.data.get('organization_id')
+
+    payload = {
+        "metadata": {
+            "name": project_name,
+            "organizationGUID": organization_guid,
+            "labels": {
+                "createdBy": "rio-cli"
+            }
+        },
+        "spec": {}
+    }
+
     try:
-        client = new_client(with_project=False)
+        client = new_v2_client(with_project=False)
         with spinner():
-            project_obj = Project(project_name, organization_guid=organization_guid)
-            project = client.create_project(project_obj)
-        click.secho('Project {} ({}) created successfully!'.
-                    format(project.name, project.guid),
-                    fg='green')
+            client.create_project(payload)
+        click.secho('Project created successfully!', fg='green')
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho('failed to create project: {}'.format(e), fg='red')
         raise SystemExit(1)

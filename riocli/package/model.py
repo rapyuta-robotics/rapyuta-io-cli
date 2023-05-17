@@ -18,8 +18,8 @@ from munch import munchify
 from rapyuta_io import Client
 from rapyuta_io.clients.package import RestartPolicy
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Package(Model):
@@ -159,8 +159,7 @@ class Package(Model):
             component_obj.rosBagJobDefs = self.spec.rosBagJobs
 
         pkg_object.plans[0].components = [component_obj]
-        # return package
-        # print(json.dumps(pkg_object))
+
         return client.create_package(pkg_object)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
@@ -199,7 +198,7 @@ class Package(Model):
                 "memory": exec.limits.memory
             }
 
-        if exec.runAsBash:
+        if exec.get('runAsBash'):
             if 'command' in exec:
                 exec_object.cmd = ['/bin/bash', '-c', exec.command]
         else:
@@ -249,4 +248,4 @@ class Package(Model):
         Validates if package data is matching with its corresponding schema
         """
         schema = load_schema('package')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

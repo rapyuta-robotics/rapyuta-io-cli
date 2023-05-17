@@ -1,0 +1,26 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: deployment-nonros-device
+  depends:
+    kind: package
+    nameOrGUID: "package-nonros-device"
+    version: "v1.0.0"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: device # Options: [device, cloud]
+  device:
+    depends:
+      kind: device
+      nameOrGUID: device-docker
+  restart: always # Options: [always, onfailure, never]
+  envArgs:
+    - name: TEST_KEY
+      value: test_value
+  volumes:
+    - execName: exec-docker
+      mountPath: "/tmp" # Path on container
+      subPath: "/tmp" # Path on device

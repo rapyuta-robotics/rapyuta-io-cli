@@ -21,8 +21,8 @@ from rapyuta_io import Client
 from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.disk.util import _api_call
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import load_schema, validate_manifest
 
 
 class Disk(Model):
@@ -80,4 +80,4 @@ class Disk(Model):
     @staticmethod
     def validate(data):
         schema = load_schema('disk')
-        validate_manifest(data, schema)
+        schema.validate(data)

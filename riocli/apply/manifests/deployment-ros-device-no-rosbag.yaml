@@ -1,0 +1,36 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: deployment-ros-device-no-rosbag
+  depends:
+    kind: package
+    nameOrGUID: "package-ros-device-no-rosbag"
+    version: "v1.0.0"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: device # Options: [device, cloud]
+  device:
+    depends:
+      kind: device
+      nameOrGUID: device-docker
+  restart: always # Options: [always, onfailure, never]
+  envArgs:
+    - name: TEST_KEY
+      value: test_value
+  volumes:
+    - execName: exec-docker
+      mountPath: "/tmp" # Path on container
+      subPath: "/tmp" # Path on device
+  rosNetworks:
+    - depends:
+        kind: network
+        nameOrGUID: "network-native-device"
+      interface: eth0
+    - depends:
+        kind: network
+        nameOrGUID: "network-routed-device"
+      topics:
+        - "/telemetry"
+      interface: eth0

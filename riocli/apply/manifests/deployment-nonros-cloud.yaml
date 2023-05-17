@@ -1,0 +1,35 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: deployment-nonros-cloud
+  depends:
+    kind: package
+    nameOrGUID: "package-nonros-cloud"
+    version: "v1.0.0"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  runtime: cloud # Options: [device, cloud]
+  depends:
+    - kind: deployment
+      nameOrGUID: "deployment-ros-cloud"
+  envArgs:
+    - name: TEST_KEY
+      value: test_value
+  volumes:
+    - execName: exec-docker
+      mountPath: "/tmp" # Path on container
+      subPath: "/tmp" # Path on volume
+      depends:
+        kind: disk
+        nameOrGUID: "disk"
+  staticRoutes:
+    - name: NAME
+      depends:
+        kind: staticroute
+        nameOrGUID: "staticroute"
+  managedServices:
+    - depends:
+        kind: managedservice
+        nameOrGUID: "managedservice"

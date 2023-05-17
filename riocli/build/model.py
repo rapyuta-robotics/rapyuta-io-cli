@@ -15,8 +15,8 @@ import typing
 
 from rapyuta_io import Build as v1Build, Client, BuildOptions, CatkinOption
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Build(Model):
@@ -75,4 +75,4 @@ class Build(Model):
         Validates if build data is matching with its corresponding schema
         """
         schema = load_schema('build')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

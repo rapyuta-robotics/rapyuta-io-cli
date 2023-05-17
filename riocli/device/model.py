@@ -16,8 +16,8 @@ import typing
 from rapyuta_io import Client
 from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
+from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.jsonschema.validate import validate_manifest, load_schema
 
 
 class Device(Model):
@@ -71,4 +71,4 @@ class Device(Model):
         Validates if device data is matching with its corresponding schema
         """
         schema = load_schema('device')
-        validate_manifest(instance=data, schema=schema)
+        schema.validate(data)

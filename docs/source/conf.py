@@ -3,7 +3,7 @@ import os
 import sys
 
 project = u'Rapyuta.io CLI'
-copyright = u'2021, Rapyuta Robotics'
+copyright = u'2023, Rapyuta Robotics'
 author = u'Rapyuta Robotics'
 
 sys.path.insert(0, os.path.abspath('../..'))

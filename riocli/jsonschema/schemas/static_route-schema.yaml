@@ -24,7 +24,7 @@ definitions:
       name:
         type: string
       guid:
-        "$ref": "#/definitions/projectGUID"
+        "$ref": "#/definitions/staticRouteGUID"
       creator:
         "$ref": "#/definitions/uuid"
       project:
@@ -37,6 +37,9 @@ definitions:
   projectGUID:
     type: string
     pattern: "^project-[a-z]{24}$"
+  staticRouteGUID:
+    type: string
+    pattern: "^staticroute-[a-z]{24}$"
   stringMap:
     type: object
     additionalProperties:

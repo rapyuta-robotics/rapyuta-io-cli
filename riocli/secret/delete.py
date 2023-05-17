@@ -19,7 +19,8 @@ from riocli.secret.util import name_to_guid
 
 
 @click.command('delete')
-@click.option('--force', '-f', 'force', is_flag=True, default=False, help='Skip confirmation')
+@click.option('--force', '-f', '--silent', 'force', is_flag=True,
+              default=False, help='Skip confirmation')
 @click.argument('secret-name', type=str)
 @name_to_guid
 def delete_secret(force: str, secret_name: str, secret_guid: str) -> None:

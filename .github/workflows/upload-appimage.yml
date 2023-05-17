@@ -35,6 +35,7 @@ jobs:
           retention-days: 15
 
       - name: Artifact Comment on PR
+        if: github.event_name == 'pull_request'
         run: |
           gh pr comment $PR_NUMBER -b  "
           **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**

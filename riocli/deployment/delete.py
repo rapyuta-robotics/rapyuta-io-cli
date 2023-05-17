@@ -19,7 +19,8 @@ from riocli.deployment.util import name_to_guid
 
 
 @click.command('delete')
-@click.option('--force', '-f', is_flag=True, default=False, help='Skip confirmation')
+@click.option('--force', '-f', '--silent', is_flag=True, default=False,
+              help='Skip confirmation')
 @click.argument('deployment-name', type=str)
 @name_to_guid
 def delete_deployment(force: bool, deployment_name: str, deployment_guid: str) -> None:

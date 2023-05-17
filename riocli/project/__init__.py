@@ -16,6 +16,7 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.project.create import create_project
 from riocli.project.delete import delete_project
+from riocli.project.features import features
 from riocli.project.inspect import inspect_project
 from riocli.project.list import list_project
 from riocli.project.select import select_project
@@ -39,3 +40,4 @@ project.add_command(create_project)
 project.add_command(delete_project)
 project.add_command(select_project)
 project.add_command(inspect_project)
+project.add_command(features)

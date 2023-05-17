@@ -14,11 +14,13 @@
 import errno
 import json
 import os
+import uuid
 
 from click import get_app_dir
 from rapyuta_io import Client
 
 from riocli.exceptions import LoggedOut, NoProjectSelected
+from riocli.v2client import Client as v2Client
 
 
 class Configuration(object):
@@ -79,6 +81,23 @@ class Configuration(object):
 
         return Client(auth_token=token, project=project)
 
+    def new_v2_client(self, with_project: bool = True) -> v2Client:
+        if 'auth_token' not in self.data:
+            raise LoggedOut
+
+        if 'environment' in self.data:
+            os.environ['RIO_CONFIG'] = self.filepath
+
+        token = self.data.get('auth_token', None)
+        project = self.data.get('project_id', None)
+        if with_project and project is None:
+            raise NoProjectSelected
+
+        if not with_project:
+            project = None
+
+        return v2Client(self, auth_token=token, project=project)
+
     def get_auth_header(self) -> dict:
         if not ('auth_token' in self.data and 'project_id' in self.data):
             raise LoggedOut
@@ -103,3 +122,11 @@ class Configuration(object):
     @property
     def piping_server(self):
         return self.data.get('piping_server', self.PIPING_SERVER)
+
+    @property
+    def machine_id(self):
+        if 'machine_id' not in self.data:
+            self.data['machine_id'] = str(uuid.uuid4())
+            self.save()
+
+        return self.data.get('machine_id')

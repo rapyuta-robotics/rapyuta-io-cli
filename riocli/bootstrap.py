@@ -32,8 +32,8 @@ from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
 from riocli.managedservice import managedservice
-from riocli.marketplace import marketplace
 from riocli.network import network
+from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
 from riocli.project import project
@@ -41,6 +41,7 @@ from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
+from riocli.vpn import vpn
 
 
 @with_plugins(iter_entry_points('riocli.plugins'))
@@ -88,10 +89,11 @@ cli.add_command(static_route)
 cli.add_command(rosbag)
 cli.add_command(network)
 cli.add_command(completion)
-cli.add_command(marketplace)
 cli.add_command(parameter)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
 cli.add_command(managedservice)
 cli.add_command(template)
+cli.add_command(organization)
+cli.add_command(vpn)

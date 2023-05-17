@@ -1,0 +1,60 @@
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "network-routed-cloud"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  type: "routed" # Required, Options: [routed, native]
+  rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
+  runtime: "cloud" # Required, Options: [cloud, device]
+  resourceLimits:
+    cpu: 0.5 # Unit: Core Options: [Multiple of 0.025, >= 0.5 <= 4]
+    memory: 1024 # Unit: MB Options: [Multiple of 128, >= 1024 <= 16384]
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "network-routed-device"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  type: "routed" # Required, Options: [routed, native]
+  rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
+  runtime: "device" # Required, Options: [cloud, device]
+  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  networkInterface: "eth0" # Required
+  restartPolicy: "always" # Options: [always, never, onFailure]
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "network-native-cloud"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  type: "native" # Required, Options: [routed, native]
+  rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
+  runtime: "cloud" # Required, Options: [cloud, device]
+  resourceLimits:
+    cpu: 0.1 # Unit: Core Options: [Multiple of 0.025, >= 0.1  <= 4]
+    memory: 512 # Unit: MB Options: [Multiple of 128, >= 512 <= 16384]
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Network"
+metadata:
+  name: "network-native-device"
+  project: "project-guid"
+  labels:
+    app: test
+spec:
+  type: "native" # Required, Options: [routed, native]
+  rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
+  runtime: "device" # Required, Options: [cloud, device]
+  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  networkInterface: "eth0" # Required
+  restartPolicy: "always" # Options: [always, never, onFailure]

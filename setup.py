@@ -10,10 +10,8 @@ version = re.search(
     '^__version__\s*=\s*"(.*)"', open("riocli/bootstrap.py").read(), re.M
 ).group(1)
 
-
 with open("README.md", "rb") as f:
     long_descr = f.read().decode("utf-8")
-
 
 setup(
     name="rapyuta-io-cli",
@@ -58,7 +56,8 @@ setup(
         "pyrfc3339>=1.1",
         "directory-tree>=0.0.3.1",
         "yaspin>=2.3.0",
-        "jsonschema>=4.0.0"
+        "jsonschema>=4.0.0",
+        "waiting>=1.4.1"
     ],
     setup_requires=["flake8"],
 )

@@ -33,7 +33,7 @@ definitions:
         "$ref": "#/definitions/stringMap"
         uniqueItems: true
       guid:
-        "$ref": "#/definitions/packageGUID"
+        "$ref": "#/definitions/deploymentGUID"
       creator:
         "$ref": "#/definitions/uuid"
       project:
@@ -131,9 +131,12 @@ definitions:
                 type: string
                 enum:
                   - device
-              depends:
+              device:
                 type: object
-                "$ref": "#/definitions/deviceDepends"
+                properties:
+                  depends:
+                    type: object
+                    "$ref": "#/definitions/deviceDepends"
               restart:
                 type: string
                 enum:
@@ -167,6 +170,29 @@ definitions:
                 enum:
                   - cloud
 
+              features:
+                type: object
+                properties:
+                  vpn:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                    required:
+                      - enabled
+                  params:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      trees:
+                        type: array
+                        items:
+                          type: string
+                      disableSync:
+                        type: boolean
+                    required:
+                      - enabled
               envArgs:
                 type: array
                 items:

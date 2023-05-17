@@ -34,9 +34,9 @@ def explain(resource: str, templates: str = None) -> None:
         path = Path(__file__).parent.joinpath('manifests')
 
     for each in path.glob('**/*'):
-        if resource in each.name:
+        if resource + '.yaml' == each.name:
             with open(each) as f:
-                click.secho(f.readlines())
+                click.echo_via_pager(f.readlines())
                 raise SystemExit(0)
 
     click.secho("[Err] Resource \"{}\" not found".format(resource), fg='red')

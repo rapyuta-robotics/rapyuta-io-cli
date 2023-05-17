@@ -30,7 +30,7 @@ def delete_device(device_name: str, device_guid: str, force: bool):
         click.confirm('Deleting device {} ({})'.format(device_name, device_guid), abort=True)
 
     try:
-        client = new_client(with_project=False)
+        client = new_client(with_project=True)
         with click_spinner.spinner():
             client.delete_device(device_id=device_guid)
         click.secho('Device deleted successfully!', fg='green')

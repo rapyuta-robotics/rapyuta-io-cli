@@ -36,7 +36,8 @@ from riocli.apply.util import process_files_values_secrets
               help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
 @click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.",
               type=int)
-@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+              help="Skip confirmation")
 @click.argument('files', nargs=-1)
 def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6,
           silent: bool = False) -> None:
@@ -74,7 +75,8 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
               help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
 @click.option('--secrets', '-s',
               help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
-@click.option('--silent', type=click.BOOL, default=False, help="Skip confirmation")
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+              help="Skip confirmation")
 @click.argument('files', nargs=-1)
 def delete(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, silent: bool = False) -> None:
     """

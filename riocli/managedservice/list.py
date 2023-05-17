@@ -14,18 +14,19 @@
 import typing
 
 import click
+from munch import unmunchify
 
-from riocli.managedservice.util import ManagedServicesClient
+from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 
 
 @click.command('list')
-def list_instances() -> None:
+def list_instances():
     """
     List all the managedservice instances
     """
     try:
-        client = ManagedServicesClient()
+        client = new_v2_client()
         instances = client.list_instances()
         _display_instances(instances)
     except Exception as e:
@@ -34,16 +35,11 @@ def list_instances() -> None:
 
 
 def _display_instances(instances: typing.Any):
-    headers = ("Provider", "Name", "Created At", "Labels")
+    headers = ["Provider", "Name", "Created At", "Labels"]
 
     data = []
     for i in instances:
-        m = i['metadata']
-        data.append([
-            i['spec']['provider'],
-            m['name'],
-            m['created_at'],
-            m['labels']
-        ])
+        m = i.metadata
+        data.append([i.spec.provider, m.name, m.createdAt, unmunchify(m.labels)])
 
     tabulate_data(data, headers)
