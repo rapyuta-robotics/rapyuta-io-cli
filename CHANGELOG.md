@@ -1,3 +1,41 @@
+# [3.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v2.0.2...v3.0.0) (2023-05-17)
+
+
+### Bug Fixes
+
+* **deployment:** added device error code descriptions and actions ([af2ecb7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/af2ecb7cfd5a1bb688156b1f4f66f55a609eb407))
+* **deployment:** fixes inspect command when some fields are null ([a80f2e6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a80f2e6d1caa85dfb5d7304bcee3276541a09cc0))
+* **device:** fixes delete command ([f2599e5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f2599e524da36175fd6257f1d214cad875bd53fa))
+* **explain:** verbose examples for explain command ([c5dcf8a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c5dcf8ac0b252bb47a06a40334c342451d5a7c09))
+* **jsonschema:** sets default values defined in the schema ([76b403a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/76b403a47c262ff3b7137fc81b82a8eb4a25493b))
+* **project:** improves error reporting on server errors ([fec2fcb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fec2fcb0af83d01b5d8a24e23fc9138cb022e929))
+* **v2client:** handles 5xx server errors ([b7cf0cf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7cf0cf97bb197036dbc615f4dfb42d3ac1e17ed))
+
+
+### Features
+
+* **deployment:** adds toggle to enable cloud params ([9cc7981](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9cc79816f398dc382960df5edca1a3364167ea22))
+* **deployment:** adds vpn client toggle in manifest ([a6223cc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a6223cc8b65b897647b1673be1336d30c8010459))
+* **device:** add command to toggle vpn client on device ([6feaa20](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6feaa20a61d8f640f8e29e6c320c134ebe8d01f4))
+* **managedservice:** adds command to delete instance ([5761c25](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5761c25c6740666addf5132cda3aec4cb58eb9d3))
+* **organization:** adds organization command in the CLI ([5a5f599](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5a5f599de18ed4135361f833514da8b6ac29746d))
+* **project:** adds project features sub-command ([981dc3a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/981dc3afd0670e61976651e6177d85269085b01a))
+* **project:** uses v2 project APIs and schema ([d1290aa](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d1290aa1bd4c3f0c11d419dac68f5829fd8efcad))
+* **project:** waits for project to succeed during apply ([adb004b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/adb004bc7c106bfed26441aa65fea6c3db43f124))
+* sets --silent as an option alongside --force ([b5ca2b4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b5ca2b485fdd04acf7eef841793f4e1b6ffb015f))
+* **shell:** adds org name in shell prompt ([3edfd5e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3edfd5e8646a6f1623e3f70c3f1b0e30894c4eab))
+* **vpn:** adds vpn connectivity support ([b01605c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b01605c0f007a67c8c26e7bac0bbb4f813e790e6))
+
+
+### BREAKING CHANGES
+
+* **organization:** This commit modifies the login command options.
+Commands with the following structure will break
+
+rio auth login --email <> --password <> --project <> --no-interactive
+* **project:** This commit updates the project schema. Existing
+manifests may not work.
+
 ## [2.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v2.0.1...v2.0.2) (2023-04-20)
 
 
