@@ -13,32 +13,41 @@
 # limitations under the License.
 
 import click
+from click_help_colors import HelpColorsCommand
 
-from riocli.vpn.util import is_tailscale_installed, install_vpn_tools, \
-    is_tailscale_up, stop_tailscale
+from riocli.constants import Colors, Symbols
+from riocli.vpn.util import (
+    install_vpn_tools,
+    is_tailscale_up,
+    stop_tailscale
+)
 
 
-@click.command('disconnect')
+@click.command(
+    'disconnect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.pass_context
 def disconnect(ctx: click.Context):
     """
     Disconnect from the project's VPN network
     """
     try:
-        if not is_tailscale_installed():
-            click.confirm(
-                click.style('VPN tools are not installed. Do you want '
-                            'to install them now?', fg='yellow'),
-                default=True, abort=True)
-            install_vpn_tools()
+        install_vpn_tools()
 
         if is_tailscale_up() and not stop_tailscale():
-            click.secho('❌ Failed to disconnect from VPN. '
-                        'Although, trying again may work.',
-                        fg='red')
+            click.secho(
+                '{} Failed to disconnect from VPN. '
+                'Although, trying again may work.'.format(Symbols.ERROR),
+                fg=Colors.RED)
             raise SystemExit(1)
 
-        click.secho("✅ You have been disconnected from the project's VPN", fg='green')
+        click.secho(
+            '{} You have been disconnected from the project\'s VPN'.format(
+                Symbols.SUCCESS),
+            fg=Colors.GREEN)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
