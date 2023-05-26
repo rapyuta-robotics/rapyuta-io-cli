@@ -12,20 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
+from riocli.constants import Symbols, Colors
 from riocli.project.util import name_to_organization_guid
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('create')
+@click.command(
+    'create',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('project-name', type=str)
 @click.option('--organization', 'organization_name',
               help='Pass organization name for which project needs to be created. Default will be current organization')
 @click.pass_context
 @name_to_organization_guid
-def create_project(ctx: click.Context, project_name: str,
-                   organization_guid: str, organization_name: str) -> None:
+@with_spinner(text="Creating project...")
+def create_project(
+        ctx: click.Context,
+        project_name: str,
+        organization_guid: str,
+        organization_name: str,
+        spinner=None,
+) -> None:
     """
     Creates a new project
     """
@@ -45,9 +58,12 @@ def create_project(ctx: click.Context, project_name: str,
 
     try:
         client = new_v2_client(with_project=False)
-        with spinner():
-            client.create_project(payload)
-        click.secho('Project created successfully!', fg='green')
+        client.create_project(payload)
+        spinner.text = click.style(
+            'Project created successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho('failed to create project: {}'.format(e), fg='red')
+        spinner.text = click.style(
+            'Failed to create project: {}'.format(e), Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

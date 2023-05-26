@@ -12,16 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
+from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('vpn')
+@click.command(
+    'vpn',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('project-name', type=str)
 @click.argument('enable', type=bool)
 @name_to_guid
-def vpn(project_name: str, project_guid: str, enable: bool) -> None:
+@with_spinner()
+def vpn(
+        project_name: str,
+        project_guid: str,
+        enable: bool,
+        spinner=None,
+) -> None:
     """
     Enable or disable VPN on a project
 
@@ -40,10 +54,14 @@ def vpn(project_name: str, project_guid: str, enable: bool) -> None:
         }
     }
 
-    try:
-        r = client.update_project(project_guid, body)
-    except Exception as e:
-        click.secho("❌ Failed: {}".format(e), fg='red')
-        raise SystemExit(1) from e
+    state = 'Enabling' if enable else 'Disabling'
+    spinner.text = click.style('{} VPN...'.format(state), fg=Colors.YELLOW)
 
-    click.secho("✅ VPN has been {}".format("enabled" if enable else "disabled"), fg='green')
+    try:
+        client.update_project(project_guid, body)
+        spinner.text = click.style('Done', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
+    except Exception as e:
+        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
