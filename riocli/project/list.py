@@ -14,15 +14,22 @@
 import typing
 
 import click
+from click_help_colors import HelpColorsCommand
 from munch import unmunchify
 from rapyuta_io import Project
 
 from riocli.config import new_v2_client
+from riocli.constants import Colors
 from riocli.project.util import name_to_organization_guid
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--organization', 'organization_name',
               help='Pass organization name for which project needs to be created. Default will be current organization')
 @click.option('--wide', '-w', is_flag=True, default=False,
@@ -41,7 +48,7 @@ def list_project(ctx: click.Context = None, organization_guid: str = None,
         current = ctx.obj.data.get('project_id', None)
         _display_project_list(projects, current, show_header=True, wide=wide)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -57,14 +64,14 @@ def _display_project_list(projects: typing.List[Project], current: str = None,
     data = []
     for project in projects:
         metadata = project.metadata
-        fg = None
+        fg, bold = None, False
         if metadata.guid == current:
-            fg = 'green'
-
+            fg = Colors.GREEN
+            bold = True
         row = [metadata.guid, metadata.name, project.status.status]
         if wide:
             row.extend([metadata.createdAt, metadata.creatorGUID,
                         unmunchify(project.spec.features)])
-        data.append([click.style(v, fg=fg) for v in row])
+        data.append([click.style(v, fg=fg, bold=bold) for v in row])
 
     tabulate_data(data, headers)
