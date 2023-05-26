@@ -12,14 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.constants import Colors
 from riocli.project.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
+@click.command(
+    'inspect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('project-name', type=str)
@@ -34,5 +41,5 @@ def inspect_project(format_type: str, project_name: str,
         project = client.get_project(project_guid)
         inspect_with_format(unmunchify(project), format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
