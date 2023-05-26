@@ -14,6 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.static_route.create import create_static_route
 from riocli.static_route.delete import delete_static_route
 from riocli.static_route.inspect import inspect_static_route
@@ -24,8 +25,8 @@ from riocli.static_route.open import open_static_route
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def static_route() -> None:
     """

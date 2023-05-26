@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List
+
 import click
+from click_help_colors import HelpColorsCommand
+from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.config import new_client
-from riocli.static_route.util import repr_static_routes
+from riocli.constants import Colors
+from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 def list_static_routes() -> None:
     """
     List the static routes in the selected project
@@ -25,7 +35,23 @@ def list_static_routes() -> None:
     try:
         client = new_client()
         routes = client.get_all_static_routes()
-        repr_static_routes(routes)
+        _display_routes_list(routes)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
+
+
+def _display_routes_list(routes: List[StaticRoute]) -> None:
+    headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']
+
+    data = []
+    for route in routes:
+        data.append([
+            route.guid,
+            route.urlPrefix,
+            route.urlString,
+            route.creator,
+            route.CreatedAt,
+        ])
+
+    tabulate_data(data, headers)
