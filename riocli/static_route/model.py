@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,11 @@ class StaticRoute(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        _, static_route = self.rc.find_depends({'kind': 'staticroute',
-                                                'nameOrGUID': self.metadata.name})
+        _, static_route = self.rc.find_depends({
+            'kind': 'staticroute',
+            'nameOrGUID': self.metadata.name
+        })
+
         if not static_route:
             return False
 

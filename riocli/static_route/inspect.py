@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.static_route.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
+@click.command(
+    'inspect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=True), default='yaml')
+              type=click.Choice(['json', 'yaml'], case_sensitive=True),
+              default='yaml')
 @click.argument('static-route', type=str)
 @name_to_guid
-def inspect_static_route(format_type: str, static_route: str, static_route_guid: str) -> None:
+def inspect_static_route(
+        format_type: str,
+        static_route: str,
+        static_route_guid: str
+) -> None:
     """
-    Inspect the static route resource
+    Inspect a static route
     """
     try:
         client = new_client()
@@ -34,7 +46,7 @@ def inspect_static_route(format_type: str, static_route: str, static_route_guid:
         data = make_static_route_inspectable(route)
         inspect_with_format(data, format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
