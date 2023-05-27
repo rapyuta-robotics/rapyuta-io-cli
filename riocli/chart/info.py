@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.chart.util import find_chart
+from riocli.constants import Colors
 from riocli.utils import dump_all_yaml
 
 
 @click.command(
     'info',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
     help='Describe the available chart with versions',
 )
 @click.argument('chart', type=str)

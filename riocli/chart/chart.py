@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import requests
 from munch import Munch
 
 from riocli.apply import apply, delete
+from riocli.constants import Colors
 
 
 class Chart(Munch):
@@ -66,7 +67,7 @@ class Chart(Munch):
     def download_chart(self):
         self._create_temp_directory()
         click.secho('Downloading {}:{} chart in {}'.format(
-            self.name, self.version, self.tmp_dir.name), fg='cyan')
+            self.name, self.version, self.tmp_dir.name), fg=Colors.CYAN)
         chart_filepath = Path(self.tmp_dir.name, self._chart_filename())
 
         with open(chart_filepath, 'wb') as f:

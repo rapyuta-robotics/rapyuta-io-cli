@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +14,32 @@
 
 import click
 from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
 
 from riocli.chart.util import find_chart, print_chart_entries
+from riocli.constants import Colors, Symbols
+from riocli.utils.spinner import with_spinner
 
 
 @click.command(
     'search',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
     help='Search for available charts in the repository',
 )
 @click.option('-w', '--wide', is_flag=True, default=False,
               help='Print more details')
 @click.argument('chart', type=str)
-def search_chart(chart: str, wide: bool = False) -> None:
+@with_spinner(text="Searching for chart...")
+def search_chart(chart: str, wide: bool = False,
+                 spinner: Yaspin = None) -> None:
     """Search for a chart in the chart repo."""
-    versions = find_chart(chart)
-    print_chart_entries(versions, wide=wide)
+    try:
+        versions = find_chart(chart)
+        with spinner.hidden():
+            print_chart_entries(versions, wide=wide)
+    except Exception as e:
+        spinner.text = click.style(str(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
