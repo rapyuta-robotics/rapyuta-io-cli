@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from rapyuta_io.clients.rosbag import (
     ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo)
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
+from riocli.constants import Colors
 from riocli.deployment.errors import ERRORS
 from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.jsonschema.validate import load_schema
@@ -43,8 +44,11 @@ class Deployment(Model):
     }
 
     def find_object(self, client: Client) -> typing.Any:
-        guid, obj = self.rc.find_depends(
-            {"kind": "deployment", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends({
+            "kind": "deployment",
+            "nameOrGUID": self.metadata.name,
+        })
+
         return obj if guid else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
@@ -71,7 +75,7 @@ class Deployment(Model):
                 '>> runtime mismatch => ' +
                 'deployment:{}.runtime !== package:{}.runtime '.format(
                     self.metadata.name, pkg['packageName']
-                ), fg='red')
+                ), fg=Colors.RED)
             return
 
         provision_config = pkg.get_provision_configuration(plan_id)
@@ -395,9 +399,9 @@ def process_deployment_errors(e: DeploymentNotRunningException):
             description = 'Internal rapyuta.io error'
             action = support_action
 
-        code = click.style(code, fg='yellow')
-        description = click.style(description, fg='red')
-        action = click.style(action, fg='green')
+        code = click.style(code, fg=Colors.YELLOW)
+        description = click.style(description, fg=Colors.RED)
+        action = click.style(action, fg=Colors.GREEN)
 
         msgs.append(err_fmt.format(code, description, action))
 

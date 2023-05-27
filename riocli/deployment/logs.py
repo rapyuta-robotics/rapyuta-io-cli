@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,27 +14,41 @@
 import os
 
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import Configuration
+from riocli.constants import Colors
 from riocli.deployment.util import name_to_guid, select_details
 
 _LOG_URL_FORMAT = '{}/deployment/logstream?tailLines={}&deploymentId={}&componentId={}&executableId={}&podName={}'
 
 
-@click.command('logs')
-@click.option('--component', 'component_name', default=None)
-@click.option('--exec', 'exec_name', default=None)
+@click.command(
+    'logs',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--component', 'component_name', default=None,
+              help='Name of the component in the deployment')
+@click.option('--exec', 'exec_name', default=None,
+              help='Name of a executable in the component')
 @click.argument('deployment-name', type=str)
 @name_to_guid
-def deployment_logs(component_name: str, exec_name: str, deployment_name: str, deployment_guid: str) -> None:
+def deployment_logs(
+        component_name: str,
+        exec_name: str,
+        deployment_name: str,
+        deployment_guid: str,
+) -> None:
     """
-    Stream the live logs for the Deployment (only Cloud)
+    Stream live logs from cloud deployments (not supported for device deployments)
     """
     try:
         comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
         stream_deployment_logs(deployment_guid, comp_id, exec_id, pod_name)
     except Exception as e:
-        click.secho(e, fg='red')
+        click.secho(e, fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -42,10 +56,13 @@ def stream_deployment_logs(deployment_id, component_id, exec_id, pod_name=None):
     # FIXME(ankit): The Upstream API ends up timing out when there is no log being written.
     #               IMO the correct behaviour should be to not timeout and keep the stream open.
     config = Configuration()
+
     url = get_log_stream_url(config, deployment_id, component_id, exec_id, pod_name)
     auth = config.get_auth_header()
-    curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(auth['project'], auth['Authorization'], url)
-    click.secho(curl, fg='blue')
+    curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(
+        auth['project'], auth['Authorization'], url)
+    click.echo(click.style(curl, fg=Colors.BLUE, italic=True))
+
     os.system(curl)
 
 

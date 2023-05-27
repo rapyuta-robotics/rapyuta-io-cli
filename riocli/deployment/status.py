@@ -12,12 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.deployment.util import name_to_guid
 
 
-@click.command('status')
+@click.command(
+    'status',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('deployment-name', type=str)
 @name_to_guid
 def status(deployment_name: str, deployment_guid: str) -> None:
@@ -29,5 +36,5 @@ def status(deployment_name: str, deployment_guid: str) -> None:
         deployment = client.get_deployment(deployment_guid)
         click.secho(deployment.status)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
