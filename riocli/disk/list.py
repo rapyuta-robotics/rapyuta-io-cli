@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import typing
 import click
 from rapyuta_io.utils.rest_client import HttpMethod
 
+from riocli.constants import Colors
 from riocli.disk.util import _api_call
 from riocli.utils import tabulate_data
 
@@ -30,7 +31,7 @@ def list_disks() -> None:
         disks = sorted(disks, key=lambda d: d['name'].lower())
         _display_disk_list(disks, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
