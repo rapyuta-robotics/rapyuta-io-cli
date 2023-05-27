@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,27 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils.rest_client import HttpMethod
 
+from riocli.constants import Symbols, Colors
 from riocli.disk.util import name_to_guid, _api_call
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('delete')
-@click.option('--force', '-f', 'force', is_flag=True, default=False, help='Skip confirmation')
-@click.argument('disk-name', required=True)
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--force', '-f', 'force', is_flag=True, default=False,
+              help='Skip confirmation')
+@click.argument('disk-name', required=True, type=str)
 @name_to_guid
-def delete_disk(disk_name: str, disk_guid: str, force: bool):
+@with_spinner(text="Deleting disk...")
+def delete_disk(
+        disk_name: str,
+        disk_guid: str,
+        force: bool,
+        spinner=None
+) -> None:
     """
-    Delete the disk from the Platform
+    Delete a disk
     """
-    if not force:
-        click.confirm('Deleting disk {} ({})'.format(disk_name, disk_guid), abort=True)
+    with spinner.hidden():
+        if not force:
+            click.confirm(
+                'Deleting disk {} ({})'.format(disk_name, disk_guid), abort=True)
 
     try:
-        with spinner():
-            _api_call(HttpMethod.DELETE, guid=disk_guid, load_response=False)
-        click.echo(click.style('Disk deleted successfully!', fg='green'))
+        _api_call(HttpMethod.DELETE, guid=disk_guid, load_response=False)
+
+        spinner.text = click.style('Disk deleted successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        spinner.text = click.style('Failed to delete disk: {}'.format(str(e)), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
