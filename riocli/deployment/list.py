@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,41 @@
 import typing
 
 import click
-from rapyuta_io.clients.deployment import Deployment
+from click_help_colors import HelpColorsCommand
+from rapyuta_io.clients.deployment import Deployment, DeploymentPhaseConstants
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
+ALL_PHASES = [
+    DeploymentPhaseConstants.INPROGRESS,
+    DeploymentPhaseConstants.PROVISIONING,
+    DeploymentPhaseConstants.SUCCEEDED,
+    DeploymentPhaseConstants.FAILED_TO_START,
+    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
+    DeploymentPhaseConstants.DEPLOYMENT_STOPPED,
+]
 
-@click.command('list')
+DEFAULT_PHASES = [
+    DeploymentPhaseConstants.INPROGRESS,
+    DeploymentPhaseConstants.PROVISIONING,
+    DeploymentPhaseConstants.SUCCEEDED,
+    DeploymentPhaseConstants.FAILED_TO_START,
+]
+
+
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--device', prompt_required=False, default='', type=str,
               help='Filter the Deployment list by Device ID')
 @click.option('--phase', prompt_required=False, multiple=True,
-              type=click.Choice(['In progress', 'Provisioning', 'Succeeded', 'Failed to start',
-                                 'Partially deprovisioned', 'Deployment stopped']),
-              default=['In progress', 'Provisioning', 'Succeeded', 'Failed to start'],
+              type=click.Choice(ALL_PHASES),
+              default=DEFAULT_PHASES,
               help='Filter the Deployment list by Phases')
 def list_deployments(device: str, phase: typing.List[str]) -> None:
     """
@@ -38,7 +60,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
         deployments = sorted(deployments, key=lambda d: d.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
