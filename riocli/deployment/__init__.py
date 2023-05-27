@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,24 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.deployment.delete import delete_deployment
+from riocli.deployment.execute import execute_command
+from riocli.deployment.execute import execute_command
 from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs
 from riocli.deployment.ssh import ssh_init, ssh_deployment
 from riocli.deployment.status import status
-from riocli.deployment.wait import wait_for_deployment
-from riocli.deployment.execute import execute_command
 from riocli.deployment.update import update_deployment
+from riocli.deployment.wait import wait_for_deployment
 
 
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def deployment():
     """

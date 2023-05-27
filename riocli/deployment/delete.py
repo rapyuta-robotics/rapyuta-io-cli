@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,30 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
+from riocli.constants import Colors, Symbols
 from riocli.deployment.util import name_to_guid
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('delete')
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--force', '-f', '--silent', is_flag=True, default=False,
               help='Skip confirmation')
 @click.argument('deployment-name', type=str)
 @name_to_guid
-def delete_deployment(force: bool, deployment_name: str, deployment_guid: str) -> None:
+@with_spinner(text="Deleting deployment...")
+def delete_deployment(
+        force: bool,
+        deployment_name: str,
+        deployment_guid: str,
+        spinner=None,
+) -> None:
     """
-    Delete the deployment from the Platform
+    Deletes a deployment
     """
-    if not force:
-        click.confirm('Deleting {} ({}) deployment'.format(deployment_name, deployment_guid), abort=True)
+    with spinner.hidden():
+        if not force:
+            click.confirm(
+                'Deleting {} ({}) deployment'.format(
+                    deployment_name, deployment_guid), abort=True)
 
     try:
-        with spinner():
-            client = new_client()
-            deployment = client.get_deployment(deployment_guid)
-            deployment.deprovision()
-        click.secho('Deployment deleted successfully!', fg='green')
+        client = new_client()
+        deployment = client.get_deployment(deployment_guid)
+        deployment.deprovision()
+        spinner.text = click.style(
+            'Deployment deleted successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        spinner.text = click.style(
+            'Failed to delete deployment: {}'.format(e), Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
