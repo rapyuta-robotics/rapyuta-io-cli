@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.chart.chart import Chart
 from riocli.chart.util import find_chart
+from riocli.constants import Colors
 
 
 @click.command(
     'apply',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
     help='Apply a new Rapyuta Chart in the Project',
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False,
@@ -54,7 +55,7 @@ def apply_chart(
     if len(versions) > 1:
         click.secho(
             'More than one charts are available, please specify the version!',
-            fg='red')
+            fg=Colors.RED)
 
     chart = Chart(**versions[0])
     chart.apply_chart(values, secrets, dryrun=dryrun, workers=workers,
