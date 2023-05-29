@@ -18,7 +18,7 @@ from riocli.secret.docker_secret import create_docker_secret
 from riocli.secret.source_secret import create_source_secret
 
 
-@click.command('create')
+@click.command('create', hidden=True)
 @click.option('--secret-type', '-t', help='Type of Secret', type=click.Choice(['docker', 'source']))
 @click.option('--username', type=str,
               help='Docker registry username for docker secret, Git username for source secret')
