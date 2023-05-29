@@ -20,7 +20,7 @@ from click_spinner import spinner
 from riocli.config import new_client
 
 
-@click.command('create')
+@click.command('create', hidden=True)
 @click.option('--manifest', type=click.File(mode='r', lazy=True),
               help='Path for the manifest file')
 @click.option('--format', 'format_type', default='json',

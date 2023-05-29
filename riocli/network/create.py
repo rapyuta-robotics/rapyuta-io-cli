@@ -20,7 +20,7 @@ from riocli.network.native_network import create_native_network
 from riocli.network.routed_network import create_routed_network
 
 
-@click.command('create')
+@click.command('create', hidden=True)
 @click.argument('name', type=str)
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native']), default='routed')
