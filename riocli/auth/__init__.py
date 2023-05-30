@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ from riocli.auth.staging import environment
 from riocli.auth.status import status
 from riocli.auth.token import token
 from riocli.config import new_client
+from riocli.constants import Colors
 
 
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color="yellow",
-    help_options_color="green",
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def auth():
     """
@@ -43,7 +44,7 @@ def get_rio_client() -> Client:
 
 auth.add_command(login)
 auth.add_command(logout)
-auth.add_command(status)
-auth.add_command(refresh_token)
 auth.add_command(token)
+auth.add_command(status)
 auth.add_command(environment)
+auth.add_command(refresh_token)

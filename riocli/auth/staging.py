@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import click
 from riocli.auth.login import select_project, select_organization
 from riocli.auth.util import get_token
 from riocli.config import Configuration
+from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
@@ -29,7 +30,6 @@ def environment(ctx: click.Context, name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use)
     """
-
     ctx = get_root_context(ctx)
 
     if name == 'ga':
@@ -50,18 +50,16 @@ def environment(ctx: click.Context, name: str):
 
     organization = select_organization(ctx.obj)
     select_project(ctx.obj, organization=organization)
+
     ctx.obj.save()
 
 
-def _validate_environment(name: str) -> bool:
-    valid = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
-    if not valid:
-        click.secho('Invalid staging environment!', fg='red')
-        raise SystemExit(1)
-
-
 def _configure_environment(config: Configuration, name: str) -> None:
-    _validate_environment(name)
+    is_valid_env = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
+
+    if not is_valid_env:
+        click.secho('{} Invalid environment: {}'.format(Symbols.ERROR, name), fg=Colors.RED)
+        raise SystemExit(1)
 
     catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
     core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
