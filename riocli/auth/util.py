@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,32 @@
 import os
 
 import click
-from click_spinner import spinner
 from rapyuta_io import Client
 from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 
 from riocli.config import Configuration
+from riocli.constants import Colors, Symbols
 from riocli.project.util import find_project_guid, find_organization_guid
 from riocli.utils.selector import show_selection
+from riocli.utils.spinner import with_spinner
+
+TOKEN_LEVELS = {
+    0: AuthTokenLevel.LOW,
+    1: AuthTokenLevel.MED,
+    2: AuthTokenLevel.HIGH
+}
 
 
-def select_organization(config: Configuration,
-                        organization: str = None) -> str:
+def select_organization(
+        config: Configuration,
+        organization: str = None,
+) -> str:
+    """
+    Launches the org selection prompt by listing all the orgs that the user is a part of.
+
+    Sets the choice in the given configuration.
+    """
     client = config.new_client(with_project=False)
 
     org_guid = None
@@ -44,7 +58,7 @@ def select_organization(config: Configuration,
         org_guid = show_selection(org_map, "Select an organization:")
 
     if org_guid and org_guid not in org_map:
-        click.secho('invalid organization guid', fg='red')
+        click.secho('invalid organization guid', fg=Colors.RED)
         raise SystemExit(1)
 
     config.data['organization_id'] = org_guid
@@ -53,10 +67,14 @@ def select_organization(config: Configuration,
     return org_guid
 
 
-def select_project(config: Configuration, project: str = None,
-                   organization: str = None) -> None:
+def select_project(
+        config: Configuration,
+        project: str = None,
+        organization: str = None,
+) -> None:
     """
     Launches the project selection prompt by listing all the projects.
+
     Sets the choice in the given configuration.
     """
     client = config.new_v2_client(with_project=False)
@@ -71,8 +89,8 @@ def select_project(config: Configuration, project: str = None,
     if len(projects) == 0:
         config.data['project_id'] = ""
         config.data['project_name'] = ""
-        click.secho("There are no projects in this organization", fg='black',
-                    bg='white')
+        click.secho("There are no projects in this organization",
+                    fg=Colors.BLACK, bg=Colors.WHITE)
         return
 
     # Sort projects based on their names for an easier selection
@@ -93,17 +111,16 @@ def select_project(config: Configuration, project: str = None,
         config.data['project_name'], config.data['organization_name'],
     )
 
-    click.secho(confirmation, fg='green')
+    click.secho(confirmation, fg=Colors.GREEN)
 
 
-TOKEN_LEVELS = {
-    0: AuthTokenLevel.LOW,
-    1: AuthTokenLevel.MED,
-    2: AuthTokenLevel.HIGH
-}
-
-
-def get_token(email: str, password: str, level: int = 1) -> str:
+@with_spinner(text='Fetching token...')
+def get_token(
+        email: str,
+        password: str,
+        level: int = 1,
+        spinner=None,
+) -> str:
     """
     Generates a new token using email and password.
     """
@@ -112,19 +129,21 @@ def get_token(email: str, password: str, level: int = 1) -> str:
         os.environ['RIO_CONFIG'] = config.filepath
 
     try:
-        with spinner():
-            token = Client.get_auth_token(
-                email, password, TOKEN_LEVELS[level])
+        token = Client.get_auth_token(
+            email, password, TOKEN_LEVELS[level])
         return token
-    except UnauthorizedError:
-        click.secho("✘ incorrect email/password", fg='red')
-        raise SystemExit(1)
+    except UnauthorizedError as e:
+        spinner.text = click.style("incorrect email/password", fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
     except Exception as e:
-        click.secho(e, fg='red')
-        raise SystemExit(1)
+        click.style(str(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
 
 
-def validate_token(token: str) -> bool:
+@with_spinner(text='Validating token...')
+def validate_token(token: str, spinner=None) -> bool:
     """Validates an auth token."""
     config = Configuration()
     if 'environment' in config.data:
@@ -134,12 +153,16 @@ def validate_token(token: str) -> bool:
 
     try:
         user = client.get_authenticated_user()
-        click.secho('Token belongs to user {}'.format(user.email_id),
-                    fg='cyan')
+        spinner.text = click.style(
+            'Token belongs to user {}'.format(user.email_id),
+            fg=Colors.CYAN)
+        spinner.ok(Symbols.INFO)
         return True
     except UnauthorizedError:
-        click.secho("✘ incorrect auth token", fg='red')
+        spinner.text = click.style("incorrect auth token", fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         return False
     except Exception as e:
-        click.secho(e, fg='red')
+        spinner.text = click.style(str(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         return False
