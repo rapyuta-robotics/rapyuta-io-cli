@@ -25,14 +25,19 @@ from riocli.network.routed_network import create_routed_network
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native']), default='routed')
 @click.option('--ros', help='Version of ROS',
-              type=click.Choice(['kinetic', 'melodic', 'noetic']), default='melodic')
-@click.option('--device', 'device_name', help='Device ID of the Device where Network will run (device only)')
+              type=click.Choice(['kinetic', 'melodic', 'noetic']),
+              default='melodic')
+@click.option('--device', 'device_name',
+              help='Device ID of the Device where Network will run (device only)')
 @click.option('--cpu', help='cpu limit for Network (cloud only) ', type=float)
-@click.option('--memory', help='memory limit for Network (cloud only) ', type=int)
+@click.option('--memory', help='memory limit for Network (cloud only) ',
+              type=int)
 @click.option('--network-interface', '-nic', type=str,
               help='Network Interface on which Network will listen (device only)')
-@click.option('--restart-policy', help='Restart policy for the Network (device only)',
-              type=click.Choice(['always', 'no', 'on-failure']), default='always')
+@click.option('--restart-policy',
+              help='Restart policy for the Network (device only)',
+              type=click.Choice(['always', 'no', 'on-failure']),
+              default='always')
 @device_name_to_guid
 def create_network(name: str, network: str, **kwargs: typing.Any) -> None:
     """

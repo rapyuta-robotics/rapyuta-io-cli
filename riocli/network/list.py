@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,22 @@
 import typing
 
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native', 'both']), default='both')
 def list_networks(network: str) -> None:
@@ -31,6 +38,7 @@ def list_networks(network: str) -> None:
     """
     try:
         client = new_client()
+
         networks = []
         if network in ['routed', 'both']:
             networks += client.get_all_routed_networks()
@@ -39,6 +47,7 @@ def list_networks(network: str) -> None:
             networks += client.list_native_networks()
 
         networks = sorted(networks, key=lambda n: n.name.lower())
+
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -66,6 +75,7 @@ def _display_network_list(
 
         if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
             continue
-        data.append([network.guid, network.name, network.runtime, network_type, phase])
+        data.append(
+            [network.guid, network.name, network.runtime, network_type, phase])
 
     tabulate_data(data, headers)
