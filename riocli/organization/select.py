@@ -14,6 +14,7 @@
 import sys
 
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project
 from riocli.constants import Colors
@@ -21,7 +22,12 @@ from riocli.project.util import name_to_organization_guid
 from riocli.utils.context import get_root_context
 
 
-@click.command('select')
+@click.command(
+    'select',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('organization-name', type=str)
 @click.option('--interactive/--no-interactive', '--interactive/--silent',
               is_flag=True, type=bool, default=True,
