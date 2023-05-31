@@ -27,6 +27,7 @@ from riocli.utils.selector import show_selection
 
 @click.group(
     'import',
+    hidden=True,
     invoke_without_command=False,
     cls=HelpColorsGroup,
     help_headers_color='yellow',
