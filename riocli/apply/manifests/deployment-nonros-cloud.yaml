@@ -33,3 +33,12 @@ spec:
     - depends:
         kind: managedservice
         nameOrGUID: "managedservice"
+  features:
+    vpn:
+      enabled: true
+    params:
+      enabled: true
+      trees:
+        - config01
+        - config02
+      disableSync: false
