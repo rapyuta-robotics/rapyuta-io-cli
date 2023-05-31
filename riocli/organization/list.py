@@ -13,12 +13,19 @@
 # limitations under the License.
 
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.pass_context
 def list_organizations(ctx: click.Context) -> None:
     """
@@ -34,7 +41,7 @@ def list_organizations(ctx: click.Context) -> None:
         current = ctx.obj.data['organization_id']
         print_organizations(organizations, current)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
 
@@ -45,11 +52,12 @@ def print_organizations(organizations, current):
 
     data = []
     for org in organizations:
-        fg = None
+        fg, bold = None, False
         if org.guid == current:
-            fg = 'green'
+            fg = Colors.GREEN
+            bold = True
         data.append([
-            click.style(v, fg=fg)
+            click.style(v, fg=fg, bold=bold)
             for v in (org.name, org.guid,
                       org.creator, org.short_guid)
         ])

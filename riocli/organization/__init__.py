@@ -14,6 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.organization.list import list_organizations
 from riocli.organization.select import select_organization
 
@@ -21,8 +22,8 @@ from riocli.organization.select import select_organization
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def organization() -> None:
     """
