@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 
+from riocli.constants import Colors
 from riocli.network.native_network import inspect_native_network
 from riocli.network.routed_network import inspect_routed_network
 from riocli.network.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
+@click.command(
+    'inspect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False), default='yaml')
+              type=click.Choice(['json', 'yaml'], case_sensitive=False),
+              default='yaml')
 @click.argument('network-name', type=str)
 @name_to_guid
-def inspect_network(format_type: str, network_name: str, network_guid: str, network_type: str) -> None:
+def inspect_network(format_type: str, network_name: str, network_guid: str,
+                    network_type: str) -> None:
     """
     Inspect the network resource
     """
@@ -36,5 +45,5 @@ def inspect_network(format_type: str, network_name: str, network_guid: str, netw
 
         inspect_with_format(data, format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        click.secho(str(e), fg=Colors.RED)
+        raise SystemExit(1) from e
