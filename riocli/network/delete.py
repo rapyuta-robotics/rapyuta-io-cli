@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,37 +12,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
 
 from riocli.config import new_client
+from riocli.constants import Colors, Symbols
 from riocli.network.util import name_to_guid
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('delete')
-@click.option('--force', '-f', is_flag=True, default=False, help='Skip confirmation', type=bool)
-@click.option('--network', 'network_type', help='Type of Network', default=None,
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--force', '-f', is_flag=True, default=False,
+              help='Skip confirmation', type=bool)
+@click.option('--network', 'network_type', help='Type of Network',
+              default=None,
               type=click.Choice(['routed', 'native']))
 @click.argument('network-name', type=str)
 @name_to_guid
-def delete_network(force: bool, network_name: str, network_guid: str, network_type: str) -> None:
+@with_spinner(text='Deleting network...')
+def delete_network(
+        force: bool,
+        network_name: str,
+        network_guid: str,
+        network_type: str,
+        spinner: Yaspin = None
+) -> None:
     """
-    Delete the network from the Platform
+    Deletes a network
     """
-
     if not force:
-        click.confirm('Deleting {} network {} ({})'.
-                      format(network_type, network_name, network_guid), abort=True)
+        with spinner.hidden():
+            click.confirm(
+                'Deleting {} network {} ({})'.
+                format(network_type, network_name, network_guid),
+                abort=True)
 
     try:
         client = new_client()
-        with spinner():
-            if network_type == 'routed':
-                # TODO: Implement and use the delete_routed_network of client directly.
-                rn = client.get_routed_network(network_guid)
-                rn.delete()
-            elif network_type == 'native':
-                client.delete_native_network(network_guid)
-        click.secho('{} Network deleted successfully!'.format(network_type.capitalize()), fg='green')
+
+        if network_type == 'routed':
+            client.delete_routed_network(network_guid)
+        elif network_type == 'native':
+            client.delete_native_network(network_guid)
+        else:
+            raise Exception('invalid network type')
+
+        spinner.text = click.style(
+            '{} deleted successfully!'.format(network_type.capitalize()),
+            fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        spinner.text = click.style('Failed to delete network: {}'.format(e),
+                                   fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e

@@ -14,15 +14,18 @@
 import typing
 
 import click
-from click_spinner import spinner
+from rapyuta_io.clients.common_models import Limits
 from rapyuta_io.clients.native_network import NativeNetwork, Parameters
 from rapyuta_io.clients.package import Runtime, ROSDistro
-from rapyuta_io.clients.common_models import Limits
+
 from riocli.config import new_client
 
 
-def create_native_network(name: str, ros: str, device_guid: str = None, network_interface: str = None,
-                          cpu: float = 0, memory: int = 0, restart_policy: str = None, **kwargs: typing.Any) -> None:
+def create_native_network(name: str, ros: str, device_guid: str = None,
+                          network_interface: str = None,
+                          cpu: float = 0, memory: int = 0,
+                          restart_policy: str = None,
+                          **kwargs: typing.Any) -> None:
     client = new_client()
 
     ros_distro = ROSDistro(ros)
@@ -31,7 +34,8 @@ def create_native_network(name: str, ros: str, device_guid: str = None, network_
     limit = None
     if cpu or memory:
         if device_guid:
-            raise Exception('Native network for device does not support cpu or memory')
+            raise Exception(
+                'Native network for device does not support cpu or memory')
         limit = Limits(cpu, memory)
 
     device = None
@@ -39,12 +43,13 @@ def create_native_network(name: str, ros: str, device_guid: str = None, network_
         runtime = Runtime.DEVICE
         device = client.get_device(device_id=device_guid)
 
-    parameters = Parameters(limits=limit, device=device, network_interface=network_interface,
+    parameters = Parameters(limits=limit, device=device,
+                            network_interface=network_interface,
                             restart_policy=restart_policy)
-    with spinner():
-        client.create_native_network(NativeNetwork(name, runtime=runtime,
-                                                   ros_distro=ros_distro,
-                                                   parameters=parameters))
+
+    client.create_native_network(NativeNetwork(name, runtime=runtime,
+                                               ros_distro=ros_distro,
+                                               parameters=parameters))
 
     click.secho('Native Network created successfully!', fg='green')
 
