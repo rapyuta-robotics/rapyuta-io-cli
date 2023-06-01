@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,29 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
 
 from riocli.config import new_client
+from riocli.constants import Colors, Symbols
 from riocli.secret.util import name_to_guid
+from riocli.utils.spinner import with_spinner
+from click_help_colors import HelpColorsCommand
 
-
-@click.command('delete')
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--force', '-f', '--silent', 'force', is_flag=True,
               default=False, help='Skip confirmation')
 @click.argument('secret-name', type=str)
 @name_to_guid
-def delete_secret(force: str, secret_name: str, secret_guid: str) -> None:
+@with_spinner(text='Deleting secret...')
+def delete_secret(force: str, secret_name: str, secret_guid: str, spinner=None) -> None:
     """
-    Deletes the secret resource from the Platform
+    Deletes a secret
     """
-    if not force:
-        click.confirm('Deleting secret {} ({})'.format(secret_name, secret_guid), abort=True)
+    with spinner.hidden():
+        if not force:
+            click.confirm(
+                'Deleting secret {} ({})'.format(secret_name, secret_guid),
+                abort=True)
 
     try:
         client = new_client()
-        with spinner():
-            client.delete_secret(secret_guid)
-        click.secho('Secret deleted successfully!', fg='green')
+        client.delete_secret(secret_guid)
+        spinner.text = click.style('Secret deleted successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+        spinner.text = click.style('Failed to delete secret: {}'.format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
