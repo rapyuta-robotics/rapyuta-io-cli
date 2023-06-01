@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.secret.create import create_secret
 from riocli.secret.delete import delete_secret
 from riocli.secret.import_secret import import_secret
@@ -24,8 +25,8 @@ from riocli.secret.list import list_secrets
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def secret() -> None:
     """

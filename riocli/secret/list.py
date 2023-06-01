@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,15 @@ from rapyuta_io import Secret
 
 from riocli.config import new_client
 from riocli.utils import tabulate_data
+from riocli.constants import Colors
+from click_help_colors import HelpColorsCommand
 
-
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--secret-type', '-t', default=['docker', 'source'], multiple=True,
               help='Types to filter the list of Secret [default: docker,source]')
 def list_secrets(secret_type: typing.Union[str, typing.Tuple[str]]) -> None:
@@ -33,7 +39,7 @@ def list_secrets(secret_type: typing.Union[str, typing.Tuple[str]]) -> None:
         secrets = sorted(secrets, key=lambda s: s.name.lower())
         _display_secret_list(secrets, secret_type, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
