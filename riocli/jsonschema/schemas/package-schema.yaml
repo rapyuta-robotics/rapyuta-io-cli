@@ -133,6 +133,7 @@ definitions:
           cpu:
             type: number
             minimum: 0
+            maximum: 256
           memory:
             type: number
             minimum: 0
