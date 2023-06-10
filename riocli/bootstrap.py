@@ -28,6 +28,7 @@ from riocli.build import build
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
+from riocli.constants import Colors, Symbols
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -42,6 +43,12 @@ from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
+from riocli.utils import (
+    check_for_updates,
+    pip_install_cli,
+    is_pip_installation,
+    update_appimage,
+)
 from riocli.vpn import vpn
 
 
@@ -49,8 +56,8 @@ from riocli.vpn import vpn
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color="yellow",
-    help_options_color="green",
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def cli(ctx: Context, config: str = None):
@@ -73,6 +80,38 @@ def version():
     """
     click.echo("rio {} / SDK {}".format(__version__, rapyuta_io.__version__))
     return
+
+
+@cli.command('update')
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
+              type=click.BOOL, default=False,
+              help="Skip confirmation")
+def update(silent: bool) -> None:
+    """
+    Update the CLI to the latest version
+    """
+    available, latest = check_for_updates(__version__)
+    if not available:
+        click.secho('🎉 You are using the latest version', fg=Colors.GREEN)
+        return
+
+    click.secho('🎉 A newer version ({}) is available.'.format(latest),
+                fg=Colors.GREEN)
+
+    if not silent:
+        click.confirm('Do you want to update?', abort=True, default=False)
+
+    try:
+        if is_pip_installation():
+            pip_install_cli(version=latest)
+        else:
+            update_appimage(version=latest)
+    except Exception as e:
+        click.secho('{} Failed to update the CLI'.format(e), fg=Colors.RED)
+        raise SystemExit(1) from e
+
+    click.secho('{} Update successful!'.format(Symbols.SUCCESS),
+                fg=Colors.GREEN)
 
 
 cli.add_command(apply)
