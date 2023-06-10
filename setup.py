@@ -57,7 +57,8 @@ setup(
         "directory-tree>=0.0.3.1",
         "yaspin>=2.3.0",
         "jsonschema>=4.0.0",
-        "waiting>=1.4.1"
+        "waiting>=1.4.1",
+        "semver>=3.0.0",
     ],
     setup_requires=["flake8"],
 )
