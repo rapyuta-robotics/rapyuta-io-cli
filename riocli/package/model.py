@@ -194,8 +194,8 @@ class Package(Model):
 
         if 'limits' in exec:
             exec_object.limits = {
-                "cpu": exec.limits.cpu,
-                "memory": exec.limits.memory
+                'cpu': exec.limits.get('cpu', 0.0),
+                'memory': exec.limits.get('memory', 0)
             }
 
         if exec.get('runAsBash'):
@@ -211,6 +211,9 @@ class Package(Model):
             if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
                 secret_guid, secret = self.rc.find_depends(exec.docker.pullSecret.depends)
                 exec_object.secret = secret_guid
+
+            if exec.docker.get('imagePullPolicy'):
+                exec_object.imagePullPolicy = exec.docker.imagePullPolicy
 
         if exec.type == 'build':
             exec_object.buildGUID = exec.build.depends.guid

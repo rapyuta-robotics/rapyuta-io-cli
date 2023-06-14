@@ -34,7 +34,6 @@ def run_on_cloud(deployment_guid: str, comp_id: str, exec_id: str, pod_name: str
     rest = RestClient(_run_cloud_url(config, deployment_guid)).headers(config.get_auth_header()).method(HttpMethod.PUT)
     resp = rest.execute(payload=_run_cloud_data(comp_id, exec_id, pod_name, command))
     data = json.loads(resp.text)
-    click.secho(data)
     if 'err' in data and data['err']:
         raise Exception(data['err'])
 

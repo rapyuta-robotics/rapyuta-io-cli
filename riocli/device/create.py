@@ -19,7 +19,7 @@ from rapyuta_io.clients.device import DevicePythonVersion, Device, DeviceRuntime
 from riocli.config import new_client
 
 
-@click.command('create')
+@click.command('create', hidden=True)
 @click.option('--description', type=str, help='Description of the device', default='')
 @click.option('--runtime', help='Runtime of the Device', multiple=True,
               type=click.Choice(['preinstalled', 'dockercompose'], case_sensitive=False))

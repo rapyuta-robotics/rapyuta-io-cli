@@ -29,18 +29,34 @@ from riocli.apply.util import process_files_values_secrets
     help_headers_color='yellow',
     help_options_color='green',
 )
-@click.option('--dryrun', '-d', is_flag=True, default=False, help='dry run the yaml files without applying any change')
+@click.option('--dryrun', '-d', is_flag=True, default=False,
+              help='dry run the yaml files without applying any change')
+@click.option('--show-graph', '-g', is_flag=True, default=False,
+              help='Opens a mermaid.live dependency graph')
 @click.option('--values', '-v',
-              help="path to values yaml file. key/values specified in the values file can be used as variables in template yamls")
+              help="path to values yaml file. key/values "
+                   "specified in the values file can be "
+                   "used as variables in template YAMLs")
 @click.option('--secrets', '-s',
-              help="secret files are sops encoded value files. rio-cli expects sops to be authorized for decoding files on this computer")
-@click.option('--workers', '-w', help="number of parallel workers while running apply command. defaults to 6.",
-              type=int)
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True, type=click.BOOL, default=False,
+              help="secret files are sops encoded value files. "
+                   "rio-cli expects sops to be authorized for "
+                   "decoding files on this computer")
+@click.option('--workers', '-w',
+              help="number of parallel workers while running apply "
+                   "command. defaults to 6.", type=int)
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
+              type=click.BOOL, default=False,
               help="Skip confirmation")
 @click.argument('files', nargs=-1)
-def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False, workers: int = 6,
-          silent: bool = False) -> None:
+def apply(
+        values: str,
+        secrets: str,
+        files: Iterable[str],
+        dryrun: bool = False,
+        workers: int = 6,
+        silent: bool = False,
+        show_graph: bool = False,
+) -> None:
     """
     Apply resource manifests
     """
@@ -57,6 +73,15 @@ def apply(values: str, secrets: str, files: Iterable[str], dryrun: bool = False,
 
     rc = Applier(glob_files, abs_values, abs_secrets)
     rc.parse_dependencies()
+
+    if show_graph and dryrun:
+        click.secho('You cannot dry run and launch the graph together.',
+                    fg='yellow')
+        return
+
+    if show_graph:
+        rc.show_dependency_graph()
+        return
 
     if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)

@@ -18,7 +18,7 @@ from rapyuta_io import Build, SimulationOptions
 from riocli.config import new_client
 
 
-@click.command('create')
+@click.command('create', hidden=True)
 @click.option('--strategy', type=click.Choice(['Source', 'Docker']), default='Docker',
               help='Strategy for building the Source')
 @click.option('--branch', default='', help='Git Repository branch')

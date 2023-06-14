@@ -13,7 +13,6 @@
 # limitations under the License.
 import copy
 import json
-import os
 import queue
 import threading
 import typing
@@ -138,14 +137,20 @@ class Applier(object):
         delete_order = list(self.graph.static_order())
         delete_order.reverse()
         for obj in delete_order:
-            if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
+            if obj in self.resolved_objects and 'manifest' in \
+                    self.resolved_objects[obj]:
                 self._delete_manifest(obj, *args, **kwargs)
 
     def print_resolved_manifests(self):
         manifests = [o for _, o in self.objects.items()]
         dump_all_yaml(manifests)
 
-    def parse_dependencies(self, check_missing=True, delete=False, template=False):
+    def parse_dependencies(
+            self,
+            check_missing=True,
+            delete=False,
+            template=False,
+    ):
         number_of_objects = 0
         for f, data in self.files.items():
             for model in data:
@@ -170,7 +175,10 @@ class Applier(object):
 
         if not template:
             self._display_context(
-                total_time=total_time, total_objects=number_of_objects, resource_list=resource_list)
+                total_time=total_time,
+                total_objects=number_of_objects,
+                resource_list=resource_list,
+            )
 
         if check_missing:
             missing_resources = []
@@ -365,14 +373,19 @@ class Applier(object):
         if not self.dependencies.get(kind):
             self.dependencies[kind] = {}
 
+    def show_dependency_graph(self):
+        """Lauches mermaid.live dependency graph"""
+        link = mermaid_link("\n".join(self.diagram))
+        click.launch(link)
+
     # Utils
-    def _display_context(self, total_time: int, total_objects: int, resource_list: typing.List) -> None:
+    def _display_context(
+            self,
+            total_time: int,
+            total_objects: int,
+            resource_list: typing.List
+    ) -> None:
         # Display context
-
-        if os.environ.get('MERMAID'):
-            diagram_link = mermaid_link("\n".join(self.diagram))
-            click.launch(diagram_link)
-
         headers = [click.style('Resource Context', bold=True, fg='yellow')]
         context = [
             ['Expected Time (mins)', round(total_time, 2)],

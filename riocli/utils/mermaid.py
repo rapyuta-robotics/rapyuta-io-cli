@@ -1,3 +1,17 @@
+# Copyright 2023 Rapyuta Robotics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import base64
 import json
 
@@ -6,39 +20,16 @@ def mermaid_safe(s: str):
     return s.replace(" ", "_")
 
 
-def js_string_to_byte(data):
+def js_string_to_byte(data: str):
     return bytes(data, 'iso-8859-1')
 
 
-def js_bytes_to_string(data):
+def js_bytes_to_string(data: bytes):
     return data.decode('iso-8859-1')
 
 
-def js_btoa(data):
+def js_btoa(data: bytes):
     return base64.b64encode(data)
-
-
-# def js_encode_uri_component(data):
-#     return quote(data)
-
-
-# def js_atob(data):
-#     return base64.b64decode(data)
-
-# def pako_inflate_raw(data):
-#     decompress = zlib.decompressobj(-15)
-#     decompressed_data = decompress.decompress(data)
-#     decompressed_data += decompress.flush()
-#     return decompressed_data
-
-
-# def pako_deflate_raw(data):
-#     compress = zlib.compressobj(
-#         zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15, 8,
-#         zlib.Z_DEFAULT_STRATEGY)
-#     compressed_data = compress.compress(js_string_to_byte(js_encode_uri_component(data)))
-#     compressed_data += compress.flush()
-#     return compressed_data
 
 
 def mermaid_link(diagram):
@@ -54,4 +45,5 @@ def mermaid_link(diagram):
     json_str = json.dumps(obj)
     json_bytes = js_string_to_byte(json_str)
     encoded_uri = js_btoa(json_bytes)
-    return "https://mermaid.live/view#base64:{}".format(js_bytes_to_string(encoded_uri))
+    return 'https://mermaid.live/view#base64:{}'.format(
+        js_bytes_to_string(encoded_uri))
