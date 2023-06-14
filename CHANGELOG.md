@@ -1,3 +1,23 @@
+# [3.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v3.0.0...v3.1.0) (2023-06-14)
+
+
+### Bug Fixes
+
+* **explain:** adds missing sections in deployment examples ([1a8d207](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1a8d207dabd66c809c5c48ee5240c6294ec3cc0b))
+* **package:** validates maximum cpu limit for device executables ([ba78470](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ba7847084df5946efff8d1c4871623fe291a3825))
+* removes `create` option for specific resources. ([0d1dd8f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0d1dd8fb6ccede41638d1324dedd5df771a47d75))
+* removes import option from build and secret ([98ea4d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/98ea4d0e2ae655eb3f9459c53448dc7b6bdda639))
+
+
+### Features
+
+* **apply:** adds option show dependency graph ([70f8950](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/70f8950375e669d297143c7f696d886e4fb6cbe3))
+* **auth:** allows login with just an auth token ([fcadc33](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fcadc33ceab14fb782bd1d3f05d63f35e6c5bcb6))
+* **auth:** allows selecting token level ([e8dc9b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e8dc9b6b13a58bf3399f02f7dcc424785e408330))
+* **deployment:** adds the option to execute commands on cloud deployment containers ([7ec3fb1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7ec3fb1e727d16c21760ded0e0321d5ac837d2cc))
+* **package:** adds provision to specify pull policy for docker image ([42ca473](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/42ca473bbe598d18a6b0ae0addc9feca26a39531))
+* **package:** supports resource limits on device runtime ([b5ec154](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b5ec15484c0e677ed56082033707b277b4fddb23))
+
 # [3.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v2.0.2...v3.0.0) (2023-05-17)
 
 
