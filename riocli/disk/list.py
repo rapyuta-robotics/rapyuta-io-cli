@@ -37,8 +37,18 @@ def list_disks() -> None:
 def _display_disk_list(disks: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ('Disk ID', 'Name', 'Status', 'Capacity', 'Used By')
+        headers = (
+            'Disk ID', 'Name', 'Status', 'Capacity',
+            'Used', 'Available', 'Used By',
+        )
 
-    data = [[d['guid'], d['name'], d['status'], d['capacity'], d['usedBy']] for d in disks]
+    data = [[d['guid'],
+             d['name'],
+             d['status'],
+             d['capacity'],
+             d.get('used', 'NA'),
+             d.get('available', 'NA'),
+             d['usedBy']]
+            for d in disks]
 
     tabulate_data(data, headers)
