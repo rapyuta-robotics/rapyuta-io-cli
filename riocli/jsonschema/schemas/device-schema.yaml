@@ -98,7 +98,7 @@ definitions:
       type: string
   projectGUID:
     type: string
-    pattern: "^project-[a-z]{24}$"
+    pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"

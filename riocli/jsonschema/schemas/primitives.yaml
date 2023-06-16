@@ -9,7 +9,7 @@ definitions:
     pattern: "^org-[a-z]{24}$"
   projectGUID:
     type: string
-    pattern: "^project-[a-z]{24}$"
+    pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   secretGUID:
     type: string
     pattern: "^secret-[a-z]{24}$"
