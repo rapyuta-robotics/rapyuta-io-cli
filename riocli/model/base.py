@@ -45,7 +45,7 @@ class Model(ABC, Munch):
                 message_with_prompt("⌛ Create {}:{}".format(
                     self.kind.lower(), self.metadata.name), fg='yellow')
                 if not dryrun:
-                    result = self.create_object(client)
+                    result = self.create_object(client, **kwargs)
                     message_with_prompt("✅ Created {}:{}".format(
                         self.kind.lower(), self.metadata.name), fg='green')
                     return result
@@ -99,7 +99,7 @@ class Model(ABC, Munch):
         pass
 
     @abstractmethod
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         pass
 
     @abstractmethod

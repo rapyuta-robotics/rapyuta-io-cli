@@ -32,7 +32,7 @@ class ManagedService(Model):
         except Exception:
             return False
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()
 
         ms = unmunchify(self)

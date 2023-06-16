@@ -47,11 +47,17 @@ from riocli.apply.util import process_files_values_secrets
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
+@click.option('--retry-count', '-rc', type=int, default=50,
+              help="Number of retries before a resource creation times out status, defaults to 50")
+@click.option('--retry-interval', '-ri', type=int, default=6,
+              help="Interval between retries defaults to 6")
 @click.argument('files', nargs=-1)
 def apply(
         values: str,
         secrets: str,
         files: Iterable[str],
+        retry_count: int,
+        retry_interval: int,
         dryrun: bool = False,
         workers: int = 6,
         silent: bool = False,
@@ -86,7 +92,7 @@ def apply(
     if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
-    rc.apply(dryrun=dryrun, workers=workers)
+    rc.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
 
 
 @click.command(
