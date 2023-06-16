@@ -38,14 +38,17 @@ class Network(Model):
         except NetworkNotFound:
             return False
 
-    def create_object(self, client: Client) -> Union[NativeNetwork, RoutedNetwork]:
+    def create_object(self, client: Client, **kwargs) -> Union[NativeNetwork, RoutedNetwork]:
+        retry_count = int(kwargs.get('retry_count'))
+        retry_interval = int(kwargs.get('retry_interval'))
+
         if self.spec.type == 'routed':
             network = self._create_routed_network(client)
-            network.poll_routed_network_till_ready()
+            network.poll_routed_network_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
             return network
 
         network = client.create_native_network(self.to_v1(client))
-        network.poll_native_network_till_ready()
+        network.poll_native_network_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
         return network
 
     def update_object(self, client: Client, obj: Union[RoutedNetwork, NativeNetwork]) -> Any:

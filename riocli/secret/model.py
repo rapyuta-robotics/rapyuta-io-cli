@@ -34,7 +34,7 @@ class Secret(Model):
 
         return secret
 
-    def create_object(self, client: Client) -> v1Secret:
+    def create_object(self, client: Client, **kwargs) -> v1Secret:
         secret = client.create_secret(self.to_v1())
         return secret
 

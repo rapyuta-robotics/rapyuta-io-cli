@@ -32,7 +32,7 @@ class Build(Model):
 
         return obj
 
-    def create_object(self, client: Client) -> v1Build:
+    def create_object(self, client: Client, **kwargs) -> v1Build:
         build = client.create_build(build=self.to_v1())
         return build
 

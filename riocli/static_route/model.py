@@ -32,7 +32,7 @@ class StaticRoute(Model):
 
         return static_route
 
-    def create_object(self, client: Client) -> v1StaticRoute:
+    def create_object(self, client: Client, **kwargs) -> v1StaticRoute:
         static_route = client.create_static_route(self.metadata.name)
         return static_route
 

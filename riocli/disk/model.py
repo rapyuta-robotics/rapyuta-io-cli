@@ -33,7 +33,7 @@ class Disk(Model):
 
         return disk
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         labels = self.metadata.get('labels', None)
         payload = {
             "labels": labels,
@@ -47,8 +47,10 @@ class Disk(Model):
             result = munchify(result)
             disk_dep_guid, disk = self.rc.find_depends({'kind': self.kind.lower(), 'nameOrGUID': self.metadata.name})
             volume_instance = client.get_volume_instance(disk_dep_guid)
+            retry_count = int(kwargs.get('retry_count'))
+            retry_interval = int(kwargs.get('retry_interval'))
             try:
-                volume_instance.poll_deployment_till_ready(sleep_interval=5)
+                volume_instance.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
                 return result
             except Exception as e:
                 click.secho(">> Warning: Error Polling for disk ({}:{})".format(self.kind.lower(), self.metadata.name),
