@@ -33,7 +33,7 @@ class Device(Model):
 
         return obj
 
-    def create_object(self, client: Client) -> v1Device:
+    def create_object(self, client: Client, **kwargs) -> v1Device:
         device = client.create_device(self.to_v1())
         return device
 

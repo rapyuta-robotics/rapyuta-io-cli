@@ -38,7 +38,7 @@ class Project(Model):
 
         return obj
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()
 
         # convert to a dict and remove the ResolverCache

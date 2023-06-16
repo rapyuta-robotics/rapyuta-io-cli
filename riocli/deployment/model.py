@@ -47,7 +47,7 @@ class Deployment(Model):
             {"kind": "deployment", "nameOrGUID": self.metadata.name})
         return obj if guid else False
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         pkg_guid, pkg = self.rc.find_depends(self.metadata.depends,
                                              self.metadata.depends.version)
 
@@ -62,6 +62,9 @@ class Deployment(Model):
         component = default_plan['components']['components'][0]
         executables = component['executables']
         runtime = internal_component['runtime']
+
+        retry_count = int(kwargs.get('retry_count'))
+        retry_interval = int(kwargs.get('retry_interval'))
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
             click.secho(
@@ -217,7 +220,7 @@ class Deployment(Model):
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
-            deployment.poll_deployment_till_ready()
+            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
         except DeploymentNotRunningException as e:
             raise Exception(process_deployment_errors(e)) from e
         except Exception as e:
