@@ -23,6 +23,7 @@ from rapyuta_io.utils import InvalidParameterException, OperationNotAllowedError
 from rapyuta_io.utils.constants import DEVICE_ID
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils.selector import show_selection
 
 
@@ -32,8 +33,8 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         try:
             client = new_client()
         except Exception as e:
-            click.secho(str(e), fg='red')
-            raise SystemExit(1)
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
 
         name = kwargs.pop('deployment_name')
         guid = None
@@ -42,11 +43,15 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             guid = name
             name = None
 
-        if name is None:
-            name = get_deployment_name(client, guid)
+        try:
+            if name is None:
+                name = get_deployment_name(client, guid)
 
-        if guid is None:
-            guid = find_deployment_guid(client, name)
+            if guid is None:
+                guid = find_deployment_guid(client, name)
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
 
         kwargs['deployment_name'] = name
         kwargs['deployment_guid'] = guid
