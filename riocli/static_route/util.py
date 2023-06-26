@@ -11,50 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
-import typing
 
 from rapyuta_io import Client
-
-from riocli.config import new_client
-
-
-def name_to_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
-        client = new_client()
-        name = kwargs.pop('static_route')
-        guid = None
-
-        if name.startswith('staticroute-'):
-            guid = name
-            name = None
-
-        if name is None:
-            name = get_static_route_name(client, guid)
-
-        if guid is None:
-            guid = find_static_route_guid(client, name)
-
-        kwargs['static_route'] = name
-        kwargs['static_route_guid'] = guid
-        f(**kwargs)
-
-    return decorated
-
-
-def get_static_route_name(client: Client, guid: str) -> str:
-    static_route = client.get_static_route(guid)
-    return static_route.urlPrefix.split("-")[0]
+from riocli.config import new_v2_client
 
 
 def find_static_route_guid(client: Client, name: str) -> str:
-    routes = client.get_all_static_routes()
-    for route in routes:
-        if route.urlPrefix == name or route.urlString == name:
-            return route.guid
-
-    raise StaticRouteNotFound()
+    client = new_v2_client(with_project=True)
+    static_route = client.get_static_route(name)
+    if not static_route:
+        raise StaticRouteNotFound()
+    return static_route.metadata.guid
 
 
 class StaticRouteNotFound(Exception):

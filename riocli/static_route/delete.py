@@ -14,11 +14,9 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.static_route.util import name_to_guid
 from riocli.utils.spinner import with_spinner
-
 
 @click.command(
     'delete',
@@ -28,11 +26,9 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--force', '-f', is_flag=True, default=False, help='Skip confirmation')
 @click.argument('static-route', type=str)
-@name_to_guid
 @with_spinner(text="Deleting static route...")
 def delete_static_route(
         static_route: str,
-        static_route_guid: str,
         force: bool,
         spinner=None,
 ) -> None:
@@ -42,16 +38,16 @@ def delete_static_route(
     with spinner.hidden():
         if not force:
             click.confirm(
-                'Deleting static route {} ({})'.format(
-                    static_route, static_route_guid), abort=True)
+                'Deleting static route {}'.format(
+                    static_route), abort=True)
 
     try:
-        client = new_client()
-        client.delete_static_route(static_route_guid)
+        client = new_v2_client()
+        client.delete_static_route(static_route)
         spinner.text = click.style(
             'Static Route deleted successfully ', fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style('Failed to delete static route: {}'.format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        raise SystemExit(1) from e

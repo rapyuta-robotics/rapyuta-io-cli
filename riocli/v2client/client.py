@@ -332,3 +332,90 @@ class Client(metaclass=_Singleton):
             raise Exception("managedservice: {}".format(err_msg))
 
         return munchify(data)
+
+    def list_static_routes(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all static routes in a project
+        """
+        url = "{}/v2/staticroutes/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+                "limit": 10,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("static routes: {}".format(err_msg))
+            staticRoutes = data.get('items', [])
+            if not staticRoutes:
+                break
+            offset = data['metadata']['continue']
+            result.extend(staticRoutes)
+
+        return munchify(result)
+
+    def get_static_route(self, name: str) -> Munch:
+        """
+        Get a static route by its name
+        """
+        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("static routes: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_static_route(self, metadata: dict) -> Munch:
+        """
+        Create a new static route
+        """
+        url = "{}/v2/staticroutes/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=metadata)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("static routes: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_static_route(self, name: str) -> Munch:
+        """
+        Delete a static route by its name
+        """
+        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("static routes: {}".format(err_msg))
+
+        return munchify(data)

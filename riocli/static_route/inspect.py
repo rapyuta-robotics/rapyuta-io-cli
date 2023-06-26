@@ -13,11 +13,10 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.static_route import StaticRoute
+from munch import unmunchify
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.static_route.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
@@ -31,34 +30,19 @@ from riocli.utils import inspect_with_format
               type=click.Choice(['json', 'yaml'], case_sensitive=True),
               default='yaml')
 @click.argument('static-route', type=str)
-@name_to_guid
 def inspect_static_route(
         format_type: str,
         static_route: str,
-        static_route_guid: str
 ) -> None:
     """
     Inspect a static route
     """
     try:
-        client = new_client()
-        route = client.get_static_route(static_route_guid)
-        data = make_static_route_inspectable(route)
-        inspect_with_format(data, format_type)
+        client = new_v2_client()
+        route = client.get_static_route(static_route)
+        inspect_with_format(unmunchify(route), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 
-def make_static_route_inspectable(static_route_data: StaticRoute) -> dict:
-    return {
-        'created_at': static_route_data.CreatedAt,
-        'updated_at': static_route_data.UpdatedAt,
-        'deleted_at': static_route_data.DeletedAt,
-        'guid': static_route_data.guid,
-        'url_prefix': static_route_data.urlPrefix,
-        'url': static_route_data.urlString,
-        'creator': static_route_data.creator,
-        'project': static_route_data.projectGUID,
-        'metadata': static_route_data.metadata.__dict__,
-    }

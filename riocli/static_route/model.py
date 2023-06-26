@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
+from munch import unmunchify
 
 from rapyuta_io import Client
-from rapyuta_io.clients.static_route import StaticRoute as v1StaticRoute
 
+from riocli.config import new_v2_client
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 
@@ -29,21 +30,27 @@ class StaticRoute(Model):
             'kind': 'staticroute',
             'nameOrGUID': self.metadata.name
         })
-
         if not static_route:
             return False
 
         return static_route
 
-    def create_object(self, client: Client, **kwargs) -> v1StaticRoute:
-        static_route = client.create_static_route(self.metadata.name)
-        return static_route
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
+        client = new_v2_client()
+
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        self.pop("rc", None)
+        static_route = unmunchify(self)
+        r = client.create_static_route(static_route)
+        return unmunchify(r)
 
     def update_object(self, client: Client, obj: typing.Any) -> None:
         pass
 
     def delete_object(self, client: Client, obj: typing.Any):
-        client.delete_static_route(obj.guid)
+        client = new_v2_client()
+        client.delete_static_route(obj.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
