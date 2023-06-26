@@ -14,10 +14,9 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
-
 
 @click.command(
     'create',
@@ -25,19 +24,22 @@ from riocli.utils.spinner import with_spinner
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('prefix', type=str)
+@click.argument('name', type=str)
 @with_spinner(text="Creating static route...")
-def create_static_route(prefix: str, spinner=None) -> None:
+def create_static_route(name: str, spinner=None) -> None:
     """
     Creates a new static route
     """
     try:
-        client = new_client()
-        route = client.create_static_route(prefix)
+        client = new_v2_client(with_project=True)
+        payload = {
+            "metadata": {"name": name}
+        }
+        route = client.create_static_route(payload)
         spinner.text = click.style(
-            'Static Route created successfully for URL {}'.format(route.urlString), fg=Colors.GREEN)
+            'Static Route created successfully for URL {}'.format(route.spec.url), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style('Failed to create static route: {}'.format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        raise SystemExit(1) from e

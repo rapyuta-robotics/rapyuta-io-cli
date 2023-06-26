@@ -14,9 +14,8 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.static_route.util import name_to_guid
 
 
 @click.command(
@@ -26,15 +25,14 @@ from riocli.static_route.util import name_to_guid
     help_options_color=Colors.GREEN,
 )
 @click.argument('static-route', type=str)
-@name_to_guid
-def open_static_route(static_route, static_route_guid) -> None:
+def open_static_route(static_route) -> None:
     """
     Opens the static route in the default browser
     """
     try:
-        client = new_client()
-        route = client.get_static_route(static_route_guid)
-        click.launch(url='https://{}'.format(route.urlString), wait=False)
+        client = new_v2_client()
+        route = client.get_static_route(static_route)
+        click.launch(url='https://{}'.format(route.spec.url), wait=False)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
