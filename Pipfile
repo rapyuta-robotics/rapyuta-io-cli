@@ -10,7 +10,6 @@ sphinx-click = "==3.0.1"
 furo = "==2021.10.9"
 
 [packages]
-riocli = {path = "."}
 pretty-traceback = ">=2022.1018"
 argparse = ">=1.4.0"
 click = ">=8.0.1"
@@ -24,7 +23,6 @@ graphlib-backport = ">=1.0.3"
 jinja2 = ">=3.0.1"
 munch = ">=2.4.0"
 pyyaml = ">=5.4.1"
-rapyuta-io = ">=1.10.0"
 tabulate = ">=0.8.0"
 pyrfc3339 = ">=1.1"
 directory-tree = ">=0.0.3.1"
@@ -34,3 +32,11 @@ waiting = ">=1.4.1"
 
 [requires]
 python_version = "3"
+
+[packages.riocli]
+path = "."
+
+[packages.rapyuta-io]
+git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk"
+editable = true
+ref = "cc2531a"
