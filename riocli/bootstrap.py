@@ -41,6 +41,7 @@ from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import shell, deprecated_repl
 from riocli.static_route import static_route
+from riocli.usergroup import usergroup
 from riocli.vpn import vpn
 
 
@@ -97,3 +98,4 @@ cli.add_command(managedservice)
 cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
+cli.add_command(usergroup)
