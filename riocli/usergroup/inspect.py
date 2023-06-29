@@ -12,47 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing
 import click
 
 from riocli.config import new_client
 from riocli.constants import Colors
-from riocli.utils import tabulate_data
+from riocli.usergroup.util import name_to_guid
+from riocli.utils import inspect_with_format
 
 
-@click.command('list')
+@click.command('inspect')
+@click.option('--format', '-f', 'format_type', default='yaml',
+              type=click.Choice(['json', 'yaml'], case_sensitive=False))
+@click.argument('group-name')
 @click.pass_context
-def list_usergroup(ctx: click.Context) -> None:
+@name_to_guid
+def inspect_usergroup(ctx: click.Context, format_type: str, group_name: str, group_guid: str) -> None:
     """
-    List all user groups in selected organization
+    Inspect the usergroup resource
     """
     try:
         client = new_client()
         org_guid = ctx.obj.data.get('organization_id')
-        user_groups = client.list_usergroups(org_guid)
-        _display_usergroup_list(user_groups)
+        usergroup = client.get_usergroup(org_guid, group_guid)
+        inspect_with_format(usergroup, format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
-
-
-def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
-    headers = []
-    if show_header:
-        headers = (
-            'GROUP ID', 'NAME', 'CREATOR', 'MEMBERS', 'PROJECTS', 'DESCRIPTION'
-        )
-
-    data = [
-        [
-            group.guid,
-            group.name,
-            group.creator,
-            len(group.members) if group.members else 0,
-            len(group.projects) if group.projects else 0,
-            group.description
-        ]
-        for group in usergroups
-    ]
-
-    tabulate_data(data, headers)
