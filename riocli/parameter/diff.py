@@ -26,7 +26,6 @@ from typing import Tuple
 import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils.error import APIError, InternalServerError
-from yaspin import kbi_safe_yaspin
 
 from riocli.config import new_client
 from riocli.constants import Colors
@@ -51,12 +50,8 @@ def diff_configurations(path: str, tree_names: Tuple = None) -> None:
     try:
         client = new_client()
         with TemporaryDirectory(prefix='riocli-') as tmp_path:
-            with kbi_safe_yaspin(
-                    text="Fetching configurations from the cloud..."):
-                client.download_configurations(
-                    tmp_path,
-                    tree_names=list(tree_names)
-                )
+            client.download_configurations(tmp_path,
+                                           tree_names=list(tree_names))
 
             for tree in trees:
                 left_tree = os.path.join(tmp_path, tree)
@@ -69,6 +64,11 @@ def diff_configurations(path: str, tree_names: Tuple = None) -> None:
 
 def diff_tree(left: str, right: str) -> None:
     comp = dircmp(left, right)
+
+    for f in comp.common_dirs:
+        remote_dir, local_dir = os.path.join(comp.left, f), os.path.join(
+            comp.right, f)
+        diff_tree(remote_dir, local_dir)
 
     for f in comp.diff_files:
         remote_file, local_file = os.path.join(comp.left, f), os.path.join(
@@ -98,10 +98,10 @@ def diff_file(left: str, right: str):
         return
 
     diff = unified_diff(left_lines, right_lines, fromfile=left, tofile=right,
-                        lineterm='')
+                        lineterm='\n')
 
     for line in diff:
-        click.secho(line)
+        click.secho(line, nl=False)
 
 
 def changed_file(left: str, right: str, left_only: bool = False,
