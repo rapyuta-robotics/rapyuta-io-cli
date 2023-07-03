@@ -11,18 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
 import click
 
 from riocli.auth.util import select_project
+from riocli.constants import Colors
 from riocli.project.util import name_to_organization_guid
 from riocli.utils.context import get_root_context
 
 
 @click.command('select')
 @click.argument('organization-name', type=str)
+@click.option('--interactive/--no-interactive', '--interactive/--silent',
+              is_flag=True, type=bool, default=True,
+              help='Make the selection interactive')
 @click.pass_context
 @name_to_organization_guid
-def select_organization(ctx: click.Context, organization_name: str, organization_guid: str) -> None:
+def select_organization(
+        ctx: click.Context,
+        organization_name: str,
+        organization_guid: str,
+        interactive: bool,
+) -> None:
     """
     Sets the current organization to the one provided
     in the argument and prompts you to select a new project
@@ -35,12 +46,18 @@ def select_organization(ctx: click.Context, organization_name: str, organization
     ctx = get_root_context(ctx)
 
     if ctx.obj.data['organization_id'] == organization_guid:
-        click.secho("You are already in the '{}' organization".format(organization_name), fg='green')
+        click.secho("You are already in the '{}' organization".format(
+            organization_name), fg=Colors.GREEN)
         return
 
     ctx.obj.data['organization_id'] = organization_guid
     ctx.obj.data['organization_name'] = organization_name
 
-    select_project(ctx.obj, organization=organization_guid)
+    if sys.stdout.isatty() and interactive:
+        select_project(ctx.obj, organization=organization_guid)
+    else:
+        click.secho(
+            "Your organization has been set to '{}'".format(organization_name),
+            fg=Colors.GREEN)
 
     ctx.obj.save()
