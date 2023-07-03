@@ -22,6 +22,7 @@ from riocli.deployment.ssh import ssh_init, ssh_deployment
 from riocli.deployment.status import status
 from riocli.deployment.wait import wait_for_deployment
 from riocli.deployment.execute import execute_command
+from riocli.deployment.update import update_deployment
 
 
 @click.group(
@@ -46,3 +47,4 @@ deployment.add_command(status)
 deployment.add_command(ssh_deployment)
 deployment.add_command(ssh_init)
 deployment.add_command(execute_command)
+deployment.add_command(update_deployment)
