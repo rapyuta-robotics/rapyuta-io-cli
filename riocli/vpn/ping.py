@@ -13,9 +13,12 @@
 # limitations under the License.
 
 import click
+from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
 
+from riocli.constants import Colors, Symbols
+from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import (
-    is_tailscale_installed,
     install_vpn_tools,
     is_tailscale_up,
     get_tailscale_status,
@@ -23,39 +26,52 @@ from riocli.vpn.util import (
 )
 
 
-@click.command('ping-all')
+@click.command(
+    'ping-all',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.pass_context
-def ping_all(ctx: click.Context):
+@with_spinner(text="Pinging all peers...")
+def ping_all(ctx: click.Context, spinner: Yaspin = None):
     """
     Ping all the peers in the network
     """
     try:
-        if not is_tailscale_installed():
-            click.confirm(
-                click.style('VPN tools are not installed. Do you want '
-                            'to install them now?', fg='yellow'),
-                default=True, abort=True)
+        with spinner.hidden():
             install_vpn_tools()
 
         if not is_tailscale_up():
-            click.secho('You are not connected to the VPN', fg='green')
+            spinner.text = click.style(
+                'You are not connected to the VPN', fg=Colors.YELLOW)
+            spinner.yellow.ok(Symbols.WARNING)
             return
 
-        ping_all_peers()
+        ping_all_peers(spinner)
 
-        click.secho('✅ Ping complete.', fg='green')
+        spinner.text = click.style('Ping complete', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        spinner.text = click.style(str(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def ping_all_peers():
+def ping_all_peers(spinner: Yaspin):
     s = get_tailscale_status()
 
     peers = s.get('Peer', {})
 
     for _, v in peers.items():
-        click.secho("⌛ Pinging: {}...".format(v.get('HostName')), fg='blue')
+        # Do not waste time pinging
+        # offline nodes
+        if not v.get('Online'):
+            continue
+
+        spinner.text = 'Pinging: {}...'.format(
+            click.style(v.get('HostName'), italic=True)
+        )
         ips = v.get('TailscaleIPs')
         for ip in ips:
             tailscale_ping(ip)

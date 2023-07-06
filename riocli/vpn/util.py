@@ -20,6 +20,7 @@ from sys import platform
 
 import click
 
+from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 from riocli.v2client import Client as v2Client
 
@@ -73,16 +74,26 @@ def get_tailscale_status() -> dict:
 
 
 def install_vpn_tools() -> None:
+    if is_tailscale_installed():
+        return
+
+    click.confirm(
+        click.style(
+            '{} VPN tools are not installed. Do you want '
+            'to install them now?'.format(Symbols.INFO),
+            fg=Colors.YELLOW),
+        default=True, abort=True)
+
     if not is_linux():
-        click.secho('Only linux is supported', fg='yellow')
+        click.secho('Only linux is supported', fg=Colors.YELLOW)
         raise SystemExit(1)
 
     if is_tailscale_installed():
-        click.secho('VPN tools already installed', fg='green')
+        click.secho('VPN tools already installed', fg=Colors.GREEN)
         return
 
     if not is_curl_installed():
-        click.secho('Please install `curl`', fg='red')
+        click.secho('Please install `curl`', fg=Colors.RED)
         raise SystemExit(1)
 
     # download the tailscale install script
@@ -100,9 +111,10 @@ def install_vpn_tools() -> None:
         run_bash('sh {}'.format(script_path))
 
     if not is_tailscale_installed():
-        raise Exception('Failed to install VPN tools')
+        raise Exception('{} Failed to install VPN tools'.format(Symbols.ERROR))
 
-    click.secho('VPN tools installed', fg='green')
+    click.secho('{} VPN tools installed'.format(Symbols.SUCCESS),
+                fg=Colors.GREEN)
 
 
 def tailscale_ping(tailscale_peer_ip):
