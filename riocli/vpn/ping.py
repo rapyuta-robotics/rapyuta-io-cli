@@ -14,6 +14,7 @@
 
 import click
 from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
 
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
@@ -33,7 +34,7 @@ from riocli.vpn.util import (
 )
 @click.pass_context
 @with_spinner(text="Pinging all peers...")
-def ping_all(ctx: click.Context, spinner=None):
+def ping_all(ctx: click.Context, spinner: Yaspin = None):
     """
     Ping all the peers in the network
     """
@@ -57,7 +58,7 @@ def ping_all(ctx: click.Context, spinner=None):
         raise SystemExit(1) from e
 
 
-def ping_all_peers(spinner):
+def ping_all_peers(spinner: Yaspin):
     s = get_tailscale_status()
 
     peers = s.get('Peer', {})

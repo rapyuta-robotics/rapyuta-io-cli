@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 import click
 from click_help_colors import HelpColorsCommand
 from munch import Munch
+from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -43,7 +44,7 @@ from riocli.vpn.util import (
 )
 @click.pass_context
 @with_spinner(text="Connecting...")
-def connect(ctx: click.Context, spinner=None):
+def connect(ctx: click.Context, spinner: Yaspin = None):
     """
     Connect to the current project's VPN network
     """
@@ -101,7 +102,11 @@ def connect(ctx: click.Context, spinner=None):
         raise SystemExit(1) from e
 
 
-def start_tailscale(ctx: click.Context, client: v2Client, spinner) -> bool:
+def start_tailscale(
+        ctx: click.Context,
+        client: v2Client,
+        spinner: Yaspin,
+) -> bool:
     cmd = ('sudo tailscale up --auth-key={} --login-server={}'
            ' --reset --force-reauth --accept-routes --accept-dns'
            ' --advertise-tags={} --timeout=30s')
@@ -122,7 +127,7 @@ def start_tailscale(ctx: click.Context, client: v2Client, spinner) -> bool:
 def generate_tailscale_args(
         ctx: click.Context,
         client: v2Client,
-        spinner
+        spinner: Yaspin,
 ) -> Munch:
     vpn_instance = 'rio-internal-headscale'
     binding_name = '{}-{}'.format(ctx.obj.machine_id, int(time.time()))
