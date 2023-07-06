@@ -91,6 +91,10 @@ def connect(ctx: click.Context, spinner=None):
 
         spinner.green.text = 'You are now connected to the project\'s VPN'
         spinner.green.ok(Symbols.SUCCESS)
+    except click.exceptions.Abort as e:
+        spinner.red.text = 'Aborted!'
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
     except Exception as e:
         spinner.red.text = str(e)
         spinner.red.fail(Symbols.ERROR)
