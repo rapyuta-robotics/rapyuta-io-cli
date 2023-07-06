@@ -17,13 +17,16 @@ import time
 from datetime import datetime, timedelta
 
 import click
+from click_help_colors import HelpColorsCommand
 from munch import Munch
+from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
+from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash_with_return_code
+from riocli.utils.spinner import with_spinner
 from riocli.v2client import Client as v2Client
 from riocli.vpn.util import (
-    is_tailscale_installed,
     is_tailscale_up,
     stop_tailscale,
     install_vpn_tools,
@@ -33,72 +36,99 @@ from riocli.vpn.util import (
 )
 
 
-@click.command('connect')
+@click.command(
+    'connect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.pass_context
-def connect(ctx: click.Context):
+@with_spinner(text="Connecting...")
+def connect(ctx: click.Context, spinner: Yaspin = None):
     """
     Connect to the current project's VPN network
     """
     try:
-        if not is_tailscale_installed():
-            click.confirm(
-                click.style('VPN tools are not installed. Do you want '
-                            'to install them now?', fg='yellow'),
-                default=True, abort=True)
+        with spinner.hidden():
             install_vpn_tools()
 
         client = new_v2_client()
 
         if not is_vpn_enabled_in_project(
                 client, ctx.obj.data.get('project_id')):
-            click.secho('⚠ VPN is not enabled in the project. '
-                        'Please ask the organization or project '
-                        'creator to enable VPN', fg='yellow')
+            spinner.write(
+                click.style('{} VPN is not enabled in the project. '
+                            'Please ask the organization or project '
+                            'creator to enable VPN'.format(Symbols.WAITING),
+                            fg=Colors.YELLOW))
             raise SystemExit(1)
 
-        if is_tailscale_up():
-            click.confirm('The VPN client is already running. '
-                          'Do you want to stop it and connect to the VPN of '
-                          'the current project?', default=False, abort=True)
-            success = stop_tailscale()
-            if not success:
-                msg = ('❌ Failed to stop tailscale. Please run the following '
-                       'commands manually\n sudo tailscale down\n sudo '
-                       'tailscale logout')
-                click.secho(msg, fg='yellow')
-                raise SystemExit(1)
+        with spinner.hidden():
+            if is_tailscale_up():
+                click.confirm(
+                    '{} The VPN client is already running. '
+                    'Do you want to stop it and connect to the VPN of '
+                    'the current project?'.format(Symbols.WARNING),
+                    default=False, abort=True)
+                success = stop_tailscale()
+                if not success:
+                    msg = (
+                        '{} Failed to stop tailscale. Please run the '
+                        'following commands manually\n sudo tailscale down\n '
+                        'sudo tailscale logout'.format(Symbols.ERROR))
+                    click.secho(msg, fg=Colors.YELLOW)
+                    raise SystemExit(1)
 
-        click.secho('🛈 VPN is enabled in the project ({})'.format(
-            ctx.obj.data.get('project_name')), fg='cyan')
+        spinner.write(
+            click.style(
+                '{} VPN is enabled in the project ({})'.format(
+                    Symbols.INFO, ctx.obj.data.get('project_name')),
+                fg=Colors.CYAN))
 
-        if not start_tailscale(ctx, client):
-            click.secho('❌ Failed to connect to the project VPN', fg='red')
+        if not start_tailscale(ctx, client, spinner):
+            click.secho('{} Failed to connect to the project VPN'.format(
+                Symbols.ERROR), fg=Colors.RED)
             raise SystemExit(1)
 
-        click.secho('✅ You are now connected to the project\'s VPN',
-                    fg='green')
+        spinner.green.text = 'You are now connected to the project\'s VPN'
+        spinner.green.ok(Symbols.SUCCESS)
+    except click.exceptions.Abort as e:
+        spinner.red.text = 'Aborted!'
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
     except Exception as e:
-        click.secho(str(e), fg='red')
+        spinner.red.text = str(e)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def start_tailscale(ctx: click.Context, client: v2Client) -> bool:
+def start_tailscale(
+        ctx: click.Context,
+        client: v2Client,
+        spinner: Yaspin,
+) -> bool:
     cmd = ('sudo tailscale up --auth-key={} --login-server={}'
            ' --reset --force-reauth --accept-routes --accept-dns'
            ' --advertise-tags={} --timeout=30s')
-    args = generate_tailscale_args(ctx, client)
+    args = generate_tailscale_args(ctx, client, spinner)
     command = cmd.format(args.HEADSCALE_PRE_AUTH_KEY,
                          args.HEADSCALE_URL,
                          args.HEADSCALE_ACL_TAG)
     output, code = run_bash_with_return_code(command)
     if code != 0:
-        click.secho('❌ Failed to start vpn client', fg='red')
+        spinner.write(
+            click.style('{} Failed to start vpn client'.format(Symbols.ERROR),
+                        fg=Colors.RED))
         return False
 
     return True
 
 
-def generate_tailscale_args(ctx: click.Context, client: v2Client) -> Munch:
+def generate_tailscale_args(
+        ctx: click.Context,
+        client: v2Client,
+        spinner: Yaspin,
+) -> Munch:
     vpn_instance = 'rio-internal-headscale'
     binding_name = '{}-{}'.format(ctx.obj.machine_id, int(time.time()))
 
@@ -124,14 +154,14 @@ def generate_tailscale_args(ctx: click.Context, client: v2Client) -> Munch:
         }
     }
 
-    click.secho('⌛ Generating a token to join the network...')
+    spinner.text = 'Generating a token to join the network...'
+
     try:
         # We may end up creating multiple throwaway tokens in the database.
         # But that's okay and something that we can live with
         binding = client.create_instance_binding(vpn_instance, binding=body)
         return binding.spec.environment
     except Exception as e:
-        click.secho(str(e), fg='red')
         raise SystemExit(1) from e
 
 
