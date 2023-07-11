@@ -127,8 +127,6 @@ def add_mount_volume_provision_config(provision_config, component_name, device, 
             isinstance(mount, ExecutableMount) for mount in executable_mounts):
         raise InvalidParameterException(
             'executable_mounts must be a list of rapyuta_io.clients.package.ExecutableMount')
-    if not device.is_online():
-        raise OperationNotAllowedError('Device should be online')
     if device.get_runtime() != Device.DOCKER_COMPOSE and not device.is_docker_enabled():
         raise OperationNotAllowedError('Device must be a {} device'.format(Device.DOCKER_COMPOSE))
     component_params = provision_config.parameters.get(component_id)

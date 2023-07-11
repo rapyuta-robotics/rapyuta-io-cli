@@ -17,7 +17,7 @@ import typing
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
-from rapyuta_io.clients.deployment import DeploymentNotRunningException
+from rapyuta_io.clients.deployment import DeploymentNotRunningException, DeploymentPhaseConstants
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
     ExecutableMount
@@ -220,7 +220,7 @@ class Deployment(Model):
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
-            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
+            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval, ready_phases=[DeploymentPhaseConstants.PROVISIONING.value])
         except DeploymentNotRunningException as e:
             raise Exception(process_deployment_errors(e)) from e
         except Exception as e:
