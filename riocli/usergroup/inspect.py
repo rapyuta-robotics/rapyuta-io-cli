@@ -57,7 +57,7 @@ def make_usergroup_inspectable(usergroup: typing.Any):
         'creator': usergroup.creator,
         'members': [make_user_inspectable(member) for member in usergroup.members],
         'admins': [make_user_inspectable(admin) for admin in usergroup.admins],
-        'projects': [make_project_inspectable(project) for project in usergroup.projects]
+        'projects': [make_project_inspectable(project) for project in getattr(usergroup, 'projects') or []]
     }
 
 
