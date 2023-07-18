@@ -24,7 +24,7 @@ def _api_call(
         path: typing.Union[str, None] = None,
         payload: typing.Union[typing.Dict, None] = None,
         load_response: bool = True,
-) -> typing.Any:
+) -> typing.Dict:
     config = Configuration()
     coreapi_host = config.data.get(
         'core_api_host',
@@ -51,5 +51,5 @@ def _api_call(
     return data
 
 
-def get_organization_details(organization_guid):
+def get_organization_details(organization_guid: str) -> typing.Dict:
     return _api_call(HttpMethod.GET, '{}/get'.format(organization_guid))
