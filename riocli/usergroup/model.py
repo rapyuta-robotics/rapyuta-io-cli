@@ -56,7 +56,7 @@ class UserGroup(Model):
 
         return usergroup
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         usergroup = self.unmunchify()
         payload = self._modify_payload(usergroup)
         # Inject the user group name in the payload
