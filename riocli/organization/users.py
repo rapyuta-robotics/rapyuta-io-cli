@@ -41,7 +41,13 @@ def list_users(ctx: click.Context) -> None:
         raise SystemExit(1) from e
 
     users = organization.get('users')
+    users.sort(key=lambda u: u['emailID'])
 
-    data = [[u['guid'], '{} {}'.format(u['firstName'], u['lastName']), u['emailID'], u['state']] for u in users]
+    data = [[
+        u['guid'],
+        '{} {}'.format(u.get('firstName', '-'), u.get('lastName', '-')),
+        u['emailID'],
+        u['state'],
+    ] for u in users]
 
     tabulate_data(data, headers=['GUID', 'Name', 'EmailID', 'Status'])
