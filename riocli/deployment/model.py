@@ -71,12 +71,9 @@ class Deployment(Model):
         retry_interval = int(kwargs.get('retry_interval'))
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
-            click.secho(
-                '>> runtime mismatch => ' +
-                'deployment:{}.runtime !== package:{}.runtime '.format(
+            raise Exception('>> runtime mismatch => deployment:{}.runtime !== package:{}.runtime '.format(
                     self.metadata.name, pkg['packageName']
-                ), fg=Colors.RED)
-            return
+                ))
 
         provision_config = pkg.get_provision_configuration(plan_id)
 
@@ -97,7 +94,9 @@ class Deployment(Model):
                 dep_guid, dep = self.rc.find_depends(item)
                 if dep is None and dep_guid:
                     dep = client.get_deployment(dep_guid)
-                provision_config.add_dependent_deployment(dep)
+                provision_config.add_dependent_deployment(dep, ready_phases=[
+                    DeploymentPhaseConstants.PROVISIONING.value,
+                    DeploymentPhaseConstants.SUCCEEDED.value])
 
         # Add Network
         if 'rosNetworks' in self.spec:
@@ -224,7 +223,9 @@ class Deployment(Model):
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
-            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval, ready_phases=[DeploymentPhaseConstants.PROVISIONING.value])
+            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval,
+                                                  ready_phases=[DeploymentPhaseConstants.PROVISIONING.value,
+                                                                DeploymentPhaseConstants.SUCCEEDED.value])
         except DeploymentNotRunningException as e:
             raise Exception(process_deployment_errors(e)) from e
         except Exception as e:
