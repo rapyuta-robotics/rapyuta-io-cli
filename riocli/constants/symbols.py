@@ -13,8 +13,8 @@
 # limitations under the License.
 
 class Symbols:
-    INFO = '🛈'
-    ERROR = '✘'
-    SUCCESS = '✔'
-    WARNING = '⚠'
-    WAITING = '⧖'
+    INFO = 'ℹ️'
+    ERROR = '❌'
+    SUCCESS = '✅'
+    WARNING = '⚠️'
+    WAITING = '⏳'
