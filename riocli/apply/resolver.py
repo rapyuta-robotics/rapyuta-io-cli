@@ -136,7 +136,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
     def _list_functors(self, kind):
         mapping = {
-            'secret': self.client.list_secrets,
+            'secret': self.v2client.list_secrets,
             "project": self.v2client.list_projects,
             "package": self.client.get_all_packages,
             "staticroute": self.v2client.list_static_routes,
