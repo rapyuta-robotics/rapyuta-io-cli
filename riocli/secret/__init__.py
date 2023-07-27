@@ -15,9 +15,8 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
-from riocli.secret.create import create_secret
+
 from riocli.secret.delete import delete_secret
-from riocli.secret.import_secret import import_secret
 from riocli.secret.inspect import inspect_secret
 from riocli.secret.list import list_secrets
 
@@ -35,8 +34,6 @@ def secret() -> None:
     pass
 
 
-secret.add_command(create_secret)
 secret.add_command(delete_secret)
 secret.add_command(list_secrets)
 secret.add_command(inspect_secret)
-secret.add_command(import_secret)

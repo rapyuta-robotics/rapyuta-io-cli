@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-
-from riocli.config import new_client
-from riocli.constants import Colors, Symbols
-from riocli.secret.util import name_to_guid
-from riocli.utils.spinner import with_spinner
 from click_help_colors import HelpColorsCommand
+
+from riocli.config import new_v2_client
+from riocli.constants import Colors, Symbols
+from riocli.utils.spinner import with_spinner
 
 @click.command(
     'delete',
@@ -28,21 +27,20 @@ from click_help_colors import HelpColorsCommand
 @click.option('--force', '-f', '--silent', 'force', is_flag=True,
               default=False, help='Skip confirmation')
 @click.argument('secret-name', type=str)
-@name_to_guid
 @with_spinner(text='Deleting secret...')
-def delete_secret(force: str, secret_name: str, secret_guid: str, spinner=None) -> None:
+def delete_secret(force: str, secret_name: str, spinner=None) -> None:
     """
     Deletes a secret
     """
     with spinner.hidden():
         if not force:
             click.confirm(
-                'Deleting secret {} ({})'.format(secret_name, secret_guid),
+                'Deleting secret {} '.format(secret_name),
                 abort=True)
 
     try:
-        client = new_client()
-        client.delete_secret(secret_guid)
+        client = new_v2_client(with_project=True)
+        client.delete_secret(secret_name)
         spinner.text = click.style('Secret deleted successfully.', fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
