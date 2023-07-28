@@ -109,16 +109,50 @@ class UserGroup(Model):
             }
         }
 
+        entity_sets = {
+            "members": {
+                "old": set(),
+                "new": set(),
+            },
+            "admins": {
+                "old": set(),
+                "new": set(),
+            },
+            "projects": {
+                "old": set(),
+                "new": set(),
+            }
+        }
+
         for entity in ('members', 'projects', 'admins'):
             # Assure that the group creator is not removed
             old_set = {i.guid for i in (getattr(old, entity) or []) if i.guid != old.creator}
             new_set = {i['guid'] for i in new['spec'].get(entity, [])}
 
-            added = new_set - old_set
-            removed = old_set - new_set
+            entity_sets[entity]["old"] = old_set
+            entity_sets[entity]["new"] = new_set
+
+        for entity in ('projects', 'admins'):
+            new = entity_sets[entity]['new']
+            old = entity_sets[entity]['old']
+            added = new - old
+            removed = old - new
 
             payload['update'][entity]['add'] = [{'guid': guid} for guid in added]
             payload['update'][entity]['remove'] = [{'guid': guid} for guid in removed]
+
+        # Handle special cases in the members section separately
+        new_members = entity_sets['members']['new']
+        old_members = entity_sets['members']['old']
+        added_members = new_members - old_members
+        removed_members = old_members - new_members
+
+        # Additional handling to avoid active admins becoming a part of
+        # removed members set which leads to their removal altogether.
+        removed_members = removed_members - entity_sets['admins']['new']
+
+        payload['update']['members']['add'] = [{'guid': guid} for guid in added_members]
+        payload['update']['members']['remove'] = [{'guid': guid} for guid in removed_members]
 
         # This is a special case where admins are not added to the membership list
         # And as a consequence they don't show up in the group. This will fix that.
