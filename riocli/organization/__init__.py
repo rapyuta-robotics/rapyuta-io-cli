@@ -18,6 +18,7 @@ from riocli.constants import Colors
 from riocli.organization.inspect import inspect_organization
 from riocli.organization.invite_user import invite_user
 from riocli.organization.list import list_organizations
+from riocli.organization.remove_user import remove_user
 from riocli.organization.select import select_organization
 from riocli.organization.users import list_users
 
@@ -37,6 +38,7 @@ def organization() -> None:
 
 organization.add_command(list_users)
 organization.add_command(invite_user)
+organization.add_command(remove_user)
 organization.add_command(list_organizations)
 organization.add_command(select_organization)
 organization.add_command(inspect_organization)
