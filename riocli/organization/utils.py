@@ -58,3 +58,8 @@ def get_organization_details(organization_guid: str) -> typing.Dict:
 def invite_user_to_org(organization_guid: str, user_email: str) -> typing.Dict:
     payload = {'userEmail': user_email}
     return _api_call(HttpMethod.PUT, '{}/adduser'.format(organization_guid), payload=payload)
+
+
+def remove_user_from_org(organization_guid: str, user_email: str) -> typing.Dict:
+    payload = {'userEmail': user_email}
+    return _api_call(HttpMethod.DELETE, '{}/removeuser'.format(organization_guid), payload=payload)
