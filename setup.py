@@ -4,7 +4,7 @@
 
 import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"', open("riocli/bootstrap.py").read(), re.M
@@ -59,6 +59,7 @@ setup(
         "jsonschema==4.0.0",
         "waiting>=1.4.1",
         "semver>=3.0.0",
+        "email-validator==2.0.0.post2",
     ],
     setup_requires=["flake8"],
 )
