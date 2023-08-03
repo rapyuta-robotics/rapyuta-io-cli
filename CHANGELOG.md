@@ -1,3 +1,54 @@
+# [4.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v3.1.0...v4.0.0) (2023-08-03)
+
+
+### Bug Fixes
+
+* **apply:** corrects the guid_functor for network ([347e430](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/347e4306ff6b73204da66dc81fe046a8195e8a43))
+* **deployment:** handles error in name_to_guid ([47b5f8f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47b5f8fb8073273691d0fd6bc25b15ccbda79f4c))
+* **deployment:** sets dependent deployment ready phase to PROVISIONING ([1444186](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/14441863dc723dd810a57a48a9ad793c257898c2))
+* **jsonschema:** adds regex pattern to usergroup schema ([9235863](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/923586372f630fad68b32c70d26eedbd45af1a49))
+* **jsonschema:** updates the projectGUID regex pattern ([63b975e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/63b975e11386cda7aaea95d083a7f898e0f971fd))
+* **network:** handles error in name_to_guid ([2f73774](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2f737742de27697cdefee755ee684cd3b225945e))
+* **organization:** fixes KeyError in organization users command ([6b3c867](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6b3c86771ef999266d99bc8bcb585034b3bc440b))
+* **parameter:** fixes nested directory diff ([7445972](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/74459724fe6fa2c1ac36628aabfb798af185cf76))
+* **usergroup:** fixes create_object method signature ([d74f539](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d74f53960f77a7c0907fe1db05231085234900d5))
+* **usergroup:** handles NoneType error in inspect command ([3b111a6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3b111a6d642f9c9cf8b40e19982f3ef07df71d53))
+* **usergroup:** update usergroup removes active admins ([ca67437](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ca67437d05bf878774abe46dff9ac97fc12f0de0))
+
+
+### Features
+
+* adds command to update the CLI ([c64c9d7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c64c9d7d82168149a5052422b426aee36417480b))
+* **apply:** adds retry count and sleep interval flags ([1cdeb65](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cdeb65e1ad11468565a0de0aa074bd880e06c3c))
+* **apply:** adds yaspin spinner to apply family of commands ([c6e0975](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6e09755257bf8a389f53f6572c9593c2c0f3109))
+* **auth:** updates spinner and refactors existing code ([dd33d75](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dd33d75c5b9710b6da6d372458bb97e8eda2608d))
+* **chart:** adds spinner and refactors code ([ff28002](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ff28002f8fa091a8d3834584d57a5bafabe4c894))
+* **constants:** defines colors and symbols as constants ([8ad2cad](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8ad2cad3d8ffa585349790ceb31058875278de74))
+* **deployment:** adds command to update deployments ([e04e5dd](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e04e5dd70db3da199000aae352fbf9bd413bd968))
+* **deployment:** updates spinner and refactors existing code ([458b44e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/458b44e3b78222295d2b67849e0312de278aee92))
+* **device:** adds or updates spinner in device commands ([c14ebf4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c14ebf451cb7a6eb863e5babcba430490cb750ee))
+* **disk:** list command shows used and available capacity ([0361904](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0361904ec6d775013c8ca851d15b093bf4e0cb2c))
+* **disk:** updates spinner and existing implementation ([4c080d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4c080d0680ed9a24c019a4759ff23206c99039d2))
+* **network:** updates spinner and refactors existing commands ([e0621dc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e0621dc2a1d1c6ecc1842fbe26cd1f9a749fbac3))
+* **organization:** adds command to list users ([19a06f8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/19a06f81a22adb128e4924650c023d4edeffce2a))
+* **organiztion:** adds option to set project non-interactively ([3c2e848](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3c2e8486318a473e27a28c5f3a53b70d95aaed12))
+* **parameter:** adds spinner and constants ([a4f954e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a4f954eb706c9256de1b6ed22f55221c87e840d5))
+* **project:** adds yaspin implementation to project commands ([44a5a1c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/44a5a1ced136ae7d834a798ec19ac206c5e07ea1))
+* **secret:** updates spinner and refactors existing commands ([0949154](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/09491549a6bfccc3ad3979138e252d663e408a85))
+* **static-route:** updates spinner and other implementations ([7184016](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7184016bd4edb05959eadcaea30f198ce3cde7a8))
+* **usergroup:** adds usergroup command ([c57891e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c57891ef9d8bb32bed3582188061bcd4ec21cdee))
+* **vpn:** adds spinner and refactors implementation ([#188](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/188)) ([0af180f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0af180fb8db7e60eeefd62f4eea57aab7f3bba3d))
+
+
+### Performance Improvements
+
+* **deployment:** poll deployment till provisioning phase ([ea72999](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ea729995e9ebe15c99757d0f22a5ec2a4ef16dc5))
+
+
+### BREAKING CHANGES
+
+* **deployment:** Deployment will be polled till provisioning
+
 # [3.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v3.0.0...v3.1.0) (2023-06-14)
 
 
