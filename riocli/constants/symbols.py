@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
 
-
-@click.command('run', hidden=True)
-@click.argument('docker-image', type=str)
-def run_deployment(docker_image: str) -> None:
-    # TODO(ankit): Implement `kubectl run` like command to instantly create a Deployment.
-    # Possibly implement --interactive --tty to SSH into the session
-    pass
+class Symbols:
+    INFO = 'ℹ️'
+    ERROR = '❌'
+    SUCCESS = '✅'
+    WARNING = '⚠️'
+    WAITING = '⏳'

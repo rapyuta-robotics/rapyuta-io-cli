@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,13 +19,14 @@ from riocli.chart.delete import delete_chart
 from riocli.chart.info import info_chart
 from riocli.chart.list import list_charts
 from riocli.chart.search import search_chart
+from riocli.constants import Colors
 
 
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def chart() -> None:
     """

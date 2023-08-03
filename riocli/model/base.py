@@ -19,79 +19,121 @@ from shutil import get_terminal_size
 import click
 from munch import Munch, munchify
 from rapyuta_io import Client
+from yaspin.api import Yaspin
 
+from riocli.constants import Colors, Symbols
 from riocli.project.util import find_project_guid
 
-prompt = ">> {}{}{} [{}]"  # >> msg  spacer  rigth_msg time
+prompt = ">> {}{}{} [{}]"  # >> left_msg  spacer  right_msg time
 
 DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
-def message_with_prompt(msg, right_msg="", fg='white', with_time=True):
+
+def message_with_prompt(
+        msg,
+        right_msg='',
+        fg=Colors.WHITE,
+        with_time=True,
+        spinner: Yaspin = None,
+) -> None:
     columns, _ = get_terminal_size()
-    time = datetime.now().isoformat('T')
-    spacer = ' ' * (int(columns) - len(msg + right_msg + time) - 12)
-    msg = prompt.format(msg, spacer, right_msg, time)
-    click.secho(msg, fg=fg)
+    t = datetime.now().isoformat('T')
+    spacer = ' ' * (int(columns) - len(msg + right_msg + t) - 12)
+    msg = prompt.format(msg, spacer, right_msg, t)
+    msg = click.style(msg, fg=fg)
+    if spinner:
+        spinner.write(msg)
+    else:
+        click.echo(msg)
 
 
 class Model(ABC, Munch):
 
     def apply(self, client: Client, *args, **kwargs) -> typing.Any:
+        spinner = kwargs.get('spinner')
         try:
             self._set_project_in_client(client)
             obj = self.find_object(client)
             dryrun = kwargs.get("dryrun", False)
             if not obj:
-                message_with_prompt("⌛ Create {}:{}".format(
-                    self.kind.lower(), self.metadata.name), fg='yellow')
+                message_with_prompt("{} Create {}:{}".format(
+                    Symbols.WAITING,
+                    self.kind.lower(),
+                    self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
                 if not dryrun:
-                    result = self.create_object(client)
-                    message_with_prompt("✅ Created {}:{}".format(
-                        self.kind.lower(), self.metadata.name), fg='green')
+                    result = self.create_object(client, **kwargs)
+                    message_with_prompt("{} Created {}:{}".format(
+                        Symbols.SUCCESS,
+                        self.kind.lower(),
+                        self.metadata.name), fg=Colors.GREEN, spinner=spinner)
                     return result
             else:
-                message_with_prompt('🔎 {}:{} exists. will be updated'.format(
-                    self.kind.lower(), self.metadata.name))
-                message_with_prompt("⌛ Update {}:{}".format(
-                    self.kind.lower(), self.metadata.name), fg='yellow')
+                message_with_prompt('{} {}:{} exists. will be updated'.format(
+                    Symbols.INFO,
+                    self.kind.lower(),
+                    self.metadata.name), spinner=spinner)
+                message_with_prompt("{} Update {}:{}".format(
+                    Symbols.WAITING,
+                    self.kind.lower(),
+                    self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
                 if not dryrun:
                     result = self.update_object(client, obj)
-                    message_with_prompt("✅ Updated {}:{}".format(
-                        self.kind.lower(), self.metadata.name), fg='green')
+                    message_with_prompt("{} Updated {}:{}".format(
+                        Symbols.SUCCESS,
+                        self.kind.lower(),
+                        self.metadata.name), fg=Colors.GREEN, spinner=spinner)
                     return result
         except Exception as e:
-            message_with_prompt("‼ ERR {}:{}.  {} ‼".format(
-                self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            message_with_prompt("{} {}:{}. {} ‼".format(
+                Symbols.ERROR,
+                self.kind.lower(),
+                self.metadata.name,
+                str(e)), fg=Colors.RED, spinner=spinner)
             raise e
 
     def delete(self, client: Client, obj: typing.Any, *args, **kwargs):
+        spinner = kwargs.get('spinner')
+        dryrun = kwargs.get("dryrun", False)
         try:
             self._set_project_in_client(client)
             obj = self.find_object(client)
-            dryrun = kwargs.get("dryrun", False)
 
             if not obj:
-                message_with_prompt('⁉ {}:{} does not exist'.format(
-                    self.kind.lower(), self.metadata.name))
+                message_with_prompt(
+                    '⁉ {}:{} does not exist'.format(
+                        self.kind.lower(), self.metadata.name),
+                    spinner=spinner)
                 return
-            else:
-                message_with_prompt("⌛ Delete {}:{}".format(
-                    self.kind.lower(), self.metadata.name), fg='yellow')
-                if not dryrun:
-                    labels = self.metadata.get('labels', {})
-                    if DELETE_POLICY_LABEL in labels and \
-                            labels.get(DELETE_POLICY_LABEL) and \
-                            labels.get(DELETE_POLICY_LABEL).lower() == "retain":
-                        click.secho(">> Warning: delete protection enabled on {}:{}. Resource will be retained ".format(
-                            self.kind.lower(), self.metadata.name), fg="yellow")
-                        return
 
-                    self.delete_object(client, obj)
-                    message_with_prompt("❌ Deleted {}:{}".format(
-                        self.kind.lower(), self.metadata.name), fg='red')
+            message_with_prompt("{} Delete {}:{}".format(
+                Symbols.WAITING,
+                self.kind.lower(),
+                self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
+
+            if not dryrun:
+                labels = self.metadata.get('labels', {})
+                if (DELETE_POLICY_LABEL in labels and
+                        labels.get(DELETE_POLICY_LABEL) and
+                        labels.get(DELETE_POLICY_LABEL).lower() == "retain"):
+                    click.secho(
+                        ">> {} Delete protection enabled on {}:{}. "
+                        "Resource will be retained ".format(
+                            Symbols.WARNING,
+                            self.kind.lower(),
+                            self.metadata.name), fg=Colors.YELLOW)
+                    return
+
+                self.delete_object(client, obj)
+                message_with_prompt("{} Deleted {}:{}".format(
+                    Symbols.SUCCESS,
+                    self.kind.lower(),
+                    self.metadata.name), fg=Colors.GREEN, spinner=spinner)
         except Exception as e:
-            message_with_prompt("‼ ERR {}:{}. {} ‼".format(
-                self.kind.lower(), self.metadata.name, str(e)), fg="red")
+            message_with_prompt("{} {}:{}. {} ‼".format(
+                Symbols.ERROR,
+                self.kind.lower(),
+                self.metadata.name,
+                str(e)), fg=Colors.RED, spinner=spinner)
             raise e
 
     @abstractmethod
@@ -99,7 +141,7 @@ class Model(ABC, Munch):
         pass
 
     @abstractmethod
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         pass
 
     @abstractmethod

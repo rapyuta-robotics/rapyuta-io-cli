@@ -40,7 +40,7 @@ class Package(Model):
 
         return obj
 
-    def create_object(self, client: Client):
+    def create_object(self, client: Client, **kwargs):
         pkg_object = munchify({
             'name': 'default',
             'packageVersion': 'v1.0.0',

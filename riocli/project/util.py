@@ -18,6 +18,7 @@ import click
 from rapyuta_io import Client
 
 from riocli.config import new_client, new_v2_client
+from riocli.constants import Colors
 from riocli.utils.selector import show_selection
 from riocli.v2client import Client as v2Client
 
@@ -40,7 +41,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             try:
                 guid = find_project_guid(client, name)
             except Exception as e:
-                click.secho(str(e), fg='red')
+                click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
 
         kwargs['project_name'] = name
@@ -110,7 +111,7 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
                 else:
                     guid = find_organization_guid(client, name)
             except Exception as e:
-                click.secho(str(e), fg='red')
+                click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
         kwargs['organization_name'] = name
         kwargs['organization_guid'] = guid

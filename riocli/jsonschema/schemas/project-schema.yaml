@@ -43,7 +43,7 @@ definitions:
       - name
   projectGUID:
     type: string
-    pattern: "^project-[a-z]{24}$"
+    pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   organizationGUID:
     type: string
     pattern: "^org-[a-z]{24}$"

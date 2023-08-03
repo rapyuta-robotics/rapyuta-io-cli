@@ -1,0 +1,18 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: UserGroup
+metadata:
+  name: usergroup_name
+  organization: org-bqgpmsafgnvnawlkuvxtxohs
+  labels:
+    key: value
+spec:
+  description: This is a sample user group description
+  members:
+    - emailID: qa.rapyuta+e2e@gmail.com
+    - emailID: random.user@rapyuta-robotics.com
+  admins:
+    - emailID: admin.user@rapyuta-robotics.com
+  projects:
+    - name: project01
+    - name: project02

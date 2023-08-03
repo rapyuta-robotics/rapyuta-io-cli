@@ -32,6 +32,7 @@ from riocli.package.model import Package
 from riocli.project.model import Project
 from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
+from riocli.usergroup.model import UserGroup
 
 
 class _Singleton(type):
@@ -55,7 +56,8 @@ class ResolverCache(object, metaclass=_Singleton):
         'Package': Package,
         'Disk': Disk,
         'Deployment': Deployment,
-        "ManagedService": ManagedService
+        "ManagedService": ManagedService,
+        'UserGroup': UserGroup,
     }
 
     KIND_REGEX = {
@@ -99,7 +101,12 @@ class ResolverCache(object, metaclass=_Singleton):
         elif 'guid' in depends and depends['kind'] not in ('network', 'managedservice'):
             return depends['guid'], None
         elif 'nameOrGUID' in depends:
-            obj_list = self._list_functors(depends['kind'])()
+            if depends['kind'] == 'usergroup':
+                org_guid = depends['organization']
+                obj_list = self._list_functors(depends['kind'])(org_guid)
+            else:
+                obj_list = self._list_functors(depends['kind'])()
+
             obj_match = list(self._find_functors(depends['kind'])(
                 depends['nameOrGUID'], obj_list, *args))
             if not obj_list or (isinstance(obj_list, list) and len(obj_list) == 0):
@@ -118,11 +125,12 @@ class ResolverCache(object, metaclass=_Singleton):
             "staticroute": lambda x: munchify(x)['guid'],
             "build": lambda x: munchify(x)['guid'],
             "deployment": lambda x: munchify(x)['deploymentId'],
-            "network": lambda x: munchify(x)['guid'],
+            "network": lambda x: munchify(x).guid,
             # This is only temporarily like this
             "disk": lambda x: munchify(x)['internalDeploymentGUID'],
             "device": lambda x: munchify(x)['uuid'],
             "managedservice": lambda x: munchify(x)['metadata']['name'],
+            "usergroup": lambda x: munchify(x).guid
         }
         return mapping[kind]
 
@@ -140,6 +148,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "disk": self._list_disks,
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
+            "usergroup": self.client.list_usergroups
         }
 
         return mapping[kind]
@@ -158,6 +167,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "disk": self._generate_find_guid_functor(),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
+            "usergroup": lambda name, groups: filter(lambda i: i.name == name, groups),
         }
 
         return mapping[kind]

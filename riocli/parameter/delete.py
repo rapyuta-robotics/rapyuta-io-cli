@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,30 +13,47 @@
 # limitations under the License.
 
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils.rest_client import HttpMethod
+from yaspin import kbi_safe_yaspin
 
+from riocli.constants import Colors, Symbols
 from riocli.parameter.utils import _api_call
 
 
-@click.command('delete')
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True, default=False,
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
+              default=False,
               help="Skip confirmation")
 @click.argument('tree', type=click.STRING)
-def delete_configurations(tree: str, silent: bool = False) -> None:
+def delete_configurations(
+        tree: str,
+        silent: bool = False
+) -> None:
     """
-    Deletes the Configuration Parameter Tree.
+    Deletes the configuration parameter tree.
     """
     click.secho('Configuration Parameter {} will be deleted'.format(tree))
 
     if not silent:
         click.confirm('Do you want to proceed?', default=True, abort=True)
 
-    try:
-        data = _api_call(HttpMethod.DELETE, name=tree)
-        if data.get('data') != 'ok':
-            raise Exception('Something went wrong!')
+    with kbi_safe_yaspin(text='Deleting...', timer=True) as spinner:
+        try:
+            data = _api_call(HttpMethod.DELETE, name=tree)
+            if data.get('data') != 'ok':
+                raise Exception('Failed to delete configuration')
 
-    except IOError as e:
-        click.secho(str(e.__traceback__), fg='red')
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+            spinner.text = click.style(
+                'Configuration deleted successfully.',
+                fg=Colors.GREEN)
+            spinner.green.ok(Symbols.SUCCESS)
+        except IOError as e:
+            spinner.text = click.style(e, fg=Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)

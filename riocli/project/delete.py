@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,31 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
+from riocli.constants import Symbols, Colors
 from riocli.project.util import name_to_guid
+from riocli.utils.spinner import with_spinner
 
 
-@click.command('delete')
+@click.command(
+    'delete',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--force', '-f', '--silent', 'force', is_flag=True,
               help='Skip confirmation')
 @click.argument('project-name', type=str)
 @name_to_guid
-def delete_project(force: bool, project_name: str, project_guid: str) -> None:
+@with_spinner(text="Deleting project...")
+def delete_project(
+        force: bool,
+        project_name: str,
+        project_guid: str,
+        spinner=None,
+) -> None:
     """
-    Deletes the project from the Platform
+    Deletes a project
     """
     if not force:
-        click.confirm(
-            'Deleting project {} ({})'.format(project_name, project_guid),
-            abort=True)
+        with spinner.hidden():
+            click.confirm('Deleting project {} ({})'.format(
+                project_name, project_guid), abort=True)
 
     try:
         client = new_v2_client()
-        with spinner():
-            client.delete_project(project_guid)
-        click.secho('Project deleted successfully!', fg='green')
+        client.delete_project(project_guid)
+        spinner.text = click.style(
+            'Project deleted successfully.', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho('failed to delete project: {}'.format(e), fg='red')
+        spinner.text = click.style(
+            'Failed to delete project: {}'.format(e), Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

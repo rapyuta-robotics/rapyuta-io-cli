@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import typing
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
-from rapyuta_io.clients.deployment import DeploymentNotRunningException
+from rapyuta_io.clients.deployment import DeploymentNotRunningException, DeploymentPhaseConstants
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
     ExecutableMount
@@ -27,6 +27,7 @@ from rapyuta_io.clients.rosbag import (
     ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo)
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
+from riocli.constants import Colors
 from riocli.deployment.errors import ERRORS
 from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.jsonschema.validate import load_schema
@@ -43,11 +44,14 @@ class Deployment(Model):
     }
 
     def find_object(self, client: Client) -> typing.Any:
-        guid, obj = self.rc.find_depends(
-            {"kind": "deployment", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends({
+            "kind": "deployment",
+            "nameOrGUID": self.metadata.name,
+        })
+
         return obj if guid else False
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         pkg_guid, pkg = self.rc.find_depends(self.metadata.depends,
                                              self.metadata.depends.version)
 
@@ -63,13 +67,13 @@ class Deployment(Model):
         executables = component['executables']
         runtime = internal_component['runtime']
 
+        retry_count = int(kwargs.get('retry_count'))
+        retry_interval = int(kwargs.get('retry_interval'))
+
         if 'runtime' in self.spec and runtime != self.spec.runtime:
-            click.secho(
-                '>> runtime mismatch => ' +
-                'deployment:{}.runtime !== package:{}.runtime '.format(
+            raise Exception('>> runtime mismatch => deployment:{}.runtime !== package:{}.runtime '.format(
                     self.metadata.name, pkg['packageName']
-                ), fg='red')
-            return
+                ))
 
         provision_config = pkg.get_provision_configuration(plan_id)
 
@@ -90,7 +94,9 @@ class Deployment(Model):
                 dep_guid, dep = self.rc.find_depends(item)
                 if dep is None and dep_guid:
                     dep = client.get_deployment(dep_guid)
-                provision_config.add_dependent_deployment(dep)
+                provision_config.add_dependent_deployment(dep, ready_phases=[
+                    DeploymentPhaseConstants.PROVISIONING.value,
+                    DeploymentPhaseConstants.SUCCEEDED.value])
 
         # Add Network
         if 'rosNetworks' in self.spec:
@@ -217,7 +223,9 @@ class Deployment(Model):
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
-            deployment.poll_deployment_till_ready()
+            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval,
+                                                  ready_phases=[DeploymentPhaseConstants.PROVISIONING.value,
+                                                                DeploymentPhaseConstants.SUCCEEDED.value])
         except DeploymentNotRunningException as e:
             raise Exception(process_deployment_errors(e)) from e
         except Exception as e:
@@ -392,9 +400,9 @@ def process_deployment_errors(e: DeploymentNotRunningException):
             description = 'Internal rapyuta.io error'
             action = support_action
 
-        code = click.style(code, fg='yellow')
-        description = click.style(description, fg='red')
-        action = click.style(action, fg='green')
+        code = click.style(code, fg=Colors.YELLOW)
+        description = click.style(description, fg=Colors.RED)
+        action = click.style(action, fg=Colors.GREEN)
 
         msgs.append(err_fmt.format(code, description, action))
 

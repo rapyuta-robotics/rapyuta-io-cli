@@ -47,7 +47,7 @@ setup(
         "python-dateutil>=2.8.2",
         "pytz",
         "pyyaml>=5.4.1",
-        "rapyuta-io>=1.10.0",
+        "rapyuta-io>=1.11.1",
         "requests>=2.20.0",
         "setuptools",
         "six>=1.13.0",
@@ -57,7 +57,8 @@ setup(
         "directory-tree>=0.0.3.1",
         "yaspin>=2.3.0",
         "jsonschema>=4.0.0",
-        "waiting>=1.4.1"
+        "waiting>=1.4.1",
+        "semver>=3.0.0",
     ],
     setup_requires=["flake8"],
 )

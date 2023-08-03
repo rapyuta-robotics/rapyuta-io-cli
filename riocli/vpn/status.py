@@ -13,19 +13,25 @@
 # limitations under the License.
 
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
+from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data
 from riocli.vpn.util import (
     install_vpn_tools,
-    is_tailscale_installed,
     is_tailscale_up,
     get_tailscale_status,
     is_vpn_enabled_in_project,
 )
 
 
-@click.command('status')
+@click.command(
+    'status',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--wide', '-w', is_flag=True, default=False,
               help='Print more details', type=bool)
 @click.pass_context
@@ -34,35 +40,36 @@ def status(ctx: click.Context, wide: bool = False):
     Check VPN status
     """
     try:
-        if not is_tailscale_installed():
-            click.confirm(click.style(
-                'VPN tools are not installed. '
-                'Do you want to install them now?',
-                fg='yellow'), default=True, abort=True)
-            install_vpn_tools()
+        install_vpn_tools()
 
         client = new_v2_client()
 
         if not is_vpn_enabled_in_project(
                 client, ctx.obj.data.get('project_id')):
-            click.secho('⚠ VPN is not enabled in the project. '
+            click.secho('{} VPN is not enabled in the project. '
                         'Please ask the organization or project '
-                        'creator to enable VPN', fg='yellow')
+                        'creator to enable VPN'.format(Symbols.WARNING),
+                        fg=Colors.YELLOW)
             raise SystemExit(1)
 
-        click.secho('🛈 VPN is enabled in the project ({})'.format(
-            ctx.obj.data.get('project_name')), fg='cyan')
+        click.secho(
+            '{} VPN is enabled in the project ({})'.format(
+                Symbols.INFO, ctx.obj.data.get('project_name')),
+            fg=Colors.CYAN)
         click.echo()
 
         if not is_tailscale_up():
-            click.secho('You are not connected to the VPN', fg='green')
+            click.secho(
+                '{} You are not connected to the VPN'.format(Symbols.WARNING),
+                fg=Colors.YELLOW)
             return
 
         display_vpn_status(wide)
 
-        click.secho('🛈 You are connected to the VPN.', fg='green')
+        click.secho('{} You are connected to the VPN.'.format(Symbols.INFO),
+                    fg=Colors.GREEN)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
 
@@ -95,7 +102,7 @@ def display_vpn_status(wide: bool = False):
             ])
 
         if k == 'me':
-            row = [click.style(i, fg='bright_blue') for i in row]
+            row = [click.style(i, fg=Colors.BRIGHT_BLUE) for i in row]
 
         data.append(row)
 

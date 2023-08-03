@@ -14,14 +14,15 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.constants import Colors
 from riocli.project.features.vpn import vpn
 
 
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 def features():
     """

@@ -22,9 +22,13 @@ from directory_tree import display_tree
 from rapyuta_io.utils import RestClient
 
 from riocli.config import Configuration
+from riocli.constants import Colors
 
 
-def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[str]:
+def filter_trees(
+        root_dir: str,
+        tree_names: typing.Tuple[str]
+) -> typing.List[str]:
     trees = []
     for each in os.listdir(root_dir):
         full_path = os.path.join(root_dir, each)
@@ -43,15 +47,19 @@ def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[st
     return trees
 
 
-def display_trees(root_dir: str, trees: typing.List[str] = []) -> None:
+def display_trees(root_dir: str, trees: typing.List[str]) -> None:
+    trees = trees or []
     for each in trees:
         tree_out = display_tree(os.path.join(root_dir, each), string_rep=True)
-        click.secho(tree_out, fg='yellow')
+        click.secho(tree_out, fg=Colors.YELLOW)
 
 
-def _api_call(method: str, name: typing.Union[str, None] = None,
-              payload: typing.Union[typing.Dict, None] = None, load_response: bool = True,
-              ) -> typing.Any:
+def _api_call(
+        method: str,
+        name: typing.Union[str, None] = None,
+        payload: typing.Union[typing.Dict, None] = None,
+        load_response: bool = True,
+) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
         'core_api_host', 'https://gaapiserver.apps.rapyuta.io')
@@ -59,7 +67,8 @@ def _api_call(method: str, name: typing.Union[str, None] = None,
     if name:
         url = '{}/{}'.format(url, name)
     headers = config.get_auth_header()
-    response = RestClient(url).method(method).headers( headers).execute(payload=payload)
+    response = RestClient(url).method(method).headers(headers).execute(
+        payload=payload)
     data = None
     err_msg = 'error in the api call'
     if load_response:
@@ -77,5 +86,8 @@ class DeepDirCmp(dircmp):
         # shallow=False enables the behaviour of matching the File content. The
         # original dircmp Class only compares os.Stat between the files, and
         # gives no way to modify the behaviour.
-        f_comp = filecmp.cmpfiles(self.left, self.right, self.common_files, shallow=False)
+        f_comp = filecmp.cmpfiles(self.left,
+                                  self.right,
+                                  self.common_files,
+                                  shallow=False)
         self.same_files, self.diff_files, self.funny_files = f_comp

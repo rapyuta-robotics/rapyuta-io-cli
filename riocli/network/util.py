@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.routed_network import RoutedNetwork
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils.selector import show_selection
 
 
@@ -36,13 +37,19 @@ def name_to_guid(f: Callable) -> Callable:
             guid = name
             name = None
 
-        if guid:
-            network, network_type = find_network_guid(client, guid, network_type)
-            name = network.name
+        try:
+            if guid:
+                network, network_type = find_network_guid(
+                    client, guid, network_type)
+                name = network.name
 
-        if name:
-            network, network_type = find_network_name(client, name, network_type)
-            guid = network.guid
+            if name:
+                network, network_type = find_network_name(
+                    client, name, network_type)
+                guid = network.guid
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
 
         kwargs['network_type'] = network_type
         kwargs['network_name'] = name
@@ -93,7 +100,8 @@ def find_network_name(
     return resolve_conflict(routed, native, network_type, is_resolve_conflict)
 
 
-def find_native_network_name(client: Client, name: str) -> Optional[NativeNetwork]:
+def find_native_network_name(client: Client, name: str) -> Optional[
+    NativeNetwork]:
     native_networks = client.list_native_networks()
     for network in native_networks:
         phase = network.internal_deployment_status.phase
@@ -103,7 +111,8 @@ def find_native_network_name(client: Client, name: str) -> Optional[NativeNetwor
             return network
 
 
-def find_routed_network_name(client: Client, name: str) -> Optional[RoutedNetwork]:
+def find_routed_network_name(client: Client, name: str) -> Optional[
+    RoutedNetwork]:
     routed_networks = client.get_all_routed_networks()
     for network in routed_networks:
         if network.phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
@@ -140,15 +149,16 @@ def resolve_conflict(
             'routed': '{} ({})'.format(routed.name, routed.guid),
             'native': '{} ({})'.format(native.name, native.guid),
         }
-        choice = show_selection(options, header='Both Routed and Native networks were found with '
-                                                'the same name')
+        choice = show_selection(options,
+                                header='Both Routed and Native networks were found with '
+                                       'the same name')
 
     if choice == 'routed':
         return routed, choice
     elif choice == 'native':
         return native, choice
     else:
-        click.secho('Invalid choice. Try again', fg='red')
+        click.secho('Invalid choice. Try again', fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -180,6 +190,7 @@ class NetworkNotFound(Exception):
 
 
 class NetworkConflict(Exception):
-    def __init__(self, message='both routed and native networks exist with the same name!'):
+    def __init__(self,
+                 message='both routed and native networks exist with the same name!'):
         self.message = message
         super().__init__(self.message)

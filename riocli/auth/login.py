@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,15 +20,17 @@ from riocli.auth.util import (
     select_project,
     validate_token,
 )
+from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 
-LOGIN_SUCCESS = click.style('Logged in successfully!', fg='green')
+LOGIN_SUCCESS = click.style('{} Logged in successfully!'.format(Symbols.SUCCESS), fg=Colors.GREEN)
 
 
 @click.command(
+    'login',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 @click.option('--email', type=str,
               help='Email of the rapyuta.io account')
@@ -88,9 +90,10 @@ def login(
     if not ctx.obj.exists or not interactive:
         ctx.obj.save()
     else:
-        click.secho("[Warning] rio already has a config file present",
-                    fg='yellow')
-        click.confirm('Do you want to override the config?', abort=True)
+        click.confirm(
+            '{} Config already exists. Do you want to override'
+            ' the existing config?'.format(Symbols.WARNING),
+            abort=True)
 
     if not interactive:
         # When just the email and password are provided
@@ -105,7 +108,7 @@ def login(
         if project and not organization:
             click.secho(
                 'Please specify an organization. See `rio auth login --help`',
-                fg='yellow')
+                fg=Colors.YELLOW)
             raise SystemExit(1)
 
         # When just the organization is provided, we save the
@@ -114,7 +117,7 @@ def login(
         if organization and not project:
             select_organization(ctx.obj, organization=organization)
             click.secho("Your organization is set to '{}'".format(
-                ctx.obj.data['organization_name']), fg='green')
+                ctx.obj.data['organization_name']), fg=Colors.CYAN)
             ctx.obj.save()
             click.echo(LOGIN_SUCCESS)
             return

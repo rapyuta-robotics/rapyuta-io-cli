@@ -25,10 +25,10 @@ from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
-from riocli.utils import dump_all_yaml
-from riocli.utils import print_separator
-from riocli.utils import run_bash
+from riocli.constants import Colors, Symbols
+from riocli.utils import dump_all_yaml, print_separator, run_bash
 from riocli.utils.mermaid import mermaid_link, mermaid_safe
+from riocli.utils.spinner import with_spinner
 
 
 class Applier(object):
@@ -79,13 +79,22 @@ class Applier(object):
     def order(self):
         return self.graph.static_order()
 
+    @with_spinner(text='Applying...', timer=True)
     def apply(self, *args, **kwargs):
+        spinner = kwargs.get('spinner')
         kwargs['workers'] = int(kwargs.get('workers')
                                 or self.DEFAULT_MAX_WORKERS)
+        apply_func = self.apply_async
         if kwargs['workers'] == 1:
-            return self.apply_sync(*args, **kwargs)
+            apply_func = self.apply_sync
 
-        return self.apply_async(*args, **kwargs)
+        try:
+            apply_func(*args, **kwargs)
+            spinner.text = 'Apply successful.'
+            spinner.green.ok(Symbols.SUCCESS)
+        except Exception as e:
+            spinner.text = 'Apply failed. Error: {}'.format(e)
+            spinner.red.fail(Symbols.ERROR)
 
     def apply_async(self, *args, **kwargs):
         workers = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
@@ -95,12 +104,14 @@ class Applier(object):
         def worker():
             while True:
                 o = task_queue.get()
-                if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
+                if o in self.resolved_objects and 'manifest' in \
+                        self.resolved_objects[o]:
                     try:
                         self._apply_manifest(o, *args, **kwargs)
                     except Exception as ex:
                         click.secho(
-                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(o, str(ex)))
+                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(
+                                o, str(ex)))
                         done_queue.put(ex)
                         continue
 
@@ -129,17 +140,26 @@ class Applier(object):
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
-                if obj in self.resolved_objects and 'manifest' in self.resolved_objects[obj]:
+                if (obj in self.resolved_objects and
+                        'manifest' in self.resolved_objects[obj]):
                     self._apply_manifest(obj, *args, **kwargs)
                 self.graph.done(obj)
 
+    @with_spinner(text='Deleting...', timer=True)
     def delete(self, *args, **kwargs):
+        spinner = kwargs.get('spinner')
         delete_order = list(self.graph.static_order())
         delete_order.reverse()
-        for obj in delete_order:
-            if obj in self.resolved_objects and 'manifest' in \
-                    self.resolved_objects[obj]:
-                self._delete_manifest(obj, *args, **kwargs)
+        try:
+            for obj in delete_order:
+                if (obj in self.resolved_objects and
+                        'manifest' in self.resolved_objects[obj]):
+                    self._delete_manifest(obj, *args, **kwargs)
+            spinner.text = 'Delete successful.'
+            spinner.green.ok(Symbols.SUCCESS)
+        except Exception as e:
+            spinner.text = 'Delete failed. Error: {}'.format(e)
+            spinner.red.fail(Symbols.ERROR)
 
     def print_resolved_manifests(self):
         manifests = [o for _, o in self.objects.items()]
@@ -149,7 +169,7 @@ class Applier(object):
             self,
             check_missing=True,
             delete=False,
-            template=False,
+            template=False
     ):
         number_of_objects = 0
         for f, data in self.files.items():
@@ -163,21 +183,22 @@ class Applier(object):
         total_time = 0
 
         for node in copy.deepcopy(self.graph).static_order():
-
-            action = 'CREATE' if not self.resolved_objects[node]['src'] == 'remote' else 'UPDATE'
-            if delete:
+            action = 'UPDATE'
+            if not self.resolved_objects[node]['src'] == 'remote':
+                action = 'CREATE'
+            elif delete:
                 action = 'DELETE'
             kind = node.split(":")[0]
             expected_time = round(
                 self.EXPECTED_TIME.get(kind.lower(), 5) / 60, 2)
-            total_time = total_time + expected_time
+            total_time += expected_time
             resource_list.append([node, action, expected_time])
 
         if not template:
             self._display_context(
                 total_time=total_time,
                 total_objects=number_of_objects,
-                resource_list=resource_list,
+                resource_list=resource_list
             )
 
         if check_missing:
@@ -187,9 +208,12 @@ class Applier(object):
                     missing_resources.append(key)
 
             if missing_resources:
-                click.secho("missing resources found in yaml. " +
-                            "Please ensure the following are either available in your yaml" +
-                            "or created on the server. {}".format(set(missing_resources)), fg="red")
+                click.secho(
+                    "Missing resources found in yaml. Please ensure the "
+                    "following are either available in your YAML or created"
+                    " on the server. {}".format(
+                        set(missing_resources)), fg=Colors.RED)
+
                 raise SystemExit(1)
 
     # Manifest Operations via base.py
@@ -224,7 +248,7 @@ class Applier(object):
             self.objects[key] = data
             self.resolved_objects[key] = {'src': 'local', 'manifest': data}
         except KeyError:
-            click.secho("Key error {}".format(data), fg='red')
+            click.secho("Key error {}".format(data), fg=Colors.RED)
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
@@ -285,7 +309,8 @@ class Applier(object):
     def _add_graph_edge(self, dependent_key, key):
         self.graph.add(dependent_key, key)
         self.diagram.append('\t{}[{}] --> {}[{}] '.format(mermaid_safe(key),
-                                                          key, mermaid_safe(dependent_key), dependent_key))
+                                                          key, mermaid_safe(
+                dependent_key), dependent_key))
 
     # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
@@ -328,7 +353,8 @@ class Applier(object):
                         dependent_key, obj_guid, dependency, obj)
 
                 if (name_or_guid == obj_name) and (
-                        'version' in dependency and obj['packageVersion'] == dependency.get('version')):
+                        'version' in dependency and obj[
+                    'packageVersion'] == dependency.get('version')):
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
@@ -348,7 +374,8 @@ class Applier(object):
         if key not in self.resolved_objects:
             self.resolved_objects[key] = {'src': 'missing'}
 
-    def _add_remote_object_to_resolve_tree(self, dependent_key, guid, dependency, obj):
+    def _add_remote_object_to_resolve_tree(self, dependent_key, guid,
+                                           dependency, obj):
         kind = dependency.get('kind')
         name_or_guid = dependency.get('nameOrGUID')
         key = '{}:{}'.format(kind, name_or_guid)
@@ -385,8 +412,8 @@ class Applier(object):
             total_objects: int,
             resource_list: typing.List
     ) -> None:
-        # Display context
-        headers = [click.style('Resource Context', bold=True, fg='yellow')]
+        headers = [
+            click.style('Resource Context', bold=True, fg=Colors.YELLOW)]
         context = [
             ['Expected Time (mins)', round(total_time, 2)],
             ['Files', len(self.files)],
@@ -398,7 +425,7 @@ class Applier(object):
         # Display Resource Inventory
         headers = []
         for header in ['Resource', 'Action', 'Expected Time (mins)']:
-            headers.append(click.style(header, fg='yellow', bold=True))
+            headers.append(click.style(header, fg=Colors.YELLOW, bold=True))
 
         print_separator()
         click.echo(tabulate(resource_list, headers=headers,

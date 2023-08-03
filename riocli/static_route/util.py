@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
 import functools
 import typing
 
-import click
 from rapyuta_io import Client
-from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.config import new_client
 
@@ -59,23 +57,6 @@ def find_static_route_guid(client: Client, name: str) -> str:
     raise StaticRouteNotFound()
 
 
-def repr_static_routes(routes: typing.List[StaticRoute]) -> None:
-    header = '{:<36} {:<25} {:36} {:36} {:32}'.format(
-        'Static Route ID',
-        'Name',
-        'Full URL',
-        'Creator',
-        'Created At',
-    )
-    click.echo(click.style(header, fg='yellow'))
-    for route in routes:
-        click.secho(
-            '{:<36} {:<25} {:36} {:36} {:32}'.
-            format(route.guid, route.urlPrefix, route.urlString, route.creator,
-                   route.CreatedAt))
-
-
 class StaticRouteNotFound(Exception):
-    def __init__(self, message='secret not found'):
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self):
+        super().__init__('static route not found')

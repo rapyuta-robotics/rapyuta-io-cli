@@ -74,6 +74,7 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
    Rosbag  <rosbag>
    Secret <secret>
    Static Route <static_route>
+   User Group <usergroup>
    VPN <vpn>
 
 

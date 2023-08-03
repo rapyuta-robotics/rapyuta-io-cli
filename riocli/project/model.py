@@ -23,6 +23,7 @@ from riocli.model import Model
 
 PROJECT_READY_TIMEOUT = 150
 
+
 class Project(Model):
 
     def __init__(self, *args, **kwargs):
@@ -37,7 +38,7 @@ class Project(Model):
 
         return obj
 
-    def create_object(self, client: Client) -> typing.Any:
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()
 
         # convert to a dict and remove the ResolverCache
@@ -52,7 +53,8 @@ class Project(Model):
         r = client.create_project(project)
 
         try:
-            wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT, sleep_seconds=(1, 30, 2))
+            wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT,
+                 sleep_seconds=(1, 30, 2))
         except TimeoutExpired as e:
             raise e
 

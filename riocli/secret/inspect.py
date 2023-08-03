@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,21 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io import Secret
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.secret.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
+@click.command(
+    'inspect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('secret-name', type=str)
 @name_to_guid
 def inspect_secret(format_type: str, secret_name: str, secret_guid: str) -> None:
     """
-    Inspect the secret resource
+    Inspect a secret
     """
     try:
         client = new_client()
@@ -34,7 +41,7 @@ def inspect_secret(format_type: str, secret_name: str, secret_guid: str) -> None
         data = make_secret_inspectable(secret)
         inspect_with_format(data, format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 

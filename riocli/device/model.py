@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,19 +21,21 @@ from riocli.model import Model
 
 
 class Device(Model):
-
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        guid, obj = self.rc.find_depends(
-            {"kind": "device", "nameOrGUID": self.metadata.name})
+        guid, obj = self.rc.find_depends({
+            "kind": "device",
+            "nameOrGUID": self.metadata.name,
+        })
+
         if not guid:
             return False
 
         return obj
 
-    def create_object(self, client: Client) -> v1Device:
+    def create_object(self, client: Client, **kwargs) -> v1Device:
         device = client.create_device(self.to_v1())
         return device
 
@@ -56,10 +58,12 @@ class Device(Model):
         if preinstalled_enabled and self.spec.preinstalled.get('catkinWorkspace'):
             ros_workspace = self.spec.preinstalled.catkinWorkspace
 
-        return v1Device(name=self.metadata.name, description=self.spec.get('description'),
-                        runtime_docker=docker_enabled, runtime_preinstalled=preinstalled_enabled,
-                        ros_distro=self.spec.rosDistro, python_version=python_version,
-                        rosbag_mount_path=rosbag_mount_path, ros_workspace=ros_workspace)
+        return v1Device(
+            name=self.metadata.name, description=self.spec.get('description'),
+            runtime_docker=docker_enabled, runtime_preinstalled=preinstalled_enabled,
+            ros_distro=self.spec.rosDistro, python_version=python_version,
+            rosbag_mount_path=rosbag_mount_path, ros_workspace=ros_workspace
+        )
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

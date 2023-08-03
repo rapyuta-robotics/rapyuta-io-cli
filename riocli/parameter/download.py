@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
+from os.path import abspath
 from tempfile import mkdtemp
-from xmlrpc.client import Boolean
 
 import click
-from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
-from riocli.parameter.utils import display_trees
+from riocli.constants import Symbols, Colors
+from riocli.utils.spinner import with_spinner
 
 
 # -----------------------------------------------------------------------------
@@ -30,29 +31,48 @@ from riocli.parameter.utils import display_trees
 # -----------------------------------------------------------------------------
 
 
-@click.command('download')
-@click.option('--tree-names', type=click.STRING, multiple=True, default=None, help='Tree names to fetch')
-@click.option('--overwrite', '--delete-existing', 'delete_existing', is_flag=True,
+@click.command(
+    'download',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--tree-names', type=click.STRING, multiple=True, default=None,
+              help='Tree names to fetch')
+@click.option('--overwrite', '--delete-existing', 'delete_existing',
+              is_flag=True,
               help='Overwrite existing parameter tree')
 @click.argument('path', type=click.Path(exists=True), required=False)
-def download_configurations(path: str, tree_names: typing.Tuple[str] = None, delete_existing: Boolean = False) -> None:
+@with_spinner(text='Download configurations...', timer=True)
+def download_configurations(
+        path: str,
+        tree_names: typing.Tuple[str] = None,
+        delete_existing: bool = False,
+        spinner=None
+) -> None:
     """
-    Download the Configuration Parameter trees.
+    Download configuration parameter trees from rapyuta.io
     """
     if path is None:
-        # Not using the Context Manager because we need to persist the Temporary directory.
+        # Not using the Context Manager because
+        # we need to persist the temporary directory.
         path = mkdtemp()
 
-    click.secho('Downloading at {}'.format(path))
+    spinner.write('Downloading at {}'.format(abspath(path)))
 
     try:
         client = new_client()
 
-        with spinner():
-            client.download_configurations(path, tree_names=list(tree_names),
-                                           delete_existing_trees=delete_existing)
+        client.download_configurations(
+            path,
+            tree_names=list(tree_names),
+            delete_existing_trees=delete_existing
+        )
 
-        click.secho('✅ Configuration Parameters downloaded successfully', fg='green')
+        spinner.text = click.style("Configurations downloaded successfully.",
+                                   fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(e, fg='red')
+        spinner.text = click.style(e, fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
