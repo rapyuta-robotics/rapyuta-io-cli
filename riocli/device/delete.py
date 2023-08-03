@@ -13,6 +13,7 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
+from requests import Response
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
@@ -42,10 +43,25 @@ def delete_device(device_name: str, device_guid: str, force: bool, spinner=None)
 
     try:
         client = new_client(with_project=True)
-        client.delete_device(device_id=device_guid)
+        handle_device_delete_error(client.delete_device(device_id=device_guid))
         spinner.text = click.style('Device deleted successfully', fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style('Failed to delete device: {}'.format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+
+def handle_device_delete_error(response: Response):
+    if response.status_code < 400:
+        return
+
+    data = response.json()
+
+    error = data.get('response', {}).get('error')
+
+    if 'deployments' in error:
+        msg = 'Device has running deployments. Please de-provision them before deleting the device.'
+        raise Exception(msg)
+
+    raise Exception(error)
