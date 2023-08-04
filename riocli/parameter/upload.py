@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from yaspin import kbi_safe_yaspin
 
+if sys.stdout.isatty():
+    from yaspin import kbi_safe_yaspin as Spinner
+else:
+    from riocli.utils.spinner import DummySpinner as Spinner
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.parameter.utils import filter_trees, display_trees
@@ -57,8 +61,7 @@ def upload_configurations(
 
     client = new_client()
 
-    with kbi_safe_yaspin(text="Uploading configurations...",
-                         timer=True) as spinner:
+    with Spinner(text="Uploading configurations...", timer=True) as spinner:
         try:
             client.upload_configurations(
                 rootdir=path,

@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from yaspin import kbi_safe_yaspin
+
+if sys.stdout.isatty():
+    from yaspin import kbi_safe_yaspin as Spinner
+else:
+    from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
@@ -79,7 +84,7 @@ def apply_configurations(
                 "Do you want to apply the configurations?",
                 default=True, abort=True)
 
-        with kbi_safe_yaspin(text='Applying parameters...') as spinner:
+        with Spinner(text='Applying parameters...'):
             response = client.apply_parameters(
                 list(device_ids.keys()),
                 list(tree_names),

@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+
 import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils.rest_client import HttpMethod
-from yaspin import kbi_safe_yaspin
+
+if sys.stdout.isatty():
+    from yaspin import kbi_safe_yaspin as Spinner
+else:
+    from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.constants import Colors, Symbols
 from riocli.parameter.utils import _api_call
@@ -43,7 +49,7 @@ def delete_configurations(
     if not silent:
         click.confirm('Do you want to proceed?', default=True, abort=True)
 
-    with kbi_safe_yaspin(text='Deleting...', timer=True) as spinner:
+    with Spinner(text='Deleting...', timer=True) as spinner:
         try:
             data = _api_call(HttpMethod.DELETE, name=tree)
             if data.get('data') != 'ok':

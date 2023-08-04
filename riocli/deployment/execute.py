@@ -11,12 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from yaspin import kbi_safe_yaspin
+
+if sys.stdout.isatty():
+    from yaspin import kbi_safe_yaspin as Spinner
+else:
+    from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.constants import Colors
 from riocli.deployment.util import name_to_guid, select_details
@@ -49,7 +53,7 @@ def execute_command(
     try:
         comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
 
-        with kbi_safe_yaspin(text='Executing command `{}`...'.format(command)) as spinner:
+        with Spinner(text='Executing command `{}`...'.format(command)):
             stdout, stderr = run_on_cloud(deployment_guid, comp_id, exec_id, pod_name, command)
 
         if stderr:
