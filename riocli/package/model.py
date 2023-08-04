@@ -159,7 +159,6 @@ class Package(Model):
             component_obj.rosBagJobDefs = self.spec.rosBagJobs
 
         pkg_object.plans[0].components = [component_obj]
-
         return client.create_package(pkg_object)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
@@ -197,6 +196,9 @@ class Package(Model):
                 'cpu': exec.limits.get('cpu', 0.0),
                 'memory': exec.limits.get('memory', 0)
             }
+
+        if 'livenessProbe' in exec:
+            exec_object.livenessProbe = exec.livenessProbe
 
         if exec.get('runAsBash'):
             if 'command' in exec:
