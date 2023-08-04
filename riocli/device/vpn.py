@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from yaspin import kbi_safe_yaspin
+
+if sys.stdout.isatty():
+    from yaspin import kbi_safe_yaspin as Spinner
+else:
+    from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.config import new_client
 from riocli.constants import Colors
@@ -78,7 +83,7 @@ def toggle_vpn(devices: typing.List, enable: bool,
         click.echo("")  # Echo an empty line
 
         result = []
-        with kbi_safe_yaspin() as spinner:
+        with Spinner() as spinner:
             for device in final:
                 spinner.text = 'Updating VPN state on device {}'.format(
                     click.style(device.name, bold=True, fg=Colors.CYAN))
