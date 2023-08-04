@@ -33,6 +33,7 @@ def list_users(ctx: click.Context) -> None:
     Lists all users in the organization.
     """
     ctx = get_root_context(ctx)
+    current_user_email = ctx.obj.data.get('email_id')
 
     try:
         organization = get_organization_details(ctx.obj.data['organization_id'])
@@ -43,11 +44,13 @@ def list_users(ctx: click.Context) -> None:
     users = organization.get('users')
     users.sort(key=lambda u: u['emailID'])
 
-    data = [[
-        u['guid'],
-        '{} {}'.format(u.get('firstName', '-'), u.get('lastName', '-')),
-        u['emailID'],
-        u['state'],
-    ] for u in users]
+    data = []
+    for u in users:
+        fg, bold = None, False
+        if u['emailID'] == current_user_email:
+            fg, bold = Colors.GREEN, True
+        full_name = '{} {}'.format(u.get('firstName', ''), u.get('lastName', ''))
+        row = [u['guid'], full_name, u['emailID'], u['state']]
+        data.append([click.style(v, fg=fg, bold=bold) for v in row])
 
     tabulate_data(data, headers=['GUID', 'Name', 'EmailID', 'Status'])
