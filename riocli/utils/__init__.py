@@ -161,7 +161,7 @@ def is_pip_installation() -> bool:
     return 'python' in sys.executable
 
 
-def check_for_updates(current_version: str) -> tuple[bool, str]:
+def check_for_updates(current_version: typing.Text) -> typing.Tuple[bool, typing.Text]:
     try:
         package_info = requests.get(
             'https://pypi.org/pypi/rapyuta-io-cli/json').json()
