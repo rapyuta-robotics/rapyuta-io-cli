@@ -13,8 +13,44 @@
 # limitations under the License.
 
 import functools
+import sys
 
+import click
 from yaspin import kbi_safe_yaspin
+
+
+class DummySpinner:
+    """DummySpinner replaces the yaspin spinner with a dummy one
+
+    This class is useful for cases when the active stream is not a tty
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.text = ''
+
+    def write(self, text):
+        click.echo(text)
+
+    def hidden(self):
+        return self
+
+    def fail(self, text='FAIL'):
+        click.echo('{} {}'.format(text, self.text))
+
+    def ok(self, text='OK'):
+        click.echo('{} {}'.format(text, self.text))
+
+    def __getattr__(self, name):
+        return self
+
+    def __call__(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        return False
 
 
 def with_spinner(**spin_kwargs):
@@ -42,7 +78,11 @@ def with_spinner(**spin_kwargs):
     def decorated(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            with kbi_safe_yaspin(**spin_kwargs) as spinner:
+            spinner_class = kbi_safe_yaspin
+            if not sys.stdout.isatty():
+                spinner_class = DummySpinner
+
+            with spinner_class(**spin_kwargs) as spinner:
                 kwargs['spinner'] = spinner
                 return func(*args, **kwargs)
 
