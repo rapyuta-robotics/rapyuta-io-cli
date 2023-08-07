@@ -1,3 +1,12 @@
+## [4.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.0...v4.0.1) (2023-08-07)
+
+
+### Bug Fixes
+
+* implements dummy spinner for non-tty environments ([140e65f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/140e65f13dfe3b4a0be5c69f5799a5cb93697e23))
+* **network:** corrects the message on successful deletion ([0b3acd2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0b3acd2d12750a0d770976510616037df2a3750c))
+* **utils:** fixes type annotation issue with Python 3.7 and 3.8 ([1ed0506](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1ed0506a269bc1432b20b10def2d7c3ee132f47a))
+
 # [4.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v3.1.0...v4.0.0) (2023-08-03)
 
 
