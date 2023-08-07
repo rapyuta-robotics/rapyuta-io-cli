@@ -63,7 +63,7 @@ def delete_network(
             raise Exception('invalid network type')
 
         spinner.text = click.style(
-            '{} deleted successfully!'.format(network_type.capitalize()),
+            '{} network deleted successfully!'.format(network_type.capitalize()),
             fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
