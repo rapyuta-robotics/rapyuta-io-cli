@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,31 +16,34 @@ import glob
 import os
 
 
-def parse_varidac_pathargs(pathItem):
+def parse_variadic_path_args(path_item):
     glob_files = []
-    abs_path = os.path.abspath(pathItem)
-    # make it absolte
+    abs_path = os.path.abspath(path_item)
+    # make it absolute
     # does the path exist.
     #     is it a dir?  scan recursively
-    #     not a dir but has  special charaters in it?  [*?^!]
-    #        assume its a valid glob, use it to glob recursively
+    #     not a dir but has  special characters in it?  [*?^!]
+    #        assume it's a valid glob, use it to glob recursively
     #      if all else fails
     #        consider it a file path directly.
-    if os.path.exists(abs_path):
-        if os.path.isdir(abs_path):
-            # TODO: Should we keep this recursive?
-            glob_files = glob.glob(abs_path + "/**/*", recursive=True)
-        else:
-            glob_files = glob.glob(abs_path, recursive=True)
-    return glob_files
+    if not os.path.exists(abs_path):
+        return glob_files
+
+    if os.path.isdir(abs_path):
+        # TODO: Should we keep this recursive?
+        return glob.glob(abs_path + "/**/*", recursive=True)
+
+    return glob.glob(abs_path, recursive=True)
 
 
 def process_files_values_secrets(files, values, secrets):
     glob_files = []
 
-    for pathItem in files:
-        path_glob = parse_varidac_pathargs(pathItem)
-        glob_files.extend(path_glob)
+    for path_item in files:
+        path_glob = parse_variadic_path_args(path_item)
+        glob_files.extend([
+            f for f in path_glob if os.path.isfile(f)
+        ])
 
     abs_values = values
     if values and values != "":
