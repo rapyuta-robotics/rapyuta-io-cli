@@ -95,6 +95,7 @@ class Applier(object):
         except Exception as e:
             spinner.text = 'Apply failed. Error: {}'.format(e)
             spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1) from e
 
     def apply_async(self, *args, **kwargs):
         workers = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
