@@ -1,3 +1,12 @@
+## [4.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.1...v4.0.2) (2023-08-09)
+
+
+### Bug Fixes
+
+* **apply:** reads files within nested directories ([85611dc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/85611dc154c8ce9c0af1489705501254b7bf31ef))
+* **apply:** returns exit code when apply command fails ([d77bb5e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d77bb5e81662880640d4ff0a567fd650f1868025))
+* **device:** fixes error handling when deleting a device ([de7289c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/de7289c11a8894e2f2fe510d240e901125b78c02))
+
 ## [4.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.0...v4.0.1) (2023-08-07)
 
 
