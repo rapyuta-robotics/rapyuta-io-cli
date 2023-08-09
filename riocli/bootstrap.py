@@ -107,7 +107,7 @@ def update(silent: bool) -> None:
         else:
             update_appimage(version=latest)
     except Exception as e:
-        click.secho('{} Failed to update the CLI'.format(e), fg=Colors.RED)
+        click.secho('{} Failed to update: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
         raise SystemExit(1) from e
 
     click.secho('{} Update successful!'.format(Symbols.SUCCESS),

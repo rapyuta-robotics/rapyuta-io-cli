@@ -20,7 +20,7 @@ import subprocess
 import sys
 import typing
 from pathlib import Path
-from shutil import get_terminal_size
+from shutil import get_terminal_size, move
 from tempfile import TemporaryDirectory
 from uuid import UUID
 
@@ -210,12 +210,6 @@ def update_appimage(version: str):
     if not version:
         raise ValueError('version cannot be empty')
 
-    if os.getuid() != 0:
-        click.secho(
-            '{} Please run this as the root user.'.format(Symbols.WARNING),
-            fg=Colors.YELLOW)
-        raise SystemExit(1)
-
     # URL to get the latest release metadata
     url = 'https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases/latest'
 
@@ -237,11 +231,23 @@ def update_appimage(version: str):
         raise Exception(
             'Failed to retrieve the download URL for the latest AppImage')
 
-    with TemporaryDirectory() as tmp:
-        # Download and save the binary in a temp dir
+    # Download the AppImage
+    try:
         response = requests.get(asset.browser_download_url)
+    except Exception as e:
+        raise Exception('Failed to download the new version: {}'.format(e))
+
+    with TemporaryDirectory() as tmp:
+        # Save the binary in a temp dir
         save_to = Path(tmp) / 'rio'
         save_to.write_bytes(response.content)
         os.chmod(save_to, 0o755)
         # Now replace the current executable with the new file
-        os.rename(save_to, sys.executable)
+        try:
+            os.remove(sys.executable)
+            move(save_to, sys.executable)
+        except OSError as e:
+            click.secho('{} Please consider running as a root user.'.format(Symbols.WARNING), fg=Colors.YELLOW)
+            raise e
+        except Exception as e:
+            raise e
