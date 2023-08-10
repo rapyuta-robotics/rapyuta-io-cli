@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.2...v4.0.3) (2023-08-10)
+
+
+### Bug Fixes
+
+* **charts:** adds retry_count and retry_interval while applying charts ([aa025f3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/aa025f3af26726db2a350cd1418a78bb7d559c6e))
+
 ## [4.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.1...v4.0.2) (2023-08-09)
 
 
