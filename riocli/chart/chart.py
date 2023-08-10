@@ -35,17 +35,18 @@ class Chart(Munch):
             secrets: str = None,
             dryrun: bool = None,
             workers: int = 6,
+            retry_count: int = 50,
+            retry_interval: int = 6,
             silent: bool = False):
         if not self.downloaded:
             self.download_chart()
-
         templates_dir = Path(self.tmp_dir.name, self.name, 'templates')
         if not values:
             values = Path(self.tmp_dir.name, self.name,
                           'values.yaml').as_posix()
 
         apply.callback(values=values, files=[templates_dir], secrets=secrets,
-                       dryrun=dryrun, workers=workers, silent=silent)
+                       dryrun=dryrun, workers=workers, silent=silent, retry_count=retry_count, retry_interval=retry_interval)
 
     def delete_chart(
             self,
