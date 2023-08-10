@@ -42,6 +42,10 @@ from riocli.constants import Colors
 @click.option('--workers', '-w',
               help="number of parallel workers while running apply command. "
                    "defaults to 6.")
+@click.option('--retry-count', '-rc', type=int, default=50,
+              help="Number of retries before a resource creation times out status, defaults to 50")
+@click.option('--retry-interval', '-ri', type=int, default=6,
+              help="Interval between retries defaults to 6")
 @click.argument('chart', type=str)
 def apply_chart(
         chart: str,
@@ -49,6 +53,8 @@ def apply_chart(
         secrets: str,
         dryrun: bool,
         workers: int = 6,
+        retry_count: int = 50,
+        retry_interval: int = 6,
         silent: bool = False) -> None:
     """Install a chart from the rapyuta-charts repository."""
     versions = find_chart(chart)
@@ -59,5 +65,5 @@ def apply_chart(
 
     chart = Chart(**versions[0])
     chart.apply_chart(values, secrets, dryrun=dryrun, workers=workers,
-                      silent=silent)
+                      silent=silent, retry_count=retry_count, retry_interval=retry_interval)
     chart.cleanup()
