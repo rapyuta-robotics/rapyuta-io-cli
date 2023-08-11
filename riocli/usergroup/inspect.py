@@ -15,6 +15,7 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io.clients import UserGroup
 from rapyuta_io.clients.project import User, Project
 
 from riocli.config import new_client
@@ -42,43 +43,32 @@ def inspect_usergroup(ctx: click.Context, format_type: str, group_name: str, gro
         client = new_client()
         org_guid = ctx.obj.data.get('organization_id')
         usergroup = client.get_usergroup(org_guid, group_guid)
-        data = make_usergroup_inspectable(usergroup)
-        inspect_with_format(data, format_type)
+        inspect_with_format(to_manifest(usergroup, org_guid), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
-def make_usergroup_inspectable(usergroup: typing.Any):
+def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
+    """
+    Transform a usergroup resource to a rio apply manifest construct
+    """
+    members = {m.email_id for m in usergroup.members}
+    admins = {a.email_id for a in usergroup.admins}
+    projects = [p.name for p in usergroup.projects]
+
     return {
-        'name': usergroup.name,
-        'description': usergroup.description,
-        'guid': usergroup.guid,
-        'creator': usergroup.creator,
-        'members': [make_user_inspectable(member) for member in usergroup.members],
-        'admins': [make_user_inspectable(admin) for admin in usergroup.admins],
-        'projects': [make_project_inspectable(project) for project in getattr(usergroup, 'projects') or []]
-    }
-
-
-def make_user_inspectable(u: User):
-    return {
-        'guid': u.guid,
-        'firstName': u.first_name,
-        'lastName': u.last_name,
-        'emailID': u.email_id,
-        'state': u.state,
-        'organizations': u.organizations
-    }
-
-
-def make_project_inspectable(p: Project):
-    return {
-        'ID': p.id,
-        'CreatedAt': p.created_at,
-        'UpdatedAt': p.updated_at,
-        'DeletedAt': p.deleted_at,
-        'name': p.name,
-        'guid': p.guid,
-        'creator': p.creator
+        'apiVersion': 'api.rapyuta.io/v2',
+        'kind': 'UserGroup',
+        'metadata': {
+            'name': usergroup.name,
+            'creator': usergroup.creator,
+            'organization': org_guid,
+        },
+        'spec': {
+            'description': usergroup.description,
+            'members': list(members - admins),
+            'admins': list(admins),
+            'projects': projects,
+        },
     }
