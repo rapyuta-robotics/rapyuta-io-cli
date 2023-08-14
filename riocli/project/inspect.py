@@ -19,7 +19,7 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.project.util import name_to_guid
 from riocli.utils import inspect_with_format
-
+import typing
 
 @click.command(
     'inspect',
@@ -39,7 +39,29 @@ def inspect_project(format_type: str, project_name: str,
     try:
         client = new_v2_client(with_project=False)
         project = client.get_project(project_guid)
-        inspect_with_format(unmunchify(project), format_type)
+        inspect_with_format(to_manifest(unmunchify(project)), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
+
+def to_manifest(project: typing.Dict) -> typing.Dict:
+    """
+    Transform a project resource to a rio apply manifest construct
+    """
+    return {
+        'apiVersion': 'api.rapyuta.io/v2',
+        'kind': 'Project',
+        'metadata': {
+            'name': project['metadata']['name'],
+            'organizationGUID': project['metadata']['organizationGUID'],
+            'guid': project['metadata']['guid'],
+            'labels': project['metadata'].get('labels'),
+            'creatorGUID': project['metadata']['creatorGUID'],
+        },
+        'spec': {
+            'users': project['spec'].get('users'),
+            'userGroups': project['spec'].get('usergroups'),
+            'features': project['spec'].get('features'),
+        },
+        'status': project['status'],
+    }
