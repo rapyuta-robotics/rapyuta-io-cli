@@ -72,8 +72,8 @@ class Deployment(Model):
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
             raise Exception('>> runtime mismatch => deployment:{}.runtime !== package:{}.runtime '.format(
-                    self.metadata.name, pkg['packageName']
-                ))
+                self.metadata.name, pkg['packageName']
+            ))
 
         provision_config = pkg.get_provision_configuration(plan_id)
 
@@ -160,31 +160,6 @@ class Deployment(Model):
                         "instance": "rio-internal-headscale"
                     }]
 
-                if 'params' in self.spec.features and self.spec.features.params.enabled:
-                    component_id = internal_component.componentId
-                    tree_names = self.spec.features.params.get('trees', [])
-                    disable_sync = self.spec.features.params.get('disableSync',
-                                                                 False)
-
-                    args = []
-                    for e in executables:
-                        args.append({
-                            'executableId': e['id'],
-                            'paramTreeNames': tree_names,
-                            'enableParamSync': not disable_sync
-                        })
-
-                    context = provision_config.context
-                    if 'component_context' not in context:
-                        context['component_context'] = {}
-
-                    component_context = context['component_context']
-                    if component_id not in component_context:
-                        component_context[component_id] = {}
-
-                    component_context[component_id][
-                        'param_sync_exec_args'] = args
-
         if self.spec.runtime == 'device':
             device_guid, device = self.rc.find_depends(
                 self.spec.device.depends)
@@ -213,6 +188,32 @@ class Deployment(Model):
             if len(exec_mounts) > 0:
                 provision_config = add_mount_volume_provision_config(
                     provision_config, component_name, device, exec_mounts)
+
+        if 'features' in self.spec:
+            if 'params' in self.spec.features and self.spec.features.params.enabled:
+                component_id = internal_component.componentId
+                tree_names = self.spec.features.params.get('trees', [])
+                disable_sync = self.spec.features.params.get('disableSync',
+                                                             False)
+
+                args = []
+                for e in executables:
+                    args.append({
+                        'executableId': e['id'],
+                        'paramTreeNames': tree_names,
+                        'enableParamSync': not disable_sync
+                    })
+
+                context = provision_config.context
+                if 'component_context' not in context:
+                    context['component_context'] = {}
+
+                component_context = context['component_context']
+                if component_id not in component_context:
+                    component_context[component_id] = {}
+
+                component_context[component_id][
+                    'param_sync_exec_args'] = args
 
         provision_config.set_component_alias(component_name,
                                              self.metadata.name)
