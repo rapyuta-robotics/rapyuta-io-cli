@@ -164,6 +164,23 @@ definitions:
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
 
+              features:
+                type: object
+                properties:
+                  params:
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                      trees:
+                        type: array
+                        items:
+                          type: string
+                      disableSync:
+                        type: boolean
+                    required:
+                      - enabled
+
           - properties:
               runtime:
                 type: string
