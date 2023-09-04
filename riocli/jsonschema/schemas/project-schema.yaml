@@ -79,8 +79,11 @@ definitions:
         type: string
       userGroupGUID:
         type: string
+      role:
+        "$ref": "#/definitions/roleSpec"
     required:
       - name
+      - role
   user:
     type: object
     properties:
@@ -92,8 +95,11 @@ definitions:
         type: string
       userGUID:
         "$ref": "#/definitions/uuid"
+      role:
+        "$ref": "#/definitions/roleSpec"
     required:
       - emailID
+      - role
   projectStatus:
     type: object
     properties:
@@ -103,3 +109,8 @@ definitions:
         type: string
       tracing:
         type: string
+  roleSpec:
+    type: string
+    enum:
+      - admin
+      - viewer

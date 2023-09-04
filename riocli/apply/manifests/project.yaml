@@ -5,9 +5,15 @@ metadata:
   organizationGUID: org-guid
 spec:
   users:
-    - emailID: "user@example.com"
+    - emailID: "user1@example.com"
+      role: "admin"
+    - emailID: "user2@example.com"
+      role: "viewer"
   userGroups:
-    - name: dev-group
+    - name: "dev-group"
+      role: "admin"
+    - name: "qa-group"
+      role: "viewer"
   features:
     vpn: true
     tracing: false
