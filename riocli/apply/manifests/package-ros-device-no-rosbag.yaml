@@ -22,7 +22,7 @@ spec:
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
       livenessProbe: # Optional
-        tcp:
+        tcpSocket:
           port: 999
         initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
         periodSeconds: 10 # How often (in seconds) to perform the probe.
@@ -41,7 +41,7 @@ spec:
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
       livenessProbe: # Optional
-        http:
+        httpGet:
           path: "/"
           port: 90
         initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.

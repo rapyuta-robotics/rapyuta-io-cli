@@ -407,7 +407,7 @@ spec:
         depends:
           kind: build
           nameOrGUID: "build"
-    - name: "exec-docker"
+    - name: "exec-docker-01"
       type: docker # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
@@ -415,9 +415,8 @@ spec:
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
       livenessProbe: # Optional
-        exec:
-          command:
-            - "shell-cmd"
+        tcpSocket:
+          port: 8080
         initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
@@ -430,6 +429,24 @@ spec:
           depends:
             kind: secret
             nameOrGUID: "secret-docker"
+    - name: "exec-docker-02"
+      type: docker # Options: [docker (default), build, preInstalled]
+      runAsBash: True
+      limits: # Optional
+        cpu: 0.025 # Unit: Core (Optional)
+        memory: 128 # Unit: MB (Optional)
+      livenessProbe: # Optional
+        httpGet:
+          path: "/"
+          port: 80
+        initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
+        periodSeconds: 10 # How often (in seconds) to perform the probe.
+        failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
+        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+      docker:
+        image: "nginx:latest"
+        imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
     - name: "exec-preInstalled"
       type: preInstalled # Options: [docker (default), build, preInstalled]
       command: "roslaunch talker talker.launch"

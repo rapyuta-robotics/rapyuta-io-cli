@@ -41,7 +41,7 @@ spec:
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
       livenessProbe:
-        http:
+        httpGet:
           path: "/"
           port: 90
         initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
