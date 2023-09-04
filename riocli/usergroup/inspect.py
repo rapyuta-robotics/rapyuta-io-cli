@@ -52,9 +52,10 @@ def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
     """
     Transform a usergroup resource to a rio apply manifest construct
     """
+    role_map = {i['projectGUID']: i['groupRole'] for i in (usergroup.role_in_projects or [])}
     members = {m.email_id for m in usergroup.members}
     admins = {a.email_id for a in usergroup.admins}
-    projects = [p.name for p in usergroup.projects]
+    projects = [{'name': p.name, 'role': role_map[p.guid]} for p in (usergroup.projects or [])]
 
     return {
         'apiVersion': 'api.rapyuta.io/v2',
@@ -68,6 +69,6 @@ def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
             'description': usergroup.description,
             'members': [{'emailID': m} for m in list(members - admins)],
             'admins': [{'emailID': a} for a in list(admins)],
-            'projects': [{'name': p} for p in projects],
+            'projects': projects,
         },
     }

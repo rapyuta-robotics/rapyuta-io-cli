@@ -86,6 +86,11 @@ definitions:
         pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
       name:
         type: string
+      role:
+        type: string
+        enum:
+          - viewer
+          - admin
     oneOf:
       - required:
           - guid
