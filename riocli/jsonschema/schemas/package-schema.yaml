@@ -753,7 +753,7 @@ definitions:
           port:
             type: integer
             description: Port number for the HTTP probe.
-          schema:
+          scheme:
             type: string
             default: HTTP
             description: Scheme to use for connecting to the host.
