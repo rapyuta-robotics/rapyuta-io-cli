@@ -16,7 +16,6 @@ import typing
 import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients import UserGroup
-from rapyuta_io.clients.project import User, Project
 
 from riocli.config import new_client
 from riocli.constants import Colors
@@ -67,8 +66,8 @@ def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
         },
         'spec': {
             'description': usergroup.description,
-            'members': list(members - admins),
-            'admins': list(admins),
-            'projects': projects,
+            'members': [{'emailID': m} for m in list(members - admins)],
+            'admins': [{'emailID': a} for a in list(admins)],
+            'projects': [{'name': p} for p in projects],
         },
     }
