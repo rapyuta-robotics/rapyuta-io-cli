@@ -1,3 +1,22 @@
+# [4.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.3...v4.1.0) (2023-09-21)
+
+
+### Bug Fixes
+
+* **explain:** corrects livenessProbe examples in packages ([69b7ad1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/69b7ad113fc927b146c2116bdcafe0c63f714eb9))
+* **jsonschema:** corrects property name in package livenessProbe definition ([30c1a83](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/30c1a83acd3b52037ad7327e375be60fb5742dab))
+* **update:** removes the requirement of privileged access ([8857138](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8857138873a265c92c43a6db5c6329ace20b2a68))
+* **usergroup:** corrects the inspect output ([fc27292](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fc272923049868cb0164f1300b7bca38d6950fb7))
+* **usergroup:** outputs a rio manifest construct in inspect ([4c32573](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4c3257331b7559ca396ec5a28b3b11b543a36d59))
+
+
+### Features
+
+* **deployment:** adds support for paramsync in device deployments ([e5cf0ff](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e5cf0ff36bdce897a94f052a9ce2b0dcbe327ff7))
+* **organization:** adds inspect command to check org details ([232fb11](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/232fb114ceaee7864fb7a99320376c095643e059))
+* **package:** adds liveness probe for device executables ([4716f72](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4716f72fdc8f7d87d85d6c9c526fca553e08aa88))
+* **static_route:** uses v2 static route APIs ([17661c3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/17661c3b2b086f3d926857cd1fdc6952d7be5690))
+
 ## [4.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.2...v4.0.3) (2023-08-10)
 
 
