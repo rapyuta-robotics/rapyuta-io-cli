@@ -17,10 +17,9 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.static_route import StaticRoute
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
-
 
 @click.command(
     'list',
@@ -33,13 +32,12 @@ def list_static_routes() -> None:
     List the static routes in the selected project
     """
     try:
-        client = new_client()
-        routes = client.get_all_static_routes()
+        client = new_v2_client(with_project=True)
+        routes = client.list_static_routes()
         _display_routes_list(routes)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
-
+        raise SystemExit(1) from e
 
 def _display_routes_list(routes: List[StaticRoute]) -> None:
     headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']
@@ -47,11 +45,11 @@ def _display_routes_list(routes: List[StaticRoute]) -> None:
     data = []
     for route in routes:
         data.append([
-            route.guid,
-            route.urlPrefix,
-            route.urlString,
-            route.creator,
-            route.CreatedAt,
+            route.metadata.guid,
+            route.metadata.name,
+            route.spec.url,
+            route.metadata.creatorGUID,
+            route.metadata.createdAt,
         ])
 
     tabulate_data(data, headers)

@@ -21,6 +21,15 @@ spec:
       limits: # Optional
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
+      livenessProbe: # Optional
+        httpGet:
+          path: "/"
+          port: 90
+        initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
+        periodSeconds: 10 # How often (in seconds) to perform the probe.
+        failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
+        timeoutSeconds: 1 # Number of seconds after which the probe times out.
       build:
         depends:
           kind: build
@@ -32,6 +41,15 @@ spec:
       limits: # Optional
         cpu: 0.025 # Unit: Core (Optional)
         memory: 128 # Unit: MB (Optional)
+      livenessProbe: # Optional
+        exec:
+          command:
+            - "shell-cmd"
+        initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
+        periodSeconds: 10 # How often (in seconds) to perform the probe.
+        failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
+        successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
+        timeoutSeconds: 1 # Number of seconds after which the probe times out.
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)

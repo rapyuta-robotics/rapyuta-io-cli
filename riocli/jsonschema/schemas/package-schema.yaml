@@ -122,8 +122,11 @@ definitions:
           - docker
           - build
           - preInstalled
-      command:
-        type: string
+        command:
+          type: array
+          items:
+            type: string
+          description: Command to execute for the Exec probe.
       runAsBash:
         type: boolean
         default: True
@@ -137,6 +140,9 @@ definitions:
           memory:
             type: number
             minimum: 0
+      livenessProbe:
+        type: object
+        "$ref": "#/definitions/livenessProbe"
     required:
       - type
     dependencies:
@@ -734,3 +740,73 @@ definitions:
         type: string
       guid:
         type: string
+
+  livenessProbe:
+    type: object
+    properties:
+      httpGet:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to access for the HTTP probe.
+          port:
+            type: integer
+            description: Port number for the HTTP probe.
+          scheme:
+            type: string
+            default: HTTP
+            description: Scheme to use for connecting to the host.
+        required:
+          - path
+          - port
+      exec:
+        type: object
+        properties:
+          command:
+            type: array
+            items:
+              type: string
+            description: Command to execute for the Exec probe.
+        required:
+          - command
+      tcpSocket:
+        type: object
+        properties:
+          port:
+            type: integer
+            description: Port number for the TCP probe.
+        required:
+          - port
+      initialDelaySeconds:
+        type: integer
+        minimum: 1
+        default: 1
+        description: Number of seconds after the container has started before liveness probes are initiated.
+      timeoutSeconds:
+        type: integer
+        minimum: 10
+        default: 10
+        description: Number of seconds after which the probe times out.
+      periodSeconds:
+        type: integer
+        minimum: 1
+        default: 1
+        description: How often (in seconds) to perform the probe.
+      successThreshold:
+        type: integer
+        default: 3
+        minimum: 1
+        description: Minimum consecutive successes for the probe to be considered successful after having failed.
+      failureThreshold:
+        type: integer
+        default: 3
+        minimum: 1
+        description: Minimum consecutive failures for the probe to be considered failed after having succeeded.
+    oneOf:
+      - required:
+          - httpGet
+      - required:
+          - tcpSocket
+      - required:
+          - exec

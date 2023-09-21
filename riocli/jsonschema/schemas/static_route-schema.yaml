@@ -14,6 +14,10 @@ definitions:
         const: StaticRoute
       metadata:
         "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/staticRouteSpec"
+      status:
+        "$ref": "#/definitions/staticRouteStatus"
     required:
       - apiVersion
       - kind
@@ -47,3 +51,17 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  staticRouteSpec:
+    type: object
+    properties:
+      url:
+        type: string
+  staticRouteStatus:
+    type: object
+    properties:
+      status:
+        type: string
+      packageID:
+        type: string
+      deploymentID:
+        type: string
