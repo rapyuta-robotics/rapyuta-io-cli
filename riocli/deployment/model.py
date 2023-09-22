@@ -17,6 +17,8 @@ import typing
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
+from rapyuta_io.clients import ObjDict
+from rapyuta_io.clients.static_route import StaticRoute
 from rapyuta_io.clients.deployment import DeploymentNotRunningException, DeploymentPhaseConstants
 from rapyuta_io.clients.native_network import NativeNetwork
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
@@ -119,8 +121,8 @@ class Deployment(Model):
             if 'staticRoutes' in self.spec:
                 for stroute in self.spec.staticRoutes:
                     route_guid, route = self.rc.find_depends(stroute.depends)
-                    if route is None and route_guid:
-                        route = client.get_static_route(route_guid)
+                    # TODO: Remove this once we transition to v2
+                    route = StaticRoute(ObjDict({"guid": route_guid}))
                     provision_config.add_static_route(component_name,
                                                       stroute.name, route)
 
