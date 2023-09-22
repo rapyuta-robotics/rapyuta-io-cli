@@ -1,3 +1,12 @@
+## [4.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.1.0...v4.1.1) (2023-09-22)
+
+
+### Bug Fixes
+
+* **apply:** fixes the find_functor for staticroute ([2ad8a17](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2ad8a17323ecff0c496c75ffa7e74f4783e6a478))
+* **deployment:** fixes static route dependency ([117fd86](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/117fd865e2edaf72c87293f530ced44c9a3ee3c2))
+* **staticroute:** sends the correct value for name when deleting route ([5685360](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/568536064c8ad493820adeb4cab7ad468553a586))
+
 # [4.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.0.3...v4.1.0) (2023-09-21)
 
 
