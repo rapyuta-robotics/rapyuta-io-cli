@@ -159,8 +159,8 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": lambda name, projects: filter(lambda i: i.metadata.name == name, projects),
             "package": lambda name, obj_list, version: filter(
                 lambda x: name == x.name and version == x['packageVersion'], obj_list),
-            "staticroute": lambda name, obj_list: filter(lambda x: name == '-'.join(x.spec.url.split('-')[:-1]),
-                                                         obj_list),
+            "staticroute": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
             "build": self._generate_find_guid_functor(name_field='buildName'),
             "deployment": self._generate_find_guid_functor(),
             "network": self._generate_find_guid_functor(),

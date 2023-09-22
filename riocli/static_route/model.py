@@ -50,7 +50,7 @@ class StaticRoute(Model):
 
     def delete_object(self, client: Client, obj: typing.Any):
         client = new_v2_client()
-        client.delete_static_route(obj.name)
+        client.delete_static_route(obj.metadata.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
