@@ -4,7 +4,7 @@
 
 import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 version = re.search(
     '^__version__\s*=\s*"(.*)"', open("riocli/bootstrap.py").read(), re.M
@@ -47,7 +47,7 @@ setup(
         "python-dateutil>=2.8.2",
         "pytz",
         "pyyaml>=5.4.1",
-        "rapyuta-io>=1.11.1",
+        "rapyuta-io>=1.12.0",
         "requests>=2.20.0",
         "setuptools",
         "six>=1.13.0",
@@ -59,6 +59,7 @@ setup(
         "jsonschema==4.0.0",
         "waiting>=1.4.1",
         "semver>=3.0.0",
+        "email-validator==2.0.0.post2",
     ],
     setup_requires=["flake8"],
 )

@@ -72,6 +72,7 @@ class UserGroup(Model):
         return client.delete_usergroup(self.metadata.organization, obj.guid)
 
     def _modify_payload(self, group: typing.Dict) -> typing.Dict:
+        group['spec']['userGroupRoleInProjects'] = []
         for entity in ('members', 'admins'):
             for u in group['spec'].get(entity, []):
                 if USER_GUID in u:
@@ -80,10 +81,16 @@ class UserGroup(Model):
                 u.pop(USER_EMAIL)
 
         for p in group['spec'].get('projects', []):
-            if 'guid' in p:
-                continue
-            p['guid'] = self.project_name_to_guid_map.get(p['name'])
-            p.pop('name')
+            if 'guid' not in p:
+                p['guid'] = self.project_name_to_guid_map.get(p['name'])
+                p.pop('name')
+
+            if 'role' in p:
+                group['spec']['userGroupRoleInProjects'].append({
+                    'projectGUID': p['guid'],
+                    'groupRole': p['role'],
+                })
+                p.pop('role')
 
         return group
 
@@ -106,7 +113,8 @@ class UserGroup(Model):
                 'members': {'add': [], 'remove': []},
                 'projects': {'add': [], 'remove': []},
                 'admins': {'add': [], 'remove': []}
-            }
+            },
+            'userGroupRoleInProjects': new['spec'].get('userGroupRoleInProjects', []),
         }
 
         entity_sets = {

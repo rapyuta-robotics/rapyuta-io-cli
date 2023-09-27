@@ -79,7 +79,7 @@ def display_vpn_status(wide: bool = False):
     nodes = s.get('Peer', {})
     nodes.update({"me": s.get('Self')})
 
-    headers = ['IP', 'Host Name', 'OS', 'Online', 'Active']
+    headers = ['IP', 'DNS Name', 'OS', 'Online', 'Active']
 
     if wide:
         headers.extend(['Relay', 'Joined', 'Last Active'])
@@ -88,7 +88,8 @@ def display_vpn_status(wide: bool = False):
     for k, v in nodes.items():
         row = [
             ",".join(v.get('TailscaleIPs')),
-            v.get('HostName'),
+            # removesuffix() is available starting Python 3.9
+            v.get('DNSName', '').replace('.' + s.get('MagicDNSSuffix'), ''),
             v.get('OS'),
             v.get('Online'),
             v.get('Active'),

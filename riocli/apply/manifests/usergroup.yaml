@@ -15,4 +15,6 @@ spec:
     - emailID: admin.user@rapyuta-robotics.com
   projects:
     - name: project01
+      role: viewer
     - name: project02
+      role: admin
