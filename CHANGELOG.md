@@ -1,3 +1,18 @@
+# [4.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.1.1...v4.2.0) (2023-09-27)
+
+
+### Bug Fixes
+
+* **organization:** highlights logged-in user in the users list ([d93d2b2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d93d2b263fc3d32dbe1cce21154469afe570a0b3))
+* **vpn:** displays DNS name in vpn status ([baa823d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/baa823d27705881617723390f93bf1dbbfd5a5cd))
+
+
+### Features
+
+* **organization:** adds command to invite user ([b99fb5f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b99fb5f51b242b75440d07f62703ea345682a60b))
+* **organiztion:** adds command to remove user ([2caeefd](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2caeefd8bf93b4672b2f23261e66ab7f211b8a1e))
+* **project,usergroup:** supports extended RBAC roles ([7a84b72](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7a84b72404e1e460a50a402fd1272dab036d9d6a))
+
 ## [4.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.1.0...v4.1.1) (2023-09-22)
 
 
