@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.2.0...v4.2.1) (2023-09-28)
+
+
+### Bug Fixes
+
+* **usergroup:** fixes inspect when group has deleted projects ([bdbb17e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bdbb17ef6a559a1607fac527ace0d88998a8dfd8))
+
 # [4.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.1.1...v4.2.0) (2023-09-27)
 
 
