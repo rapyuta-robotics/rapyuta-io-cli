@@ -55,7 +55,8 @@ def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
     role_map = {i['projectGUID']: i['groupRole'] for i in (usergroup.role_in_projects or [])}
     members = {m.email_id for m in usergroup.members}
     admins = {a.email_id for a in usergroup.admins}
-    projects = [{'name': p.name, 'role': role_map[p.guid]} for p in (usergroup.projects or [])]
+    projects = [{'name': p.name, 'role': role_map.get(p.guid)}
+                for p in (usergroup.projects or []) if p.guid in role_map]
 
     return {
         'apiVersion': 'api.rapyuta.io/v2',
