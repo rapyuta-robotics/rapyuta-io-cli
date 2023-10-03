@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 import os
 
 import click
+from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
 from riocli.device.tools.util import (
@@ -28,7 +29,12 @@ from riocli.utils.spinner import with_spinner
 from riocli.utils.ssh_tunnel import get_free_tcp_port
 
 
-@click.command('ssh')
+@click.command(
+    'ssh',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--user', '-u', default='root', help='Username for the SSH')
 @click.option('--local-port', '-L', default=None,
               help='Port number on the local machine for forwarding SSH')
@@ -67,7 +73,12 @@ def device_ssh(
         raise SystemExit(1)
 
 
-@click.command('ssh-authorize')
+@click.command(
+    'ssh-authorize',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--user', '-u', default='root',
               help='User for which SSH keys are added')
 @click.argument('device-name', type=str)
@@ -84,23 +95,19 @@ def ssh_authorize_key(device_name: str, device_guid: str, user: str,
         temp_path = "/tmp/{}".format(random_string(8, 5))
 
         spinner.write("> Uploading public SSH key to device")
-        copy_to_device(device_guid, str(public_key_file), temp_path,
-                       spinner=spinner)
+        with spinner.hidden():
+            copy_to_device(device_guid, str(public_key_file), temp_path)
 
         if user != 'root':
-            command = ['cat', temp_path, '>>',
-                       '/home/' + user + '/.ssh/authorized_keys']
+            command = ['cat', temp_path, '>>', '/home/' + user + '/.ssh/authorized_keys']
         else:
             command = ['cat', temp_path, '>>', '/root/.ssh/authorized_keys']
 
         run_on_device(device_guid=device_guid, command=command, user=user)
 
-        spinner.text = click.style(
-            'Public key {} added successfully'.format(public_key_file),
-            fg=Colors.GREEN)
+        spinner.text = click.style('Public key {} added successfully'.format(public_key_file), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to add keys".format(e),
-                                   fg=Colors.RED)
+        spinner.text = click.style("Failed to add keys".format(e), fg=Colors.RED)
         spinner.red.ok(Symbols.ERROR)
         raise SystemExit(1)

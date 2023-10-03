@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,11 +60,10 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
     run_bash('curl -o "{}" "{}"'.format(dest, url))
 
 
-def copy_to_device(device_guid: str, src: str, dest: str, spinner=None) -> None:
+def copy_to_device(device_guid: str, src: str, dest: str) -> None:
     config = Configuration()
     path = random_string(8, 5)
     run_bash('curl -sT {} {}/{}'.format(src, config.piping_server, path), bg=True)
-    with spinner.hidden():
-        run_on_device(
-            device_guid=device_guid,
-            command=['curl', '-s', '-o', dest, '{}/{}'.format(config.piping_server, path)])
+    run_on_device(
+        device_guid=device_guid,
+        command=['curl', '-s', '-o', dest, '{}/{}'.format(config.piping_server, path)])

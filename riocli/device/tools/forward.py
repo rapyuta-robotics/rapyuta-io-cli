@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 
+from riocli.constants import Colors
 from riocli.device.tools.util import run_tunnel_on_device, run_tunnel_on_local
 from riocli.device.util import name_to_guid
 from riocli.utils import random_string
 from riocli.utils.ssh_tunnel import get_free_tcp_port
 
 
-@click.command('port-forward')
+@click.command(
+    'port-forward',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('device-name', type=str)
 @click.argument('remote-port', type=int)
 @click.argument('local-port', type=int, default=0, required=False)
@@ -37,5 +44,5 @@ def port_forward(device_name: str, device_guid: str, remote_port: int, local_por
         run_tunnel_on_device(device_guid=device_guid, remote_port=remote_port, path=path)
         run_tunnel_on_local(local_port=local_port, path=path, background=False)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

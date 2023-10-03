@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
 
 from riocli.config import new_client
+from riocli.constants import Symbols, Colors
 from riocli.device.tools.util import copy_from_device, copy_to_device
 from riocli.device.util import is_remote_path
+from riocli.utils.spinner import with_spinner
 
 
-@click.command()
+@click.command(
+    'scp',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.argument('source', nargs=1)
 @click.argument('destination', nargs=1)
-def scp(source, destination) -> None:
+@with_spinner(text='Copying files...')
+def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
     """
-    scp like interface to copy files to and from the device
+    An scp like interface to copy files to and from the device
     """
     try:
         client = new_client()
@@ -32,15 +42,20 @@ def scp(source, destination) -> None:
         dest_device_guid, dest = is_remote_path(destination, devices=devices)
 
         if src_device_guid is None and dest_device_guid is None:
-            click.secho('One of source or destination paths should be a remote path of format '
-                        '<device-id|device-name>:path', fg='red')
-            raise SystemExit(1)
+            raise Exception('One of source or destination paths should be a remote '
+                            'path of the format <device-id|device-name>:path')
 
         if src_device_guid is not None:
-            copy_from_device(src_device_guid, src, dest)
+            with spinner.hidden():
+                copy_from_device(src_device_guid, src, dest)
 
         if dest_device_guid is not None:
-            copy_to_device(dest_device_guid, src, dest)
+            with spinner.hidden():
+                copy_to_device(dest_device_guid, src, dest)
+
+        spinner.text = click.style('Files copied successfully', fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        spinner.text = click.style('Failed to copy files: {}'.format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from click_spinner import spinner
 from rapyuta_io import Label
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.device.util import name_to_guid
 from riocli.utils import tabulate_data
 
@@ -28,7 +29,7 @@ from riocli.utils import tabulate_data
     invoke_without_command=False,
     cls=HelpColorsGroup,
     help_headers_color='yellow',
-    help_options_color='green',
+    help_options_color=Colors.GREEN,
 )
 def device_labels() -> None:
     """
@@ -50,7 +51,7 @@ def list_labels(device_name: str, device_guid: str) -> None:
         labels = device.get_labels()
         _display_label_list(labels, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -68,9 +69,9 @@ def create_label(device_name: str, device_guid: str, key: str, value: str) -> No
             client = new_client()
             device = client.get_device(device_id=device_guid)
             device.add_label(key, value)
-        click.secho('Label added successfully!', fg='green')
+        click.secho('Label added successfully!', fg=Colors.GREEN)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -86,9 +87,9 @@ def update_label(device_name: str, device_guid: str, key: str, value: str) -> No
     try:
         with spinner():
             _update_label(device_guid, key, value)
-        click.secho('Label updated successfully!', fg='green')
+        click.secho('Label updated successfully!', fg=Colors.GREEN)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
@@ -103,9 +104,9 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
     try:
         with spinner():
             _delete_label(device_guid, key)
-        click.secho('Label deleted successfully!', fg='green')
+        click.secho('Label deleted successfully!', fg=Colors.GREEN)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
