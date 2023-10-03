@@ -12,14 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients import Device
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.device.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
+@click.command(
+    'inspect',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 @click.option('--format', '-f', 'format_type',
               type=click.Choice(['json', 'yaml'], case_sensitive=False), default='yaml')
 @click.argument('device-name', type=str)
@@ -34,7 +41,7 @@ def inspect_device(format_type: str, device_name: str, device_guid: str) -> None
         data = make_device_inspectable(device)
         inspect_with_format(data, format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
 
 
 def make_device_inspectable(device: Device) -> dict:

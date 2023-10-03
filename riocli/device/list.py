@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,20 @@
 import typing
 
 import click
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients import Device
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
 def list_devices() -> None:
     """
     List all the devices in the selected Project
@@ -31,7 +38,7 @@ def list_devices() -> None:
         devices = sorted(devices, key=lambda d: d.name.lower())
         _display_device_list(devices, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
