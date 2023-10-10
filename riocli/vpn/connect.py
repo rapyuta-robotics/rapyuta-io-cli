@@ -112,7 +112,10 @@ def start_tailscale(
                       '--accept-routes --accept-dns --advertise-tags={} --timeout=30s')
     args = generate_tailscale_args(ctx, client, spinner)
     command = cmd.format(args.HEADSCALE_PRE_AUTH_KEY, args.HEADSCALE_URL, args.HEADSCALE_ACL_TAG)
-    output, code = run_bash_with_return_code(command)
+
+    with spinner.hidden():
+        output, code = run_bash_with_return_code(command)
+
     if code != 0:
         spinner.write(
             click.style('{} Failed to start vpn client'.format(Symbols.ERROR),
