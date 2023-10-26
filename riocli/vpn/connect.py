@@ -27,6 +27,7 @@ from riocli.utils import run_bash_with_return_code
 from riocli.utils.spinner import with_spinner
 from riocli.v2client import Client as v2Client
 from riocli.vpn.util import (
+    get_command,
     is_tailscale_up,
     stop_tailscale,
     install_vpn_tools,
@@ -107,14 +108,14 @@ def start_tailscale(
         client: v2Client,
         spinner: Yaspin,
 ) -> bool:
-    cmd = ('sudo tailscale up --auth-key={} --login-server={}'
-           ' --reset --force-reauth --accept-routes --accept-dns'
-           ' --advertise-tags={} --timeout=30s')
+    cmd = get_command('tailscale up --auth-key={} --login-server={} --reset --force-reauth '
+                      '--accept-routes --accept-dns --advertise-tags={} --timeout=30s')
     args = generate_tailscale_args(ctx, client, spinner)
-    command = cmd.format(args.HEADSCALE_PRE_AUTH_KEY,
-                         args.HEADSCALE_URL,
-                         args.HEADSCALE_ACL_TAG)
-    output, code = run_bash_with_return_code(command)
+    command = cmd.format(args.HEADSCALE_PRE_AUTH_KEY, args.HEADSCALE_URL, args.HEADSCALE_ACL_TAG)
+
+    with spinner.hidden():
+        output, code = run_bash_with_return_code(command)
+
     if code != 0:
         spinner.write(
             click.style('{} Failed to start vpn client'.format(Symbols.ERROR),

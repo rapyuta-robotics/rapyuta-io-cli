@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
+from munch import unmunchify
 
-from rapyuta_io import (
-    Client,
-    Secret as v1Secret,
-    SecretConfigDocker,
-    SecretConfigSourceBasicAuth,
-    SecretConfigSourceSSHAuth,
-)
+from rapyuta_io import Client
 
+from riocli.config import new_v2_client
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-
 
 class Secret(Model):
     def __init__(self, *args, **kwargs):
@@ -40,48 +35,28 @@ class Secret(Model):
 
         return secret
 
-    def create_object(self, client: Client, **kwargs) -> v1Secret:
-        secret = client.create_secret(self.to_v1())
-        return secret
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
+        client = new_v2_client()
 
-    def update_object(self, client: Client, obj: typing.Any) -> None:
-        pass
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        secret = unmunchify(self)
+        secret.pop("rc", None)
+        r = client.create_secret(secret)
+        return unmunchify(r)
+
+    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        client = new_v2_client()
+
+        secret = unmunchify(self)
+        secret.pop("rc", None)
+
+        r = client.update_secret(obj.name, secret)
+        return unmunchify(r)
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        client.delete_secret(obj.guid)
-
-    def to_v1(self) -> v1Secret:
-        if self.spec.type == 'Docker':
-            return self._docker_secret_to_v1()
-        else:
-            return self._git_secret_to_v1()
-
-    def _docker_secret_to_v1(self) -> v1Secret:
-        config = SecretConfigDocker(
-            self.spec.docker.username,
-            self.spec.docker.password,
-            self.spec.docker.email,
-            self.spec.docker.registry,
-        )
-        return v1Secret(self.metadata.name, config)
-
-    def _git_secret_to_v1(self) -> v1Secret:
-        if self.spec.git.authMethod == 'SSH Auth':
-            config = SecretConfigSourceSSHAuth(self.spec.git.privateKey)
-        elif self.spec.git.authMethod == 'HTTP/S Basic Auth':
-            ca_cert = self.spec.git.get('ca_cert', None)
-            config = SecretConfigSourceBasicAuth(
-                self.spec.git.username,
-                self.spec.git.password,
-                ca_cert=ca_cert
-            )
-        elif self.spec.git.authMethod == 'HTTP/S Token Auth':
-            # TODO(ankit): Implement it once SDK has support for it.
-            raise Exception('token-based secret is not supported yet!')
-        else:
-            raise Exception('invalid gitAuthMethod for secret!')
-
-        return v1Secret(self.metadata.name, config)
+        client = new_v2_client()
+        client.delete_secret(obj.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

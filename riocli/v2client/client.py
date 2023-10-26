@@ -419,3 +419,106 @@ class Client(metaclass=_Singleton):
             raise Exception("static routes: {}".format(err_msg))
 
         return munchify(data)
+
+    def create_secret(self, payload: dict) -> Munch:
+        """
+        Create a new secret
+        """
+        url = "{}/v2/secrets/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("secret: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_secret(self, secret_name: str) -> Munch:
+        """
+        Delete a secret
+        """
+        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.DELETE).headers(
+            headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("secret: {}".format(err_msg))
+
+        return munchify(data)
+
+    def list_secrets(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all secrets in a project
+        """
+        url = "{}/v2/secrets/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+                "limit": 10,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("secrets: {}".format(err_msg))
+            secrets = data.get('items', [])
+            if not secrets:
+                break
+            offset = data['metadata']['continue']
+            for secret in secrets:
+                result.append(secret['metadata'])
+
+        return munchify(result)
+
+    def get_secret(
+            self,
+            secret_name: str
+    ) -> Munch:
+        """
+        Get secret by name
+        """
+        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        headers = self._config.get_auth_header()
+
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("secrets: {}".format(err_msg))
+
+        return munchify(data)
+
+    def update_secret(self, secret_name: str, spec: dict) -> Munch:
+        """
+        Update a secret
+        """
+        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload=spec)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("secret: {}".format(err_msg))
+
+        return munchify(data)

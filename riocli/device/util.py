@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
 
 from riocli.config import new_client
+from riocli.constants import Colors
 from riocli.utils import is_valid_uuid
 
 
@@ -29,7 +30,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         try:
             client = new_client()
         except Exception as e:
-            click.secho(str(e), fg='red')
+            click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
         name = kwargs.pop('device_name')
@@ -52,7 +53,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             try:
                 guid = find_device_guid(client, name)
             except Exception as e:
-                click.secho(str(e), fg='red')
+                click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
 
         kwargs['device_name'] = name
@@ -82,7 +83,7 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
         try:
             client = new_client()
         except Exception as e:
-            click.secho(str(e), fg='red')
+            click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
         device_guid = kwargs.get('device_guid')
@@ -105,7 +106,7 @@ def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, 
         if request.filename == file_name or request.request_uuid == file_name:
             return request.filename, request.request_uuid
 
-    click.secho("file not found", fg='red')
+    click.secho("file not found", fg=Colors.RED)
     raise SystemExit(1)
 
 

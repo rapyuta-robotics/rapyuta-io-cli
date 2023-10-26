@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import os
 import socket
 import tempfile
 from os.path import exists, join
@@ -57,11 +58,11 @@ def get_tailscale_ip() -> str:
 
 
 def stop_tailscale() -> bool:
-    _, code = run_bash_with_return_code('sudo tailscale down')
+    _, code = run_bash_with_return_code(get_command('tailscale down'))
     if code != 0:
         return False
 
-    output, code = run_bash_with_return_code('sudo tailscale logout')
+    output, code = run_bash_with_return_code(get_command('tailscale logout'))
     if code != 0 and 'no nodekey to log out' not in output:
         return False
 
@@ -126,3 +127,11 @@ def is_vpn_enabled_in_project(client: v2Client, project_guid: str) -> bool:
     project = client.get_project(project_guid)
     return (project.status.status.lower() == 'success' and
             project.status.vpn.lower() == 'success')
+
+
+def get_command(cmd: str) -> str:
+    """Returns an effective command to execute."""
+    if is_linux() and os.geteuid() == 0:
+        return cmd
+
+    return 'sudo {}'.format(cmd)
