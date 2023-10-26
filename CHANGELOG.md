@@ -1,3 +1,24 @@
+# [5.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.2.1...v5.0.0) (2023-10-26)
+
+
+### Bug Fixes
+
+* **vpn:** avoids sudo when running as root ([47ee4eb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47ee4ebfe2cba757caad11ee772aea7dc4419b41))
+* **vpn:** hides spinner when asked for password ([5428cf3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5428cf3f68a6a9705a4dda171bbcb51b3ba9d0c3))
+
+
+### Features
+
+* **device:** updates spinner in device commands ([2b64ceb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2b64ceb38db83a62d9c4f14082f2164d0ff01769))
+* **secret:** uses v2 secret APIs ([a24ae37](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a24ae374fc567ce25ecf4d53918aeefa2a7f90a4))
+
+
+### BREAKING CHANGES
+
+* **secret:** Secret type "Source Secret" will be deprecated and the
+rio secret create command will no longer be available. The only way to
+create secrets would be via manifests.
+
 ## [4.2.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.2.0...v4.2.1) (2023-09-28)
 
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "4.2.1"
+__version__ = "5.0.0"
 
 import click
 import rapyuta_io.version
