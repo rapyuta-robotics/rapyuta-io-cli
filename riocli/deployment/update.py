@@ -131,14 +131,11 @@ def get_component_context(component_info) -> dict:
 
         for e in exec_metadata:
             # Component will be considered only if any of its executables is
-            # docker or build
-            if not (e.get("docker") or e.get("buildGUID")):
+            # docker
+            if not (e.get("docker")):
                 continue
 
             executable = {}
-
-            if e.get("buildGUID"):
-                executable["buildGUID"] = e["buildGUID"]
 
             if e.get("docker"):
                 executable["docker"] = e["docker"]

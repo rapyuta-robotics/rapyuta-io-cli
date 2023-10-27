@@ -402,9 +402,6 @@ definitions:
   diskGUID:
     type: string
     pattern: "^disk-[a-z]{24}$"
-  buildGUID:
-    type: string
-    pattern: "^build-[a-z]{24}$"
   packageGUID:
     type: string
     pattern: "^pkg-[a-z]{24}$"
