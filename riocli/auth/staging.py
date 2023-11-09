@@ -20,13 +20,15 @@ from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
+_STAGING_ENVIRONMENT_SUBDOMAIN_AKS = "apps.aks.okd4beta.rapyuta.io"
 _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 
 
 @click.command('environment', hidden=True)
+@click.option('--aks/--no-aks', is_flag=True, type=bool, default=False)
 @click.argument('name', type=str)
 @click.pass_context
-def environment(ctx: click.Context, name: str):
+def environment(ctx: click.Context, aks: bool, name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use)
     """
@@ -39,7 +41,7 @@ def environment(ctx: click.Context, name: str):
         ctx.obj.data.pop('rip_host', None)
         ctx.obj.data.pop('v2api_host', None)
     else:
-        _configure_environment(ctx.obj, name)
+        _configure_environment(ctx.obj, name, aks)
 
     ctx.obj.data.pop('project_id', None)
     email = ctx.obj.data.get('email_id', None)
@@ -54,17 +56,21 @@ def environment(ctx: click.Context, name: str):
     ctx.obj.save()
 
 
-def _configure_environment(config: Configuration, name: str) -> None:
+def _configure_environment(config: Configuration, name: str, is_aks: bool) -> None:
     is_valid_env = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
 
     if not is_valid_env:
         click.secho('{} Invalid environment: {}'.format(Symbols.ERROR, name), fg=Colors.RED)
         raise SystemExit(1)
 
-    catalog = 'https://{}catalog.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
-    core = 'https://{}apiserver.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
-    rip = 'https://{}rip.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
-    v2api = 'https://{}api.{}'.format(name, _STAGING_ENVIRONMENT_SUBDOMAIN)
+    subdomain = _STAGING_ENVIRONMENT_SUBDOMAIN
+    if is_aks:
+        subdomain = _STAGING_ENVIRONMENT_SUBDOMAIN_AKS
+
+    catalog = 'https://{}catalog.{}'.format(name, subdomain)
+    core = 'https://{}apiserver.{}'.format(name, subdomain)
+    rip = 'https://{}rip.{}'.format(name, subdomain)
+    v2api = 'https://{}api.{}'.format(name, subdomain)
 
     config.data['environment'] = name
     config.data['catalog_host'] = catalog
