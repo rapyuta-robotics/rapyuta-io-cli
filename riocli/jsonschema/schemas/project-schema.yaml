@@ -69,9 +69,19 @@ definitions:
         type: object
         properties:
           vpn:
-            type: boolean
+            type: object
+            properties:
+              subnets:
+                type: array
+                items:
+                  type: string
+              enabled:
+                type: boolean
           tracing:
-            type: boolean
+            type: object
+            properties:
+              enabled:
+                type: boolean
   userGroup:
     type: object
     properties:
