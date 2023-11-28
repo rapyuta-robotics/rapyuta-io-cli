@@ -23,7 +23,7 @@ else:
     from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.config import new_client
-from riocli.constants import Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data
 
 
@@ -39,8 +39,11 @@ from riocli.utils import tabulate_data
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
+@click.option('--advertise-routes', is_flag=True,
+              type=click.BOOL, default=False,
+              help="Advertise subnets configured in project to VPN peers")
 def toggle_vpn(devices: typing.List, enable: bool,
-               silent: bool = False) -> None:
+               silent: bool = False, advertise_routes: bool = False) -> None:
     """
     Enable or disable VPN client on the device
 
@@ -76,6 +79,11 @@ def toggle_vpn(devices: typing.List, enable: bool,
         print_final_devices(final)
 
         if not silent:
+            if advertise_routes and len(final) > 1:
+                msg = ("\n{} More than one device in the project will advertise routes. "
+                       "You may not want to do that. Please review the devices.".format(Symbols.WARNING))
+                click.secho(msg, fg='yellow')
+
             click.confirm(
                 "\nDo you want to proceed?",
                 default=True, abort=True)
@@ -87,7 +95,10 @@ def toggle_vpn(devices: typing.List, enable: bool,
             for device in final:
                 spinner.text = 'Updating VPN state on device {}'.format(
                     click.style(device.name, bold=True, fg=Colors.CYAN))
-                r = client.toggle_features(device.uuid, [('vpn', enable)])
+                r = client.toggle_features(
+                    device.uuid, [('vpn', enable)],
+                    config={'vpn': {'advertise_routes': advertise_routes}}
+                )
                 result.append([device.name, r.get('status')])
 
         click.echo("")  # Echo an empty line
