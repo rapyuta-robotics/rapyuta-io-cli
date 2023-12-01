@@ -13,20 +13,20 @@
 # limitations under the License.
 
 import functools
-import re
-from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
-from typing import List
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import Client, DeploymentPhaseConstants
+from rapyuta_io import Client
 from rapyuta_io.clients.deployment import Deployment
 from yaspin.api import Yaspin
 
 from riocli.config import new_client
 from riocli.constants import Symbols, Colors
+from riocli.deployment.util import fetch_deployments
+from riocli.deployment.util import print_deployments_for_confirmation
 from riocli.utils import tabulate_data
+from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
 
 
@@ -38,8 +38,8 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--force', '-f', '--silent', is_flag=True, default=False,
               help='Skip confirmation')
-@click.option('--update-all', '-a', is_flag=True, default=False,
-              help='Updates all deployments')
+@click.option('-a', '--all', 'update_all', is_flag=True, default=False,
+              help='Deletes all deployments in the project')
 @click.option('--workers', '-w',
               help="number of parallel workers while running update deployment "
                    "command. defaults to 10.", type=int, default=10)
@@ -47,9 +47,9 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Updating...")
 def update_deployment(
         force: bool,
-        update_all: bool,
         workers: int,
         deployment_name_or_regex: str,
+        update_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
     """
@@ -75,11 +75,8 @@ def update_deployment(
         spinner.ok(Symbols.SUCCESS)
         return
 
-    headers = ['Name', 'GUID', 'Phase', 'Status']
-    data = [[d.name, d.deploymentId, d.phase, d.status] for d in deployments]
-
     with spinner.hidden():
-        tabulate_data(data, headers)
+        print_deployments_for_confirmation(deployments)
 
     spinner.write('')
 
@@ -90,12 +87,11 @@ def update_deployment(
         spinner.write('')
 
     try:
-        result = Queue()
-        func = functools.partial(_apply_update, client, result)
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            executor.map(func, deployments)
-
-        result = sorted(list(result.queue), key=lambda x: x[0])
+        f = functools.partial(_apply_update, client)
+        result = apply_func_with_result(
+            f=f, items=deployments,
+            workers=workers, key=lambda x: x[0]
+        )
 
         data, fg, statuses = [], Colors.GREEN, []
         for name, status in result:
@@ -123,24 +119,6 @@ def update_deployment(
             'Failed to update deployment(s): {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
-
-
-def fetch_deployments(
-        client: Client,
-        deployment_name_or_regex: str,
-        update_all: bool,
-) -> List[Deployment]:
-    deployments = client.get_all_deployments(
-        phases=[DeploymentPhaseConstants.SUCCEEDED,
-                DeploymentPhaseConstants.PROVISIONING])
-    result = []
-    for deployment in deployments:
-        if (update_all or deployment.name == deployment_name_or_regex or
-                (deployment_name_or_regex not in deployment.name and
-                 re.search(deployment_name_or_regex, deployment.name))):
-            result.append(deployment)
-
-    return result
 
 
 def get_component_context(component_info) -> dict:
