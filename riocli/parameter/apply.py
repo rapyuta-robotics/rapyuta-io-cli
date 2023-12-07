@@ -26,6 +26,7 @@ from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data, print_separator
 from riocli.parameter.utils import list_trees
+from riocli.device.util import fetch_devices
 
 
 @click.command(
@@ -35,9 +36,12 @@ from riocli.parameter.utils import list_trees
     help_options_color=Colors.GREEN,
 )
 @click.option('--devices', type=click.STRING, multiple=True, default=(),
-              help='Device names to apply configurations')
+              help='Device names to apply configurations. If --device_name_pattern is'
+                   'provided, this will be ignored.')
+@click.option('--device-name-pattern', type=click.STRING, multiple=False,
+              help='Device name regex pattern to apply configurations. Does not work with --devices.')
 @click.option('--tree-names', type=click.STRING, multiple=True, default=None,
-              help='Tree names to apply')
+              help='Tree names to apply to the device(s)')
 @click.option('--retry-limit', type=click.INT, default=0,
               help='Retry limit')
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
@@ -47,21 +51,32 @@ def apply_configurations(
         devices: typing.List,
         tree_names: typing.List[str] = None,
         retry_limit: int = 0,
+        device_name_pattern: str = None,
         silent: bool = False,
 ) -> None:
     """
     Apply a set of configurations to a list of devices
     """
+    client = new_client()
+
+    if tree_names:
+        validate_trees(tree_names)
+
+    online_devices = client.get_all_devices(online_device=True)
+
     try:
-        client = new_client()
+        # If device_name_pattern is specified, fetch devices based on the pattern
+        # else fetch all devices. That means, include_all is False if
+        # device_name_pattern is specified for the fetch_devices function.
+        include_all = not len(device_name_pattern or '') > 0
+        online_devices = fetch_devices(client, device_name_pattern, include_all=include_all, online_devices=True)
 
-        if tree_names:
-            validate_trees(tree_names)
-
-        online_devices = client.get_all_devices(online_device=True)
         device_map = {d.name: d for d in online_devices}
 
-        if devices:
+        # If devices are specified, filter online devices based on the
+        # list of device names. But if device_name_pattern is specified
+        # this list of devices will not be honoured.
+        if devices and not device_name_pattern:
             device_ids = {device_map[d].uuid: d for d in devices if
                           d in device_map}
         else:
@@ -69,7 +84,7 @@ def apply_configurations(
 
         if not device_ids:
             click.secho(
-                "{} Invalid devices or no device is currently online".format(
+                "{} No device(s) found online. Please check the name or pattern".format(
                     Symbols.ERROR),
                 fg=Colors.RED)
             raise SystemExit(1)

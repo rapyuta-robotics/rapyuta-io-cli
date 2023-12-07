@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
+import re
 import typing
 from pathlib import Path
-import re
 
 import click
 from rapyuta_io import Client
@@ -102,18 +102,18 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
 
     return decorated
 
+
 def fetch_devices(
         client: Client,
         device_name_or_regex: str,
         include_all: bool,
+        online_devices: bool = False
 ) -> typing.List[Device]:
-    devices = client.get_all_devices()
+    devices = client.get_all_devices(online_device=online_devices)
     result = []
     for device in devices:
-        if (include_all or device.name == device_name_or_regex or
-                (device_name_or_regex not in device.name and
-                 re.search(device_name_or_regex, device.name)) or
-                device_name_or_regex == device.uuid):
+        if (include_all or device_name_or_regex == device.uuid or
+                re.search(device_name_or_regex, device.name)):
             result.append(device)
 
     return result
