@@ -52,27 +52,23 @@ def vpn(
     """
     client = new_v2_client(with_project=False)
 
-    subnets = (subnets or []) if enable else []
+    try:
+        project = client.get_project(project_guid)
+    except Exception as e:
+        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
 
-    body = {
-        "metadata": {
-            "projectGUID": project_guid
-        },
-        "spec": {
-            "features": {
-                "vpn": {
-                    "enabled": enable,
-                    "subnets": subnets
-                }
-            }
-        }
+    project["spec"]["features"]["vpn"] = {
+        "enabled": enable,
+        "subnets": (subnets or []) if enable else []
     }
 
     state = 'Enabling' if enable else 'Disabling'
     spinner.text = click.style('{} VPN...'.format(state), fg=Colors.YELLOW)
 
     try:
-        client.update_project(project_guid, body)
+        client.update_project(project_guid, project)
         spinner.text = click.style('Done', fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
