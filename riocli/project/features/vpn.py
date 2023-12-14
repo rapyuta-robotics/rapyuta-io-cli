@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List
+
 import click
 from click_help_colors import HelpColorsCommand
 
@@ -28,20 +30,29 @@ from riocli.utils.spinner import with_spinner
 )
 @click.argument('project-name', type=str)
 @click.argument('enable', type=bool)
+@click.option('--subnets', type=click.STRING, multiple=True, default=(),
+              help='Subnet ranges for the project. For example: 10.81.0.0/16')
 @name_to_guid
 @with_spinner()
 def vpn(
         project_name: str,
         project_guid: str,
         enable: bool,
+        subnets: List[str],
         spinner=None,
 ) -> None:
     """
     Enable or disable VPN on a project
 
-    Example: rio project features vpn "my-project" true
+    Example:
+
+        rio project features vpn "my-project" true
+
+        rio project features vpn "my-project" true --subnets 10.81.0.0/16
     """
     client = new_v2_client(with_project=False)
+
+    subnets = (subnets or []) if enable else []
 
     body = {
         "metadata": {
@@ -49,7 +60,10 @@ def vpn(
         },
         "spec": {
             "features": {
-                "vpn": enable
+                "vpn": {
+                    "enabled": enable,
+                    "subnets": subnets
+                }
             }
         }
     }
