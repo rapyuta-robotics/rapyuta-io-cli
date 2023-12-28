@@ -14,10 +14,12 @@
 import functools
 import typing
 from pathlib import Path
+import re
 
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
+from rapyuta_io.clients.device import Device
 
 from riocli.config import new_client
 from riocli.constants import Colors
@@ -99,6 +101,22 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
         f(**kwargs)
 
     return decorated
+
+def fetch_devices(
+        client: Client,
+        device_name_or_regex: str,
+        include_all: bool,
+) -> typing.List[Device]:
+    devices = client.get_all_devices()
+    result = []
+    for device in devices:
+        if (include_all or device.name == device_name_or_regex or
+                (device_name_or_regex not in device.name and
+                 re.search(device_name_or_regex, device.name)) or
+                device_name_or_regex == device.uuid):
+            result.append(device)
+
+    return result
 
 
 def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, str):
