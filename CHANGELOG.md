@@ -1,3 +1,27 @@
+# [6.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v5.0.0...v6.0.0) (2023-12-28)
+
+
+### Bug Fixes
+
+* **project:** fixes project update with vpn state ([#246](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/246)) ([82709f6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/82709f626427f8a5ce802e0755882c04d66249d7))
+
+
+### Features
+
+* **auth:** add support for AKS staging environments ([59d30e9](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/59d30e93978516ddb9e20aecada8777fbfecd706))
+* **device:** adds --advertise-routes flag in the vpn command ([6cea521](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6cea521ffb252ea60bad8f502699e159c64b762a))
+* **device:** updates device delete command to delete multiple devices ([#217](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/217)) ([1a35403](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1a354035179d9437a5838649155b4bb774236f55))
+* **jsonschema:** updates features attribute in project schema ([c4cd332](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c4cd33286ae67b73c66fbf6bfe66f9a5abac31de))
+* **project:** accepts subnets while enabling vpn ([#245](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/245)) ([06bbf7f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/06bbf7fc238f7c568a7f9377a6628dc8160549ce))
+
+
+### BREAKING CHANGES
+
+* **jsonschema:** The vpn and tracing attributes under .spec.features
+have been changed from type=boolean to type=object. Enabling vpn on a
+project will now require one to set .spec.features.vpn.enabled=True and
+likewise for any other project feature.
+
 # [5.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v4.2.1...v5.0.0) (2023-10-26)
 
 
