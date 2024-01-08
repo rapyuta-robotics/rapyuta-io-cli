@@ -122,7 +122,7 @@ def delete_device(
         spinner.write('')
 
         if failed_count == 0 and success_count == len(devices):
-            spinner_text = click.style('All devices deleted successfully.', Colors.GREEN)
+            spinner_text = click.style('{} device(s) deleted successfully.'.format(len(devices)), Colors.GREEN)
             spinner_char = click.style(Symbols.SUCCESS, Colors.GREEN)
         elif success_count == 0 and failed_count == len(devices):
             spinner_text = click.style('Failed to delete devices', Colors.YELLOW)
