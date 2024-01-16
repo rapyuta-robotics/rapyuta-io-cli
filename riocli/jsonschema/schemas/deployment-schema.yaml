@@ -92,6 +92,7 @@ definitions:
         type: string
       subPath:
         type: string
+    additionalProperties: false
 
   endpointSpec:
     properties:
