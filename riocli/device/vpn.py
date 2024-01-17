@@ -22,9 +22,11 @@ if sys.stdout.isatty():
 else:
     from riocli.utils.spinner import DummySpinner as Spinner
 
-from riocli.config import new_client
+from riocli.config import new_client, new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data
+
+ALL = 'all'
 
 
 @click.command(
@@ -39,11 +41,16 @@ from riocli.utils import tabulate_data
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
-@click.option('--advertise-routes', is_flag=True,
-              type=click.BOOL, default=False,
+@click.option('--advertise-routes', type=click.STRING, default=ALL,
               help="Advertise subnets configured in project to VPN peers")
-def toggle_vpn(devices: typing.List, enable: bool,
-               silent: bool = False, advertise_routes: bool = False) -> None:
+@click.pass_context
+def toggle_vpn(
+        ctx: click.Context,
+        devices: typing.List,
+        enable: bool,
+        silent: bool = False,
+        advertise_routes: str = 'all',
+) -> None:
     """
     Enable or disable VPN client on the device
 
@@ -57,11 +64,19 @@ def toggle_vpn(devices: typing.List, enable: bool,
 
             rio device vpn true
 
-        3. Disable VPN
+        3. Enable VPN on a device and advertise all configured routes
+
+            rio device vpn true --devices=edge01 --advertise-routes=all
+
+        4. Enable VPN on a device and advertise a subset of routes
+
+            rio device vpn true --devices=edge01 --advertise-routes='10.81.0.0/16,10.82.0.0/16'
+
+        5. Disable VPN
 
             rio device vpn false
 
-        4. Skip confirmation
+        6. Skip confirmation
 
             rio device vpn false --silent true
     """
@@ -77,6 +92,8 @@ def toggle_vpn(devices: typing.List, enable: bool,
             "the following online devices\n".format(enable), fg='yellow')
 
         print_final_devices(final)
+
+        advertise_routes = get_advertise_routes(ctx, advertise_routes)
 
         if not silent:
             if advertise_routes and len(final) > 1:
@@ -134,3 +151,13 @@ def process_devices(online_devices, devices) -> typing.List:
 def print_final_devices(final) -> None:
     data = [[device.uuid, device.name, device.status] for device in final]
     tabulate_data(data, headers=["UUID", "Name", "Status"])
+
+
+def get_advertise_routes(ctx: click.Context, advertise_routes: str) -> typing.List[str]:
+    if advertise_routes != ALL:
+        return advertise_routes.split(',')
+
+    v2_client = new_v2_client()
+    project = v2_client.get_project(ctx.obj.get('project_id'))
+
+    return project['spec']['features']['vpn']['subnets']
