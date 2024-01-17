@@ -75,7 +75,7 @@ class ResolverCache(object, metaclass=_Singleton):
         "managedservice": "^[a-zA-Z][a-zA-Z0-9_-]$"
     }
 
-    GUID_KEYS = ['guid', 'GUID', 'uuid', 'ID', 'Id', 'id']
+    GUID_KEYS = ['guid', 'GUID', 'deploymentId', 'uuid', 'ID', 'Id', 'id']
     NAME_KEYS = ['name', 'urlPrefix', 'buildName']
 
     def __init__(self, client):
