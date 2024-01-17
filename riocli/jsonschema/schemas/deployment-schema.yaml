@@ -144,7 +144,6 @@ definitions:
                   - always
                   - onfailure
                   - never
-                default: always
               envArgs:
                 type: array
                 items:
