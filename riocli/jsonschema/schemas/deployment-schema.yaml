@@ -116,6 +116,7 @@ definitions:
         "$ref": "#/definitions/managedServiceDepends"
 
   componentSpec:
+    type: object
     properties:
       runtime:
         type: string
@@ -183,6 +184,8 @@ definitions:
                         type: boolean
                     required:
                       - enabled
+            type: object
+            additionalProperties: false
 
           - properties:
               runtime:
@@ -242,6 +245,8 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudROSBagJobSpec"
+            type: object
+            additionalProperties: false
 
   cloudROSBagJobSpec:
     type: object
