@@ -18,3 +18,11 @@ try:
     pretty_traceback.install()
 except ImportError:
     pass  # no need to fail because of missing dev dependency
+
+# Patch `signal` to add SIGKILL for Windows. This is required for yaspin to work
+# on windows.
+from sys import platform
+
+if platform.lower() == 'win32':
+    import signal
+    signal.SIGKILL = signal.SIGTERM
