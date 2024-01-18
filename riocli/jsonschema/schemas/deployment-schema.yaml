@@ -90,9 +90,12 @@ definitions:
         type: string
       mountPath:
         type: string
+        pattern: '^([\\/][a-z0-9\s\-_@\-^!#$%&.]*)+(\.[a-z][a-z0-9]+)?$'
       subPath:
         type: string
+        pattern: '^([\\/][a-z0-9\s\-_@\-^!#$%&.]*)+(\.[a-z][a-z0-9]+)?$'
     additionalProperties: false
+
 
   endpointSpec:
     properties:
