@@ -16,10 +16,12 @@ import json
 import os
 import typing
 from filecmp import dircmp
+from typing import List
 
 import click
 from directory_tree import display_tree
 from rapyuta_io.utils import RestClient
+from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.config import Configuration
 from riocli.constants import Colors
@@ -78,6 +80,14 @@ def _api_call(
         err_msg = data.get('error')
         raise Exception(err_msg)
     return data
+
+
+def list_trees() -> List[str]:
+    resp = _api_call(HttpMethod.GET)
+    if 'data' not in resp:
+        raise Exception('Failed to list configurations')
+
+    return resp.get('data')
 
 
 class DeepDirCmp(dircmp):

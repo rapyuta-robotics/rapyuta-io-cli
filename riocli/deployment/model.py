@@ -16,18 +16,16 @@ import typing
 
 import click
 from rapyuta_io import Client
-from rapyuta_io.clients.catalog_client import Package
 from rapyuta_io.clients import ObjDict
-from rapyuta_io.clients.static_route import StaticRoute
+from rapyuta_io.clients.catalog_client import Package
 from rapyuta_io.clients.deployment import DeploymentNotRunningException, DeploymentPhaseConstants
 from rapyuta_io.clients.native_network import NativeNetwork
-from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy, \
-    ExecutableMount
-from rapyuta_io.clients.rosbag import (
-    ROSBagJob, ROSBagOptions, ROSBagCompression,
-    UploadOptions, ROSBagOnDemandUploadOptions, ROSBagTimeRange,
-    ROSBagUploadTypes, OverrideOptions, TopicOverrideInfo)
+from rapyuta_io.clients.package import ExecutableMount, ProvisionConfiguration, RestartPolicy
+from rapyuta_io.clients.rosbag import (OverrideOptions, ROSBagCompression, ROSBagJob, ROSBagOnDemandUploadOptions,
+                                       ROSBagOptions, ROSBagTimeRange, ROSBagUploadTypes, TopicOverrideInfo,
+                                       UploadOptions)
 from rapyuta_io.clients.routed_network import RoutedNetwork
+from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.constants import Colors
 from riocli.deployment.errors import ERRORS
@@ -35,6 +33,7 @@ from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.package.util import find_package_guid
+from riocli.parameter.utils import list_trees
 from riocli.static_route.util import find_static_route_guid
 
 
@@ -194,9 +193,14 @@ class Deployment(Model):
         if 'features' in self.spec:
             if 'params' in self.spec.features and self.spec.features.params.enabled:
                 component_id = internal_component.componentId
+                disable_sync = self.spec.features.params.get('disableSync', False)
+
+                # Validate trees in the manifest with the ones available
+                # to avoid misconfigurations.
                 tree_names = self.spec.features.params.get('trees', [])
-                disable_sync = self.spec.features.params.get('disableSync',
-                                                             False)
+                available_trees = set(list_trees())
+                if not set(tree_names).issubset(available_trees):
+                    raise ValueError("One or more trees are incorrect. Please run `rio parameter list` to confirm.")
 
                 args = []
                 for e in executables:
@@ -214,8 +218,7 @@ class Deployment(Model):
                 if component_id not in component_context:
                     component_context[component_id] = {}
 
-                component_context[component_id][
-                    'param_sync_exec_args'] = args
+                component_context[component_id]['param_sync_exec_args'] = args
 
         provision_config.set_component_alias(component_name,
                                              self.metadata.name)
