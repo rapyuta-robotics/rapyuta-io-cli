@@ -55,7 +55,7 @@ setup(
         "urllib3>=1.23",
         "pyrfc3339>=1.1",
         "directory-tree>=0.0.3.1",
-        "yaspin>=2.3.0",
+        "yaspin==2.5.0",
         "jsonschema==4.0.0",
         "waiting>=1.4.1",
         "semver>=3.0.0",
