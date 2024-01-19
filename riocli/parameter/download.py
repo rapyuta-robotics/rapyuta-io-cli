@@ -58,6 +58,11 @@ def download_configurations(
         # we need to persist the temporary directory.
         path = mkdtemp()
 
+    if not tree_names:
+        msg = click.style('{} No tree names specified. Downloading all the trees...'.format(Symbols.INFO),
+                          fg=Colors.BRIGHT_CYAN)
+        spinner.write(msg)
+
     spinner.write('Downloading at {}'.format(abspath(path)))
 
     try:
