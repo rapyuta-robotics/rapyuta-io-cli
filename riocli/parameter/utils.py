@@ -48,7 +48,7 @@ def filter_trees(
         trees.append(each)
 
     if tree_names and not trees:
-        raise Exception('specified tree names are invalid')
+        raise Exception('one or more specified tree names are invalid')
 
     return trees
 
