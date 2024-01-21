@@ -13,11 +13,20 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io.clients.deployment import DeploymentPhaseConstants
 
 from riocli.config import new_client
 from riocli.constants import Colors
 from riocli.deployment.list import display_deployment_list
 from riocli.device.util import name_to_guid
+
+PHASES = [
+    DeploymentPhaseConstants.INPROGRESS,
+    DeploymentPhaseConstants.PROVISIONING,
+    DeploymentPhaseConstants.SUCCEEDED,
+    DeploymentPhaseConstants.FAILED_TO_START,
+    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
+]
 
 
 @click.command(
@@ -34,15 +43,7 @@ def list_deployments(device_name: str, device_guid: str) -> None:
     """
     try:
         client = new_client()
-        device = client.get_device(device_guid)
-        partials = device.get_deployments()  # Partials
-        deployments = []
-        for partial in partials:
-            # FIXME: get_deployments call doesn't return Deployment partial and instead just returns generic
-            # ObjDict object. PartialMixin methods are not available on it.
-            # partial.refresh()
-            deployment = client.get_deployment(partial.io_deployment_id)
-            deployments.append(deployment)
+        deployments = client.get_all_deployments(device_id=device_guid, phases=PHASES)
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
