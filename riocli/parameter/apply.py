@@ -25,6 +25,7 @@ else:
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data, print_separator
+from riocli.parameter.utils import list_trees
 
 
 @click.command(
@@ -44,7 +45,7 @@ from riocli.utils import tabulate_data, print_separator
               help="Skip confirmation")
 def apply_configurations(
         devices: typing.List,
-        tree_names: str = None,
+        tree_names: typing.List[str] = None,
         retry_limit: int = 0,
         silent: bool = False,
 ) -> None:
@@ -53,6 +54,9 @@ def apply_configurations(
     """
     try:
         client = new_client()
+
+        if tree_names:
+            validate_trees(tree_names)
 
         online_devices = client.get_all_devices(online_device=True)
         device_map = {d.name: d for d in online_devices}
@@ -100,7 +104,12 @@ def apply_configurations(
             result.append([device_name, success])
 
         tabulate_data(result, headers=["Device", "Success"])
-    except IOError as e:
-        click.secho(str(e.__traceback__), fg=Colors.RED)
-        click.secho(str(e), fg=Colors.RED)
+    except Exception as e:
+        click.secho('{} Failed to apply configs: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
         raise SystemExit(1) from e
+
+
+def validate_trees(tree_names: typing.List[str]) -> None:
+    available_trees = set(list_trees())
+    if not set(tree_names).issubset(available_trees):
+        raise Exception('one or more specified tree names are invalid')
