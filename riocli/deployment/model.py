@@ -54,11 +54,16 @@ class Deployment(Model):
         return obj if guid else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
-        pkg_guid, pkg = self.rc.find_depends(self.metadata.depends,
-                                             self.metadata.depends.version)
+        pkg_guid, pkg = self.rc.find_depends(
+            self.metadata.depends,
+            self.metadata.depends.version)
 
         if pkg_guid:
             pkg = client.get_package(pkg_guid)
+
+        if not pkg:
+            raise ValueError('package not found: {}'.format(self.metadata.depends))
+
         pkg.update()
 
         default_plan = pkg['plans'][0]
