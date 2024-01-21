@@ -56,6 +56,10 @@ def upload_configurations(
         click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
         raise SystemExit(1)
 
+    if not trees:
+        click.secho('{} No configuration trees to upload.'.format(Symbols.INFO), fg=Colors.BRIGHT_CYAN)
+        return
+
     click.secho('Following configuration trees will be uploaded')
     click.secho()
     display_trees(path, trees)
