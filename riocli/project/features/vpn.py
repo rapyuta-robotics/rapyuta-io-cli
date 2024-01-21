@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,6 +58,13 @@ def vpn(
         spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+    # Check the current state of VPN and avoid making the update call.
+    if project['spec']['features']['vpn'].get('enabled', False) == enable:
+        expected_state = "enabled" if enable else "disabled"
+        spinner.text = click.style('VPN is already {}.'.format(expected_state), fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     project["spec"]["features"]["vpn"] = {
         "enabled": enable,
