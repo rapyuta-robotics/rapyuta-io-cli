@@ -19,15 +19,7 @@ import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-
-class _Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(
-                _Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+from riocli.utils import Singleton
 
 
 def handle_server_errors(response: requests.Response):
@@ -52,7 +44,7 @@ def handle_server_errors(response: requests.Response):
         raise Exception('unknown server error')
 
 
-class Client(metaclass=_Singleton):
+class Client(metaclass=Singleton):
     """
     v2 API Client
     """
