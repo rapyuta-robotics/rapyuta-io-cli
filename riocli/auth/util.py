@@ -133,7 +133,7 @@ def get_token(
             email, password, TOKEN_LEVELS[level])
         return token
     except UnauthorizedError as e:
-        spinner.text = click.style("incorrect email/password", fg=Colors.RED)
+        spinner.text = click.style("Incorrect email/password. Login again with `rio auth login`", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
     except Exception as e:
