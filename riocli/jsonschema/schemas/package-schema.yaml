@@ -52,11 +52,9 @@ definitions:
         enum:
           - device
           - cloud
-        default: cloud
       ros:
         type: object
         "$ref": "#/definitions/rosComponentSpec"
-
     dependencies:
       runtime:
         oneOf:
@@ -109,6 +107,8 @@ definitions:
                   "$ref": "#/definitions/cloudROSBagJobSpec"
             required:
               - cloud
+    required:
+      - runtime
 
   deviceExecutableSpec:
     type: object
