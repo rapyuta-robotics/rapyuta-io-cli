@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 @click.pass_context
 def environment(ctx: click.Context, interactive: bool, name: str):
     """
-    Sets the Rapyuta.io environment to use (Internal use)
+    Sets the Rapyuta.io environment to use (Internal use only)
     """
     ctx = get_root_context(ctx)
 
@@ -44,14 +44,27 @@ def environment(ctx: click.Context, interactive: bool, name: str):
     else:
         _configure_environment(ctx.obj, name)
 
+    # Remove all relevant data
     ctx.obj.data.pop('project_id', None)
-    email = ctx.obj.data.get('email_id', None)
-    password = ctx.obj.data.get('password', None)
+    ctx.obj.data.pop('organization_id', None)
+    ctx.obj.data.pop('auth_token', None)
     ctx.obj.save()
 
+    success_msg = click.style('{} Your Rapyuta.io environment is set to {}'.format(Symbols.SUCCESS, name),
+                              fg=Colors.GREEN)
+
     if not interactive:
+        click.echo(success_msg)
+        click.secho(
+            '{} Please set your organization and project with'
+            ' `rio organization select ORGANIZATION_NAME`'.format(Symbols.WARNING),
+            fg=Colors.YELLOW
+        )
         return
 
+    # Since credentials are retained, try fetching a token with the same.
+    email = ctx.obj.data.get('email_id', None)
+    password = ctx.obj.data.get('password', None)
     ctx.obj.data['auth_token'] = get_token(email, password)
 
     organization = select_organization(ctx.obj)
