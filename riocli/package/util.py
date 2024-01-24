@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
+import re
 import typing
+from typing import List
 
 import click
 from rapyuta_io import Client
+from rapyuta_io.clients.package import Package
 
 from riocli.config import new_client
+from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
 
 
@@ -71,3 +75,30 @@ def find_package_guid(client: Client, name: str, version: str = None) -> str:
 
     choice = show_selection(options, header='Following packages were found with the same name')
     return choice
+
+
+def fetch_packages(
+        client: Client,
+        package_name_or_regex: str,
+        include_all: bool,
+        version: str = None
+) -> List[Package]:
+    packages = client.get_all_packages(version=version)
+
+    result = []
+    for pkg in packages:
+        # We cannot delete public packages. Skip them instead.
+        if 'io-public' in pkg.packageId:
+            continue
+
+        if include_all or re.search(package_name_or_regex, pkg.packageName):
+            result.append(pkg)
+
+    return result
+
+
+def print_packages_for_confirmation(packages: List[Package]) -> None:
+    headers = ['Name', 'Version']
+    data = [[p.packageName, p.packageVersion] for p in packages]
+
+    tabulate_data(data, headers)
