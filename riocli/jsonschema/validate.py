@@ -25,11 +25,6 @@ def extend_with_default(validator_class):
         for p, sub_schema in properties.items():
             if "default" not in sub_schema:
                 continue
-
-            # Skip if property is not in instance
-            if p not in instance:
-                continue
-
             if isinstance(instance, dict):
                 instance.setdefault(p, sub_schema["default"])
             if isinstance(instance, list):
