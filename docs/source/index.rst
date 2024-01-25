@@ -59,7 +59,6 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
 
    Apply <apply>
    Authentication <auth>
-   Build <build>
    Chart <chart>
    Completion <completion>
    Deployment <deployment>

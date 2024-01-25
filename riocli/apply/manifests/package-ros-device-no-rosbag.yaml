@@ -14,27 +14,8 @@ spec:
     arch: amd64 # Options: [arm32v7, arm64v8, amd64]
     restart: always # Options: [always, never, onfailure]
   executables: # Required
-    - name: "exec-build"
-      type: build # Options: [docker (default), build, preInstalled]
-      command: "roslaunch talker talker.launch"
-      runAsBash: True
-      limits: # Optional
-        cpu: 0.025 # Unit: Core (Optional)
-        memory: 128 # Unit: MB (Optional)
-      livenessProbe: # Optional
-        tcpSocket:
-          port: 999
-        initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
-        periodSeconds: 10 # How often (in seconds) to perform the probe.
-        failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
-        successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
-      build:
-        depends:
-          kind: build
-          nameOrGUID: "build"
     - name: "exec-docker"
-      type: docker # Options: [docker (default), build, preInstalled]
+      type: docker # Options: [docker (default), preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
       limits: # Optional
@@ -57,7 +38,7 @@ spec:
             kind: secret
             nameOrGUID: "secret-docker"
     - name: "exec-preInstalled"
-      type: preInstalled # Options: [docker (default), build, preInstalled]
+      type: preInstalled # Options: [docker (default), preInstalled]
       command: "roslaunch talker talker.launch"
   environmentArgs:
     - name: "key1" # Required

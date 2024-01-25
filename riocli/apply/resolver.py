@@ -20,7 +20,6 @@ from munch import munchify
 from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from riocli.build.model import Build
 from riocli.config import new_v2_client
 from riocli.config.config import Configuration
 from riocli.deployment.model import Deployment
@@ -49,7 +48,6 @@ class ResolverCache(object, metaclass=_Singleton):
     KIND_TO_CLASS = {
         'Project': Project,
         'Secret': Secret,
-        'Build': Build,
         'Device': Device,
         'Network': Network,
         'StaticRoute': StaticRoute,
@@ -66,7 +64,6 @@ class ResolverCache(object, metaclass=_Singleton):
         "secret": "^secret-[a-z]{24}$",
         "package": "^pkg-[a-z]{24}$",
         "staticroute": "^staticroute-[a-z]{24}$",
-        "build": "^build-[a-z]{24}$",
         "disk": "^disk-[a-z]{24}$",
         "deployment": "^dep-[a-z]{24}$",
         "network": "^net-[a-z]{24}$",
@@ -76,7 +73,7 @@ class ResolverCache(object, metaclass=_Singleton):
     }
 
     GUID_KEYS = ['guid', 'GUID', 'deploymentId', 'uuid', 'ID', 'Id', 'id']
-    NAME_KEYS = ['name', 'urlPrefix', 'buildName']
+    NAME_KEYS = ['name', 'urlPrefix']
 
     def __init__(self, client):
         self.client = client
@@ -123,7 +120,6 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['id'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
-            "build": lambda x: munchify(x)['guid'],
             "deployment": lambda x: munchify(x)['deploymentId'],
             "network": lambda x: munchify(x).guid,
             # This is only temporarily like this
@@ -140,7 +136,6 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": self.v2client.list_projects,
             "package": self.client.get_all_packages,
             "staticroute": self.v2client.list_static_routes,
-            "build": self.client.list_builds,
             "deployment": functools.partial(self.client.get_all_deployments,
                                             phases=[DeploymentPhaseConstants.SUCCEEDED,
                                                     DeploymentPhaseConstants.PROVISIONING]),
@@ -161,7 +156,6 @@ class ResolverCache(object, metaclass=_Singleton):
                 lambda x: name == x.name and version == x['packageVersion'], obj_list),
             "staticroute": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
-            "build": self._generate_find_guid_functor(name_field='buildName'),
             "deployment": self._generate_find_guid_functor(),
             "network": self._generate_find_guid_functor(),
             "disk": self._generate_find_guid_functor(),

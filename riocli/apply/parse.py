@@ -40,7 +40,6 @@ class Applier(object):
         "secret": 3,
         "package": 3,
         "staticroute": 3,
-        "build": 180,
         "disk": 180,
         "deployment": 240,
         "network": 120,

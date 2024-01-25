@@ -24,7 +24,6 @@ from pkg_resources import iter_entry_points
 
 from riocli.apply import apply, explain, delete, template
 from riocli.auth import auth
-from riocli.build import build
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
@@ -121,7 +120,6 @@ cli.add_command(delete)
 cli.add_command(auth)
 cli.add_command(project)
 cli.add_command(device)
-cli.add_command(build)
 cli.add_command(secret)
 cli.add_command(package)
 cli.add_command(deployment)

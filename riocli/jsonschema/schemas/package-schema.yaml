@@ -120,7 +120,6 @@ definitions:
         default: docker
         enum:
           - docker
-          - build
           - preInstalled
         command:
           type: array
@@ -166,17 +165,6 @@ definitions:
           - properties:
               type:
                 enum:
-                  - build
-              build:
-                type: object
-                properties:
-                  depends:
-                    "$ref": "#/definitions/buildDepends"
-                required:
-                  - depends
-          - properties:
-              type:
-                enum:
                   - preInstalled
 
   cloudExecutableSpec:
@@ -189,7 +177,6 @@ definitions:
         default: docker
         enum:
           - docker
-          - build
       command:
         type: string
       runAsBash:
@@ -236,17 +223,6 @@ definitions:
                       - depends
                 required:
                   - image
-          - properties:
-              type:
-                enum:
-                  - build
-              build:
-                type: object
-                properties:
-                  depends:
-                    "$ref": "#/definitions/buildDepends"
-                required:
-                  - depends
 
   portNumber:
     type: integer
@@ -651,9 +627,6 @@ definitions:
   diskGUID:
     type: string
     pattern: "^disk-[a-z]{24}$"
-  buildGUID:
-    type: string
-    pattern: "^build-[a-z]{24}$"
   packageGUID:
     type: string
     pattern: "^pkg-[a-z]{24}$"
@@ -677,15 +650,6 @@ definitions:
       - Never
     default: IfNotPresent
 
-  buildDepends:
-    properties:
-      kind:
-        const: build
-        default: build
-      nameOrGUID:
-        type: string
-      guid:
-        type: string
   packageDepends:
     properties:
       kind:
