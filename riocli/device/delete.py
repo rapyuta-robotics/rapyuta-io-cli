@@ -69,9 +69,9 @@ def delete_device(
         raise SystemExit(1) from e
 
     if not devices:
-        spinner.text = "No devices to delete"
-        spinner.ok(Symbols.SUCCESS)
-        return
+        spinner.text = click.style("Device(s) not found", Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
 
     headers = ['Name', 'Device ID', 'Status']
     data = [[d.name, d.uuid, d.status] for d in devices]
