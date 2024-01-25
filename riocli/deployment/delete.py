@@ -68,9 +68,9 @@ def delete_deployment(
         raise SystemExit(1) from e
 
     if not deployments:
-        spinner.text = "Nothing to delete"
-        spinner.ok(Symbols.SUCCESS)
-        return
+        spinner.text = click.style("Deployment(s) not found", Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
 
     with spinner.hidden():
         print_deployments_for_confirmation(deployments)
