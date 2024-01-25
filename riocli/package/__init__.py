@@ -14,7 +14,6 @@
 import click
 from click_help_colors import HelpColorsGroup
 
-from riocli.package.create import create_package
 from riocli.package.delete import delete_package
 from riocli.package.deployment import list_package_deployments
 from riocli.package.inspect import inspect_package
@@ -34,7 +33,6 @@ def package() -> None:
     pass
 
 
-package.add_command(create_package)
 package.add_command(delete_package)
 package.add_command(list_packages)
 package.add_command(inspect_package)
