@@ -21,7 +21,6 @@ from riocli.deployment.execute import execute_command
 from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs
-from riocli.deployment.ssh import ssh_init, ssh_deployment
 from riocli.deployment.status import status
 from riocli.deployment.update import update_deployment
 from riocli.deployment.wait import wait_for_deployment
@@ -46,7 +45,5 @@ deployment.add_command(list_deployments)
 deployment.add_command(deployment_logs)
 deployment.add_command(wait_for_deployment)
 deployment.add_command(status)
-deployment.add_command(ssh_deployment)
-deployment.add_command(ssh_init)
 deployment.add_command(execute_command)
 deployment.add_command(update_deployment)
