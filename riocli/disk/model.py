@@ -79,7 +79,7 @@ class Disk(Model):
         volume_instance = client.get_volume_instance(obj.internalDeploymentGUID)
         volume_instance.destroy_volume_instance()
 
-    def _poll_till_available(self, client: Client, obj: typing.Any, sleep_interval=5, retries=10):
+    def _poll_till_available(self, client: Client, obj: typing.Any, sleep_interval=5, retries=20):
         dep_guid = obj.internalDeploymentGUID
         deployment = client.get_deployment(deployment_id=dep_guid)
 
