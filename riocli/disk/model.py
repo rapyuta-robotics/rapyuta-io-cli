@@ -74,20 +74,17 @@ class Disk(Model):
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        self._poll_till_available(client, obj)
+    def delete_object(self, client: Client, obj: typing.Any, sleep_interval=10, retries=12) -> typing.Any:
         volume_instance = client.get_volume_instance(obj.internalDeploymentGUID)
-        volume_instance.destroy_volume_instance()
-
-    def _poll_till_available(self, client: Client, obj: typing.Any, sleep_interval=5, retries=20):
-        dep_guid = obj.internalDeploymentGUID
-        deployment = client.get_deployment(deployment_id=dep_guid)
-
-        for _ in range(retries):
-            status = deployment.get_status().status
-            if status != 'Available':
-                sleep(sleep_interval)
-                continue
+        for attempt in range(retries):
+            sleep(sleep_interval)
+            try:
+                volume_instance.destroy_volume_instance()
+            except Exception as e:
+                if attempt == retries - 1:
+                    raise e
+            else:
+                return
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
