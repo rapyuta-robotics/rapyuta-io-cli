@@ -52,7 +52,7 @@ def _run_cloud_data(comp_id: str, exec_id: str, pod_name: str, command: typing.L
 
 
 def _run_cloud_url(config: Configuration, deployment_guid: str) -> str:
-    host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
+    host = config.data.get('catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
     return _CLOUD_RUN_REMOTE_COMMAND.format(host, deployment_guid)
 
 

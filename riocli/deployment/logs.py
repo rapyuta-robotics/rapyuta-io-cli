@@ -67,5 +67,5 @@ def stream_deployment_logs(deployment_id, component_id, exec_id, pod_name=None):
 
 
 def get_log_stream_url(config, deployment_id, component_id, exec_id, pod_name=None, tail=50000):
-    catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.rapyuta.io')
+    catalog_host = config.data.get('catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
     return _LOG_URL_FORMAT.format(catalog_host, tail, deployment_id, component_id, exec_id, pod_name)

@@ -38,7 +38,7 @@ def _api_call(
 ) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
-        'catalog_host', 'https://gacatalog.apps.rapyuta.io')
+        'catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
 
     url = '{}/disk'.format(catalog_host)
     if guid:

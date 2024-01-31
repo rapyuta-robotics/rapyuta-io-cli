@@ -28,7 +28,7 @@ def _api_call(
     config = Configuration()
     coreapi_host = config.data.get(
         'core_api_host',
-        'https://gaapiserver.apps.rapyuta.io'
+        'https://gaapiserver.apps.okd4v2.prod.rapyuta.io'
     )
 
     url = '{}/api/organization'.format(coreapi_host)
