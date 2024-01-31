@@ -1,3 +1,10 @@
+## [7.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.0...v7.0.1) (2024-01-31)
+
+
+### Bug Fixes
+
+* updates default service urls in api calls ([#262](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/262)) ([4ee6f43](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4ee6f435429a538453821f169a135e8c8423cffc))
+
 # [7.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v6.0.0...v7.0.0) (2024-01-31)
 
 
