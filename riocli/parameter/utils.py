@@ -68,7 +68,7 @@ def _api_call(
 ) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
-        'core_api_host', 'https://gaapiserver.apps.rapyuta.io')
+        'core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io')
     url = '{}/api/paramserver/tree'.format(catalog_host)
     if name:
         url = '{}/{}'.format(url, name)
