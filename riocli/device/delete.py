@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
 import click
@@ -23,9 +22,10 @@ from rapyuta_io.clients.device import Device
 from yaspin.api import Yaspin
 
 from riocli.config import new_client
-from riocli.device.util import fetch_devices
 from riocli.constants import Symbols, Colors
+from riocli.device.util import fetch_devices
 from riocli.utils import tabulate_data
+from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
 
 
@@ -37,7 +37,7 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--force', '-f', '--silent', is_flag=True, default=False,
               help='Skip confirmation')
-@click.option('--delete-all', '-a', is_flag=True, default=False,
+@click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
               help='Delete all devices')
 @click.option('--workers', '-w',
               help="Number of parallel workers for deleting devices. Defaults to 10.", type=int, default=10)
@@ -45,9 +45,9 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text='Deleting device...')
 def delete_device(
         force: bool,
-        delete_all: bool,
         workers: int,
         device_name_or_regex: str,
+        delete_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
     """
@@ -69,9 +69,9 @@ def delete_device(
         raise SystemExit(1) from e
 
     if not devices:
-        spinner.text = "No devices to delete"
-        spinner.ok(Symbols.SUCCESS)
-        return
+        spinner.text = click.style("Device(s) not found", Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
 
     headers = ['Name', 'Device ID', 'Status']
     data = [[d.name, d.uuid, d.status] for d in devices]
@@ -88,12 +88,11 @@ def delete_device(
         spinner.write('')
 
     try:
-        result = Queue()
-        func = functools.partial(_delete_deivce, client, result)
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            executor.map(func, devices)
-
-        result = sorted(list(result.queue), key=lambda x: x[0])
+        f = functools.partial(_delete_deivce, client)
+        result = apply_func_with_result(
+            f=f, items=devices,
+            workers=workers, key=lambda x: x[0]
+        )
 
         data, fg, statuses = [], Colors.GREEN, []
         success_count, failed_count = 0, 0
@@ -122,7 +121,7 @@ def delete_device(
         spinner.write('')
 
         if failed_count == 0 and success_count == len(devices):
-            spinner_text = click.style('All devices deleted successfully.', Colors.GREEN)
+            spinner_text = click.style('{} device(s) deleted successfully.'.format(len(devices)), Colors.GREEN)
             spinner_char = click.style(Symbols.SUCCESS, Colors.GREEN)
         elif success_count == 0 and failed_count == len(devices):
             spinner_text = click.style('Failed to delete devices', Colors.YELLOW)
@@ -139,6 +138,7 @@ def delete_device(
             'Failed to delete devices: {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
 
 def _delete_deivce(
         client: Client,

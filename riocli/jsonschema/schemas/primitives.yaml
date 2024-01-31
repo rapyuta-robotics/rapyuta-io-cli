@@ -16,9 +16,6 @@ definitions:
   diskGUID:
     type: string
     pattern: "^disk-[a-z]{24}$"
-  buildGUID:
-    type: string
-    pattern: "^build-[a-z]{24}$"
   packageGUID:
     type: string
     pattern: "^pkg-[a-z]{24}$"
@@ -32,13 +29,6 @@ definitions:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
 
-  buildDepends:
-    properties:
-      kind:
-        const: build
-        default: build
-      nameOrGUID:
-        type: string
   packageDepends:
     properties:
       kind:

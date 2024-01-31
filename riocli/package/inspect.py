@@ -53,7 +53,6 @@ def make_package_inspectable(package: Package) -> dict:
         'owner_project': package.ownerProject,
         'tags': package.tags,
         'plans': package.plans,
-        'build_generation': package.buildGeneration,
         'status': package.status,
         'is_public': package.isPublic,
         'category': package.category,

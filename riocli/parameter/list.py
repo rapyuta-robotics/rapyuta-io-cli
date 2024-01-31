@@ -13,10 +13,9 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.constants import Colors
-from riocli.parameter.utils import _api_call
+from riocli.parameter.utils import list_trees
 from riocli.utils import tabulate_data
 
 
@@ -31,14 +30,9 @@ def list_configuration_trees() -> None:
     List the Configuration Parameter Trees.
     """
     try:
-        data = _api_call(HttpMethod.GET)
-        if 'data' not in data:
-            raise Exception('Failed to list configurations')
-
-        trees = [[tree] for tree in data['data']]
-
+        data = list_trees()
+        trees = [[tree] for tree in data]
         tabulate_data(trees, headers=['Tree Name'])
-
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

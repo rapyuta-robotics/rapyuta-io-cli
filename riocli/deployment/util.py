@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2023 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,21 @@
 # limitations under the License.
 import copy
 import functools
+import re
 import typing
+from typing import List
 
 import click
 from rapyuta_io import Client, DeploymentPhaseConstants
 from rapyuta_io.clients import Device
+from rapyuta_io.clients.deployment import Deployment
 from rapyuta_io.clients.package import ExecutableMount
 from rapyuta_io.utils import InvalidParameterException, OperationNotAllowedError
 from rapyuta_io.utils.constants import DEVICE_ID
 
 from riocli.config import new_client
 from riocli.constants import Colors
+from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
 
 
@@ -155,3 +159,28 @@ def add_mount_volume_provision_config(provision_config, component_name, device, 
         provision_config.context['diskMountInfo'].append(tmp_info)
 
     return provision_config
+
+
+def fetch_deployments(
+        client: Client,
+        deployment_name_or_regex: str,
+        include_all: bool,
+) -> List[Deployment]:
+    deployments = client.get_all_deployments(
+        phases=[DeploymentPhaseConstants.SUCCEEDED,
+                DeploymentPhaseConstants.PROVISIONING])
+    result = []
+    for deployment in deployments:
+        if (include_all or
+                deployment_name_or_regex == deployment.deploymentId or
+                re.search(deployment_name_or_regex, deployment.name)):
+            result.append(deployment)
+
+    return result
+
+
+def print_deployments_for_confirmation(deployments: List[Deployment]):
+    headers = ['Name', 'GUID', 'Phase', 'Status']
+    data = [[d.name, d.deploymentId, d.phase, d.status] for d in deployments]
+
+    tabulate_data(data, headers)

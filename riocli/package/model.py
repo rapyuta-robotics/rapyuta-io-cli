@@ -217,12 +217,6 @@ class Package(Model):
             if exec.docker.get('imagePullPolicy'):
                 exec_object.imagePullPolicy = exec.docker.imagePullPolicy
 
-        if exec.type == 'build':
-            exec_object.buildGUID = exec.build.depends.guid
-            # TODO verify this is right for secret?
-            # if exec.docker.pullSecret and exec.docker.pullSecret.depends and exec.docker.pullSecret.depends.guid:
-            # exec_object.secret = exec.docker.pullSecret.depends.guid
-
         # TODO handle preinstalled
 
         return exec_object

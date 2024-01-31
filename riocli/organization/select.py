@@ -62,8 +62,12 @@ def select_organization(
     if sys.stdout.isatty() and interactive:
         select_project(ctx.obj, organization=organization_guid)
     else:
+        ctx.obj.data['project_id'] = ""
+        ctx.obj.data['project_name'] = ""
         click.secho(
-            "Your organization has been set to '{}'".format(organization_name),
+            "Your organization has been set to '{}'\n"
+            "Please set your project with `rio project select PROJECT_NAME`".format(organization_name),
             fg=Colors.GREEN)
+
 
     ctx.obj.save()

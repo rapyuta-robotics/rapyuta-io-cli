@@ -39,6 +39,8 @@ def get_host_name() -> str:
 def is_linux() -> bool:
     return platform.lower() == 'linux'
 
+def is_windows() -> bool:
+    return platform.lower() == 'win32'
 
 def is_curl_installed() -> bool:
     return which('curl') is not None
@@ -131,7 +133,7 @@ def is_vpn_enabled_in_project(client: v2Client, project_guid: str) -> bool:
 
 def get_command(cmd: str) -> str:
     """Returns an effective command to execute."""
-    if is_linux() and os.geteuid() == 0:
+    if is_windows() or (is_linux() and os.geteuid() == 0):
         return cmd
 
     return 'sudo {}'.format(cmd)

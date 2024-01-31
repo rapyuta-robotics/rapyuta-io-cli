@@ -50,7 +50,15 @@ def upload_configurations(
     """
     Upload a directories as configuration parameters.
     """
-    trees = filter_trees(path, tree_names)
+    try:
+        trees = filter_trees(path, tree_names)
+    except Exception as e:
+        click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        raise SystemExit(1)
+
+    if not trees:
+        click.secho('{} No configuration trees to upload.'.format(Symbols.INFO), fg=Colors.BRIGHT_CYAN)
+        return
 
     click.secho('Following configuration trees will be uploaded')
     click.secho()

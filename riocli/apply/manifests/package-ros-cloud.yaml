@@ -12,20 +12,8 @@ spec:
   cloud:
     replicas: 1 # Required
   executables: # Required
-    - name: "exec-build"
-      type: build # Options: [docker (default), build, preInstalled]
-      command: "roslaunch talker talker.launch"
-      runAsBash: True
-      simulation: False
-      limits:
-        cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-        memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
-      build:
-        depends:
-          kind: build
-          nameOrGUID: "build"
     - name: "exec-docker"
-      type: docker # Options: [docker (default), build, preInstalled]
+      type: docker # Options: [docker (default), preInstalled]
       command: "roslaunch talker talker.launch"
       runAsBash: True
       simulation: False

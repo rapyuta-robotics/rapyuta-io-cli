@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,17 +20,18 @@ from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
-_STAGING_ENVIRONMENT_SUBDOMAIN_AKS = "apps.aks.okd4beta.rapyuta.io"
 _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 
 
 @click.command('environment', hidden=True)
-@click.option('--aks/--no-aks', is_flag=True, type=bool, default=False)
+@click.option('--interactive/--no-interactive', '--interactive/--silent',
+              is_flag=True, type=bool, default=True,
+              help='Make login interactive')
 @click.argument('name', type=str)
 @click.pass_context
-def environment(ctx: click.Context, aks: bool, name: str):
+def environment(ctx: click.Context, interactive: bool, name: str):
     """
-    Sets the Rapyuta.io environment to use (Internal use)
+    Sets the Rapyuta.io environment to use (Internal use only)
     """
     ctx = get_root_context(ctx)
 
@@ -41,13 +42,29 @@ def environment(ctx: click.Context, aks: bool, name: str):
         ctx.obj.data.pop('rip_host', None)
         ctx.obj.data.pop('v2api_host', None)
     else:
-        _configure_environment(ctx.obj, name, aks)
+        _configure_environment(ctx.obj, name)
 
+    # Remove all relevant data
     ctx.obj.data.pop('project_id', None)
-    email = ctx.obj.data.get('email_id', None)
-    password = ctx.obj.data.get('password', None)
+    ctx.obj.data.pop('organization_id', None)
+    ctx.obj.data.pop('auth_token', None)
     ctx.obj.save()
 
+    success_msg = click.style('{} Your Rapyuta.io environment is set to {}'.format(Symbols.SUCCESS, name),
+                              fg=Colors.GREEN)
+
+    if not interactive:
+        click.echo(success_msg)
+        click.secho(
+            '{} Please set your organization and project with'
+            ' `rio organization select ORGANIZATION_NAME`'.format(Symbols.WARNING),
+            fg=Colors.YELLOW
+        )
+        return
+
+    # Since credentials are retained, try fetching a token with the same.
+    email = ctx.obj.data.get('email_id', None)
+    password = ctx.obj.data.get('password', None)
     ctx.obj.data['auth_token'] = get_token(email, password)
 
     organization = select_organization(ctx.obj)
@@ -56,7 +73,7 @@ def environment(ctx: click.Context, aks: bool, name: str):
     ctx.obj.save()
 
 
-def _configure_environment(config: Configuration, name: str, is_aks: bool) -> None:
+def _configure_environment(config: Configuration, name: str) -> None:
     is_valid_env = name in _NAMED_ENVIRONMENTS or name.startswith('pr')
 
     if not is_valid_env:
@@ -64,8 +81,6 @@ def _configure_environment(config: Configuration, name: str, is_aks: bool) -> No
         raise SystemExit(1)
 
     subdomain = _STAGING_ENVIRONMENT_SUBDOMAIN
-    if is_aks:
-        subdomain = _STAGING_ENVIRONMENT_SUBDOMAIN_AKS
 
     catalog = 'https://{}catalog.{}'.format(name, subdomain)
     core = 'https://{}apiserver.{}'.format(name, subdomain)
