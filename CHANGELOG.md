@@ -1,3 +1,65 @@
+# [7.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v6.0.0...v7.0.0) (2024-01-31)
+
+
+### Bug Fixes
+
+* **apply:** adds deploymentId as an option in GUID_KEYS ([11161ef](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/11161ef835f622710f704c38761ef22ec927a12f))
+* **deployment:** prints error during delete when no deployments found ([f73fea0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f73fea03521bf3b4d220d0ae0fbd3f85421f0f85))
+* **deployment:** raises exception when package depends not found ([b5b3daf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b5b3daf64dbfe10911dc09eafdcd6770a24af0c7))
+* **deployment:** validates config trees while creating deployment ([8d688fc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8d688fc8df563cbb7a8ed78846ce40ce0f6c5682))
+* **device:** improves message when devices deleted successfully ([e6b1299](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e6b1299440abeccb9a3466c50176708d2f14698d))
+* **device:** prints error during delete when no devices found ([7bf2c94](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7bf2c944bd9c03ef3d6c79c6022c00b210c2c8b8))
+* **device:** speeds up listing device deployments ([e7b0ceb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e7b0ceb22276ab1c85352e3f1f7155da8f1d4d2e))
+* **disk:** implements retries for deleting disk ([#260](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/260)) ([c635914](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c63591476cc7c7b5841a2928ac763c5bd789d9eb))
+* **disk:** sets default retries=20 for polling disk status ([35fa0f4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/35fa0f47365babf44573507f3258ec80c36a838e))
+* **jsonschema:** adds validation on disk volume mount path ([9332b45](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9332b451ef44d19cc395b097629b60075a35bbe9))
+* **jsonschema:** disallows additional properties for device volumes ([cc702a0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/cc702a01ed77b1fa87f035ea06818ae30b3b06ee))
+* **jsonschema:** disallows additional properties for runtime dependency ([324037c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/324037c66f2ac4cfb7384a2063a7e373f89488c8))
+* **jsonschema:** makes runtime required in disks ([1d81a82](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1d81a8229836a52ef9ff047d35d5efccf87bdf57))
+* **jsonschema:** makes runtime required in package and deployment ([f2e7afe](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f2e7afe5b9d6e866806402530a940fbf97b9f2c4))
+* **jsonschema:** removes default device deployment restart policy ([64967e1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/64967e161bb9aca5e616d61a4ef71536c31399f8))
+* **jsonschema:** sets min length for secrets to 3 chars ([2703147](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/270314740b85f13a8f0ba1282d0ba722e4ad249e))
+* **jsonschema:** skips populating default if property not in instance ([ba7eccf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ba7eccfbad133e39062e41e02686d997275b44d4))
+* **organization:** empties project when organization is selected non-interactively ([921e965](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/921e965dd67b7e0805e214a8b544353a392aee62))
+* **package:** prints error during delete when no packages found ([81355a7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/81355a783f652313c8d30e5045a1cdf47ba74bce))
+* **parameter:** adds validation on tree names ([5870508](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/58705083d7006c14523c4d4577d099ab2a5c77de))
+* **parameter:** prints info when download command has no tree name ([695875f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/695875f89d51a564582d4193606c0db9d47caec0))
+* **parameter:** prints message when there is nothing to upload ([3aa3ea5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3aa3ea51907a1433d5226c45ff231b3204853071))
+* **parameter:** throws error when param tree not found during apply ([9a65dd3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9a65dd3b8ae2e58775b82e79156d09da6a92d9da))
+* **project:** skips update if VPN already enabled ([51b0222](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/51b022284d107c7bcca8502e8b06e6ea7af0d6c8))
+* **secret:** adds secret name length validation ([8ae5102](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8ae51025bd9894ed2ce496d1ecdd3ae3cd9229d3))
+
+
+* refactor(deployment)!: removes ssh commands ([c066477](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c066477bc44e6bdc57dcb96590c3527d92d34ac8))
+* refactor(package)!: removes create command ([38f0580](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/38f05806d89bb89dd35686d32c30c8c319434e5b))
+* 🔨 refactor!: removes build from the CLI (#241) ([4a7901d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4a7901d3cbf57670c99b5fd323e3940d5454ae3a)), closes [#241](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/241)
+
+
+### Features
+
+* **auth:** allow environment change without trying to fetch token ([5f4a49f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5f4a49fb5cc6759172db58047a3105b1a7f807cc))
+* **deployment:** supports deleting multiple deployments ([f7cccc3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f7cccc31cda7a4b8738993c57c43aa1762bf7426))
+* **package:** add support for nested docker images. ([55b05c6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/55b05c62e769486a80e253ba413351146e8aa819))
+* **parameters:** apply with device name pattern ([4a5e54c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4a5e54c79057aef799dc82cca351380e6e0594ea))
+* **parameters:** apply with device name pattern ([6f3b34a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6f3b34a57d2912a134e7850ffe4f4972e08406c2))
+* **utils:** implements a SimpleCache class ([0d466b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0d466b63c4b3aaf0f9ffce89d959bbe947636afc))
+* **utils:** implements concurrent executor helper functions ([7a67be3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7a67be3f40a8fdefefd44f749feec72d4137a96a))
+
+
+### Reverts
+
+* skips populating default if property not in instance" ([d482223](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d4822230f6eaea9c7e884cf0988dd8f2e249ccfe))
+
+
+### BREAKING CHANGES
+
+* The `rio deployment ssh-init` and `rio deployment ssh`
+commands are no longer available.
+* rio package create is no longer available. Please use
+`rio apply package.yaml` for creating new packages.
+* Builds are no longer supported in Rapyuta.io. Please
+use Docker images for creating packages and deployments.
+
 # [6.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v5.0.0...v6.0.0) (2023-12-28)
 
 
