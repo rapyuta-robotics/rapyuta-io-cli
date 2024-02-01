@@ -450,6 +450,9 @@ class Applier(object):
     @staticmethod
     def _get_object_key(obj: dict) -> str:
         kind = obj.get('kind').lower()
-        name_or_guid = obj['metadata']['name']
+        name_or_guid = obj.get('metadata', {}).get('name')
+
+        if not name_or_guid:
+            raise ValueError('[kind:{}] name is required.'.format(kind))
 
         return '{}:{}'.format(kind, name_or_guid)
