@@ -112,8 +112,10 @@ def fetch_devices(
     devices = client.get_all_devices(online_device=online_devices)
     result = []
     for device in devices:
-        if (include_all or device_name_or_regex == device.uuid or
-                re.search(device_name_or_regex, device.name)):
+        if (include_all or device.name == device_name_or_regex or
+                device_name_or_regex == device.uuid or
+                (device_name_or_regex not in device.name and
+                 re.search(device_name_or_regex, device.name))):
             result.append(device)
 
     return result
