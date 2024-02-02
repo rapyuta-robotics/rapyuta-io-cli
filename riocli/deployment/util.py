@@ -171,9 +171,10 @@ def fetch_deployments(
                 DeploymentPhaseConstants.PROVISIONING])
     result = []
     for deployment in deployments:
-        if (include_all or
+        if (include_all or deployment_name_or_regex == deployment.name or
                 deployment_name_or_regex == deployment.deploymentId or
-                re.search(deployment_name_or_regex, deployment.name)):
+                (deployment_name_or_regex not in deployment.name and
+                 re.search(deployment_name_or_regex, deployment.name))):
             result.append(deployment)
 
     return result

@@ -123,10 +123,6 @@ definitions:
         enum:
           - device
           - cloud
-      depends:
-        type: array
-        items:
-          "$ref": "#/definitions/deploymentDepends"
     dependencies:
       runtime:
         oneOf:
@@ -135,6 +131,10 @@ definitions:
                 type: string
                 enum:
                   - device
+              depends:
+                type: array
+                items:
+                  "$ref": "#/definitions/deploymentDepends"
               device:
                 type: object
                 properties:
@@ -151,22 +151,18 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/envArgsSpec"
-
               volumes:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceVolumeAttachSpec"
-
               rosNetworks:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceNetworkAttachSpec"
-
               rosBagJobs:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
-
               features:
                 type: object
                 properties:
@@ -191,7 +187,10 @@ definitions:
                 type: string
                 enum:
                   - cloud
-
+              depends:
+                type: array
+                items:
+                  "$ref": "#/definitions/deploymentDepends"
               features:
                 type: object
                 properties:
@@ -219,27 +218,22 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/envArgsSpec"
-
               volumes:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudVolumeAttachSpec"
-
               staticRoutes:
                 type: array
                 items:
                   "$ref": "#/definitions/endpointSpec"
-
               rosNetworks:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudNetworkAttachSpec"
-
               managedServices:
                 type: array
                 items:
                   "$ref": "#/definitions/managedServiceSpec"
-
               rosBagJobs:
                 type: array
                 items:
