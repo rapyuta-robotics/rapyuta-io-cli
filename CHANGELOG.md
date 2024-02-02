@@ -1,3 +1,14 @@
+## [7.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.1...v7.0.2) (2024-02-02)
+
+
+### Bug Fixes
+
+* **apply:** raises error when a metadata has no name ([#266](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/266)) ([be26ff8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/be26ff819f639e0c4103c743a99a3871de027e33))
+* **deployment:** corrects the condition to fetch deployments ([ee1265d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ee1265db5d126929e9e86b2898040ea33efdf87b))
+* **device:** corrects the condition to fetch devices ([3785f33](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3785f33fb53e9a37c139c57cdd8bb1b807ec1e28))
+* **jsonschema:** corrects the deployment component spec ([#264](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/264)) ([3f848bf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3f848bfc67b9e649464d5f74fef007c08c87c1b9))
+* **package:** corrects the condition to fetch packages ([f056d3a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f056d3a6ad2d0459a318e2c32ca18bd701ce9ca6))
+
 ## [7.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.0...v7.0.1) (2024-01-31)
 
 
