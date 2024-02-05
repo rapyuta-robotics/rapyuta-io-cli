@@ -90,10 +90,10 @@ definitions:
         type: string
       mountPath:
         type: string
-        pattern: '^([\\/][a-z0-9\s\-_@\-^!#$%&.]*)+(\.[a-z][a-z0-9]+)?$'
+        pattern: '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$'
       subPath:
         type: string
-        pattern: '^([\\/][a-z0-9\s\-_@\-^!#$%&.]*)+(\.[a-z][a-z0-9]+)?$'
+        pattern: '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$'
     additionalProperties: false
 
 
