@@ -1,3 +1,10 @@
+## [7.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.2...v7.0.3) (2024-02-06)
+
+
+### Bug Fixes
+
+* **jsonschema:** corrects the regex for device volume paths ([#268](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/268)) ([fd2a881](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fd2a881a965df09d0102c6851094e0e8e946c2ea))
+
 ## [7.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.1...v7.0.2) (2024-02-02)
 
 
