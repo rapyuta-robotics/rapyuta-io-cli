@@ -83,8 +83,7 @@ def delete_device(
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to delete above device(s)?',
-                          default=True, abort=True)
+            click.confirm('Do you want to delete above device(s)?', abort=True)
         spinner.write('')
 
     try:
