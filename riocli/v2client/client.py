@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -342,7 +342,7 @@ class Client(metaclass=Singleton):
         while True:
             params.update({
                 "continue": offset,
-                "limit": 10,
+                "limit": 50,
             })
             response = RestClient(url).method(HttpMethod.GET).query_param(
                 params).headers(headers).execute()
@@ -463,7 +463,7 @@ class Client(metaclass=Singleton):
         while True:
             params.update({
                 "continue": offset,
-                "limit": 10,
+                "limit": 50,
             })
             response = RestClient(url).method(HttpMethod.GET).query_param(
                 params).headers(headers).execute()
