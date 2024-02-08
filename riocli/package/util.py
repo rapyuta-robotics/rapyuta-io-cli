@@ -94,7 +94,7 @@ def fetch_packages(
         if (include_all or package_name_or_regex == pkg.packageName or
                 pkg.packageId == package_name_or_regex or
                 (package_name_or_regex not in pkg.packageName and
-                 re.search(package_name_or_regex, pkg.packageName))):
+                 re.search(r'^{}$'.format(package_name_or_regex), pkg.packageName))):
             result.append(pkg)
 
     return result
