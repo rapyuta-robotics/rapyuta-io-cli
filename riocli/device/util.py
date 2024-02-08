@@ -115,7 +115,7 @@ def fetch_devices(
         if (include_all or device.name == device_name_or_regex or
                 device_name_or_regex == device.uuid or
                 (device_name_or_regex not in device.name and
-                 re.search(device_name_or_regex, device.name))):
+                 re.search(r'^{}$'.format(device_name_or_regex), device.name))):
             result.append(device)
 
     return result
