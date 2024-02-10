@@ -3,5 +3,6 @@ kind: "StaticRoute"
 metadata:
   name: "staticroute"
   project: "project-guid"
+  # region: us
   labels:
     app: test

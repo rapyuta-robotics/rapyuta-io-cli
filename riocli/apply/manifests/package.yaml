@@ -169,7 +169,7 @@ spec:
           depends:
             kind: secret
             nameOrGUID: "secret-docker"
-  environmentArgs:
+  environmentVars:
     - name: "key1" # Required
       default: "key1-value"
       description: "A environment variable"
