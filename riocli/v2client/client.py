@@ -19,6 +19,7 @@ import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
+
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
     # 500 Internal Server Error
@@ -67,17 +68,16 @@ class Client(object):
         """
         List all projects in an organization
         """
-        organization_guid = organization_guid or self._config.data.get(
-            'organization_id')
-        if not organization_guid:
-            raise Exception("projects: organization cannot be empty")
 
         url = "{}/v2/projects/".format(self._host)
         headers = {"Authorization": self._get_auth_token()}
 
-        params = {
-            "organizations": organization_guid,
-        }
+        params = {}
+
+        if organization_guid:
+            params.update({
+                "organizations": organization_guid,
+            })
 
         params.update(query or {})
 

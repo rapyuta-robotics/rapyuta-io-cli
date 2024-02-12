@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from rapyuta_io import Client
 
 from riocli.config import new_client, new_v2_client
 from riocli.constants import Colors
+from riocli.exceptions import LoggedOut
 from riocli.utils.selector import show_selection
 from riocli.v2client import Client as v2Client
 
@@ -26,13 +27,22 @@ from riocli.v2client import Client as v2Client
 def name_to_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any):
-        client = new_v2_client(with_project=False)
+        ctx = click.get_current_context()
         name = kwargs.pop('project_name')
         guid = None
+
+        if name is None:
+            guid = ctx.obj.data.get('project_id')
+            name = ctx.obj.data.get('project_name')
+
+        if not name:
+            raise LoggedOut
 
         if name.startswith('project-'):
             guid = name
             name = None
+
+        client = new_v2_client(with_project=False)
 
         if name is None:
             name = get_project_name(client, guid)
@@ -53,10 +63,10 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
 
 def find_project_guid(client: v2Client, name: str,
                       organization: str = None) -> str:
-    projects = client.list_projects(organization_guid=organization)
-    for project in projects:
-        if project.metadata.name == name:
-            return project.metadata.guid
+    projects = client.list_projects(query={"name": name}, organization_guid=organization)
+
+    if projects and projects[0].metadata.name == name:
+        return projects[0].metadata.guid
 
     raise ProjectNotFound()
 
