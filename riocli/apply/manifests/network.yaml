@@ -6,7 +6,6 @@ metadata:
   project: "project-guid"
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   type: "routed" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
@@ -37,7 +36,6 @@ metadata:
   project: "project-guid"
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   type: "native" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
