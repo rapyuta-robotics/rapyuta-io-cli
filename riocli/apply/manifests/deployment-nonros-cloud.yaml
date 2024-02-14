@@ -9,6 +9,7 @@ metadata:
   project: "project-guid"
   labels:
     app: test
+    #rapyuta.io/region: us
 spec:
   runtime: cloud # Options: [device, cloud]
   depends:

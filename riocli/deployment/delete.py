@@ -79,8 +79,7 @@ def delete_deployment(
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to delete the above deployment(s)?',
-                          default=True, abort=True)
+            click.confirm('Do you want to delete the above deployment(s)?', abort=True)
         spinner.write('')
 
     try:
