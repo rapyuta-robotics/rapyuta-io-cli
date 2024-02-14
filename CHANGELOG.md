@@ -1,3 +1,22 @@
+# [7.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.3...v7.1.0) (2024-02-14)
+
+
+### Bug Fixes
+
+* corrects regex for fetching resources ([1d3c75e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1d3c75ed6281ec2e6dcfdc3544f37e83061dd9c7))
+* sets default confirmation action to 'No' ([b3348af](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b3348afd8ced973dbbfbc2c346924d9f2a90db07))
+* **v2client:** updates limits for list secrets and routes ([#270](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/270)) ([862fdfc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/862fdfc034d7285d2abfd05197738f83ca0589c2))
+
+
+### Features
+
+* **explain:** updates examples for region support and env var inconsistency ([#273](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/273)) ([62a2828](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/62a2828950edb7240ac60f839aac694955e47158))
+
+
+### Reverts
+
+* **explain:** adds network examples for us region ([#276](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/276)) ([3593def](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3593defbe9ba62081a8a142f51a37520e8f47ee6))
+
 ## [7.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.2...v7.0.3) (2024-02-06)
 
 
