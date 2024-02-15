@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ import errno
 import json
 import os
 import uuid
+from functools import lru_cache
 
 from click import get_app_dir
 from rapyuta_io import Client
@@ -64,6 +65,11 @@ class Configuration(object):
         with open(self.filepath, 'w') as config_file:
             json.dump(self.data, config_file)
 
+    # We are using lru_cache to cache the calls to new_v2_client
+    # with project and without project. This is to avoid creating a
+    # new client object every time we call new_v2_client.
+    # https://docs.python.org/3.8/library/functools.html#functools.lru_cache
+    @lru_cache(maxsize=2)
     def new_client(self, with_project: bool = True) -> Client:
         if 'auth_token' not in self.data:
             raise LoggedOut
@@ -81,6 +87,7 @@ class Configuration(object):
 
         return Client(auth_token=token, project=project)
 
+    @lru_cache(maxsize=2)
     def new_v2_client(self, with_project: bool = True) -> v2Client:
         if 'auth_token' not in self.data:
             raise LoggedOut
