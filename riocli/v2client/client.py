@@ -19,9 +19,6 @@ import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from riocli.utils import Singleton
-
-
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
     # 500 Internal Server Error
@@ -44,7 +41,7 @@ def handle_server_errors(response: requests.Response):
         raise Exception('unknown server error')
 
 
-class Client(metaclass=Singleton):
+class Client(object):
     """
     v2 API Client
     """
