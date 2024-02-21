@@ -46,7 +46,14 @@ class StaticRoute(Model):
         return unmunchify(r)
 
     def update_object(self, client: Client, obj: typing.Any) -> None:
-        pass
+        client = new_v2_client()
+
+        self.pop("rc", None)
+
+        static_route = unmunchify(self)
+        r = client.update_static_route(obj.metadata.name, static_route)
+
+        return unmunchify(r)
 
     def delete_object(self, client: Client, obj: typing.Any):
         client = new_v2_client()
