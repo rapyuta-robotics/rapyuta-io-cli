@@ -391,6 +391,24 @@ class Client(object):
 
         return munchify(data)
 
+    def update_static_route(self, name: str, sr: dict) -> Munch:
+        """
+        Update the new static route
+        """
+        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload=sr)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("static routes: {}".format(err_msg))
+
+        return munchify(data)
+
     def delete_static_route(self, name: str) -> Munch:
         """
         Delete a static route by its name
