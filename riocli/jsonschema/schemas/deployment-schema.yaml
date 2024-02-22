@@ -94,6 +94,13 @@ definitions:
       subPath:
         type: string
         pattern: '^\/$|(^(?=\/)|^\.|^\.\.)(\/(?=[^/\0])[^/\0]+)*\/?$'
+      uid:
+        type: integer
+      gid:
+        type: integer
+      perm:
+        type: integer
+
     additionalProperties: false
 
 
