@@ -770,10 +770,3 @@ definitions:
         default: 3
         minimum: 1
         description: Minimum consecutive failures for the probe to be considered failed after having succeeded.
-    oneOf:
-      - required:
-          - httpGet
-      - required:
-          - tcpSocket
-      - required:
-          - exec
