@@ -4,7 +4,6 @@ metadata:
   name: "package-ros-cloud" # Required
   version: "v1.0.0" # Required
   description: "A RIO cloud ROS package"
-  project: "project-guid"
   labels:
     app: test
 spec:
