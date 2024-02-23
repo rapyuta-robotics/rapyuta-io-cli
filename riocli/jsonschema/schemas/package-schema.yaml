@@ -177,8 +177,11 @@ definitions:
         default: docker
         enum:
           - docker
-      command:
-        type: string
+        command:
+          type: array
+          items:
+            type: string
+          description: Command to execute for the Exec probe.
       runAsBash:
         type: boolean
         default: True

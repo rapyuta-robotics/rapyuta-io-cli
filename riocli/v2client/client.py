@@ -514,3 +514,96 @@ class Client(metaclass=Singleton):
             raise Exception("secret: {}".format(err_msg))
 
         return munchify(data)
+
+    def list_packages(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all packages in a project
+        """
+        url = "{}/v2/packages/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("packages: {}".format(err_msg))
+            packages = data.get('items', [])
+            if not packages:
+                break
+            offset = data['metadata']['continue']
+            result.extend(packages)
+
+        return munchify(result)
+
+    def create_package(self, payload: dict) -> Munch:
+        """
+        Create a new package
+        """
+        url = "{}/v2/packages/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_package(
+            self,
+            name: str,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all packages in a project
+        """
+        url = "{}/v2/packages/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.GET).query_param(
+            params).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_package(self, package_name: str,
+                       query: dict = None) -> Munch:
+        """
+        Delete a secret
+        """
+        url = "{}/v2/packages/{}/".format(self._host, package_name)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.DELETE).query_param(
+            params).headers(headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)

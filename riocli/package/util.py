@@ -81,17 +81,16 @@ def fetch_packages(
         client: Client,
         package_name_or_regex: str,
         include_all: bool,
-        version: str = None
 ) -> List[Package]:
-    packages = client.get_all_packages(version=version)
+    packages = client.list_packages()
 
     result = []
     for pkg in packages:
         # We cannot delete public packages. Skip them instead.
-        if 'io-public' in pkg.packageId:
+        if 'io-public' in pkg.metadata.guid:
             continue
 
-        if include_all or re.search(package_name_or_regex, pkg.packageName):
+        if include_all or re.search(package_name_or_regex, pkg.metadata.name):
             result.append(pkg)
 
     return result
@@ -99,6 +98,5 @@ def fetch_packages(
 
 def print_packages_for_confirmation(packages: List[Package]) -> None:
     headers = ['Name', 'Version']
-    data = [[p.packageName, p.packageVersion] for p in packages]
-
+    data = [[p.metadata.name, p.metadata.version] for p in packages]
     tabulate_data(data, headers)
