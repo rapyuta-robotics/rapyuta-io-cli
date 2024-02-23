@@ -32,7 +32,6 @@ from riocli.deployment.errors import ERRORS
 from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.package.util import find_package_guid
 from riocli.parameter.utils import list_trees
 from riocli.static_route.util import find_static_route_guid
 from riocli.utils.cache import get_cache
@@ -272,15 +271,6 @@ class Deployment(Model):
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
         pass
-
-    def _get_package(self, client: Client) -> Package:
-        name = self.metadata.depends.nameOrGUID
-        if name.startswith('pkg-') or name.startswith('io-'):
-            guid = name
-        else:
-            guid = find_package_guid(client, name, self.metadata.depends.version)
-
-        return client.get_package(package_id=guid)
 
     def _get_provision_config(self, client: Client, pkg: Package):
         comp_name = pkg['plans']['components'][0]['name']

@@ -118,7 +118,7 @@ class ResolverCache(object, metaclass=_Singleton):
         mapping = {
             'secret': lambda x: munchify(x).metadata.guid,
             "project": lambda x: munchify(x).metadata.guid,
-            "package": lambda x: munchify(x)['id'],
+            "package": lambda x: munchify(x)['metadata']['guid'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
             "deployment": lambda x: munchify(x)['deploymentId'],
             "network": lambda x: munchify(x)['metadata']['guid'],
@@ -134,7 +134,7 @@ class ResolverCache(object, metaclass=_Singleton):
         mapping = {
             'secret': self.v2client.list_secrets,
             "project": self.v2client.list_projects,
-            "package": self.client.get_all_packages,
+            "package": self.v2client.list_packages,
             "staticroute": self.v2client.list_static_routes,
             "deployment": functools.partial(self.client.get_all_deployments,
                                             phases=[DeploymentPhaseConstants.SUCCEEDED,
@@ -153,7 +153,7 @@ class ResolverCache(object, metaclass=_Singleton):
             'secret': lambda name, secrets: filter(lambda i: i.metadata.name == name, secrets),
             "project": lambda name, projects: filter(lambda i: i.metadata.name == name, projects),
             "package": lambda name, obj_list, version: filter(
-                lambda x: name == x.name and version == x['packageVersion'], obj_list),
+                lambda x: name == x.metadata.name and version == x.metadata.version, obj_list),
             "staticroute": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
             "deployment": self._generate_find_guid_functor(),

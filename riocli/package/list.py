@@ -16,9 +16,8 @@ import typing
 import click
 from rapyuta_io.clients.package import Package
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
-
 
 @click.command('list')
 @click.option('--filter', 'filter_word', type=str, default=None,
@@ -28,16 +27,16 @@ def list_packages(filter_word: str) -> None:
     List the packages in the selected project
     """
     try:
-        client = new_client()
-        packages = client.get_all_packages(name=filter_word)
-        _display_package_list(packages, show_header=True)
+        client = new_v2_client(with_project=True)
+        packages = client.list_packages()
+        _display_package_list(packages, filter_word,show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
 
-
 def _display_package_list(
         packages: typing.List[Package],
+        filter_word: str,
         show_header: bool = True,
         truncate_limit: int = 48,
 ) -> None:
@@ -46,26 +45,31 @@ def _display_package_list(
         headers = ('Name', 'Version', 'Package ID', 'Description')
 
     # Show IO Packages first
-    iter_pkg = list(map(lambda x: x.packageName, packages))
+    iter_pkg = list(map(lambda x: x.metadata.name, packages))
     iter_pkg.sort()
 
     package_dict = {}
     for pkgName in iter_pkg:
-        filtered_pkg = list(filter(lambda x: x.packageName == pkgName, packages))
-        filtered_pkg.sort(key=lambda x: x.packageVersion)
+        filtered_pkg = list(filter(lambda x: x.metadata.name == pkgName, packages))
+        filtered_pkg.sort(key=lambda x: x.metadata.version)
         package_dict[pkgName] = filtered_pkg
 
     data = []
     for pkgName, pkgVersionList in package_dict.items():
         for package in pkgVersionList:
-            description = package.description
-            name = package.packageName
+            description = package.metadata.get("description", "")
+            name = package.metadata.name
+
+            # check if filter word was passed.
+            # if filter word was passed and it is not present in package name then continue
+            if filter_word and not package.metadata.name.find(filter_word):
+                continue
+
             if truncate_limit:
                 if len(description) > truncate_limit:
                     description = description[:truncate_limit] + '..'
                 if len(name) > truncate_limit:
                     name = name[:truncate_limit] + '..'
 
-            data.append([name, package.packageVersion, package.packageId, description])
-
+            data.append([name, package.metadata.version, package.metadata.guid, description])
     tabulate_data(data, headers=headers)

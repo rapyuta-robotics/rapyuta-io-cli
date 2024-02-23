@@ -915,8 +915,6 @@ class Client(object):
 
         return munchify(data)
     
-        return munchify(data) 
-
 
     def list_deployments(
         self,
@@ -950,7 +948,7 @@ class Client(object):
                 result.append(deployment['metadata'])
 
         return munchify(result)
-    
+
     def create_deployment(self, deployment: dict) -> Munch:
         """
         Create a new deployment
@@ -968,7 +966,7 @@ class Client(object):
             raise Exception("deployment: {}".format(err_msg))
 
         return munchify(data)
-        
+
     def get_deployment(
         self,
         name: str,
@@ -1019,6 +1017,7 @@ class Client(object):
         params.update(query or {})
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
+ 
         handle_server_errors(response)
         data = json.loads(response.text)
         if not response.ok:

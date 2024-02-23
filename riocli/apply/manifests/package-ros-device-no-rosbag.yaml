@@ -5,7 +5,6 @@ metadata:
   name: "package-ros-device-no-rosbag" # Required
   version: "v1.0.0" # Required
   description: "A RIO device ROS package without rosbag"
-  project: "project-guid"
   labels:
     app: test
 spec:
