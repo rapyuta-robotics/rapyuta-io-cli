@@ -19,8 +19,6 @@ import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from riocli.utils import Singleton
-
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
@@ -44,7 +42,7 @@ def handle_server_errors(response: requests.Response):
         raise Exception('unknown server error')
 
 
-class Client(metaclass=Singleton):
+class Client(object):
     """
     v2 API Client
     """
@@ -70,17 +68,16 @@ class Client(metaclass=Singleton):
         """
         List all projects in an organization
         """
-        organization_guid = organization_guid or self._config.data.get(
-            'organization_id')
-        if not organization_guid:
-            raise Exception("projects: organization cannot be empty")
 
         url = "{}/v2/projects/".format(self._host)
         headers = {"Authorization": self._get_auth_token()}
 
-        params = {
-            "organizations": organization_guid,
-        }
+        params = {}
+
+        if organization_guid:
+            params.update({
+                "organizations": organization_guid,
+            })
 
         params.update(query or {})
 

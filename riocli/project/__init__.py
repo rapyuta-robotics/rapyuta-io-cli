@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ from riocli.project.create import create_project
 from riocli.project.delete import delete_project
 from riocli.project.features import features
 from riocli.project.inspect import inspect_project
-from riocli.project.list import list_project
+from riocli.project.list import list_projects
 from riocli.project.select import select_project
+from riocli.project.whoami import whoami
 
 
 @click.group(
@@ -35,9 +36,10 @@ def project() -> None:
     pass
 
 
-project.add_command(list_project)
+project.add_command(list_projects)
 project.add_command(create_project)
 project.add_command(delete_project)
 project.add_command(select_project)
 project.add_command(inspect_project)
 project.add_command(features)
+project.add_command(whoami)
