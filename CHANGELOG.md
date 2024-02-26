@@ -1,3 +1,16 @@
+# [7.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.1.0...v7.2.0) (2024-02-26)
+
+
+### Bug Fixes
+
+* **projects:** fixes the list command ([#278](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/278)) ([15a0659](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/15a06591b3c1af6f5d679b83587834e323ff5870))
+* **v2client:** makes v2Client non-singleton ([1a65f45](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1a65f45cdcc11a4bb7087f8d53bcd500c8f9d654))
+
+
+### Features
+
+* **project:** implements whoami command ([982bff2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/982bff2641803b8d0749f2a5ec0194c4ecc998c9))
+
 # [7.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.0.3...v7.1.0) (2024-02-14)
 
 
