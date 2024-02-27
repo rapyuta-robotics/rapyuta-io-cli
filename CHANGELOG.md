@@ -1,3 +1,10 @@
+## [7.2.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.2.0...v7.2.1) (2024-02-27)
+
+
+### Bug Fixes
+
+* **v2client:** removes list limit for static-routes ([2eef19a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2eef19a583c3d8f1837273abb0117fe238e0e89c))
+
 # [7.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.1.0...v7.2.0) (2024-02-26)
 
 
