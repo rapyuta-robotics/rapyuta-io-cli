@@ -188,9 +188,9 @@ class Deployment(Model):
             exec_mounts = []
             if 'volumes' in self.spec:
                 for vol in self.spec.volumes:
-                    uid = vol.uid if hasattr(vol, 'uid') else None
-                    gid = vol.gid if hasattr(vol, 'gid') else None
-                    perm = vol.perm if hasattr(vol, 'perm') else None
+                    uid = getattr(vol, 'uid', None)
+                    gid = getattr(vol, 'gid', None)
+                    perm = getattr(vol, 'perm', None)
                     exec_mounts.append(
                         ExecutableMount(vol.execName, vol.mountPath,
                                         vol.subPath, uid, gid, perm))
