@@ -188,9 +188,12 @@ class Deployment(Model):
             exec_mounts = []
             if 'volumes' in self.spec:
                 for vol in self.spec.volumes:
+                    uid = getattr(vol, 'uid', None)
+                    gid = getattr(vol, 'gid', None)
+                    perm = getattr(vol, 'perm', None)
                     exec_mounts.append(
                         ExecutableMount(vol.execName, vol.mountPath,
-                                        vol.subPath))
+                                        vol.subPath, uid, gid, perm))
 
             if len(exec_mounts) > 0:
                 provision_config = add_mount_volume_provision_config(

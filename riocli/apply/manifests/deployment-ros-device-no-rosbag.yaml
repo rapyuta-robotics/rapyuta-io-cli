@@ -30,6 +30,9 @@ spec:
     - execName: exec-docker
       mountPath: "/tmp" # Path on container
       subPath: "/tmp" # Path on device
+      uid: 1000 # Optional userid for subpath
+      gid: 1000 # Optional groupid for subpath
+      perm: 755 # Optional permissions for subpath
   rosNetworks:
     - depends:
         kind: network
