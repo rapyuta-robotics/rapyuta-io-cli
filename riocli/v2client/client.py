@@ -339,7 +339,6 @@ class Client(object):
         while True:
             params.update({
                 "continue": offset,
-                "limit": 50,
             })
             response = RestClient(url).method(HttpMethod.GET).query_param(
                 params).headers(headers).execute()
