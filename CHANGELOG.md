@@ -1,3 +1,17 @@
+# [7.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.2.1...v7.3.0) (2024-03-13)
+
+
+### Bug Fixes
+
+* **jsonschema:** updates ip range regex in staticroute ([264c77b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/264c77be213bda4792c0c6582c3449824fc8e877))
+
+
+### Features
+
+* **deployment:** adds support for host subpath uid/gid/perm ([#279](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/279)) ([61bc8c5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/61bc8c56c2fff3b76dda687cf9f6e63769a89fdb))
+* **static-route:** add support for IP Whitelisting ([85010ed](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/85010ede2aa3716fb3fc98b8920fc81c1892144e))
+* **static-route:** add support for updating static-route ([c2a5305](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c2a5305f5c4e9154cbd52e5a3d83f67492ad557e))
+
 ## [7.2.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.2.0...v7.2.1) (2024-02-27)
 
 
