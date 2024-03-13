@@ -147,6 +147,12 @@ def add_mount_volume_provision_config(provision_config, component_name, device, 
         exec_mount = {
             'mountPath': mount.mount_path
         }
+        if mount.uid is not None:
+            exec_mount['uid'] = mount.uid
+        if mount.gid is not None:
+            exec_mount['gid'] = mount.gid
+        if mount.perm is not None:
+            exec_mount['perm'] = mount.perm
         if mount.sub_path:
             exec_mount['subPath'] = mount.sub_path
         else:
