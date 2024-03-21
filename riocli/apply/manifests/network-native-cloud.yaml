@@ -2,7 +2,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-native-cloud"
-  project: "project-guid"
   labels:
     app: test
 spec:
