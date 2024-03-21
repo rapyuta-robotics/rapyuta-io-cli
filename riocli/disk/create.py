@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+import time
+
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.persistent_volumes import DiskCapacity
 
-from riocli.constants import Colors, Symbols
-from riocli.disk.util import create_cloud_disk
+from riocli.constants import Colors, Symbols, Regions
+from riocli.disk.util import is_disk_ready
 from riocli.utils.spinner import with_spinner
+from riocli.config import new_v2_client
 
 SUPPORTED_CAPACITIES = [
     DiskCapacity.GiB_4.value,
@@ -30,6 +33,10 @@ SUPPORTED_CAPACITIES = [
     DiskCapacity.GiB_512.value,
 ]
 
+SUPPORTED_REGIONS = [
+    Regions.JP,
+    Regions.US,
+]
 
 @click.command(
     'create',
@@ -40,21 +47,39 @@ SUPPORTED_CAPACITIES = [
 @click.argument('disk-name', type=str)
 @click.option('--capacity', 'capacity', type=click.Choice(SUPPORTED_CAPACITIES),
               default=DiskCapacity.GiB_4.value, help='Disk size in GiB')
+@click.option('--region', 'region', type=click.Choice(SUPPORTED_REGIONS),
+              default=Regions.JP, help='Region to create the disk in')
+
 @with_spinner(text="Creating a new disk...")
 def create_disk(
         disk_name: str,
         capacity: int = 4,
+        region: str = 'jp',
         spinner=None,
 ) -> None:
     """
     Creates a new disk
     """
     try:
-        disk = create_cloud_disk(disk_name, capacity)
-
+        client = new_v2_client()
+        payload = {
+            "metadata": {
+                "name": disk_name,
+                "region": region
+            },
+            "spec": {
+                "capacity": capacity,
+                "runtime": "cloud"
+            }
+        }
+        
+        client.create_disk(payload)
+        while not is_disk_ready(client, disk_name):
+            time.sleep(3)
+        
         spinner.text = click.style(
-            'Disk {} ({}) created successfully.'.
-            format(disk['name'], disk['guid']), fg=Colors.GREEN)
+            'Disk {} created successfully.'.
+            format(disk_name), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style('Failed to create disk: {}'.format(e), fg=Colors.RED)
