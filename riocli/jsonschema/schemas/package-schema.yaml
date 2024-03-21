@@ -67,6 +67,7 @@ definitions:
                 "$ref": "#/definitions/deviceComponentInfoSpec"
               executables:
                 type: array
+                minItems: 1
                 items:
                   "$ref": "#/definitions/deviceExecutableSpec"
               environmentArgs:
@@ -88,6 +89,7 @@ definitions:
 
               executables:
                 type: array
+                minItems: 1
                 items:
                   "$ref": "#/definitions/cloudExecutableSpec"
 
@@ -121,11 +123,11 @@ definitions:
         enum:
           - docker
           - preInstalled
-        command:
-          type: array
-          items:
-            type: string
-          description: Command to execute for the Exec probe.
+      command:
+        type: array
+        items:
+          type: string
+        description: Command to execute for the Exec probe.
       runAsBash:
         type: boolean
         default: True
@@ -177,17 +179,14 @@ definitions:
         default: docker
         enum:
           - docker
-        command:
-          type: array
-          items:
-            type: string
-          description: Command to execute for the Exec probe.
+      command:
+        type: array
+        items:
+          type: string
+        description: Command to execute for the Exec probe.
       runAsBash:
         type: boolean
         default: True
-      simulation:
-        type: boolean
-        default: False
       limits:
         type: object
         properties:
@@ -416,6 +415,7 @@ definitions:
                   - kinetic
                   - melodic
                   - noetic
+                  - foxy
                 default: melodic
               inboundScopedTargeted:
                 type: boolean
@@ -478,6 +478,15 @@ definitions:
               type:
                 enum:
                   - action
+    allOf:
+      - anyOf:
+          - not:
+              properties:
+                scoped:
+                  const: true
+                targeted:
+                  const: true
+
 
   cloudROSBagJobSpec:
     type: object
@@ -682,12 +691,7 @@ definitions:
         type: string
   secretDepends:
     properties:
-      kind:
-        const: secret
-        default: secret
       nameOrGUID:
-        type: string
-      guid:
         type: string
   diskDepends:
     properties:

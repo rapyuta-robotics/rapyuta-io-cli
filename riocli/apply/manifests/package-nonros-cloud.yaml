@@ -4,7 +4,6 @@ metadata:
   name: "package-nonros-cloud" # Required
   version: "v1.0.0" # Required
   description: "A RIO non ROS cloud package"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -14,7 +13,8 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
-      command: "sleep infinity"
+      command:
+      - "sleep infinity"
       runAsBash: True
       simulation: False
       limits:
