@@ -5,7 +5,6 @@ metadata:
   name: "package-ros-device-no-rosbag" # Required
   version: "v1.0.0" # Required
   description: "A RIO device ROS package without rosbag"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -29,7 +28,7 @@ spec:
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+        timeoutSeconds: 11 # Number of seconds after which the probe times out.
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
