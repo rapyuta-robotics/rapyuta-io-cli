@@ -28,6 +28,23 @@ definitions:
         "$ref": "#/definitions/rosDistro"
       runtime:
         "$ref": "#/definitions/runtime"
+      discoveryServer:
+        allOf:
+          - "$ref": "#/definitions/discoveryServerData"
+          - if:
+              properties:
+                rosDistro:
+                  const: foxy
+            then:
+              properties:
+                serverID:
+                  type: integer
+                  default: 0
+                serverPort:
+                  type: integer
+                  default: 11811
+            else:
+              not: { }
     required:
       - type
       - rosDistro
@@ -65,6 +82,7 @@ definitions:
       - melodic
       - kinetic
       - noetic
+      - foxy
   restartPolicy:
     enum:
       - always
@@ -120,3 +138,10 @@ definitions:
     required:
     - cpu
     - memory
+  discoveryServerData:
+    type: object
+    properties:
+      serverID:
+        type: integer
+      serverPort:
+        type: integer
