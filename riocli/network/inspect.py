@@ -15,35 +15,27 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors
-from riocli.network.native_network import inspect_native_network
-from riocli.network.routed_network import inspect_routed_network
-from riocli.network.util import name_to_guid
 from riocli.utils import inspect_with_format
+from riocli.config import new_v2_client
+from munch import unmunchify
 
-
-@click.command(
-    'inspect',
-    cls=HelpColorsCommand,
-    help_headers_color=Colors.YELLOW,
-    help_options_color=Colors.GREEN,
-)
-@click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              default='yaml')
-@click.argument('network-name', type=str)
-@name_to_guid
-def inspect_network(format_type: str, network_name: str, network_guid: str,
-                    network_type: str) -> None:
+@click.command('inspect')
+@click.option('--format', '-f', 'format_type', default='yaml',
+              type=click.Choice(['json', 'yaml'], case_sensitive=False))
+@click.argument('network-name')
+def inspect_network(format_type: str, network_name: str) -> None:
     """
     Inspect the network resource
     """
     try:
-        if network_type == 'routed':
-            data = inspect_routed_network(network_guid)
-        else:
-            data = inspect_native_network(network_guid)
+        client = new_v2_client()
+        network_obj = client.get_network(network_name)
 
-        inspect_with_format(data, format_type)
+        if not network_obj:
+            click.secho("network not found", fg='red')
+            raise SystemExit(1)
+
+        inspect_with_format(unmunchify(network_obj), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
