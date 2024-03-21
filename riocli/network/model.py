@@ -13,6 +13,7 @@
 # limitations under the License.
 import typing
 from typing import Union, Any, Dict
+from munch import munchify, unmunchify
 
 from rapyuta_io import Client
 from rapyuta_io.clients.common_models import Limits
@@ -23,8 +24,8 @@ from rapyuta_io.clients.routed_network import RoutedNetwork, \
 
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.network.util import find_network_name, NetworkNotFound
-
+from riocli.v2client.client import NetworkNotFound
+from riocli.config import new_v2_client
 
 class Network(Model):
     def __init__(self, *args, **kwargs):
@@ -32,81 +33,40 @@ class Network(Model):
 
     def find_object(self, client: Client) -> bool:
         try:
-            network, _ = find_network_name(client, self.metadata.name,
-                                           self.spec.type,
-                                           is_resolve_conflict=False)
-            return network
+            network, obj = self.rc.find_depends({"kind": self.kind.lower(),
+                            "nameOrGUID": self.metadata.name}, self.spec.type)
+            if not network:
+                return False
+
+            return obj
         except NetworkNotFound:
             return False
 
-    def create_object(self, client: Client, **kwargs) -> Union[NativeNetwork, RoutedNetwork]:
-        retry_count = int(kwargs.get('retry_count'))
-        retry_interval = int(kwargs.get('retry_interval'))
-        if self.spec.type == 'routed':
-            network = self._create_routed_network(client)
-            network.poll_routed_network_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
-            return network
+    def create_object(self, client: Client, **kwargs) -> typing.Any:
+        client = new_v2_client()
 
-        network = client.create_native_network(self.to_v1(client))
-        network.poll_native_network_till_ready(retry_count=retry_count, sleep_interval=retry_interval)
-        return network
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        network = unmunchify(self)
+        network.pop("rc", None)
+        r = client.create_network(network)
+        return unmunchify(r)
 
     def update_object(self, client: Client,
                       obj: Union[RoutedNetwork, NativeNetwork]) -> Any:
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        obj.delete()
+        client = new_v2_client()
+        client.delete_network(obj.metadata.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: Dict) -> None:
         pass
 
-    def to_v1(self, client: Client) -> NativeNetwork:
-        if self.spec.runtime == 'cloud':
-            limits = self._get_limits()
-            parameters = NativeNetworkParameters(limits=limits)
-        else:
-            device = client.get_device(self.spec.deviceGUID)
-            parameters = NativeNetworkParameters(
-                device=device,
-                network_interface=self.spec.networkInterface)
-
-        return NativeNetwork(
-            self.metadata.name,
-            self.spec.runtime.lower(),
-            self.spec.rosDistro,
-            parameters=parameters
-        )
-
     def _get_limits(self):
         return Limits(self.spec.resourceLimits['cpu'],
                       self.spec.resourceLimits['memory'])
-
-    def _create_routed_network(self, client: Client) -> RoutedNetwork:
-        if self.spec.runtime == 'cloud':
-            network = self._create_cloud_routed_network(client)
-        else:
-            network = self._create_device_routed_network(client)
-
-        return network
-
-    def _create_cloud_routed_network(self, client: Client) -> RoutedNetwork:
-        limits = self._get_limits()
-        parameters = RoutedNetworkParameters(limits)
-        return client.create_cloud_routed_network(self.metadata.name,
-                                                  self.spec.rosDistro, True,
-                                                  parameters=parameters)
-
-    def _create_device_routed_network(self, client: Client) -> RoutedNetwork:
-        device = client.get_device(self.spec.deviceGUID)
-        return client.create_device_routed_network(
-            name=self.metadata.name,
-            ros_distro=self.spec.rosDistro,
-            shared=True,
-            device=device,
-            network_interface=self.spec.networkInterface,
-        )
 
     @staticmethod
     def validate(data):
