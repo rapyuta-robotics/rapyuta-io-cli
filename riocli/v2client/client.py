@@ -528,3 +528,89 @@ class Client(object):
             raise Exception("secret: {}".format(err_msg))
 
         return munchify(data)
+
+    def list_disks(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all disks in a project
+        """
+        url = "{}/v2/disks/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("disks: {}".format(err_msg))
+            disks = data.get('items', [])
+            if not disks:
+                break
+            offset = data['metadata']['continue']
+            result.extend(disks)
+
+        return munchify(result)
+
+    def get_disk(self, name: str) -> Munch:
+        """
+        Get a Disk by its name
+        """
+        url = "{}/v2/disks/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_disk(self, disk: dict) -> Munch:
+        """
+        Create a new disk
+        """
+        url = "{}/v2/disks/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=disk)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_disk(self, name: str) -> Munch:
+        """
+        Delete a disk by its name
+        """
+        url = "{}/v2/disks/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
