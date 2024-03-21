@@ -18,7 +18,7 @@ import click
 from rapyuta_io import Client
 
 from riocli.config import new_client, new_v2_client
-from riocli.constants import Colors
+from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
 from riocli.utils.selector import show_selection
 from riocli.v2client import Client as v2Client
@@ -49,9 +49,10 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
 
         if guid is None:
             try:
-                guid = find_project_guid(client, name)
+                organization = ctx.obj.data.get('organization_id')
+                guid = find_project_guid(client, name, organization)
             except Exception as e:
-                click.secho(str(e), fg=Colors.RED)
+                click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
                 raise SystemExit(1)
 
         kwargs['project_name'] = name
