@@ -22,8 +22,13 @@ from typing import List, Optional, Dict, Any
 import magic
 import requests
 from munch import munchify, Munch
+
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
+class DeploymentNotFound(Exception):
+    def __init__(self, message='deployment not found!'):
+        self.message = message
+        super().__init__(self.message)
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
@@ -46,6 +51,10 @@ def handle_server_errors(response: requests.Response):
     if status_code > 504:
         raise Exception('unknown server error')
 
+class NetworkNotFound(Exception):
+    def __init__(self, message='network not found!'):
+        self.message = message
+        super().__init__(self.message)
 
 class Client(object):
     """
@@ -714,6 +723,7 @@ class Client(object):
         return munchify(result)
 
     
+
     def list_packages(
             self,
             query: dict = None
