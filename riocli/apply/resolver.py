@@ -121,7 +121,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "package": lambda x: munchify(x)['metadata']['guid'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
             "deployment": lambda x: munchify(x)['guid'],
-            "network": lambda x: munchify(x).guid,
+            "network": lambda x: munchify(x)['metadata']['guid'],
             # This is only temporarily like this
             "disk": lambda x: munchify(x)['internalDeploymentGUID'],
             "device": lambda x: munchify(x)['uuid'],
@@ -137,7 +137,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "package": self.v2client.list_packages,
             "staticroute": self.v2client.list_static_routes,
             "deployment": functools.partial(self.v2client.list_deployments),
-            "network": self._list_networks,
+            "network": self.v2client.list_networks,
             "disk": self._list_disks,
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
@@ -156,7 +156,8 @@ class ResolverCache(object, metaclass=_Singleton):
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
             "deployment": lambda name, obj_list: filter(
                 lambda x: name == x.name, obj_list),
-            "network": self._generate_find_guid_functor(),
+            "network": lambda name, obj_list, network_type: filter(
+                lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
             "disk": self._generate_find_guid_functor(),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
