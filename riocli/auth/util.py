@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -143,11 +143,10 @@ def get_token(
 
 
 @with_spinner(text='Validating token...')
-def validate_token(token: str, spinner=None) -> bool:
+def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool:
     """Validates an auth token."""
-    config = Configuration()
-    if 'environment' in config.data:
-        os.environ['RIO_CONFIG'] = config.filepath
+    if 'environment' in ctx.obj.data:
+        os.environ['RIO_CONFIG'] = ctx.obj.filepath
 
     client = Client(auth_token=token)
 
@@ -156,6 +155,9 @@ def validate_token(token: str, spinner=None) -> bool:
         spinner.text = click.style(
             'Token belongs to user {}'.format(user.email_id),
             fg=Colors.CYAN)
+        # Save the token and user email_id in the context
+        ctx.obj.data['auth_token'] = token
+        ctx.obj.data['email_id'] = user.email_id
         spinner.ok(Symbols.INFO)
         return True
     except UnauthorizedError:
