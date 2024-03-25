@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from riocli.auth.util import (
     get_token,
     select_organization,
     select_project,
-    validate_token,
+    validate_and_set_token,
 )
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
@@ -66,9 +66,8 @@ def login(
     ctx = get_root_context(ctx)
 
     if auth_token:
-        if not validate_token(auth_token):
+        if not validate_and_set_token(ctx, auth_token):
             raise SystemExit(1)
-        ctx.obj.data['auth_token'] = auth_token
     else:
         if interactive:
             email = email or click.prompt('Email')

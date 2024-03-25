@@ -19,11 +19,11 @@ jobs:
       - name: Build Documentation
         run: pipenv run python3 -m sphinx -M html docs/source docs/output
 
-      - name: Deploy gh-pages
-        if: github.repository == 'rapyuta-robotics/rapyuta-io-cli' && github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/output/html
-          cname: cli.rapyuta.io
-          force_orphan: true
+#      - name: Deploy gh-pages
+#        if: github.repository == 'rapyuta-robotics/rapyuta-io-cli' && github.event_name == 'push'
+#        uses: peaceiris/actions-gh-pages@v3
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          publish_dir: ./docs/output/html
+#          cname: cli.rapyuta.io
+#          force_orphan: true
