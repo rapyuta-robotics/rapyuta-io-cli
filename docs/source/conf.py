@@ -18,7 +18,7 @@ templates_path = ['_templates']
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 source_suffix = '.rst'
 master_doc = 'index'
-language = None
+language = 'en'
 exclude_patterns = []
 todo_include_todos = False
 
