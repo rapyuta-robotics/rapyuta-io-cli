@@ -1,3 +1,12 @@
+## [7.3.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.0...v7.3.1) (2024-03-25)
+
+
+### Bug Fixes
+
+* **auth:** saves email_id when logged in with auth_token ([#288](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/288)) ([5fb1bbe](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5fb1bbe373b1055dc94603da7d41c346a58c1657))
+* **docs:** updates sphinx version and other dependencies ([#290](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/290)) ([c6a8116](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6a811643cc3b1e8ae3283949fe6523255e221ba))
+* **project:** sends org when fetching guid from name ([#287](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/287)) ([6eb340b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6eb340bebb26cf178e20cdacb7a371efa6745cd4))
+
 # [7.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.2.1...v7.3.0) (2024-03-13)
 
 
