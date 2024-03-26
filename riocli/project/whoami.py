@@ -100,10 +100,16 @@ def find_role(
         raise e
 
     for group in project.spec.get('userGroups', []):
-        if group['name'] in user_groups:
-            if (not role) or (role != ADMIN_ROLE and group['role'] == ADMIN_ROLE):
-                role = group['role']
-                break
+        if group['name'] not in user_groups:
+            continue
+
+        # If the user is part of a group that has admin access then no
+        # need to check further.
+        if role and (role != ADMIN_ROLE and group['role'] == ADMIN_ROLE):
+            role = ADMIN_ROLE
+            break
+
+        role = group['role']
 
     if not role:
         raise Exception('User does not have access to the project')
