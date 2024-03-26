@@ -1,3 +1,10 @@
+## [7.3.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.1...v7.3.2) (2024-03-26)
+
+
+### Bug Fixes
+
+* **project:** corrects usergroup role check in whoami command ([#291](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/291)) ([3d859a1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3d859a164a8dd6f9473c20e6ffe494c7e1eaa87a))
+
 ## [7.3.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.0...v7.3.1) (2024-03-25)
 
 
