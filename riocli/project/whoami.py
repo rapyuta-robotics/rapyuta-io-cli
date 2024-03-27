@@ -105,9 +105,8 @@ def find_role(
 
         # If the user is part of a group that has admin access then no
         # need to check further.
-        if role and (role != ADMIN_ROLE and group['role'] == ADMIN_ROLE):
-            role = ADMIN_ROLE
-            break
+        if role != ADMIN_ROLE and group['role'] == ADMIN_ROLE:
+            return ADMIN_ROLE
 
         role = group['role']
 
