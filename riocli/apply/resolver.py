@@ -123,7 +123,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "deployment": lambda x: munchify(x)['deploymentId'],
             "network": lambda x: munchify(x).guid,
             # This is only temporarily like this
-            "disk": lambda x: munchify(x)['internalDeploymentGUID'],
+            "disk": lambda x: munchify(x)['metadata']['guid'],
             "device": lambda x: munchify(x)['uuid'],
             "managedservice": lambda x: munchify(x)['metadata']['name'],
             "usergroup": lambda x: munchify(x).guid
@@ -140,7 +140,7 @@ class ResolverCache(object, metaclass=_Singleton):
                                             phases=[DeploymentPhaseConstants.SUCCEEDED,
                                                     DeploymentPhaseConstants.PROVISIONING]),
             "network": self._list_networks,
-            "disk": self._list_disks,
+            "disk": self.v2client.list_disks,
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
             "usergroup": self.client.list_usergroups
@@ -181,20 +181,6 @@ class ResolverCache(object, metaclass=_Singleton):
             networks.extend(routed)
 
         return networks
-
-    def _list_disks(self):
-        config = Configuration()
-        catalog_host = config.data.get(
-            'catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
-        url = '{}/disk'.format(catalog_host)
-        headers = config.get_auth_header()
-        response = RestClient(url).method(
-            HttpMethod.GET).headers(headers).execute()
-        data = json.loads(response.text)
-        if not response.ok:
-            err_msg = data.get('error')
-            raise Exception(err_msg)
-        return munchify(data)
 
     def _list_managedservices(self):
         instances = ManagedService.list_instances()
