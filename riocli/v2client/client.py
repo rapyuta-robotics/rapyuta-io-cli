@@ -14,11 +14,10 @@
 import http
 import json
 import typing
-
 import requests
 from munch import munchify, Munch
-from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
+from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
@@ -41,6 +40,10 @@ def handle_server_errors(response: requests.Response):
     if status_code > 504:
         raise Exception('unknown server error')
 
+class NetworkNotFound(Exception):
+    def __init__(self, message='network not found!'):
+        self.message = message
+        super().__init__(self.message)
 
 class Client(object):
     """
@@ -526,5 +529,103 @@ class Client(object):
         if not response.ok:
             err_msg = data.get('error')
             raise Exception("secret: {}".format(err_msg))
+
+        return munchify(data)
+
+
+    def list_networks(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all networks in a project
+        """
+        url = "{}/v2/networks/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("networks: {}".format(err_msg))
+            networks = data.get('items', [])
+            if not networks:
+                break
+            offset = data['metadata']['continue']
+            result.extend(networks)
+
+        return munchify(result)
+
+    def create_network(self, payload: dict) -> Munch:
+        """
+        Create a new network
+        """
+        url = "{}/v2/networks/".format(self._host)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("network: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_network(
+            self,
+            name: str,
+            query: dict = None
+    ) -> Munch:
+        """
+        get a network in a project
+        """
+        url = "{}/v2/networks/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.GET).query_param(
+            params).headers(headers).execute()
+        data = json.loads(response.text)
+
+        if response.status_code == http.HTTPStatus.NOT_FOUND:
+            raise NetworkNotFound()
+
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("network: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_network(self, network_name: str,
+                       query: dict = None) -> Munch:
+        """
+        Delete a secret
+        """
+        url = "{}/v2/networks/{}/".format(self._host, network_name)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.DELETE).query_param(
+            params).headers(headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
 
         return munchify(data)
