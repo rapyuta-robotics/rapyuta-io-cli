@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import click
 from riocli.config.config import Configuration
 
 
@@ -28,11 +29,20 @@ def new_client(config_inst: Configuration = None, with_project: bool = True):
 
 def new_v2_client(config_inst: Configuration = None, with_project: bool = True):
     """
-        new_v2_client is a simple wrapper around the Configuration's new_v2_client method. It can be called
-        directly without initializing the Configuration first. It initializes the Configuration if not
-        given already and then calls its new_client method.
-        """
+    new_v2_client is a simple wrapper around the Configuration's new_v2_client method. It can be called
+    directly without initializing the Configuration first. It initializes the Configuration if not
+    given already and then calls its new_client method.
+    """
     if not config_inst:
         config_inst = Configuration()
 
     return config_inst.new_v2_client(with_project=with_project)
+
+
+def get_config_from_context(ctx: click.Context) -> Configuration:
+    config_obj = ctx.obj
+
+    if not isinstance(config_obj, Configuration):
+        return Configuration()
+
+    return config_obj
