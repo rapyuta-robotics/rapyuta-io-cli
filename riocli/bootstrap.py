@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
+from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
 from riocli.deployment import deployment
 from riocli.device import device
@@ -136,3 +137,4 @@ cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
 cli.add_command(usergroup)
+cli.add_command(config_trees)

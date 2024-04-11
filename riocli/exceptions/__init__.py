@@ -20,6 +20,14 @@ class NoProjectSelected(Exception):
         """
 
 
+class NoOrganizationSelected(Exception):
+
+    def __str__(self):
+        return """No organization is selected. Select an organization first
+        $ rio organization select
+        """
+
+
 class LoggedOut(Exception):
 
     def __str__(self):

@@ -11,9 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+import os
+
 import http
 import json
-import typing
+import magic
+from typing import List, Optional, Dict, Any
+from hashlib import md5
 
 import requests
 from munch import munchify, Munch
@@ -48,15 +53,22 @@ class Client(object):
     """
     PROD_V2API_URL = "https://api.rapyuta.io"
 
-    def __init__(self, config, auth_token: str, project: str = None):
-        super().__init__()
+    def __init__(self, config, auth_token: str, project: Optional[str] = None):
         self._config = config
         self._host = config.data.get('v2api_host', self.PROD_V2API_URL)
         self._project = project
-        self._token = auth_token
+        self._token = 'Bearer {}'.format(auth_token)
 
-    def _get_auth_token(self) -> typing.Text:
-        return "Bearer {}".format(self._token)
+    def _get_auth_header(self: Client, with_org: bool = False, with_project: bool = True) -> dict:
+        headers = dict(Authorization=self._token)
+
+        if with_project and self._project is not None:
+            headers['project'] = self._project
+
+        if with_org:
+            headers['organizationguid'] = self._config.organization_guid
+
+        return headers
 
     # Project APIs
 
@@ -70,7 +82,7 @@ class Client(object):
         """
 
         url = "{}/v2/projects/".format(self._host)
-        headers = {"Authorization": self._get_auth_token()}
+        headers = self._get_auth_header(with_project=False)
 
         params = {}
 
@@ -106,7 +118,7 @@ class Client(object):
         Get a project by its GUID
         """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -124,7 +136,7 @@ class Client(object):
         Create a new project
         """
         url = "{}/v2/projects/".format(self._host)
-        headers = {"Authorization": self._get_auth_token()}
+        headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=spec)
 
@@ -142,7 +154,7 @@ class Client(object):
         Update an existing project
         """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
-        headers = {"Authorization": self._get_auth_token()}
+        headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=spec)
 
@@ -160,7 +172,7 @@ class Client(object):
         Delete a project by its GUID
         """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
-        headers = {"Authorization": self._get_auth_token()}
+        headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
 
@@ -174,12 +186,12 @@ class Client(object):
         return munchify(data)
 
     # ManagedService APIs
-    def list_providers(self) -> typing.List:
+    def list_providers(self) -> List:
         """
         List all managedservice provider
         """
         url = "{}/v2/managedservices/providers/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -192,12 +204,12 @@ class Client(object):
 
         return munchify(data.get('items', []))
 
-    def list_instances(self) -> typing.List:
+    def list_instances(self) -> List:
         """
         List all managedservice instances in a project
         """
         url = "{}/v2/managedservices/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         offset = 0
         result = []
         while True:
@@ -221,7 +233,7 @@ class Client(object):
         Get a managedservice instance by instance_name
         """
         url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -234,9 +246,9 @@ class Client(object):
 
         return munchify(data)
 
-    def create_instance(self, instance: typing.Dict) -> Munch:
+    def create_instance(self, instance: Dict) -> Munch:
         url = "{}/v2/managedservices/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=instance)
@@ -252,7 +264,7 @@ class Client(object):
 
     def delete_instance(self, instance_name) -> Munch:
         url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
 
@@ -271,7 +283,7 @@ class Client(object):
         """
         url = "{}/v2/managedservices/{}/bindings/".format(
             self._host, instance_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.POST).headers(headers).execute(payload=binding)
 
@@ -290,7 +302,7 @@ class Client(object):
         """
         url = "{}/v2/managedservices/{}/bindings/{}/".format(
             self._host, instance_name, binding_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -309,7 +321,7 @@ class Client(object):
         """
         url = "{}/v2/managedservices/{}/bindings/{}/".format(
             self._host, instance_name, binding_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
 
@@ -330,7 +342,7 @@ class Client(object):
         List all static routes in a project
         """
         url = "{}/v2/staticroutes/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -359,7 +371,7 @@ class Client(object):
         Get a static route by its name
         """
         url = "{}/v2/staticroutes/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -377,7 +389,7 @@ class Client(object):
         Create a new static route
         """
         url = "{}/v2/staticroutes/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=metadata)
 
@@ -395,7 +407,7 @@ class Client(object):
         Update the new static route
         """
         url = "{}/v2/staticroutes/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=sr)
 
@@ -413,7 +425,7 @@ class Client(object):
         Delete a static route by its name
         """
         url = "{}/v2/staticroutes/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
 
@@ -431,7 +443,7 @@ class Client(object):
         Create a new secret
         """
         url = "{}/v2/secrets/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=payload)
         handle_server_errors(response)
@@ -448,7 +460,7 @@ class Client(object):
         Delete a secret
         """
         url = "{}/v2/secrets/{}/".format(self._host, secret_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(
             headers).execute()
         handle_server_errors(response)
@@ -468,7 +480,7 @@ class Client(object):
         List all secrets in a project
         """
         url = "{}/v2/secrets/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -502,7 +514,7 @@ class Client(object):
         Get secret by name
         """
         url = "{}/v2/secrets/{}/".format(self._host, secret_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
         data = json.loads(response.text)
@@ -517,7 +529,7 @@ class Client(object):
         Update a secret
         """
         url = "{}/v2/secrets/{}/".format(self._host, secret_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=spec)
         handle_server_errors(response)
@@ -526,5 +538,203 @@ class Client(object):
         if not response.ok:
             err_msg = data.get('error')
             raise Exception("secret: {}".format(err_msg))
+
+        return munchify(data)
+
+    # ConfigTrees APIs
+    def list_config_trees(self) -> Munch:
+        url = "{}/v2/configtrees/".format(self._host)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.GET).headers(
+            headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_config_tree(self, tree_spec: dict) -> Munch:
+        url = "{}/v2/configtrees/".format(self._host)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=tree_spec)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_config_tree(self, tree_name: str) -> Munch:
+        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.DELETE).headers(
+            headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_config_tree(self, tree_name: str, rev_id: Optional[str] = None,
+                               include_data: bool = False, filter_content_types: Optional[List[str]] = None,
+                               filter_prefixes: Optional[List[str]] = None) -> Munch:
+        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        query = {
+            'includeData': include_data,
+            'contentTypes': filter_content_types,
+            'keyPrefixes': filter_prefixes,
+            'revision': rev_id,
+        }
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.GET).headers(
+            headers).query_param(query).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def set_revision_config_tree(self, tree_name: str, spec: dict) -> Munch:
+        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload=spec)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def list_config_tree_revisions(self, tree_name: str) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.GET).headers(
+            headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def initialize_config_tree_revision(self, tree_name: str) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def commit_config_tree_revision(self, tree_name: str, rev_id: str, payload: dict) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.PATCH).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def store_keys_in_revision(self, tree_name: str, rev_id: str, payload: Any) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+
+    def store_key_in_revision(self, tree_name: str, rev_id: str, key: str, value: str, perms: int = 644) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
+        headers = self._get_auth_header(with_org=True)
+        headers['Content-Type'] = 'kv'
+        headers['X-Checksum'] = md5(str(value).encode('utf-8')).hexdigest()
+        headers['X-Permissions'] = str(perms)
+
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(value)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def store_file_in_revision(self, tree_name: str, rev_id: str, key: str, file_path: str) -> Munch:
+        stat = os.stat(file_path)
+        perms = oct(stat.st_mode & 0o777)[-3:]
+
+        content_type = magic.from_file(file_path, mime=True)
+
+        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
+        headers = self._get_auth_header(with_org=True)
+        headers['Content-Type'] = content_type
+        headers['X-Permissions'] = perms
+
+        with open(file_path, 'rb') as f:
+            file_hash = md5()
+            chunk = f.read(8192)
+            while chunk:
+                file_hash.update(chunk)
+                chunk = f.read(8192)
+
+            headers['X-Checksum'] = file_hash.hexdigest()
+            f.seek(0)
+
+            response = RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=f, raw=True)
+            handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_key_in_revision(self, tree_name: str, rev_id: str, key: str) -> Munch:
+        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
+        headers = self._get_auth_header(with_org=True)
+        response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("configtree: {}".format(err_msg))
 
         return munchify(data)
