@@ -27,7 +27,7 @@ from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.utils import dump_all_yaml, print_separator, run_bash
-from riocli.utils.mermaid import mermaid_link, mermaid_safe
+from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
 
 
@@ -60,7 +60,7 @@ class Applier(object):
         self.rc = ResolverCache(self.client)
         self.secrets = {}
         self.values = {}
-        self.diagram = ["flowchart LR"]
+        self.diagram = Graphviz(direction='LR', format='svg')
         if values or secrets:
             self.environment = jinja2.Environment()
 
@@ -304,13 +304,11 @@ class Applier(object):
 
     def _add_graph_node(self, key):
         self.graph.add(key)
-        self.diagram.append('\t{}[{}]'.format(mermaid_safe(key), key))
+        self.diagram.node(key)
 
     def _add_graph_edge(self, dependent_key, key):
         self.graph.add(dependent_key, key)
-        self.diagram.append('\t{}[{}] --> {}[{}] '.format(mermaid_safe(key),
-                                                          key, mermaid_safe(
-                dependent_key), dependent_key))
+        self.diagram.edge(key, dependent_key)
 
     # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
@@ -402,8 +400,7 @@ class Applier(object):
 
     def show_dependency_graph(self):
         """Lauches mermaid.live dependency graph"""
-        link = mermaid_link("\n".join(self.diagram))
-        click.launch(link)
+        self.diagram.visualize()
 
     # Utils
     def _display_context(
