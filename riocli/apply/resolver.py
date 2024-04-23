@@ -136,11 +136,9 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": self.v2client.list_projects,
             "package": self.v2client.list_packages,
             "staticroute": self.v2client.list_static_routes,
-            "deployment": functools.partial(self.client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING]),
             "disk": self.v2client.list_disks,
             "network": self.v2client.list_networks,
+            "deployment": functools.partial(self.v2client.list_deployments),
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
             "usergroup": self.client.list_usergroups
@@ -156,9 +154,10 @@ class ResolverCache(object, metaclass=_Singleton):
                 lambda x: name == x.metadata.name and version == x.metadata.version, obj_list),
             "staticroute": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
-            "deployment": self._generate_find_guid_functor(),
             "network": lambda name, obj_list, network_type: filter(
                 lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
+            "deployment": lambda name, obj_list: filter(
+                lambda x: name == x.name, obj_list),
             "disk": self._generate_find_guid_functor(),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),

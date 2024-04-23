@@ -14,8 +14,9 @@
 import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.deployment import Deployment
+from munch import unmunchify
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.deployment.util import name_to_guid
 from riocli.utils import inspect_with_format
@@ -30,20 +31,22 @@ from riocli.utils import inspect_with_format
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('deployment-name')
-@name_to_guid
 def inspect_deployment(
         format_type: str,
         deployment_name: str,
-        deployment_guid: str,
 ) -> None:
     """
     Inspect the deployment resource
     """
     try:
-        client = new_client()
-        deployment = client.get_deployment(deployment_guid)
-        data = make_deployment_inspectable(deployment)
-        inspect_with_format(data, format_type)
+        client = new_v2_client()
+        deployment_obj = client.get_deployment(deployment_name)
+
+        if not deployment_obj:
+            click.secho("deployment not found", fg='red')
+            raise SystemExit(1)
+
+        inspect_with_format(unmunchify(deployment_obj), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

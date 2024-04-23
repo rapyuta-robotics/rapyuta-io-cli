@@ -121,64 +121,17 @@ class DeploymentNotFound(Exception):
         self.message = message
         super().__init__(self.message)
 
-
-def add_mount_volume_provision_config(provision_config, component_name, device, executable_mounts):
-    if not isinstance(device, Device):
-        raise InvalidParameterException('device must be of type Device')
-
-    component_id = provision_config.plan.get_component_id(component_name)
-    if not isinstance(executable_mounts, list) or not all(
-            isinstance(mount, ExecutableMount) for mount in executable_mounts):
-        raise InvalidParameterException(
-            'executable_mounts must be a list of rapyuta_io.clients.package.ExecutableMount')
-    if device.get_runtime() != Device.DOCKER_COMPOSE and not device.is_docker_enabled():
-        raise OperationNotAllowedError('Device must be a {} device'.format(Device.DOCKER_COMPOSE))
-    component_params = provision_config.parameters.get(component_id)
-    if component_params.get(DEVICE_ID) != device.deviceId:
-        raise OperationNotAllowedError('Device must be added to the component')
-    # self._add_disk_mount_info(device.deviceId, component_id, executable_mounts)
-
-    dep_info = dict()
-    dep_info['diskResourceId'] = device.deviceId
-    dep_info['applicableComponentId'] = component_id
-    dep_info['config'] = dict()
-
-    for mount in executable_mounts:
-        exec_mount = {
-            'mountPath': mount.mount_path
-        }
-        if mount.uid is not None:
-            exec_mount['uid'] = mount.uid
-        if mount.gid is not None:
-            exec_mount['gid'] = mount.gid
-        if mount.perm is not None:
-            exec_mount['perm'] = mount.perm
-        if mount.sub_path:
-            exec_mount['subPath'] = mount.sub_path
-        else:
-            exec_mount['subPath'] = '/'
-
-        tmp_info = copy.deepcopy(dep_info)
-        tmp_info['config']['mountPaths'] = {
-            mount.exec_name: exec_mount,
-        }
-        provision_config.context['diskMountInfo'].append(tmp_info)
-
-    return provision_config
-
-
 def fetch_deployments(
         client: Client,
         deployment_name_or_regex: str,
         include_all: bool,
 ) -> List[Deployment]:
-    deployments = client.get_all_deployments(
-        phases=[DeploymentPhaseConstants.SUCCEEDED,
-                DeploymentPhaseConstants.PROVISIONING])
+    deployments = client.list_deployments()
     result = []
+
     for deployment in deployments:
         if (include_all or deployment_name_or_regex == deployment.name or
-                deployment_name_or_regex == deployment.deploymentId or
+                deployment_name_or_regex == deployment.guid or
                 (deployment_name_or_regex not in deployment.name and
                  re.search(r'^{}$'.format(deployment_name_or_regex), deployment.name))):
             result.append(deployment)
@@ -188,6 +141,11 @@ def fetch_deployments(
 
 def print_deployments_for_confirmation(deployments: List[Deployment]):
     headers = ['Name', 'GUID', 'Phase', 'Status']
-    data = [[d.name, d.deploymentId, d.phase, d.status] for d in deployments]
+
+    data = []
+    for deployment in deployments:
+        phase = "" if not hasattr(deployment, 'phase') else deployment.phase
+        status = "" if not hasattr(deployment, 'status') else deployment.status
+        data.append([deployment.name, deployment.guid, phase, status])
 
     tabulate_data(data, headers)
