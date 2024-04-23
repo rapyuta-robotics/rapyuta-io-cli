@@ -20,6 +20,11 @@ from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 
+class DeploymentNotFound(Exception):
+    def __init__(self, message='deployment not found!'):
+        self.message = message
+        super().__init__(self.message)
+
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
     # 500 Internal Server Error
@@ -619,5 +624,116 @@ class Client(object):
         if not response.ok:
             err_msg = data.get('error')
             raise Exception("package: {}".format(err_msg))
+
+        return munchify(data) 
+
+
+    def list_deployments(
+        self,
+        query: dict = None
+    ) -> Munch:
+        """
+        List all deployments in a project
+        """
+        url = "{}/v2/deployments/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+                "limit": 50,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("deployments: {}".format(err_msg))
+            deployments = data.get('items', [])
+            if not deployments:
+                break
+            offset = data['metadata']['continue']
+            for deployment in deployments:
+                result.append(deployment['metadata'])
+
+        return munchify(result)
+    
+    def create_deployment(self, deployment: dict) -> Munch:
+        """
+        Create a new deployment
+        """
+        url = "{}/v2/deployments/".format(self._host)
+        headers = self._config.get_auth_header()
+
+        deployment["metadata"]["projectGUID"] = headers["project"]
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=deployment)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+        
+    def get_deployment(
+        self,
+        name: str,
+        query: dict = None
+    ):
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.GET).query_param(
+            params).headers(headers).execute()
+        data = json.loads(response.text)
+
+        if response.status_code == http.HTTPStatus.NOT_FOUND:
+            raise DeploymentNotFound()
+
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+    
+    def update_deployment(self, name: str, dep: dict) -> Munch:
+        """
+        Update a deployment
+        """
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload=dep)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+    
+    def delete_deployment(self, name: str, query: dict = None) -> Munch:
+        """
+        Delete a deployment
+        """
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._config.get_auth_header()
+        params = {}
+        params.update(query or {})
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
 
         return munchify(data)
