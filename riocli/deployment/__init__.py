@@ -17,7 +17,6 @@ from click_help_colors import HelpColorsGroup
 from riocli.constants import Colors
 from riocli.deployment.delete import delete_deployment
 from riocli.deployment.execute import execute_command
-from riocli.deployment.execute import execute_command
 from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs

@@ -56,7 +56,6 @@ class Disk(Model):
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
-    @staticmethod
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         v2_client = new_v2_client()
         v2_client.delete_disk(obj.metadata.name)

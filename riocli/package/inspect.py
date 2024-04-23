@@ -34,7 +34,8 @@ def inspect_package(format_type: str, package_name: str, package_version: str) -
         if package_name.startswith("pkg-"):
             packages = client.list_packages(query = {"guid": package_name})
             if packages:
-                package_obj = packages[0]
+                obj = packages[0]
+                package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
 
         elif package_name and package_version:
             package_obj = client.get_package(package_name, query = {"version": package_version})
@@ -51,7 +52,9 @@ def inspect_package(format_type: str, package_name: str, package_version: str) -
                 options[pkg.metadata.guid] = '{} ({})'.format(pkg.metadata.name, pkg.metadata.version)
                 package_objs[pkg.metadata.guid] = pkg
             choice = show_selection(options, header='Following packages were found with the same name')
-            package_obj = package_objs[choice]
+            obj = package_objs[choice]
+            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+
 
         if not package_obj:
             click.secho("package not found", fg='red')
