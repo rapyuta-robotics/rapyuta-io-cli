@@ -350,9 +350,8 @@ class Applier(object):
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
-                if (name_or_guid == obj_name) and (
-                        'version' in dependency and obj[
-                    'packageVersion'] == dependency.get('version')):
+                if (name_or_guid == obj_name) and ('version' in dependency and
+                                                    obj.metadata.version == dependency.get('version')):
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
@@ -389,10 +388,10 @@ class Applier(object):
 
         dependency['guid'] = guid
         if kind.lower() == "disk":
-            dependency['depGuid'] = obj['internalDeploymentGUID']
+            dependency['depGuid'] = obj.metadata.guid
 
         if kind.lower() == "deployment":
-            dependency['guid'] = obj['deploymentId']
+            dependency['guid'] = obj.metadata.guid
 
     def _initialize_kind_dependency(self, kind):
         if not self.dependencies.get(kind):

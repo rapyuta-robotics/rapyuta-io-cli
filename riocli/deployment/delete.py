@@ -16,8 +16,11 @@ from queue import Queue
 import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.deployment import Deployment
+import functools
+from queue import Queue
 
-from riocli.config import new_client
+
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.deployment.util import fetch_deployments
 from riocli.deployment.util import print_deployments_for_confirmation
@@ -25,6 +28,7 @@ from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
 
+from rapyuta_io import Client
 
 @click.command(
     'delete',
@@ -51,8 +55,7 @@ def delete_deployment(
     """
     Deletes one or more deployments given a name or a pattern
     """
-    client = new_client()
-
+    client = new_v2_client()
     if not (deployment_name_or_regex or delete_all):
         spinner.text = "Nothing to delete"
         spinner.green.ok(Symbols.SUCCESS)
@@ -83,8 +86,9 @@ def delete_deployment(
         spinner.write('')
 
     try:
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=_apply_delete, items=deployments,
+            f=f, items=deployments,
             workers=workers, key=lambda x: x[0]
         )
 
@@ -116,9 +120,9 @@ def delete_deployment(
         raise SystemExit(1) from e
 
 
-def _apply_delete(result: Queue, deployment: Deployment) -> None:
+def _apply_delete(client: Client, result: Queue, deployment: Deployment) -> None:
     try:
-        deployment.deprovision()
-        result.put((deployment.name, True))
+        client.delete_deployment(name=deployment.metadata.name)
+        result.put((deployment.metadata.name, True))
     except Exception:
-        result.put((deployment.name, False))
+        result.put((deployment.metadata.name, False))

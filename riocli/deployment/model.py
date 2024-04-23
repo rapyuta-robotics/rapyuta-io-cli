@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import typing
+from munch import unmunchify
 
 import click
 from rapyuta_io import Client
@@ -28,8 +29,8 @@ from rapyuta_io.clients.routed_network import RoutedNetwork
 from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.constants import Colors
+from riocli.config import new_v2_client
 from riocli.deployment.errors import ERRORS
-from riocli.deployment.util import add_mount_volume_provision_config
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.parameter.utils import list_trees
@@ -44,229 +45,29 @@ class Deployment(Model):
         'onfailure': RestartPolicy.OnFailure
     }
 
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
+
     def find_object(self, client: Client) -> typing.Any:
-        guid, obj = self.rc.find_depends({
-            "kind": "deployment",
-            "nameOrGUID": self.metadata.name,
-        })
+        guid, obj = self.rc.find_depends({"kind": "deployment", "nameOrGUID": self.metadata.name})
 
         return obj if guid else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
-        pkg_guid, pkg = self.rc.find_depends(
-            self.metadata.depends,
-            self.metadata.depends.version)
+        client = new_v2_client()
 
-        if pkg_guid:
-            pkg = client.get_package(pkg_guid)
-
-        if not pkg:
-            raise ValueError('package not found: {}'.format(self.metadata.depends))
-
-        pkg.update()
-
-        default_plan = pkg['plans'][0]
-        plan_id = default_plan['planId']
-        internal_component = default_plan['internalComponents'][0]
-        component_name = internal_component.componentName
-        component = default_plan['components']['components'][0]
-        executables = component['executables']
-        runtime = internal_component['runtime']
-
-        retry_count = int(kwargs.get('retry_count'))
-        retry_interval = int(kwargs.get('retry_interval'))
-
-        if 'runtime' in self.spec and runtime != self.spec.runtime:
-            raise Exception('>> runtime mismatch => deployment:{}.runtime !== package:{}.runtime '.format(
-                self.metadata.name, pkg['packageName']
-            ))
-
-        provision_config = pkg.get_provision_configuration(plan_id)
-
-        # add label
-        if 'labels' in self.metadata:
-            for key, value in self.metadata.labels.items():
-                provision_config.add_label(key, value)
-
-        # Add envArgs
-        if 'envArgs' in self.spec:
-            for items in self.spec.envArgs:
-                provision_config.add_parameter(component_name, items.name,
-                                               items.value)
-
-        # Add Dependent Deployment
-        if 'depends' in self.spec:
-            for item in self.spec.depends:
-                dep_guid, dep = self.rc.find_depends(item)
-                if dep is None and dep_guid:
-                    dep = client.get_deployment(dep_guid)
-                provision_config.add_dependent_deployment(dep, ready_phases=[
-                    DeploymentPhaseConstants.PROVISIONING.value,
-                    DeploymentPhaseConstants.SUCCEEDED.value])
-
-        # Add Network
-        if 'rosNetworks' in self.spec:
-            for network_depends in self.spec.rosNetworks:
-                network_guid, network_obj = self.rc.find_depends(network_depends.depends)
-
-                if type(network_obj) == RoutedNetwork:
-                    provision_config.add_routed_network(
-                        network_obj, network_interface=network_depends.get('interface', None))
-                if type(network_obj) == NativeNetwork:
-                    provision_config.add_native_network(
-                        network_obj, network_interface=network_depends.get('interface', None))
-
-        if 'rosBagJobs' in self.spec:
-            for req_job in self.spec.rosBagJobs:
-                provision_config.add_rosbag_job(component_name,
-                                                self._form_rosbag_job(req_job))
-
-        if self.spec.runtime == 'cloud':
-            if 'staticRoutes' in self.spec:
-                for stroute in self.spec.staticRoutes:
-                    route_guid, route = self.rc.find_depends(stroute.depends)
-                    # TODO: Remove this once we transition to v2
-                    route = StaticRoute(ObjDict({"guid": route_guid}))
-                    provision_config.add_static_route(component_name,
-                                                      stroute.name, route)
-
-            # Add Disk
-            if 'volumes' in self.spec:
-                disk_mounts = {}
-                for vol in self.spec.volumes:
-                    disk_guid, disk = self.rc.find_depends(vol.depends)
-                    if disk_guid not in disk_mounts:
-                        disk_mounts[disk_guid] = []
-
-                    disk_mounts[disk_guid].append(
-                        ExecutableMount(vol.execName, vol.mountPath, vol.subPath))
-
-                for disk_guid in disk_mounts.keys():
-                    disk = client.get_volume_instance(disk_guid)
-                    provision_config.mount_volume(component_name, volume=disk,
-                                                  executable_mounts=
-                                                  disk_mounts[disk_guid])
-
-            # TODO: Managed Services is currently limited to `cloud` deployments
-            # since we don't expose `elasticsearch` outside Openshift. This may
-            # change in the future.
-            if 'managedServices' in self.spec:
-                managed_services = []
-                for managed_service in self.spec.managedServices:
-                    managed_services.append({
-                        'instance': managed_service.depends.nameOrGUID,
-                    })
-                provision_config.context['managedServices'] = managed_services
-
-            # inject the vpn managedservice instance if the flag is set to
-            # true. 'rio-internal-headscale' is the default vpn instance
-            if 'features' in self.spec:
-                if 'vpn' in self.spec.features and self.spec.features.vpn.enabled:
-                    provision_config.context['managedServices'] = [{
-                        "instance": "rio-internal-headscale"
-                    }]
-
-        if self.spec.runtime == 'device':
-            device_guid, device = self.rc.find_depends(
-                self.spec.device.depends)
-            if device is None and device_guid:
-                device = client.get_device(device_guid)
-
-            provision_config.add_device(
-                component_name,
-                device=device,
-                set_component_alias=False
-            )
-
-            if 'restart' in self.spec:
-                provision_config.add_restart_policy(
-                    component_name,
-                    self.RESTART_POLICY[self.spec.restart.lower()])
-
-            # Add Disk
-            exec_mounts = []
-            if 'volumes' in self.spec:
-                for vol in self.spec.volumes:
-                    uid = getattr(vol, 'uid', None)
-                    gid = getattr(vol, 'gid', None)
-                    perm = getattr(vol, 'perm', None)
-                    exec_mounts.append(
-                        ExecutableMount(vol.execName, vol.mountPath,
-                                        vol.subPath, uid, gid, perm))
-
-            if len(exec_mounts) > 0:
-                provision_config = add_mount_volume_provision_config(
-                    provision_config, component_name, device, exec_mounts)
-
-        if 'features' in self.spec:
-            if 'params' in self.spec.features and self.spec.features.params.enabled:
-                component_id = internal_component.componentId
-                disable_sync = self.spec.features.params.get('disableSync', False)
-
-                # Validate trees in the manifest with the ones available
-                # to avoid misconfigurations.
-                tree_names = self.spec.features.params.get('trees', [])
-
-                # For multiple deployments in the same project, the list of
-                # available config trees is going to remain the same. Hence,
-                # we cache it once and keep fetching it from the cache.
-                cache_key = '{}-trees'.format(pkg.get('ownerProject'))
-                with get_cache() as c:
-                    if c.get(cache_key) is None:
-                        c.set(cache_key, set(list_trees()))
-
-                    available_trees = c.get(cache_key)
-
-                if not available_trees:
-                    raise ValueError("One or more trees are incorrect. Please run `rio parameter list` to confirm.")
-
-                if not set(tree_names).issubset(available_trees):
-                    raise ValueError("One or more trees are incorrect. Please run `rio parameter list` to confirm.")
-
-                args = []
-                for e in executables:
-                    args.append({
-                        'executableId': e['id'],
-                        'paramTreeNames': tree_names,
-                        'enableParamSync': not disable_sync
-                    })
-
-                context = provision_config.context
-                if 'component_context' not in context:
-                    context['component_context'] = {}
-
-                component_context = context['component_context']
-                if component_id not in component_context:
-                    component_context[component_id] = {}
-
-                component_context[component_id]['param_sync_exec_args'] = args
-
-        provision_config.set_component_alias(component_name,
-                                             self.metadata.name)
-
-        if os.environ.get('DEBUG'):
-            print(provision_config)
-
-        deployment = pkg.provision(self.metadata.name, provision_config)
-
-        try:
-            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval,
-                                                  ready_phases=[DeploymentPhaseConstants.PROVISIONING.value,
-                                                                DeploymentPhaseConstants.SUCCEEDED.value])
-        except DeploymentNotRunningException as e:
-            raise Exception(process_deployment_errors(e)) from e
-        except Exception as e:
-            raise e
-
-        deployment.get_status()
-
-        return deployment
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        deployment = unmunchify(self)
+        deployment.pop("rc", None)
+        r = client.create_deployment(deployment)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        obj.deprovision()
+        client = new_v2_client()
+        client.delete_deployment(obj.metadata.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

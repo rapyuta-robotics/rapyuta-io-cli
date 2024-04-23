@@ -17,7 +17,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.deployment import Deployment, DeploymentPhaseConstants
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
@@ -55,9 +55,9 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     List the deployments in the selected project
     """
     try:
-        client = new_client()
-        deployments = client.get_all_deployments(device_id=device, phases=phase)
-        deployments = sorted(deployments, key=lambda d: d.name.lower())
+        client = new_v2_client(with_project=True)
+        deployments = client.list_deployments()
+        deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -71,8 +71,9 @@ def display_deployment_list(deployments: typing.List[Deployment], show_header: b
 
     data = []
     for deployment in deployments:
-        package_name_version = "{} ({})".format(deployment.packageName, deployment.packageVersion)
-        data.append([deployment.deploymentId, deployment.name,
-                     deployment.phase, package_name_version])
+        package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID, deployment.metadata.depends.version)
+        phase = deployment.status.phase if deployment.status else ""
+        data.append([deployment.metadata.guid, deployment.metadata.name,
+                     phase, package_name_version])
 
     tabulate_data(data, headers=headers)
