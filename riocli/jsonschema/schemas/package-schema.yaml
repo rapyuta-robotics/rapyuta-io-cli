@@ -306,7 +306,6 @@ definitions:
               type:
                 enum:
                   - internal-udp
-
               port:
                 "$ref": "#/definitions/portNumber"
                 default: 80
@@ -321,18 +320,14 @@ definitions:
                   - internal-tcp-range
               portRange:
                 type: string
-                default: 22,80, 1024-1030
             required:
               - portRange
-
           - properties:
               type:
                 enum:
                   - internal-udp-range
-
               portRange:
                 type: string
-                default: 53,1024-1025
             required:
               - portRange
 
@@ -588,9 +583,10 @@ definitions:
             type: integer
           to:
             type: integer
-        required:
-          - from
-          - to
+        anyOf:
+          - required: ["from", "to"]
+          - not:
+              required: ["from", "to"]
     required:
       - timeRange
 
@@ -641,7 +637,7 @@ definitions:
     pattern: "^disk-[a-z]{24}$"
   packageGUID:
     type: string
-    pattern: "^pkg-[a-z]{24}$"
+    pattern: "^pkg-[a-z0-9]{20}$"
   deploymentGUID:
     type: string
     pattern: "^dep-[a-z]{24}$"

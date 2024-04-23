@@ -44,6 +44,7 @@ def deployment_logs(
     """
     Stream live logs from cloud deployments (not supported for device deployments)
     """
+    # TODO(Romil): Move to V2 client
     try:
         comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
         stream_deployment_logs(deployment_guid, comp_id, exec_id, pod_name)

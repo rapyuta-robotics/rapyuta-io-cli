@@ -21,7 +21,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.deployment import Deployment
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
 from riocli.deployment.util import fetch_deployments
 from riocli.deployment.util import print_deployments_for_confirmation
@@ -55,7 +55,7 @@ def update_deployment(
     """
     Updates one more deployments
     """
-    client = new_client()
+    client = new_v2_client()
     if not (deployment_name_or_regex or update_all):
         spinner.text = "Nothing to update"
         spinner.green.ok(Symbols.SUCCESS)
@@ -157,17 +157,11 @@ def _apply_update(
         deployment: Deployment,
 ) -> None:
     try:
-        dep = client.get_deployment(deployment['deploymentId'])
-        component_context = get_component_context(dep.get("componentInfo", {}))
-        payload = {
-            "service_id": dep["packageId"],
-            "plan_id": dep["planId"],
-            "deployment_id": dep["deploymentId"],
-            "context": {
-                "component_context": component_context
-            }
-        }
-        client.update_deployment(payload)
-        result.put((deployment["name"], True))
+        dep = client.get_deployment(deployment.metadata.name)
+        if not dep:
+            result.put((deployment.metadata.name, False))
+            return
+        client.update_deployment(deployment.metadata.name, deployment)
+        result.put((deployment.metadata.name, True))
     except Exception:
-        result.put((deployment["name"], False))
+        result.put((deployment.metadata.name, False))

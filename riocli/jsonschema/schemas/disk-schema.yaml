@@ -44,7 +44,7 @@ definitions:
     pattern: "^disk-[a-z]{24}$"
   packageGUID:
     type: string
-    pattern: "^pkg-[a-z]{24}$"
+    pattern: "^pkg-[a-z0-9]{20}$"
   stringMap:
     type: object
     additionalProperties:

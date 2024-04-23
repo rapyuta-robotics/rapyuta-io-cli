@@ -62,7 +62,7 @@ class ResolverCache(object, metaclass=_Singleton):
         "organization": "^org-[a-z]{24}$",
         "project": "^project-[a-z]{24}$",
         "secret": "^secret-[a-z]{24}$",
-        "package": "^pkg-[a-z]{24}$",
+        "package": "^pkg-[a-z0-9]{20}$",
         "staticroute": "^staticroute-[a-z]{24}$",
         "disk": "^disk-[a-z]{24}$",
         "deployment": "^dep-[a-z]{24}$",
@@ -120,7 +120,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['metadata']['guid'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
-            "deployment": lambda x: munchify(x)['deploymentId'],
+            "deployment": lambda x: munchify(x)['metadata']['guid'],
             "network": lambda x: munchify(x)['metadata']['guid'],
             # This is only temporarily like this
             "disk": lambda x: munchify(x)['metadata']['guid'],
@@ -136,11 +136,9 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": self.v2client.list_projects,
             "package": self.v2client.list_packages,
             "staticroute": self.v2client.list_static_routes,
-            "deployment": functools.partial(self.client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING]),
             "disk": self.v2client.list_disks,
             "network": self.v2client.list_networks,
+            "deployment": functools.partial(self.v2client.list_deployments),
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
             "usergroup": self.client.list_usergroups
@@ -156,10 +154,12 @@ class ResolverCache(object, metaclass=_Singleton):
                 lambda x: name == x.metadata.name and version == x.metadata.version, obj_list),
             "staticroute": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
-            "deployment": self._generate_find_guid_functor(),
             "network": lambda name, obj_list, network_type: filter(
                 lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
-            "disk": self._generate_find_guid_functor(),
+            "deployment": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name, obj_list),
+            "disk": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name,  obj_list),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
             "usergroup": lambda name, groups: filter(lambda i: i.name == name, groups),
