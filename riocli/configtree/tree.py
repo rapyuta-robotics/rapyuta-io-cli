@@ -245,11 +245,10 @@ def list_config_trees(
     try:
         client = new_v2_client(with_project=with_project)
         trees = client.list_config_trees()
-        items = trees.get('items')
-        if not isinstance(items, Iterable):
+        if not isinstance(trees, Iterable):
             raise Exception('List items are not iterable')
 
-        display_config_trees(trees=items)
+        display_config_trees(trees=trees)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
@@ -313,14 +312,13 @@ def list_tree_revisions(
     try:
         client = new_v2_client(with_project=with_project)
         revisions = client.list_config_tree_revisions(tree_name=tree_name)
-        items = revisions.get('items')
-        if not isinstance(items, Iterable):
+        if not isinstance(revisions, Iterable):
             raise Exception('List items are not iterable')
 
         if graph:
-            display_config_tree_revision_graph(tree_name=tree_name, revisions=items)
+            display_config_tree_revision_graph(tree_name=tree_name, revisions=revisions)
         else:
-            display_config_tree_revisions(revisions=items)
+            display_config_tree_revisions(revisions=revisions)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
