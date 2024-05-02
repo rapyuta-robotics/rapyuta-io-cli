@@ -93,25 +93,8 @@ class Client(object):
 
         params.update(query or {})
 
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-                "limit": 500,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("projects: {}".format(err_msg))
-            projects = data.get('items', [])
-            if not projects:
-                break
-            offset = data['metadata']['continue']
-            result.extend(projects)
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=params)
 
     def get_project(self, project_guid: str) -> Munch:
         """
@@ -210,23 +193,9 @@ class Client(object):
         """
         url = "{}/v2/managedservices/".format(self._host)
         headers = self._get_auth_header()
-        offset = 0
-        result = []
-        while True:
-            response = RestClient(url).method(HttpMethod.GET).query_param({
-                "continue": offset,
-            }).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("managedservice: {}".format(err_msg))
-            instances = data.get('items', [])
-            if not instances:
-                break
-            offset = data['metadata']['continue']
-            result.extend(instances)
 
-        return munchify(sorted(result, key=lambda x: x['metadata']['name']))
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client)
 
     def get_instance(self, instance_name: str) -> Munch:
         """
@@ -347,24 +316,8 @@ class Client(object):
         params = {}
         params.update(query or {})
 
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("static routes: {}".format(err_msg))
-            staticRoutes = data.get('items', [])
-            if not staticRoutes:
-                break
-            offset = data['metadata']['continue']
-            result.extend(staticRoutes)
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=params)
 
     def get_static_route(self, name: str) -> Munch:
         """
@@ -485,26 +438,8 @@ class Client(object):
         params = {}
         params.update(query or {})
 
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-                "limit": 50,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("secrets: {}".format(err_msg))
-            secrets = data.get('items', [])
-            if not secrets:
-                break
-            offset = data['metadata']['continue']
-            for secret in secrets:
-                result.append(secret['metadata'])
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=params)
 
     def get_secret(
             self,
@@ -545,16 +480,8 @@ class Client(object):
     def list_config_trees(self) -> Munch:
         url = "{}/v2/configtrees/".format(self._host)
         headers = self._get_auth_header(with_org=True)
-        response = RestClient(url).method(HttpMethod.GET).headers(
-            headers).execute()
-        handle_server_errors(response)
-
-        data = json.loads(response.text)
-        if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("configtree: {}".format(err_msg))
-
-        return munchify(data)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client)
 
     def create_config_tree(self, tree_spec: dict) -> Munch:
         url = "{}/v2/configtrees/".format(self._host)
@@ -623,16 +550,8 @@ class Client(object):
     def list_config_tree_revisions(self, tree_name: str) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
         headers = self._get_auth_header(with_org=True)
-        response = RestClient(url).method(HttpMethod.GET).headers(
-            headers).execute()
-        handle_server_errors(response)
-
-        data = json.loads(response.text)
-        if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("configtree: {}".format(err_msg))
-
-        return munchify(data)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client)
 
     def initialize_config_tree_revision(self, tree_name: str) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
@@ -738,3 +657,27 @@ class Client(object):
             raise Exception("configtree: {}".format(err_msg))
 
         return munchify(data)
+
+    def _walk_pages(self, c: RestClient, params: dict = {}, limit: Optional[int] = None) -> Munch:
+        offset, result = 0, []
+
+        if limit is not None:
+            params["limit"] = limit
+
+        while True:
+            params["continue"] = offset
+
+            response = c.query_param(params).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("listing: {}".format(err_msg))
+
+            items = data.get('items', [])
+            if not items:
+                break
+
+            offset = data['metadata']['continue']
+            result.extend(items)
+
+        return munchify(result)
