@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 from typing import Optional, Iterable
 
-from munch import Munch, munchify
+from munch import Munch, munchify, unmunchify
 
 from riocli.utils import tabulate_data
 from riocli.utils.graph import Graphviz
@@ -102,11 +102,15 @@ def display_config_trees(trees: Iterable, show_header: bool = True) -> None:
 def display_config_tree_keys(keys: dict, show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ['Key', 'Description', 'Checksum']
+        headers = ['Key', 'Metadata', 'Checksum']
 
     data = []
     for key, val in keys.items():
-        data.append([key, val.get('description'), val.get('checksum')])
+        metadata = val.get('metadata', None)
+        if isinstance(metadata, Munch):
+            metadata = unmunchify(metadata)
+
+        data.append([key, metadata, val.get('checksum')])
 
     tabulate_data(data, headers=headers)
 
@@ -140,3 +144,10 @@ def display_config_tree_revision_graph(tree_name: str, revisions: Iterable) -> N
             g.edge(from_node=parent, to_node=rev_id)
 
     g.visualize()
+
+class Metadata(object):
+    def __init__(self: Metadata, d: dict):
+        self.data = d
+
+    def get_dict(self: Metadata) -> dict:
+        return self.data

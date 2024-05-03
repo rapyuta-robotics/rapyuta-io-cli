@@ -23,6 +23,7 @@ from yaspin.core import Yaspin
 from riocli.config import new_v2_client
 from riocli.configtree.etcd import import_in_etcd
 from riocli.configtree.revision import Revision
+from riocli.configtree.util import Metadata
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -82,13 +83,13 @@ def import_keys(
             )
         )
 
-    data, description = split_description(data)
+    data, metadata = split_metadata(data)
 
     if export_directory is not None:
         export_to_files(base_dir=export_directory, data=data)
 
-    data, description = benedict(data).flatten(separator='/'), \
-        benedict(description).flatten(separator='/')
+    data = benedict(data).flatten(separator='/')
+    metadata = benedict(metadata).flatten(separator='/')
 
 
     if etcd_endpoint:
@@ -101,8 +102,11 @@ def import_keys(
             rev_id = rev.revision_id
 
             for key, value in data.items():
-                desc = descriptions.get(key)
-                rev.store(key=key, value=str(value), perms=644, description=desc)
+                key_metadata = metadata.get(key, None)
+                if key_metadata is not None and isinstance(key_metadata, Metadata):
+                    key_metadata = key_metadata.get_dict()
+
+                rev.store(key=key, value=str(value), perms=644, metadata=key_metadata)
                 spinner.write(
                     click.style(
                         '\t{} Key {} added.'.format(Symbols.SUCCESS, key),
@@ -134,23 +138,29 @@ def import_keys(
         raise SystemExit(1) from e
 
 
-def split_description(input: Iterable) -> (Iterable, Iterable):
+def split_metadata(input: Iterable) -> (Iterable, Iterable):
     if not isinstance(input, dict):
         return input, None
 
-    data, comments = {}, {}
+    content, metadata = {}, {}
 
     for key, value in input.items():
         if not isinstance(value, dict):
-            data[key] = value
+            content[key] = value
             continue
 
-        if len(value) == 2 and value.get('value') and value.get('description'):
-            data[key] = value.get('value')
-            comments[key] = value.get('description')
+        potential_content = value.get('value')
+        potential_meta = value.get('metadata')
+
+        if len(value) == 2 and potential_content is not None and \
+           potential_meta is not None and isinstance(potential_meta, dict):
+            content[key] = potential_content
+            metadata[key] = Metadata(potential_meta)
             continue
 
-        data[key], comments[key] = split_description(value)
+        content[key], metadata[key] = split_metadata(value)
+
+    return content, metadata
 
 def export_to_files(base_dir: str, data: dict) -> None:
     base_dir = os.path.abspath(base_dir)
@@ -159,4 +169,3 @@ def export_to_files(base_dir: str, data: dict) -> None:
         file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
         benedict(file_data).to_yaml(filepath=file_path)
 
-    return data, comments

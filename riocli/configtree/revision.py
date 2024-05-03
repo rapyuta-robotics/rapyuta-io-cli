@@ -75,18 +75,22 @@ class Revision(object):
     def revision_id(self: Revision) -> str:
         return self._rev_id
 
-    def store(self: Revision, key: str, value: str, perms: int = 644, description: Optional[str] = None) -> None:
+    def store(self: Revision, key: str, value: str, perms: int = 644, metadata: Optional[dict] = None) -> None:
         str_val = str(value)
         enc_val = str_val.encode('utf-8')
 
-        self._data[key] = {
+        data = {
             'permissions': str(perms),
-            'description': description,
             'checksum': md5(enc_val).hexdigest(),
             'contentType': 'kv',
             'contentLength': len(str_val),
             'data': b64encode(enc_val).decode(),
         }
+
+        if metadata is not None:
+            data['metadata'] = metadata
+
+        self._data[key] = data
 
     def store_file(self: Revision, key: str, file_path: str) -> None:
         self._client.store_file_in_revision(tree_name=self._tree_name, rev_id=self._rev_id,
