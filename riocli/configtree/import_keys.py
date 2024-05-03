@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from typing import Optional, Iterable
 from pathlib import Path
 
@@ -36,6 +37,8 @@ from riocli.utils.spinner import with_spinner
 @click.option('--update-head/--no-update-head', 'update_head', is_flag=True, type=bool)
 @click.option('--etcd-endpoint', 'etcd_endpoint', type=str,
               help='Import keys to local etcd instead of rapyuta.io cloud')
+@click.option('--export-directory', 'export_directory', type=str,
+              help='Path to the directory for exporting files.')
 @click.option('--etcd-port', 'etcd_port', type=int,
               help='Port for the etcd endpoint')
 @click.option('--etcd-prefix', 'etcd_prefix', type=str,
@@ -52,6 +55,7 @@ def import_keys(
         files: Iterable[str],
         commit: bool,
         update_head: bool,
+        export_directory: Optional[str],
         etcd_endpoint: Optional[str],
         etcd_port: Optional[int],
         etcd_prefix: Optional[str],
@@ -78,9 +82,13 @@ def import_keys(
             )
         )
 
-    data, descriptions = split_description(data)
-    data, descriptions = benedict(data).flatten(separator='/'), \
-        benedict(descriptions).flatten(separator='/')
+    data, description = split_description(data)
+
+    if export_directory is not None:
+        export_to_files(base_dir=export_directory, data=data)
+
+    data, description = benedict(data).flatten(separator='/'), \
+        benedict(description).flatten(separator='/')
 
 
     if etcd_endpoint:
@@ -143,5 +151,12 @@ def split_description(input: Iterable) -> (Iterable, Iterable):
             continue
 
         data[key], comments[key] = split_description(value)
+
+def export_to_files(base_dir: str, data: dict) -> None:
+    base_dir = os.path.abspath(base_dir)
+
+    for file_name, file_data in data.items():
+        file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
+        benedict(file_data).to_yaml(filepath=file_path)
 
     return data, comments
