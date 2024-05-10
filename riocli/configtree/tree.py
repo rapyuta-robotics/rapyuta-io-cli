@@ -19,7 +19,8 @@ from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
-from riocli.configtree.util import display_config_tree_keys, display_config_tree_revision_graph, display_config_tree_revisions, display_config_trees, get_revision_from_state
+from riocli.configtree.util import display_config_tree_keys, display_config_tree_revision_graph, \
+    display_config_tree_revisions, display_config_trees, get_revision_from_state
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -31,14 +32,14 @@ from riocli.utils.spinner import with_spinner
     help_options_color=Colors.GREEN,
 )
 @click.argument('tree-name', type=str)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Creating Config tree...")
 def create_config_tree(
         ctx: click.Context,
         tree_name: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -48,7 +49,7 @@ def create_config_tree(
     config = get_config_from_context(ctx)
 
     try:
-        client = config.new_v2_client(with_project=with_project)
+        client = config.new_v2_client(with_project=with_org)
         payload = {
             "kind": "ConfigTree",
             "apiVersion": "api.rapyuta.io/v2",
@@ -76,14 +77,14 @@ def create_config_tree(
     help_options_color=Colors.GREEN,
 )
 @click.argument('tree-name', type=str)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Deleting Config tree...")
 def delete_config_tree(
         _: click.Context,
         tree_name: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -91,7 +92,7 @@ def delete_config_tree(
     """
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         client.delete_config_tree(tree_name)
         spinner.text = click.style(
             'Config tree deleted successfully.', fg=Colors.GREEN
@@ -112,12 +113,15 @@ def delete_config_tree(
 )
 @click.argument('tree-name', type=str)
 @click.argument('new-tree', type=str)
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Cloning Config tree...")
 def clone_tree(
         _: click.Context,
         tree_name: str,
         new_tree: str,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -132,9 +136,8 @@ def clone_tree(
         }
     }
 
-
     try:
-        client = new_v2_client()
+        client = new_v2_client(with_project=(not with_org))
         tree = client.get_config_tree(tree_name=tree_name)
         head = tree.get('head')
 
@@ -148,6 +151,9 @@ def clone_tree(
                 )
             )
 
+        # We always clone into the current project.
+        # Thus, we recreate the client with_project=True.
+        client = new_v2_client(with_project=True)
         config_tree = client.create_config_tree(payload)
         spinner.text = click.style(
             'Config tree {} cloned successfully.'.format(config_tree.metadata.name),
@@ -169,15 +175,15 @@ def clone_tree(
 )
 @click.argument('tree-name', type=str)
 @click.argument('rev-id', type=str, required=False)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Setting Config tree head...")
 def set_tree_revision(
         ctx: click.Context,
         tree_name: str,
         rev_id: Optional[str],
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -187,7 +193,8 @@ def set_tree_revision(
     config = get_config_from_context(ctx)
 
     if not rev_id:
-        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                      tree_name=tree_name)
         if not rev or not rev.committed:
             spinner.text = click.style(
                 'RevisionID not provided as argument and not found in the State file.',
@@ -197,7 +204,6 @@ def set_tree_revision(
             raise SystemExit(1)
 
         rev_id = rev.rev_id
-
 
     payload = {
         "kind": "ConfigTree",
@@ -213,7 +219,7 @@ def set_tree_revision(
     }
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         client.set_revision_config_tree(tree_name, payload)
         spinner.text = click.style(
             'Config tree head updated successfully.', fg=Colors.GREEN
@@ -225,25 +231,26 @@ def set_tree_revision(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
+
 @click.command(
     'list',
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 def list_config_trees(
         _: click.Context,
-        with_project: bool,
+        with_org: bool,
 ) -> None:
     """
     Lists the Config trees.
     """
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         trees = client.list_config_trees()
         if not isinstance(trees, Iterable):
             raise Exception('List items are not iterable')
@@ -253,6 +260,7 @@ def list_config_trees(
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
+
 @click.command(
     'keys',
     cls=HelpColorsCommand,
@@ -261,20 +269,20 @@ def list_config_trees(
 )
 @click.argument('tree-name', type=str)
 @click.argument('rev-id', type=str, required=False)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 def list_config_tree_keys(
         _: click.Context,
         tree_name: str,
         rev_id: Optional[str],
-        with_project: bool,
+        with_org: bool,
 ) -> None:
     """
     Lists all the keys in the Config tree.
     """
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
 
         if not tree.get('head'):
@@ -289,6 +297,7 @@ def list_config_tree_keys(
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
+
 @click.command(
     'history',
     cls=HelpColorsCommand,
@@ -297,20 +306,20 @@ def list_config_tree_keys(
 )
 @click.argument('tree-name', type=str)
 @click.option('--graph', is_flag=True, type=bool, help='Display in the graph format.')
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 def list_tree_revisions(
         _: click.Context,
         graph: bool,
         tree_name: str,
-        with_project: bool,
+        with_org: bool,
 ) -> None:
     """
     Shows the revisions of the Config Tree.
     """
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         revisions = client.list_config_tree_revisions(tree_name=tree_name)
         if not isinstance(revisions, Iterable):
             raise Exception('List items are not iterable')
@@ -322,4 +331,3 @@ def list_tree_revisions(
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
-
