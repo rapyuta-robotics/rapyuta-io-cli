@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+
+import os
 from base64 import b64encode
 from hashlib import md5
-import os
-from typing  import Optional, Type, Any
+from typing import Optional, Type, Any
 
 import click
 from click_help_colors import HelpColorsCommand, HelpColorsGroup
@@ -40,10 +41,10 @@ class Revision(object):
                  commit: bool = False,
                  force_new: bool = False,
                  spinner: Optional[Yaspin] = None,
-                 with_project: bool = True):
+                 with_org: bool = True):
 
         self._tree_name = tree_name
-        self._client = client 
+        self._client = client
         self._commit = commit
         self._config = Configuration()
         self._state_file = StateFile()
@@ -66,7 +67,8 @@ class Revision(object):
             self._rev = self._client.initialize_config_tree_revision(tree_name=self._tree_name)
             self._rev_id = self._rev.metadata.guid
             msg = '{} Revision {} created successfully.'.format(Symbols.SUCCESS, self._rev_id)
-            save_revision(org_guid=self._org_guid, project_guid=self._project_guid, tree_name=self._tree_name, rev_id=self._rev_id)
+            save_revision(org_guid=self._org_guid, project_guid=self._project_guid, tree_name=self._tree_name,
+                          rev_id=self._rev_id)
 
         if self._spinner:
             self._spinner.write(click.style(msg, fg=Colors.CYAN))
@@ -114,9 +116,10 @@ class Revision(object):
         }
 
         self._client.commit_config_tree_revision(tree_name=self._tree_name,
-                                                rev_id=self._rev_id, payload=payload)
+                                                 rev_id=self._rev_id, payload=payload)
         if not self._explicit:
-            save_revision(org_guid=self._org_guid, project_guid=self._project_guid, tree_name=self._tree_name, rev_id=self._rev_id, committed=True)
+            save_revision(org_guid=self._org_guid, project_guid=self._project_guid, tree_name=self._tree_name,
+                          rev_id=self._rev_id, committed=True)
 
         if self._spinner:
             self._spinner.write(
@@ -136,7 +139,6 @@ class Revision(object):
         if self._data:
             self._client.store_keys_in_revision(tree_name=self._tree_name,
                                                 rev_id=self._rev_id, payload=self._data)
-
 
         if self._commit and self._rev_id:
             self.commit()
@@ -171,22 +173,23 @@ def revision() -> None:
 )
 @click.argument('tree-name', type=str)
 @click.option('--force', is_flag=True, type=bool)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Initializing Config tree revision...")
 def init_revision(
         ctx: click.Context,
         tree_name: str,
         force: bool,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
     Initialize a new revision for the Config tree
     """
     config = get_config_from_context(ctx)
-    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                  tree_name=tree_name)
     if not force and rev is not None and not rev.committed:
         spinner.text = click.style(
             'Revision {} is already present. Subsequent commands will re-use it. \n'
@@ -197,7 +200,7 @@ def init_revision(
         return
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         Revision(tree_name=tree_name, force_new=force, spinner=spinner, client=client)
     except Exception as e:
         spinner.text = click.style(
@@ -214,8 +217,8 @@ def init_revision(
 )
 @click.argument('tree-name', type=str)
 @click.argument('rev_id', type=str, required=False)
-@click.option('--project', 'with_project', is_flag=True,
-              type=bool, help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.option('-m', '--message', 'message', type=str, help='Message for the Revision.')
 @click.pass_context
 @with_spinner(text="Committing Config tree revision...")
@@ -224,7 +227,7 @@ def commit_revision(
         tree_name: str,
         rev_id: str,
         message: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -233,7 +236,8 @@ def commit_revision(
 
     if not rev_id:
         config = get_config_from_context(ctx)
-        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                      tree_name=tree_name)
         if not rev or rev.committed:
             spinner.text = click.style(
                 'RevisionID not provided as argument and not found in the State file.',
@@ -243,7 +247,7 @@ def commit_revision(
             raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         rev = Revision(tree_name=tree_name, rev_id=rev_id, spinner=spinner, client=client)
         rev.commit(msg=message)
     except Exception as e:
@@ -262,8 +266,8 @@ def commit_revision(
 @click.argument('tree-name', type=str)
 @click.argument('key', type=str)
 @click.argument('value', type=str)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Adding key to Config tree revision...")
 def put_key_in_revision(
@@ -271,7 +275,7 @@ def put_key_in_revision(
         tree_name: str,
         key: str,
         value: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -279,7 +283,8 @@ def put_key_in_revision(
     """
 
     config = get_config_from_context(ctx)
-    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                  tree_name=tree_name)
     if not rev or rev.committed:
         spinner.text = click.style(
             'RevisionID not provided as argument and not found in the State file. \n'
@@ -290,7 +295,7 @@ def put_key_in_revision(
         raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, spinner=spinner, client=client) as rev:
             rev.store(key=key, value=value)
             spinner.write(click.style(
@@ -312,8 +317,8 @@ def put_key_in_revision(
 @click.argument('tree-name', type=str)
 @click.argument('key', type=str)
 @click.argument('file-path', type=str)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Adding key to Config tree revision...")
 def put_file_in_revision(
@@ -321,7 +326,7 @@ def put_file_in_revision(
         tree_name: str,
         key: str,
         file_path: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -329,7 +334,8 @@ def put_file_in_revision(
     """
 
     config = get_config_from_context(ctx)
-    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                  tree_name=tree_name)
     if not rev or rev.committed:
         spinner.text = click.style(
             'RevisionID not provided as argument and not found in the State file. \n'
@@ -339,9 +345,8 @@ def put_file_in_revision(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
 
-
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, spinner=spinner, client=client) as rev:
             rev.store_file(key=key, file_path=file_path)
             spinner.write(click.style(
@@ -353,6 +358,7 @@ def put_file_in_revision(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
+
 @click.command(
     'delete',
     cls=HelpColorsCommand,
@@ -361,15 +367,15 @@ def put_file_in_revision(
 )
 @click.argument('tree-name', type=str)
 @click.argument('key', type=str)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 @with_spinner(text="Deleting key to Config tree revision...")
 def delete_key_in_revision(
         ctx: click.Context,
         tree_name: str,
         key: str,
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -377,7 +383,8 @@ def delete_key_in_revision(
     """
 
     config = get_config_from_context(ctx)
-    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+    rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                  tree_name=tree_name)
     if not rev or rev.committed:
         spinner.text = click.style(
             'RevisionID not provided as argument and not found in the State file. \n'
@@ -388,7 +395,7 @@ def delete_key_in_revision(
         raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, spinner=spinner, client=client) as rev:
             rev.delete(key=key)
             spinner.write(click.style(
@@ -400,6 +407,7 @@ def delete_key_in_revision(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
+
 @click.command(
     'keys',
     cls=HelpColorsCommand,
@@ -408,21 +416,22 @@ def delete_key_in_revision(
 )
 @click.argument('tree-name', type=str)
 @click.argument('rev-id', type=str, required=False)
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.pass_context
 def list_revision_keys(
         ctx: click.Context,
         tree_name: str,
         rev_id: Optional[str],
-        with_project: bool,
+        with_org: bool,
 ) -> None:
     """
     Lists all the keys in the revision
     """
     if not rev_id:
         config = get_config_from_context(ctx)
-        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid, tree_name=tree_name)
+        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+                                      tree_name=tree_name)
         if not rev or rev.committed:
             click.echo(
                 click.style(
@@ -433,7 +442,7 @@ def list_revision_keys(
             raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
 
         keys = tree.get('keys')

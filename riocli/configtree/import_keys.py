@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Optional, Iterable
 from pathlib import Path
+from typing import Optional, Iterable
 
 import click
-from click_help_colors import HelpColorsCommand
 from benedict import benedict
+from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
@@ -34,7 +34,7 @@ from riocli.utils.spinner import with_spinner
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--commit/--no-commit', 'commit', is_flag=True, type=bool,)
+@click.option('--commit/--no-commit', 'commit', is_flag=True, type=bool, )
 @click.option('--update-head/--no-update-head', 'update_head', is_flag=True, type=bool)
 @click.option('--etcd-endpoint', 'etcd_endpoint', type=str,
               help='Import keys to local etcd instead of rapyuta.io cloud')
@@ -44,8 +44,8 @@ from riocli.utils.spinner import with_spinner
               help='Port for the etcd endpoint')
 @click.option('--etcd-prefix', 'etcd_prefix', type=str,
               help='Prefix to use for the key-space')
-@click.option('--project', 'with_project', is_flag=True, type=bool,
-              help='Operate on the Config trees in Project-scope.')
+@click.option('--organization', 'with_org', is_flag=True, type=bool,
+              default=False, help='Operate on organization-scoped Config Trees only.')
 @click.argument('tree-name', type=str)
 @click.argument('files', type=str, nargs=-1)
 @click.pass_context
@@ -60,7 +60,7 @@ def import_keys(
         etcd_endpoint: Optional[str],
         etcd_port: Optional[int],
         etcd_prefix: Optional[str],
-        with_project: bool,
+        with_org: bool,
         spinner: Yaspin,
 ) -> None:
     """
@@ -91,13 +91,12 @@ def import_keys(
     data = benedict(data).flatten(separator='/')
     metadata = benedict(metadata).flatten(separator='/')
 
-
     if etcd_endpoint:
         import_in_etcd(data=data, endpoint=etcd_endpoint, port=etcd_port, prefix=etcd_prefix)
         return
 
     try:
-        client = new_v2_client(with_project=with_project)
+        client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, commit=commit, client=client, spinner=spinner) as rev:
             rev_id = rev.revision_id
 
@@ -153,7 +152,7 @@ def split_metadata(input: Iterable) -> (Iterable, Iterable):
         potential_meta = value.get('metadata')
 
         if len(value) == 2 and potential_content is not None and \
-           potential_meta is not None and isinstance(potential_meta, dict):
+                potential_meta is not None and isinstance(potential_meta, dict):
             content[key] = potential_content
             metadata[key] = Metadata(potential_meta)
             continue
@@ -162,10 +161,10 @@ def split_metadata(input: Iterable) -> (Iterable, Iterable):
 
     return content, metadata
 
+
 def export_to_files(base_dir: str, data: dict) -> None:
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
         file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
         benedict(file_data).to_yaml(filepath=file_path)
-
