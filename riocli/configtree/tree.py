@@ -49,7 +49,7 @@ def create_config_tree(
     config = get_config_from_context(ctx)
 
     try:
-        client = config.new_v2_client(with_project=with_org)
+        client = config.new_v2_client(with_project=(not with_org))
         payload = {
             "kind": "ConfigTree",
             "apiVersion": "api.rapyuta.io/v2",
