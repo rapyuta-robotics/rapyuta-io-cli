@@ -41,7 +41,7 @@ class Revision(object):
                  commit: bool = False,
                  force_new: bool = False,
                  spinner: Optional[Yaspin] = None,
-                 with_org: bool = True):
+                 with_project: bool = True):
 
         self._tree_name = tree_name
         self._client = client
