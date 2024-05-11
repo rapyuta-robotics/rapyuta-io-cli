@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
-from munch import unmunchify
 
+from munch import unmunchify
 from rapyuta_io import Client
 
 from riocli.config import new_v2_client
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
+
 
 class Secret(Model):
     def __init__(self, *args, **kwargs):
@@ -51,12 +52,12 @@ class Secret(Model):
         secret = unmunchify(self)
         secret.pop("rc", None)
 
-        r = client.update_secret(obj.name, secret)
+        r = client.update_secret(obj.metadata.name, secret)
         return unmunchify(r)
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         client = new_v2_client()
-        client.delete_secret(obj.name)
+        client.delete_secret(obj.metadata.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
