@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.vpn.connect import connect
 from riocli.vpn.disconnect import disconnect
+from riocli.vpn.machines import machines
 from riocli.vpn.ping import ping_all
 from riocli.vpn.status import status
 
@@ -37,3 +38,4 @@ vpn.add_command(connect)
 vpn.add_command(disconnect)
 vpn.add_command(status)
 vpn.add_command(ping_all)
+vpn.add_command(machines)

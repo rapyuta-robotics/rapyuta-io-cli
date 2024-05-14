@@ -246,6 +246,17 @@ class Client(object):
 
         return munchify(data)
 
+    def list_instance_bindings(self, instance_name: str, labels: str = '') -> List:
+        """
+        List all managedservice instances in a project
+        """
+        url = "{}/v2/managedservices/{}/bindings/".format(self._host, instance_name)
+        headers = self._get_auth_header()
+
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params={'labelSelector': labels})
+
+
     def create_instance_binding(self, instance_name, binding: dict) -> Munch:
         """
         Create a new managed service instance binding
