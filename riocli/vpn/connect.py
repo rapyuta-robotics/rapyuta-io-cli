@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,29 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import getpass
-import time
-from datetime import datetime, timedelta
 
+from datetime import timedelta
 import click
 from click_help_colors import HelpColorsCommand
-from munch import Munch
 from yaspin.api import Yaspin
 
-from riocli.config import new_v2_client
+from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash_with_return_code
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
 from riocli.vpn.util import (
-    get_command,
+    create_binding,
+    get_binding_labels,
     is_tailscale_up,
+    priviledged_command,
     stop_tailscale,
     install_vpn_tools,
-    get_host_name,
-    get_host_ip,
     is_vpn_enabled_in_project
 )
+
+_TAILSCALE_CMD_FORMAT = 'tailscale up --auth-key={} --login-server={} --reset --force-reauth ' \
+'--accept-routes --accept-dns --advertise-tags={} --timeout=30s'
 
 
 @click.command(
@@ -45,18 +44,19 @@ from riocli.vpn.util import (
 )
 @click.pass_context
 @with_spinner(text="Connecting...")
-def connect(ctx: click.Context, spinner: Yaspin = None):
+def connect(ctx: click.Context, spinner: Yaspin):
     """
     Connect to the current project's VPN network
     """
+    config = get_config_from_context(ctx)
+
     try:
         with spinner.hidden():
             install_vpn_tools()
 
-        client = new_v2_client()
+        client = config.new_v2_client()
 
-        if not is_vpn_enabled_in_project(
-                client, ctx.obj.data.get('project_id')):
+        if not is_vpn_enabled_in_project(client, config.project_guid):
             spinner.write(
                 click.style('{} VPN is not enabled in the project. '
                             'Please ask the organization or project '
@@ -86,7 +86,7 @@ def connect(ctx: click.Context, spinner: Yaspin = None):
                     Symbols.INFO, ctx.obj.data.get('project_name')),
                 fg=Colors.CYAN))
 
-        if not start_tailscale(ctx, client, spinner):
+        if not start_tailscale(ctx, spinner):
             click.secho('{} Failed to connect to the project VPN'.format(
                 Symbols.ERROR), fg=Colors.RED)
             raise SystemExit(1)
@@ -103,18 +103,15 @@ def connect(ctx: click.Context, spinner: Yaspin = None):
         raise SystemExit(1) from e
 
 
-def start_tailscale(
-        ctx: click.Context,
-        client: v2Client,
-        spinner: Yaspin,
-) -> bool:
-    cmd = get_command('tailscale up --auth-key={} --login-server={} --reset --force-reauth '
-                      '--accept-routes --accept-dns --advertise-tags={} --timeout=30s')
-    args = generate_tailscale_args(ctx, client, spinner)
-    command = cmd.format(args.HEADSCALE_PRE_AUTH_KEY, args.HEADSCALE_URL, args.HEADSCALE_ACL_TAG)
+def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
+    spinner.text = 'Generating a token to join the network...'
+
+    binding = create_binding(ctx, delta=timedelta(minutes=10), labels=get_binding_labels())
+    cmd = _TAILSCALE_CMD_FORMAT.format(binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG)
+    cmd = priviledged_command(cmd)
 
     with spinner.hidden():
-        output, code = run_bash_with_return_code(command)
+        _, code = run_bash_with_return_code(cmd)
 
     if code != 0:
         spinner.write(
@@ -125,48 +122,3 @@ def start_tailscale(
     return True
 
 
-def generate_tailscale_args(
-        ctx: click.Context,
-        client: v2Client,
-        spinner: Yaspin,
-) -> Munch:
-    vpn_instance = 'rio-internal-headscale'
-    binding_name = '{}-{}'.format(ctx.obj.machine_id, int(time.time()))
-
-    body = {
-        'metadata': {
-            'name': binding_name,
-            'labels': {
-                'creator': 'riocli',
-                'hostname': get_host_name(),
-                'ip_address': str(get_host_ip()),
-                'username': getpass.getuser(),
-                'rapyuta.io/internal': 'true',
-            }
-        },
-        'spec': {
-            'instance': vpn_instance,
-            'provider': 'headscalevpn',
-            'config': {
-                'ephemeral': True,
-                'throwaway': True,
-                'expirationTime': get_key_expiry_time(),
-            }
-        }
-    }
-
-    spinner.text = 'Generating a token to join the network...'
-
-    try:
-        # We may end up creating multiple throwaway tokens in the database.
-        # But that's okay and something that we can live with
-        binding = client.create_instance_binding(vpn_instance, binding=body)
-        return binding.spec.environment
-    except Exception as e:
-        raise SystemExit(1) from e
-
-
-def get_key_expiry_time() -> str:
-    expiry = datetime.utcnow()
-    expiry = expiry + timedelta(minutes=10)
-    return expiry.isoformat('T') + 'Z'
