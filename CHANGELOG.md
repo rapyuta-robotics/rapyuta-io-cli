@@ -1,3 +1,23 @@
+# [7.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.3...v7.4.0) (2024-05-16)
+
+
+### Bug Fixes
+
+* **configtree:** handle project-level trees correctly in commit sub-command ([6899711](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/68997116268776dd5c050df9cd950da1dc39105f))
+* **configtree:** replace --project with --organization flag ([ab3e5ca](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ab3e5cac76178d8a3f6a2a4a393a6a2849887de9))
+* corrects the with_org usage ([29d4ae4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/29d4ae41f0fa5b751e5b36cfcdf3b17e80d3d2bc))
+* **secret:** corrects corresponding find functions ([#301](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/301)) ([41e287b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/41e287b2e4247d317468ebdf9a0f40a041f1530c))
+
+
+### Features
+
+* **configtree:** add support for key-level Metadata ([5b7c1bb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b7c1bbce63921a7544f436168d3556ca8a26a02))
+* **configtrees:** add support for interacting with Config trees ([f979128](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f979128136efbaab21f221cfc75561769df15286))
+* **configtree:** support exporting YAML files in `import` command ([f7f145f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f7f145f5fb9cf81ef4941258608814da0ca01cab))
+* **graph:** add support for Graphviz ([760d6c0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/760d6c049d5dc0e152479c7d3e025c99c7d5e2af))
+* **state:** implement StateFile to store intermediate state ([3302133](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3302133be004f974f957b1202e358b6f3521c08e))
+* **vpn:** add support for registering machine for Android or iOS ([c385bea](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c385bea1c8e0d87881eee1cf4a97138be6b479b6))
+
 ## [7.3.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.2...v7.3.3) (2024-03-27)
 
 
