@@ -1,3 +1,10 @@
+## [7.4.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.4.0...v7.4.1) (2024-05-16)
+
+
+### Bug Fixes
+
+* **vpn:** fix the expiry time formatting for vpn binding ([8e7fdcb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8e7fdcb2ac4cc4c04d6d7f1f6cec4e170bd8bc5f))
+
 # [7.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.3.3...v7.4.0) (2024-05-16)
 
 
