@@ -188,7 +188,7 @@ def get_key_expiry_time(delta: Optional[timedelta]) -> Optional[str]:
         return None
 
     expiry = datetime.utcnow() + delta
-    return expiry.isoformat('T')
+    return expiry.isoformat('T') + 'Z'
 
 def get_binding_labels() -> dict:
     return {
