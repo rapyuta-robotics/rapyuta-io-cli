@@ -11,8 +11,8 @@ Installation
 
 It is recommended you install the latest Python SDK using pip
 
-.. code:: bash    
-    
+.. code:: bash
+
     pip install rapyuta-io
 
 Rio CLI is available on PyPI index and can be installed directly by running the
@@ -61,6 +61,7 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
    Authentication <auth>
    Chart <chart>
    Completion <completion>
+   ConfigTree <config_tree>
    Deployment <deployment>
    Device <device>
    Disk <disk>

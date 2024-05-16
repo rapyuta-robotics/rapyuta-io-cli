@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from datetime import datetime, timedelta
+import getpass
 import json
 import os
 import socket
@@ -18,9 +20,13 @@ import tempfile
 from os.path import exists, join
 from shutil import move, which
 from sys import platform
+import time
+from typing import Optional
 
 import click
+from munch import Munch
 
+from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 from riocli.v2client import Client as v2Client
@@ -60,11 +66,11 @@ def get_tailscale_ip() -> str:
 
 
 def stop_tailscale() -> bool:
-    _, code = run_bash_with_return_code(get_command('tailscale down'))
+    _, code = run_bash_with_return_code(priviledged_command('tailscale down'))
     if code != 0:
         return False
 
-    output, code = run_bash_with_return_code(get_command('tailscale logout'))
+    output, code = run_bash_with_return_code(priviledged_command('tailscale logout'))
     if code != 0 and 'no nodekey to log out' not in output:
         return False
 
@@ -131,9 +137,64 @@ def is_vpn_enabled_in_project(client: v2Client, project_guid: str) -> bool:
             project.status.vpn.lower() == 'success')
 
 
-def get_command(cmd: str) -> str:
+def priviledged_command(cmd: str) -> str:
     """Returns an effective command to execute."""
     if is_windows() or (is_linux() and os.geteuid() == 0):
         return cmd
 
     return 'sudo {}'.format(cmd)
+
+
+def create_binding(
+        ctx: click.Context,
+        name: str = '',
+        machine: str = '',
+        labels: dict = {},
+        delta: Optional[timedelta] = None,
+        ephemeral: bool = True,
+        throwaway: bool = True,
+) -> Munch:
+    vpn_instance = 'rio-internal-headscale'
+    if name == '':
+        name = '{}-{}'.format(ctx.obj.machine_id, int(time.time()))
+
+    body = {
+        'metadata': {
+            'name': name,
+            'labels': labels,
+        },
+        'spec': {
+            'instance': vpn_instance,
+            'provider': 'headscalevpn',
+            'throwaway': throwaway,
+            'config': {
+                'ephemeral': ephemeral,
+                'expirationTime': get_key_expiry_time(delta),
+                'nodeKey': machine,
+            }
+        }
+    }
+
+    client = get_config_from_context(ctx).new_v2_client()
+
+    # We may end up creating multiple throwaway tokens in the database.
+    # But that's okay and something that we can live with
+    binding = client.create_instance_binding(vpn_instance, binding=body)
+    return binding.spec.get('environment', {})
+
+
+def get_key_expiry_time(delta: Optional[timedelta]) -> Optional[str]:
+    if delta is None:
+        return None
+
+    expiry = datetime.utcnow() + delta
+    return expiry.isoformat('T')
+
+def get_binding_labels() -> dict:
+    return {
+        'creator': 'riocli',
+        'hostname': get_host_name(),
+        'ip_address': str(get_host_ip()),
+        'username': getpass.getuser(),
+        'rapyuta.io/internal': 'true',
+    }

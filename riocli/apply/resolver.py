@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
     def _guid_functor(self, kind):
         mapping = {
-            'secret': lambda x: munchify(x).guid,
+            'secret': lambda x: munchify(x).metadata.name,
             "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['id'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
@@ -150,7 +150,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
     def _find_functors(self, kind):
         mapping = {
-            'secret': self._generate_find_guid_functor(),
+            'secret': lambda name, secrets: filter(lambda i: i.metadata.name == name, secrets),
             "project": lambda name, projects: filter(lambda i: i.metadata.name == name, projects),
             "package": lambda name, obj_list, version: filter(
                 lambda x: name == x.name and version == x['packageVersion'], obj_list),
