@@ -482,6 +482,8 @@ def list_revision_keys(
             )
             raise SystemExit(1)
 
+        rev_id = rev.rev_id
+
     try:
         client = new_v2_client(with_project=(not with_org))
         tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
