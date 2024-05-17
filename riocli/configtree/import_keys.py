@@ -97,7 +97,8 @@ def import_keys(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        with Revision(tree_name=tree_name, commit=commit, client=client, spinner=spinner) as rev:
+        with Revision(tree_name=tree_name, commit=commit, client=client, spinner=spinner,
+                      with_org=with_org) as rev:
             rev_id = rev.revision_id
 
             for key, value in data.items():

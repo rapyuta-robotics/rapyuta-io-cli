@@ -191,10 +191,15 @@ def set_tree_revision(
     """
 
     config = get_config_from_context(ctx)
+    project_guid = None
+    if not with_org:
+        project_guid = config.project_guid
 
     if not rev_id:
-        rev = get_revision_from_state(org_guid=config.organization_guid, project_guid=config.project_guid,
+        rev = get_revision_from_state(org_guid=config.organization_guid,
+                                      project_guid=project_guid,
                                       tree_name=tree_name)
+
         if not rev or not rev.committed:
             spinner.text = click.style(
                 'RevisionID not provided as argument and not found in the State file.',
