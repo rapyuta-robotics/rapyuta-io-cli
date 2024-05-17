@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-import os
 
 import http
 import json
-import magic
-from typing import List, Optional, Dict, Any
+import os
 from hashlib import md5
+from typing import List, Optional, Dict, Any
 
+import magic
 import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
@@ -150,6 +150,24 @@ class Client(object):
 
         return munchify(data)
 
+    def update_project_owner(self, project_guid: str, new_owner_guid: str) -> Munch:
+        """
+        Update an existing project's owner (creator)
+        """
+        url = "{}/v2/projects/{}/owner/".format(self._host, project_guid)
+        headers = self._get_auth_header(with_project=False)
+        response = RestClient(url).method(HttpMethod.PUT).headers(
+            headers).execute(payload={'metadata': {'creatorGUID': new_owner_guid}})
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("projects: {}".format(err_msg))
+
+        return munchify(data)
+
     def delete_project(self, project_guid: str) -> Munch:
         """
         Delete a project by its GUID
@@ -255,7 +273,6 @@ class Client(object):
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client, params={'labelSelector': labels})
-
 
     def create_instance_binding(self, instance_name, binding: dict) -> Munch:
         """
@@ -523,8 +540,8 @@ class Client(object):
         return munchify(data)
 
     def get_config_tree(self, tree_name: str, rev_id: Optional[str] = None,
-                               include_data: bool = False, filter_content_types: Optional[List[str]] = None,
-                               filter_prefixes: Optional[List[str]] = None) -> Munch:
+                        include_data: bool = False, filter_content_types: Optional[List[str]] = None,
+                        filter_prefixes: Optional[List[str]] = None) -> Munch:
         url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
         query = {
             'includeData': include_data,
@@ -605,7 +622,6 @@ class Client(object):
             raise Exception("configtree: {}".format(err_msg))
 
         return munchify(data)
-
 
     def store_key_in_revision(self, tree_name: str, rev_id: str, key: str, value: str, perms: int = 644) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
