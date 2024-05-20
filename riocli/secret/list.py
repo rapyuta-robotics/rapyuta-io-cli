@@ -34,7 +34,7 @@ def list_secrets() -> None:
     try:
         client = new_v2_client(with_project=True)
         secrets = client.list_secrets()
-        secrets = sorted(secrets, key=lambda s: s.name.lower())
+        secrets = sorted(secrets, key=lambda s: s.metadata.name.lower())
         _display_secret_list(secrets, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -49,7 +49,7 @@ def _display_secret_list(
     if show_header:
         headers = ('ID', 'Name', 'Created At', 'Creator')
 
-    data = [ [secret.guid, secret.name,
-                secret.createdAt, secret.creatorGUID] for secret in secrets ]
+    data = [ [secret.metadata.guid, secret.metadata.name,
+                secret.metadata.createdAt, secret.metadata.creatorGUID] for secret in secrets ]
 
     tabulate_data(data, headers)
