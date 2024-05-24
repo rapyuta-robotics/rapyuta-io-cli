@@ -760,7 +760,7 @@ class Client(object):
                 break
             offset = data['metadata']['continue']
             for deployment in deployments:
-                result.append(deployment['metadata'])
+                result.append(deployment)
 
         return munchify(result)
     
