@@ -23,7 +23,7 @@ from rapyuta_io.utils.rest_client import HttpMethod
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.disk.util import _api_call
+
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 
