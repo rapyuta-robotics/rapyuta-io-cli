@@ -15,6 +15,7 @@ with open("README.md", "rb") as f:
 
 setup(
     name="rapyuta-io-cli",
+    python_requires=">=3.8",
     packages=find_packages(),
     package_data={
         'riocli': [
@@ -31,6 +32,13 @@ setup(
     author="Rapyuta Robotics",
     author_email="opensource@rapyuta-robotics.com",
     url="http://docs.rapyuta.io",
+    classifiers=[
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+    ],
     install_requires=[
         "pretty-traceback>=2022.1018",
         "argparse>=1.4.0",
