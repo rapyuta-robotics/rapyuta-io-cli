@@ -388,10 +388,10 @@ class Applier(object):
 
         dependency['guid'] = guid
         if kind.lower() == "disk":
-            dependency['depGuid'] = obj['internalDeploymentGUID']
+            dependency['depGuid'] = obj.metadata.guid
 
         if kind.lower() == "deployment":
-            dependency['guid'] = obj['deploymentId']
+            dependency['guid'] = obj.guid
 
     def _initialize_kind_dependency(self, kind):
         if not self.dependencies.get(kind):

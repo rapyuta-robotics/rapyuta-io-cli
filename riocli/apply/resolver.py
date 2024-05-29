@@ -120,7 +120,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['metadata']['guid'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
-            "deployment": lambda x: munchify(x)['deploymentId'],
+            "deployment": lambda x: munchify(x).guid,
             "network": lambda x: munchify(x)['metadata']['guid'],
             # This is only temporarily like this
             "disk": lambda x: munchify(x)['metadata']['guid'],
@@ -158,7 +158,8 @@ class ResolverCache(object, metaclass=_Singleton):
                 lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
             "deployment": lambda name, obj_list: filter(
                 lambda x: name == x.name, obj_list),
-            "disk": self._generate_find_guid_functor(),
+            "disk": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name,  obj_list),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
             "usergroup": lambda name, groups: filter(lambda i: i.name == name, groups),
