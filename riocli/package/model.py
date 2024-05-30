@@ -200,13 +200,18 @@ class Package(Model):
         if 'livenessProbe' in exec:
             exec_object.livenessProbe = exec.livenessProbe
 
-        if exec.get('runAsBash'):
-            if 'command' in exec:
-                exec_object.cmd = ['/bin/bash', '-c', exec.command]
-        else:
-            # TODO verify this is right for secret?
-            if 'command' in exec:
-                exec_object.cmd = [exec.command]
+        if 'command' in exec:
+            c = []
+
+            if exec.get('runAsBash'):
+                c = ['/bin/bash', '-c']
+
+            if isinstance(exec.command, list):
+                c.extend(exec.command)
+            else:
+                c.append(exec.command)
+
+            exec_object.cmd = c
 
         if exec.type == 'docker':
             exec_object.docker = exec.docker.image
