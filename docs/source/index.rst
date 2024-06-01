@@ -65,6 +65,7 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
    Deployment <deployment>
    Device <device>
    Disk <disk>
+   Hardware-in-Loop <hwil>
    ManagedService <managedservice>
    Network <network>
    Organization <organization>

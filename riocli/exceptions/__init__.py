@@ -34,3 +34,11 @@ class LoggedOut(Exception):
         return """Not logged in. Please login first
         $ rio auth login 
         """
+
+
+class HwilLoggedOut(Exception):
+
+    def __str__(self):
+        return """Not logged in to HWIL. Please login first
+        $ rio hwil login 
+        """

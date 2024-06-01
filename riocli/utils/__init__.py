@@ -19,6 +19,7 @@ import string
 import subprocess
 import sys
 import typing
+import uuid
 from pathlib import Path
 from shutil import get_terminal_size, move
 from tempfile import TemporaryDirectory
@@ -261,3 +262,7 @@ def update_appimage(version: str):
             raise e
         except Exception as e:
             raise e
+
+
+def generate_short_guid() -> str:
+    return uuid.uuid4().hex[:8]

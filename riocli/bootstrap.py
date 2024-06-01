@@ -28,6 +28,7 @@ from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
 from riocli.configtree import config_trees
+from riocli.hwil import hwildevice
 from riocli.constants import Colors, Symbols
 from riocli.deployment import deployment
 from riocli.device import device
@@ -138,3 +139,4 @@ cli.add_command(organization)
 cli.add_command(vpn)
 cli.add_command(usergroup)
 cli.add_command(config_trees)
+cli.add_command(hwildevice)
