@@ -25,6 +25,7 @@ from rapyuta_io import Client
 
 from riocli.exceptions import LoggedOut, NoOrganizationSelected, NoProjectSelected
 from riocli.v2client import Client as v2Client
+from riocli.hwilclient import Client as hwilClient
 
 
 class Configuration(object):
@@ -108,6 +109,17 @@ class Configuration(object):
             project = None
 
         return v2Client(self, auth_token=token, project=project)
+
+    def new_hwil_client(self: Configuration) -> hwilClient:
+        if 'hwil_auth_token' not in self.data:
+            raise LoggedOut
+
+        if 'environment' in self.data:
+            os.environ['RIO_CONFIG'] = self.filepath
+
+        token = self.data.get('hwil_auth_token', None)
+
+        return hwilClient(auth_token=token)
 
     def get_auth_header(self: Configuration) -> dict:
         if not ('auth_token' in self.data and 'project_id' in self.data):
