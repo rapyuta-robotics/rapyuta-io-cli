@@ -26,6 +26,9 @@ from riocli.utils import tabulate_data
     help_options_color=Colors.GREEN,
 )
 def list_devices() -> None:
+    """
+     lists virtual devices on the cloud
+    """
     try:
         client = new_hwil_client()
         devices = client.list_devices()

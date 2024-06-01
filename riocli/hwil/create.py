@@ -15,6 +15,8 @@ import time
 import typing
 import click
 from click_spinner import spinner
+from click_help_colors import HelpColorsCommand
+from riocli.constants import Colors
 from rapyuta_io.utils import ConflictError
 from rapyuta_io.clients.device import DevicePythonVersion, Device, DeviceStatus
 from riocli.utils import tabulate_data
@@ -26,7 +28,11 @@ from riocli.hwilclient.client import Client
 from rapyuta_io import Client as v1Client
 
 
-@click.command('create', hidden=True)
+
+@click.command('create',
+               cls=HelpColorsCommand,
+               help_headers_color=Colors.YELLOW,
+               help_options_color=Colors.GREEN,)
 @click.option('--arch', 'arch', help='device family type',
               type=click.Choice(['amd64', 'arm64']), default='amd64')
 @click.option('--os', 'os', help='type of os',
