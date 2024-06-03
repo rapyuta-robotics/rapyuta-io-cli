@@ -50,36 +50,3 @@ def inspect_deployment(
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
-
-
-def make_deployment_inspectable(deployment: Deployment) -> dict:
-    return {
-        'created_at': deployment.CreatedAt,
-        'updated_at': deployment.UpdatedAt,
-        'deleted_at': deployment.DeletedAt,
-        'package_id': deployment.packageId,
-        'package_name': deployment.packageName,
-        'package_api_version': deployment.packageAPIVersion,
-        'owner_project': deployment.ownerProject,
-        'creator': deployment.creator,
-        'plan_id': deployment.planId,
-        'deployment_id': deployment.deploymentId,
-        'current_generation': deployment.currentGeneration,
-        'bindable': deployment.bindable,
-        'name': deployment.name,
-        'parameters': deployment.parameters,
-        'provision_context': deployment.provisionContext,
-        'component_instance_ids': deployment.componentInstanceIds,
-        'dependent_deployments': deployment.dependentDeployments,
-        'labels': deployment.labels,
-        'in_use': deployment.inUse,
-        'used_by': deployment.usedBy,
-        'phase': deployment.phase,
-        'status': deployment.status,
-        'component_info': deployment.componentInfo,
-        'dependent_deployment_status': deployment.get(
-            'dependentDeploymentStatus'),
-        'errors': deployment.get('errors'),
-        'package_dependency_status': deployment.get('packageDependencyStatus'),
-        'core_networks': deployment.get('coreNetworks'),
-    }

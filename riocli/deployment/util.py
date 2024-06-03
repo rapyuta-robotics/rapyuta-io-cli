@@ -128,12 +128,11 @@ def fetch_deployments(
 ) -> List[Deployment]:
     deployments = client.list_deployments()
     result = []
-
     for deployment in deployments:
-        if (include_all or deployment_name_or_regex == deployment.name or
-                deployment_name_or_regex == deployment.guid or
-                (deployment_name_or_regex not in deployment.name and
-                 re.search(r'^{}$'.format(deployment_name_or_regex), deployment.name))):
+        if (include_all or deployment_name_or_regex == deployment.metadata.name or
+                deployment_name_or_regex == deployment.metadata.guid or
+                (deployment_name_or_regex not in deployment.metadata.name and
+                 re.search(r'^{}$'.format(deployment_name_or_regex), deployment.metadata.name))):
             result.append(deployment)
 
     return result
@@ -144,8 +143,6 @@ def print_deployments_for_confirmation(deployments: List[Deployment]):
 
     data = []
     for deployment in deployments:
-        phase = "" if not hasattr(deployment, 'phase') else deployment.phase
-        status = "" if not hasattr(deployment, 'status') else deployment.status
-        data.append([deployment.name, deployment.guid, phase, status])
+        data.append([deployment.metadata.name, deployment.metadata.guid, deployment.status.phase, deployment.status.status])
 
     tabulate_data(data, headers)

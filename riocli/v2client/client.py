@@ -910,9 +910,6 @@ class Client(object):
             raise Exception("package: {}".format(err_msg))
 
         return munchify(data)
-    
-        return munchify(data) 
-
 
     def list_deployments(
         self,
@@ -931,6 +928,7 @@ class Client(object):
             params.update({
                 "continue": offset,
                 "limit": 50,
+                "phases": ["Succeeded"],
             })
             response = RestClient(url).method(HttpMethod.GET).query_param(
                 params).headers(headers).execute()
@@ -942,8 +940,7 @@ class Client(object):
             if not deployments:
                 break
             offset = data['metadata']['continue']
-            for deployment in deployments:
-                result.append(deployment['metadata'])
+            result.extend(deployments)
 
         return munchify(result)
     
@@ -993,9 +990,9 @@ class Client(object):
         """
         Update a deployment
         """
-        url = "{}/v2/deployments/{}/".format(self._host, name)
+        url = "{}/v2/deployments/".format(self._host)
         headers = self._config.get_auth_header()
-        response = RestClient(url).method(HttpMethod.PUT).headers(
+        response = RestClient(url).method(HttpMethod.PATCH).headers(
             headers).execute(payload=dep)
         handle_server_errors(response)
         data = json.loads(response.text)
