@@ -67,7 +67,7 @@ class Deployment(Model):
 
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         client = new_v2_client()
-        client.delete_deployment(obj.name)
+        client.delete_deployment(obj.metadata.name)
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:

@@ -391,7 +391,7 @@ class Applier(object):
             dependency['depGuid'] = obj.metadata.guid
 
         if kind.lower() == "deployment":
-            dependency['guid'] = obj.guid
+            dependency['guid'] = obj.metadata.guid
 
     def _initialize_kind_dependency(self, kind):
         if not self.dependencies.get(kind):

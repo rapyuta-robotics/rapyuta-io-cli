@@ -86,8 +86,9 @@ def delete_deployment(
         spinner.write('')
 
     try:
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=_apply_delete, items=deployments,
+            f=f, items=deployments,
             workers=workers, key=lambda x: x[0]
         )
 
@@ -121,7 +122,7 @@ def delete_deployment(
 
 def _apply_delete(client: Client, result: Queue, deployment: Deployment) -> None:
     try:
-        client.delete_deployment(name=deployment.name)
-        result.put((deployment.name, True))
+        client.delete_deployment(name=deployment.metadata.name)
+        result.put((deployment.metadata.name, True))
     except Exception:
-        result.put((deployment.name, False))
+        result.put((deployment.metadata.name, False))

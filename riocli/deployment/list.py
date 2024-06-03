@@ -57,7 +57,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     try:
         client = new_v2_client(with_project=True)
         deployments = client.list_deployments()
-        deployments = sorted(deployments, key=lambda d: d.name.lower())
+        deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -71,9 +71,9 @@ def display_deployment_list(deployments: typing.List[Deployment], show_header: b
 
     data = []
     for deployment in deployments:
-        package_name_version = "{} ({})".format(deployment.depends.nameOrGUID, deployment.depends.version)
-        phase = "" if not hasattr(deployment, 'phase') else deployment.phase
-        data.append([deployment.guid, deployment.name,
+        package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID, deployment.metadata.depends.version)
+        phase = deployment.status.phase if deployment.status else ""
+        data.append([deployment.metadata.guid, deployment.metadata.name,
                      phase, package_name_version])
 
     tabulate_data(data, headers=headers)

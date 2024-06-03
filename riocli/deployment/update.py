@@ -157,12 +157,11 @@ def _apply_update(
         deployment: Deployment,
 ) -> None:
     try:
-        dep = client.get_deployment(deployment['name'])
+        dep = client.get_deployment(deployment.metadata.name)
         if not dep:
-            result.put((deployment["name"], False))
+            result.put((deployment.metadata.name, False))
             return
-
-        client.update_deployment(deployment)
-        result.put((deployment["name"], True))
+        client.update_deployment(deployment.metadata.name, deployment)
+        result.put((deployment.metadata.name, True))
     except Exception:
-        result.put((deployment["name"], False))
+        result.put((deployment.metadata.name, False))
