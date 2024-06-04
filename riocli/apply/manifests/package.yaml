@@ -161,7 +161,7 @@ spec:
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+        timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimum: 10
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
@@ -357,7 +357,7 @@ spec:
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+        timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimum: 10
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
@@ -379,7 +379,7 @@ spec:
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+        timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimum: 10
       docker:
         image: "nginx:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
@@ -427,7 +427,7 @@ spec:
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
-        timeoutSeconds: 1 # Number of seconds after which the probe times out.
+        timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimum: 10
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
