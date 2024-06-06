@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from pathlib import Path
 from typing import Optional, Iterable
 
@@ -23,7 +22,7 @@ from yaspin.core import Yaspin
 from riocli.config import new_v2_client
 from riocli.configtree.etcd import import_in_etcd
 from riocli.configtree.revision import Revision
-from riocli.configtree.util import Metadata
+from riocli.configtree.util import Metadata, export_to_files
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -161,11 +160,3 @@ def split_metadata(input: Iterable) -> (Iterable, Iterable):
         content[key], metadata[key] = split_metadata(value)
 
     return content, metadata
-
-
-def export_to_files(base_dir: str, data: dict) -> None:
-    base_dir = os.path.abspath(base_dir)
-
-    for file_name, file_data in data.items():
-        file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
-        benedict(file_data).to_yaml(filepath=file_path)
