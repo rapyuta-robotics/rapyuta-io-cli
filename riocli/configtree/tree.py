@@ -294,7 +294,7 @@ def list_config_tree_keys(
             raise Exception('Config tree does not have keys in the revision')
 
         keys = tree.get('keys')
-        if not isinstance(keys, Dict):
+        if not isinstance(keys, dict):
             raise Exception('Keys are not dictionary')
 
         display_config_tree_keys(keys=keys)

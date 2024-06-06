@@ -14,6 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
+from riocli.configtree.export_keys import export_keys
 from riocli.configtree.revision import revision
 from riocli.configtree.tree import clone_tree, create_config_tree, delete_config_tree, list_config_tree_keys, list_config_trees, list_tree_revisions, set_tree_revision
 from riocli.configtree.import_keys import import_keys
@@ -39,6 +40,7 @@ config_trees.add_command(delete_config_tree)
 config_trees.add_command(list_config_tree_keys)
 config_trees.add_command(clone_tree)
 config_trees.add_command(import_keys)
+config_trees.add_command(export_keys)
 config_trees.add_command(set_tree_revision)
 config_trees.add_command(list_tree_revisions)
 config_trees.add_command(revision)

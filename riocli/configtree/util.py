@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+import os
 from typing import Optional, Iterable
 
+from benedict import benedict
 from munch import Munch, munchify, unmunchify
 
 from riocli.utils import tabulate_data
@@ -151,3 +153,11 @@ class Metadata(object):
 
     def get_dict(self: Metadata) -> dict:
         return self.data
+
+
+def export_to_files(base_dir: str, data: dict) -> None:
+    base_dir = os.path.abspath(base_dir)
+
+    for file_name, file_data in data.items():
+        file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
+        benedict(file_data).to_yaml(filepath=file_path)
