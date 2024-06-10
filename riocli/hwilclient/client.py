@@ -76,7 +76,7 @@ class Client(object):
         self._token = auth_token
         self._host = self.HWIL_URL
 
-    def create_device(self, name: str, arch: str, os: str, codename: str):
+    def create_hwil_device(self, name: str, arch: str, os: str, codename: str):
         url = f"{self._host}/device/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(

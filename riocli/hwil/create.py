@@ -42,7 +42,7 @@ from riocli.utils.spinner import with_spinner
 @click.option('--onboard', 'onboard', is_flag=True, type=bool, default=False)
 @click.argument('device-name', type=str)
 @with_spinner(text='Creating HWIL device...')
-def create_device(
+def create_hwil_device(
         device_name: str,
         arch: str,
         os: str,
@@ -57,7 +57,7 @@ def create_device(
         hwil_client = new_hwil_client()
         with spinner():
             try:
-                hwil_client.create_device(device_name, arch, os, codename)
+                hwil_client.create_hwil_device(device_name, arch, os, codename)
                 click.secho('HWIL Device created successfully!', fg='green')
             except ConflictError as c:
                 click.secho('HWIL Device {} already exists in cluster!'.format(device_name), fg='green')

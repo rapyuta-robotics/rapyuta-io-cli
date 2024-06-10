@@ -15,8 +15,15 @@ import click
 from click_spinner import spinner
 from rapyuta_io import ROSDistro
 from rapyuta_io.clients.device import DevicePythonVersion, Device, DeviceRuntime
-
+from riocli.hwil.create import create_hwil_device
 from riocli.config import new_client
+
+RUNTIME_CHOICES = ['preinstalled', 'dockercompose']
+ROS_CHOICES = ['kinetic', 'melodic', 'noetic']
+PYTHON_CHOICES = ['2', '3']
+ARCH_CHOICES = ['amd64', 'arm64']
+OS_CHOICES = ['debian', 'ubuntu']
+CODENAME_CHOICES = ['bionic', 'focal', 'jammy', 'bullseye']
 
 
 @click.command('create', hidden=True)
@@ -31,6 +38,7 @@ from riocli.config import new_client
               help='Path to store recorded ROSBags (only dockercompose)')
 @click.option('--catkin-workspace', default='/home/rapyuta/catkin_ws',
               help='Path to the Catkin Workspace (only preinstalled)')
+@click.option('--virtual', is_flag=True, default=False, help='Create a virtual HWIL device and onboard it to rapyuta-io')
 @click.argument('device-name', type=str)
 def create_device(
         device_name: str,
@@ -40,23 +48,33 @@ def create_device(
         python: str,
         rosbag_mount_path: str,
         catkin_workspace: str,
+        virtual: bool,
 ) -> None:
     """
     Create a new device on the Platform
     """
-    try:
-        client = new_client()
-        with spinner():
-            python_version = DevicePythonVersion(python)
-            ros_distro = ROSDistro(ros)
-            runtime_docker = DeviceRuntime.DOCKER in runtime
-            runtime_preinstalled = DeviceRuntime.PREINSTALLED in runtime
-            device = Device(name=device_name, description=description, ros_distro=ros_distro,
-                            runtime_docker=runtime_docker, runtime_preinstalled=runtime_preinstalled,
-                            python_version=python_version, rosbag_mount_path=rosbag_mount_path,
-                            ros_workspace=catkin_workspace)
-            client.create_device(device)
-        click.secho('Device created successfully!', fg='green')
-    except Exception as e:
-        click.secho(str(e), fg='red')
-        raise SystemExit(1)
+    if virtual:
+        arch = click.prompt('Device family type', type=click.Choice(ARCH_CHOICES), default='amd64')
+        os = click.prompt('Type of OS', type=click.Choice(OS_CHOICES), default='ubuntu')
+        codename = click.prompt('Code name of OS', type=click.Choice(CODENAME_CHOICES), default='focal')
+        device_name = click.prompt('Device name', type=str)
+        onboard = True
+
+        create_hwil_device(device_name, arch, os, codename, onboard)
+    else:
+        try:
+            client = new_client()
+            with spinner():
+                python_version = DevicePythonVersion(python)
+                ros_distro = ROSDistro(ros)
+                runtime_docker = DeviceRuntime.DOCKER in runtime
+                runtime_preinstalled = DeviceRuntime.PREINSTALLED in runtime
+                device = Device(name=device_name, description=description, ros_distro=ros_distro,
+                                runtime_docker=runtime_docker, runtime_preinstalled=runtime_preinstalled,
+                                python_version=python_version, rosbag_mount_path=rosbag_mount_path,
+                                ros_workspace=catkin_workspace)
+                client.create_device(device)
+            click.secho('Device created successfully!', fg='green')
+        except Exception as e:
+            click.secho(str(e), fg='red')
+            raise SystemExit(1)

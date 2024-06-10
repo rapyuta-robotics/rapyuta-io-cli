@@ -14,7 +14,7 @@
 import click
 from click_help_colors import HelpColorsGroup
 
-from riocli.hwil.create import create_device
+from riocli.hwil.create import create_hwil_device
 from riocli.hwil.list import list_devices
 from riocli.hwil.delete import delete_device
 from riocli.hwil.inspect import inspect_device
@@ -35,7 +35,7 @@ def hwildevice():
 
 
 hwildevice.add_command(login)
-hwildevice.add_command(create_device)
+hwildevice.add_command(create_hwil_device)
 hwildevice.add_command(list_devices)
 hwildevice.add_command(delete_device)
 hwildevice.add_command(inspect_device)
