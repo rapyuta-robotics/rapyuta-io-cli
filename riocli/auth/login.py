@@ -19,7 +19,6 @@ from riocli.auth.util import (
     select_organization,
     select_project,
     validate_and_set_token,
-    validate_and_set_hwil_token
 )
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
@@ -47,10 +46,6 @@ LOGIN_SUCCESS = click.style('{} Logged in successfully!'.format(Symbols.SUCCESS)
               help='Make login interactive')
 @click.option('--auth-token', type=str, default=None,
               help="Login with auth token only")
-@click.option('--hwil-user', type=str,
-              help="Username of rapyuta.io virtual devices account")
-@click.option('--hwil-password', type=str,
-              help="Password of the rapyuta.io virtual devices account")
 @click.pass_context
 def login(
         ctx: click.Context,
@@ -60,8 +55,6 @@ def login(
         project: str,
         interactive: bool,
         auth_token: str,
-        hwil_user: str,
-        hwil_password: str,
 ) -> None:
     """
     Log into your rapyuta.io account using the CLI. This is required to
@@ -79,8 +72,6 @@ def login(
         if interactive:
             email = email or click.prompt('Email')
             password = password or click.prompt('Password', hide_input=True)
-            hwil_user = hwil_user or click.prompt('HwilUser')
-            hwil_password = hwil_password or click.prompt('HwilPassword')
 
         if not email:
             click.secho('email not specified')
@@ -90,15 +81,6 @@ def login(
             click.secho('password not specified')
             raise SystemExit(1)
 
-        if hwil_user and not hwil_password:
-            click.secho('hwil password not specified')
-
-        if hwil_password and not hwil_user:
-            click.secho('hwil user not specified')
-
-        if hwil_user and hwil_password:
-            if not validate_and_set_hwil_token(ctx, hwil_user, hwil_password):
-                raise SystemExit(1)
 
         ctx.obj.data['email_id'] = email
         ctx.obj.data['password'] = password

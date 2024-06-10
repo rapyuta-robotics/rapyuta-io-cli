@@ -18,13 +18,11 @@ from rapyuta_io import Client
 from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 
-from riocli.hwilclient import Client as HwilClient
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.project.util import find_project_guid, find_organization_guid
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
-from base64 import b64encode
 
 TOKEN_LEVELS = {
     0: AuthTokenLevel.LOW,
@@ -114,34 +112,6 @@ def select_project(
     )
 
     click.secho(confirmation, fg=Colors.GREEN)
-
-@with_spinner(text='Validating hwil credentials...')
-def validate_and_set_hwil_token(
-        ctx: click.Context,
-        username: str,
-        password: str,
-        spinner=None
-) -> bool:
-    """Validates an auth token."""
-    if 'environment' in ctx.obj.data:
-        os.environ['RIO_CONFIG'] = ctx.obj.filepath
-
-    token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
-    client = HwilClient(auth_token=token)
-
-    try:
-        client.list_devices()
-        ctx.obj.data['hwil_auth_token'] = token
-        spinner.ok(Symbols.INFO)
-        return True
-    except UnauthorizedError:
-        spinner.text = click.style("incorrect credentials for hwil", fg=Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        return False
-    except Exception as e:
-        spinner.text = click.style(str(e), fg=Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        return False
 
 
 @with_spinner(text='Fetching token...')

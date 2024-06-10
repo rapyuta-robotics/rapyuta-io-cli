@@ -24,10 +24,10 @@ from riocli.device.util import find_device_guid
     cls=HelpColorsCommand,
 )
 @click.argument('device-name', type=str, default="")
-@click.option('--deboard', 'deboard', is_flag=True, type=bool, default=False)
+@click.option('--offboard', 'offboard', is_flag=True, type=bool, default=False)
 def delete_device(
         device_name: str,
-        deboard: bool,
+        offboard: bool,
 ) -> None:
     """
         delete a  virtual device on the cloud
@@ -42,7 +42,7 @@ def delete_device(
             except DeviceNotFound as d:
                 click.secho('HWIL Device already deleted!', fg='green')
 
-            if deboard:
+            if offboard:
                 try:
                     client.delete_device(device_id=find_device_guid(client, device_name))
                     click.secho('Rapyuta.io Device deleted successfully in rapyuta.io!', fg='green')

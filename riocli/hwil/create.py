@@ -26,7 +26,7 @@ from riocli.hwil.util import name_to_id
 from riocli.config import new_client, new_hwil_client
 from riocli.hwilclient.client import Client
 from rapyuta_io import Client as v1Client
-
+from riocli.utils.spinner import with_spinner
 
 
 @click.command('create',
@@ -41,6 +41,7 @@ from rapyuta_io import Client as v1Client
               type=click.Choice(['bionic', 'focal', 'jammy', 'bullseye']), default='focal')
 @click.option('--onboard', 'onboard', is_flag=True, type=bool, default=False)
 @click.argument('device-name', type=str)
+@with_spinner(text='Creating HWIL device...')
 def create_device(
         device_name: str,
         arch: str,
@@ -106,12 +107,3 @@ def _onboard_hwil_device(hwil_client: Client, client: v1Client, device_name: str
         click.secho(str(e), fg='red')
         raise SystemExit(1)
 
-
-def _display_device_list(devices: typing.List[dict], show_header: bool = True) -> None:
-    headers = []
-    if show_header:
-        headers = ('Device ID', 'Name', 'Status')
-
-    data = [[d.uuid, d.name, d.status] for d in devices]
-
-    tabulate_data(data, headers)
