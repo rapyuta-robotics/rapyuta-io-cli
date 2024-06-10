@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.device.config import device_config
-from riocli.device.create import create_device
+from riocli.device.create import create_device, create_virtual_device
 from riocli.device.delete import delete_device
 from riocli.device.deployment import list_deployments
 from riocli.device.execute import execute_command
@@ -57,3 +57,4 @@ device.add_command(list_deployments)
 device.add_command(list_devices)
 device.add_command(tools)
 device.add_command(toggle_vpn)
+device.add_command(create_virtual_device)

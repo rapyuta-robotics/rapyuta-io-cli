@@ -17,6 +17,7 @@ from rapyuta_io import ROSDistro
 from rapyuta_io.clients.device import DevicePythonVersion, Device, DeviceRuntime
 from riocli.hwil.create import create_hwil_device
 from riocli.config import new_client
+from riocli.utils.spinner import with_spinner
 
 RUNTIME_CHOICES = ['preinstalled', 'dockercompose']
 ROS_CHOICES = ['kinetic', 'melodic', 'noetic']
@@ -53,15 +54,7 @@ def create_device(
     """
     Create a new device on the Platform
     """
-    if virtual:
-        arch = click.prompt('Device family type', type=click.Choice(ARCH_CHOICES), default='amd64')
-        os = click.prompt('Type of OS', type=click.Choice(OS_CHOICES), default='ubuntu')
-        codename = click.prompt('Code name of OS', type=click.Choice(CODENAME_CHOICES), default='focal')
-        device_name = click.prompt('Device name', type=str)
-        onboard = True
-
-        create_hwil_device(device_name, arch, os, codename, onboard)
-    else:
+    if not virtual:
         try:
             client = new_client()
             with spinner():
@@ -78,3 +71,44 @@ def create_device(
         except Exception as e:
             click.secho(str(e), fg='red')
             raise SystemExit(1)
+
+    arch = click.prompt('Device family type', type=click.Choice(ARCH_CHOICES), default='amd64')
+    os = click.prompt('Type of OS', type=click.Choice(OS_CHOICES), default='ubuntu')
+    codename = click.prompt('Code name of OS', type=click.Choice(CODENAME_CHOICES), default='focal')
+    device_name = click.prompt('Device name', type=str)
+    onboard = True
+
+    create_hwil_device(device_name, arch, os, codename, onboard)
+
+
+@with_spinner(text='onboarding HWIL device...')
+@click.command('create-virtual', hidden=True)
+@click.option('--arch', 'arch', help='Device family type',
+              type=click.Choice(ARCH_CHOICES), default='amd64')
+@click.option('--os', 'os', help='Type of OS',
+              type=click.Choice(OS_CHOICES), default='ubuntu')
+@click.option('--codename', 'codename', help='Code name of OS',
+              type=click.Choice(CODENAME_CHOICES), default='focal')
+@click.argument('device_name', type=str)
+@click.option('--description', type=str, help='Description of the device', default='')
+@click.option('--runtime', help='Runtime of the Device', multiple=True,
+              type=click.Choice(['preinstalled', 'dockercompose'], case_sensitive=False))
+@click.option('--ros', help='ROS Distribution for the Device', default='melodic',
+              type=click.Choice(['kinetic', 'melodic', 'noetic'], case_sensitive=False))
+@click.option('--python', help='Python Version to use on the Device', default='3',
+              type=click.Choice(['2', '3'], case_sensitive=False))
+@click.option('--rosbag-mount-path', type=str, default='/opt/rapyuta/volumes/rosbag',
+              help='Path to store recorded ROSBags (only dockercompose)')
+@click.option('--catkin-workspace', default='/home/rapyuta/catkin_ws',
+              help='Path to the Catkin Workspace (only preinstalled)')
+def create_virtual_device(
+        device_name: str,
+        arch: str,
+        os: str,
+        codename: str
+) -> None:
+    """
+    Create a new virtual (HWIL) device and onboard it to the platform
+    """
+    onboard = True
+    create_hwil_device(device_name, arch, os, codename, onboard)
