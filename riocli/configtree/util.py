@@ -22,6 +22,8 @@ from riocli.utils import tabulate_data
 from riocli.utils.graph import Graphviz
 from riocli.utils.state import StateFile
 
+MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
+
 
 # The following describes how configtrees are stored in the Statefile.
 # "configtrees": {
@@ -119,14 +121,16 @@ def display_config_tree_keys(keys: dict, show_header: bool = True) -> None:
 def display_config_tree_revisions(revisions: Iterable, show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ['Updated At', 'RevisionID', 'Message', 'Parent', 'Committed']
+        headers = ['Updated At', 'RevisionID', 'Message', 'Milestone', 'Parent', 'Committed']
 
     data = []
     for rev in revisions:
         message = rev.get('message')
         parent = rev.get('parent')
         committed = rev.get('committed', False)
-        data.append([rev.metadata.updatedAt, rev.metadata.guid, message, parent, committed])
+        milestone = get_revision_milestone(rev)
+
+        data.append([rev.metadata.updatedAt, rev.metadata.guid, message, milestone, parent, committed])
 
     tabulate_data(data, headers=headers)
 
@@ -161,3 +165,14 @@ def export_to_files(base_dir: str, data: dict) -> None:
     for file_name, file_data in data.items():
         file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
         benedict(file_data).to_yaml(filepath=file_path)
+
+def get_revision_milestone(rev: dict) -> Optional[str]:
+    metadata = rev.get('metadata', None)
+    if metadata is None:
+        return
+
+    labels = metadata.get('labels', None)
+    if labels is None:
+        return
+
+    return labels.get(MILESTONE_LABEL_KEY)

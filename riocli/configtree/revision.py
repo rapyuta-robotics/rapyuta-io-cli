@@ -24,7 +24,7 @@ from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
-from riocli.configtree.util import display_config_tree_keys, get_revision_from_state, save_revision
+from riocli.configtree.util import MILESTONE_LABEL_KEY, display_config_tree_keys, get_revision_from_state, save_revision
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
 from riocli.utils.spinner import with_spinner
@@ -38,6 +38,7 @@ class Revision(object):
     def __init__(self, tree_name: str,
                  client: Client,
                  rev_id: Optional[str] = None,
+                 milestone: Optional[str] = None,
                  commit: bool = False,
                  force_new: bool = False,
                  spinner: Optional[Yaspin] = None,
@@ -46,6 +47,7 @@ class Revision(object):
         self._tree_name = tree_name
         self._client = client
         self._commit = commit
+        self._milestone = milestone
         self._config = Configuration()
         self._state_file = StateFile()
         self._spinner = spinner
@@ -110,12 +112,19 @@ class Revision(object):
         if author is None:
             author = self._get_author()
 
-        payload = {
+        payload: dict[str, Any] = {
             'kind': 'ConfigTreeRevision',
             'apiVersion': 'api.rapyuta.io/v2',
             'message': msg,
             'author': author,
         }
+
+        if self._milestone is not None:
+            payload['metadata'] = {
+                'labels': {
+                    MILESTONE_LABEL_KEY: self._milestone,
+                }
+            }
 
         self._client.commit_config_tree_revision(tree_name=self._tree_name,
                                                  rev_id=self._rev_id, payload=payload)
@@ -228,6 +237,8 @@ def init_revision(
 @click.option('--organization', 'with_org', is_flag=True, type=bool,
               default=False, help='Operate on organization-scoped Config Trees only.')
 @click.option('-m', '--message', 'message', type=str, help='Message for the Revision.')
+@click.option('--milestone', 'milestone', type=str,
+              help='Minestone name for the imported revision.')
 @click.pass_context
 @with_spinner(text="Committing Config tree revision...")
 def commit_revision(
@@ -235,6 +246,7 @@ def commit_revision(
         tree_name: str,
         rev_id: str,
         message: str,
+        milestone: Optional[str],
         with_org: bool,
         spinner: Yaspin,
 ) -> None:
@@ -263,7 +275,7 @@ def commit_revision(
     try:
         client = new_v2_client(with_project=(not with_org))
         rev = Revision(tree_name=tree_name, rev_id=rev_id, spinner=spinner,
-                       client=client, with_org=with_org)
+                       client=client, with_org=with_org, milestone=milestone)
         rev.commit(msg=message)
     except Exception as e:
         spinner.text = click.style(

@@ -35,6 +35,8 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--commit/--no-commit', 'commit', is_flag=True, type=bool, )
 @click.option('--update-head/--no-update-head', 'update_head', is_flag=True, type=bool)
+@click.option('--milestone', 'milestone', type=str,
+              help='Minestone name for the imported revision.')
 @click.option('--etcd-endpoint', 'etcd_endpoint', type=str,
               help='Import keys to local etcd instead of rapyuta.io cloud')
 @click.option('--export-directory', 'export_directory', type=str,
@@ -55,6 +57,7 @@ def import_keys(
         files: Iterable[str],
         commit: bool,
         update_head: bool,
+        milestone: Optional[str],
         export_directory: Optional[str],
         etcd_endpoint: Optional[str],
         etcd_port: Optional[int],
@@ -97,7 +100,7 @@ def import_keys(
     try:
         client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, commit=commit, client=client, spinner=spinner,
-                      with_org=with_org) as rev:
+                      with_org=with_org, milestone=milestone) as rev:
             rev_id = rev.revision_id
 
             for key, value in data.items():
