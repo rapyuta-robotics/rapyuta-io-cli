@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
+from base64 import b64decode
 import os
 from typing import Optional, Iterable
+import yaml
 
 from benedict import benedict
 from munch import Munch, munchify, unmunchify
 
+from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 from riocli.utils.graph import Graphviz
 from riocli.utils.state import StateFile
@@ -64,6 +67,7 @@ def get_revision_from_state(org_guid: str, project_guid: Optional[str], tree_nam
 
     return tree
 
+
 def save_revision(org_guid: str, project_guid: Optional[str], tree_name: str, rev_id: str, committed: bool = False) -> None:
     s = StateFile()
 
@@ -86,6 +90,7 @@ def save_revision(org_guid: str, project_guid: Optional[str], tree_name: str, re
 
     s.state.configtrees = munchify(configtrees)
     s.save()
+
 
 def display_config_trees(trees: Iterable, show_header: bool = True) -> None:
     headers = []
@@ -118,6 +123,7 @@ def display_config_tree_keys(keys: dict, show_header: bool = True) -> None:
 
     tabulate_data(data, headers=headers)
 
+
 def display_config_tree_revisions(revisions: Iterable, show_header: bool = True) -> None:
     headers = []
     if show_header:
@@ -133,6 +139,7 @@ def display_config_tree_revisions(revisions: Iterable, show_header: bool = True)
         data.append([rev.metadata.updatedAt, rev.metadata.guid, message, milestone, parent, committed])
 
     tabulate_data(data, headers=headers)
+
 
 def display_config_tree_revision_graph(tree_name: str, revisions: Iterable) -> None:
     g = Graphviz(name=tree_name)
@@ -151,6 +158,7 @@ def display_config_tree_revision_graph(tree_name: str, revisions: Iterable) -> N
 
     g.visualize()
 
+
 class Metadata(object):
     def __init__(self: Metadata, d: dict):
         self.data = d
@@ -159,12 +167,132 @@ class Metadata(object):
         return self.data
 
 
-def export_to_files(base_dir: str, data: dict) -> None:
+def export_to_files(base_dir: str, data: dict, file_format: str = 'yaml') -> None:
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
-        file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
-        benedict(file_data).to_yaml(filepath=file_path)
+        file_path = os.path.join(base_dir, '{}.{}'.format(file_name, file_format))
+        final_data = benedict(file_data)
+        if file_format == 'yaml':
+            final_data.to_yaml(filepath=file_path)
+        elif file_format == 'json':
+            final_data.to_json(filepath=file_path, indent=4)
+        else:
+            raise Exception('file_format is not supported')
+
+
+def parse_ref(input: str) -> (bool, str, Optional[str]):
+    """
+    The input can be a slash ('/') separated string.
+
+    * The first part can be 'org' or 'proj' defining the scope of the reference.
+    * The second part defines the name of the Tree.
+    * The third optional part defines the revision-id of the Tree.
+
+    This function returns a Tuple with 3 values:
+
+    * bool: True if the scope is organization, else False.
+    * str: Name of the Tree in the scope.
+    * Optional[str]: RevisionID if specified.
+    * Optional[str]: Milestone if specified
+
+    Examples:
+    * org/tree-name
+    * org/tree-name/rev-id
+    * org/tree-name/milestone
+    * proj/tree-name
+    * proj/tree-name/rev-id
+    * proj/tree-name/milestone
+    """
+
+    splits = input.split('/', maxsplit=2)
+
+    if len(splits) < 2:
+        raise Exception('ref {} is invalid'.format(input))
+
+    if splits[0] == 'org':
+        is_org = True
+    elif splits[0] == 'proj':
+        is_org = False
+    else:
+        raise Exception('ref scope {} is invalid'.format(splits[0]))
+
+    if len(splits) == 3:
+        revision = splits[2]
+    else:
+        revision = None
+
+    milestone = None
+    if revision is not None and not revision.startswith('rev-'):
+        milestone = revision
+        revision = None
+
+    return is_org, splits[1], revision, milestone
+
+
+def unflatten_keys(keys: dict) -> benedict:
+    data = combine_metadata(keys)
+    return benedict(data).unflatten(separator='/')
+
+
+def combine_metadata(keys: dict) -> dict:
+    result = {}
+
+    for key, val in keys.items():
+        data = val.get('data', None)
+        if data is not None:
+            data = b64decode(data).decode('utf-8')
+            data = yaml.safe_load(data)
+        metadata = val.get('metadata', None)
+
+        if metadata:
+            result[key] = {'value': data, 'metadata': metadata,}
+        else:
+            result[key] = data
+
+    return result
+
+
+def fetch_ref_keys(ref: str) -> dict:
+    is_org, tree, rev_id, milestone = parse_ref(ref)
+    return fetch_tree_keys(is_org=is_org, tree_name=tree, rev_id=rev_id,
+                           milestone=milestone)
+
+
+def fetch_tree_keys(is_org: bool, tree_name: str,
+                    rev_id: Optional[str] = None,
+                    milestone: Optional[str] = None) -> dict:
+    if milestone:
+        rev_id = fetch_milestone_revision_id(is_org=is_org, tree_name=tree_name,
+                                             milestone=milestone)
+
+    client = new_v2_client(with_project=(not is_org))
+    tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id, include_data=True,
+                                  filter_content_types=['kv'])
+
+    if not tree.get('head'):
+        raise Exception('Config tree {} doesn ot have keys in the revision'.format(tree))
+
+    keys = tree.get('keys')
+    if not isinstance(keys, dict):
+        raise Exception('Keys are not dictionary')
+
+    return keys
+
+
+def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) -> str:
+    client = new_v2_client(with_project=(not is_org))
+    labels = '{}={}'.format(MILESTONE_LABEL_KEY, milestone)
+
+    revisions = client.list_config_tree_revisions(tree_name=tree_name, labels=labels)
+    if len(revisions) == 0:
+        raise Exception('Revision with milestone {} not found'.format(milestone))
+
+    if len(revisions) > 1:
+        raise Exception('More than one revision with milestone {} exists'.format(milestone))
+
+    return revisions[0].metadata.guid
+
 
 def get_revision_milestone(rev: dict) -> Optional[str]:
     metadata = rev.get('metadata', None)

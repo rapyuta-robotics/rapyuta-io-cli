@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Iterable, Optional
+from typing import Iterable, Optional
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -20,7 +20,7 @@ from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.configtree.util import display_config_tree_keys, display_config_tree_revision_graph, \
-    display_config_tree_revisions, display_config_trees, get_revision_from_state
+    display_config_tree_revisions, display_config_trees, fetch_tree_keys, get_revision_from_state
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -287,16 +287,7 @@ def list_config_tree_keys(
     Lists all the keys in the Config tree.
     """
     try:
-        client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
-
-        if not tree.get('head'):
-            raise Exception('Config tree does not have keys in the revision')
-
-        keys = tree.get('keys')
-        if not isinstance(keys, dict):
-            raise Exception('Keys are not dictionary')
-
+        keys = fetch_tree_keys(is_org=with_org, tree_name=tree_name, rev_id=rev_id)
         display_config_tree_keys(keys=keys)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

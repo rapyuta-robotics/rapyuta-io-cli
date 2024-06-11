@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from base64 import b64decode
 from typing import Optional
 
 import click
@@ -20,7 +19,7 @@ from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.configtree.util import export_to_files
+from riocli.configtree.util import combine_metadata, export_to_files, unflatten_keys
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -64,29 +63,13 @@ def export_keys(
         if not isinstance(keys, dict):
             raise Exception('Keys are not dictionary')
 
-        data = combine_metadata(keys)
-        data = benedict(data).unflatten(separator='/')
+        data = unflatten_keys(keys)
 
-        export_to_files(base_dir=export_directory, data=data)
+        export_to_files(base_dir=export_directory, data=data, file_format='json')
 
     except Exception as e:
         spinner.red.text = str(e)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-
-def combine_metadata(keys: dict) -> dict:
-    result = {}
-
-    for key, val in keys.items():
-        data = val.get('data', None)
-        data = b64decode(data).decode('utf-8')
-        metadata = val.get('metadata', None)
-
-        if metadata:
-            result[key] = {'value': data, 'metadata': metadata,}
-        else:
-            result[key] = data
-
-    return result
 
