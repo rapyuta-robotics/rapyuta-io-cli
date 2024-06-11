@@ -44,6 +44,7 @@ class Configuration(object):
     """
     APP_NAME = 'rio-cli'
     PIPING_SERVER = 'https://piping-server-v0-rapyuta-infra.apps.okd4v2.okd4beta.rapyuta.io'
+    DIFF_TOOL = 'diff'
 
     def __init__(self, filepath: Optional[str] = None):
         self._filepath = filepath
@@ -165,6 +166,10 @@ class Configuration(object):
     @property
     def piping_server(self: Configuration):
         return self.data.get('piping_server', self.PIPING_SERVER)
+
+    @property
+    def diff_tool(self: Configuration):
+        return self.data.get('diff_tool', self.DIFF_TOOL)
 
     @property
     def machine_id(self: Configuration):
