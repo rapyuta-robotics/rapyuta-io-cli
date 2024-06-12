@@ -1,3 +1,21 @@
+# [7.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.4.1...v7.5.0) (2024-06-12)
+
+
+### Bug Fixes
+
+* **configtree:** fix handling org-level tree revisions in statefile ([05d2a27](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/05d2a272b35c4bb0970f4f4313dae9ace6fcc125))
+* **configtree:** fix revision keys command to correctly show revision keys ([0ac9988](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0ac998830eafb82d955ae50d842521a43ef8c7f8))
+* **explain:** add livenessProbe constraints in the samples ([4e34695](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4e34695ce6778b19592ae804efb77926fba400c3))
+* **package:** corrects exec command parsing ([#312](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/312)) ([1f0a271](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1f0a2711bef9500a391f24f4f4dd091a002c6b0d))
+* **secret:** corrects corresponding list functions ([#310](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/310)) ([34b5c0b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/34b5c0b6fe8300154b69963db46e9c70cb9a4a1e))
+
+
+### Features
+
+* **device:** add support for migrating device between projects ([ad70aed](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ad70aed93c8f08f208c26df57786707db1e19bd4))
+* **project:** adds command to update project owner ([5b4340e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b4340e6d734832e09d7d7f9cfb74f9729915e63))
+* **utils:** extends show_selection helper ([ce1a927](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ce1a92768ab19fd70f226d57679a7ab64867f0c7))
+
 ## [7.4.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.4.0...v7.4.1) (2024-05-16)
 
 
