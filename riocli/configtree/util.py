@@ -187,7 +187,7 @@ def parse_ref(input: str) -> (bool, str, Optional[str]):
 
     * The first part can be 'org' or 'proj' defining the scope of the reference.
     * The second part defines the name of the Tree.
-    * The third optional part defines the revision-id of the Tree.
+    * The third optional part defines the revision-id or milestone of the Tree.
 
     This function returns a Tuple with 3 values:
 
@@ -210,17 +210,14 @@ def parse_ref(input: str) -> (bool, str, Optional[str]):
     if len(splits) < 2:
         raise Exception('ref {} is invalid'.format(input))
 
-    if splits[0] == 'org':
-        is_org = True
-    elif splits[0] == 'proj':
-        is_org = False
-    else:
+    if splits[0] not in ('org', 'proj'):
         raise Exception('ref scope {} is invalid'.format(splits[0]))
 
+    is_org = splits[0] == 'org'
+
+    revision = None
     if len(splits) == 3:
         revision = splits[2]
-    else:
-        revision = None
 
     milestone = None
     if revision is not None and not revision.startswith('rev-'):
@@ -230,7 +227,10 @@ def parse_ref(input: str) -> (bool, str, Optional[str]):
     return is_org, splits[1], revision, milestone
 
 
-def unflatten_keys(keys: dict) -> benedict:
+def unflatten_keys(keys: Optional[dict]) -> benedict:
+    if keys is None:
+        return benedict()
+
     data = combine_metadata(keys)
     return benedict(data).unflatten(separator='/')
 
@@ -242,6 +242,9 @@ def combine_metadata(keys: dict) -> dict:
         data = val.get('data', None)
         if data is not None:
             data = b64decode(data).decode('utf-8')
+            # The data received from the API is always in string format. To use
+            # appropriate data-type in Python (as well in exports), we are
+            # passing it through YAML parser.
             data = yaml.safe_load(data)
         metadata = val.get('metadata', None)
 
@@ -251,6 +254,19 @@ def combine_metadata(keys: dict) -> dict:
             result[key] = data
 
     return result
+
+
+def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> Optional[dict]:
+    client = new_v2_client(with_project=(not is_org))
+    revisions = client.list_config_tree_revisions(tree_name=tree_name)
+    if len(revisions) == 0:
+        return
+
+    for rev in revisions:
+        milestone = get_revision_milestone(rev)
+        if milestone is not None:
+            return fetch_tree_keys(is_org=is_org, tree_name=tree_name,
+                                   rev_id=rev.metadata.guid)
 
 
 def fetch_ref_keys(ref: str) -> dict:
