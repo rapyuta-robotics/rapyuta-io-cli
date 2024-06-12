@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ from riocli.device.inspect import inspect_device
 from riocli.device.label import device_labels
 from riocli.device.list import list_devices
 from riocli.device.metric import device_metrics
+from riocli.device.migrate import migrate_project
 from riocli.device.onboard import device_onboard
 from riocli.device.tools import tools
 from riocli.device.topic import device_topics
@@ -57,3 +58,4 @@ device.add_command(list_deployments)
 device.add_command(list_devices)
 device.add_command(tools)
 device.add_command(toggle_vpn)
+device.add_command(migrate_project)

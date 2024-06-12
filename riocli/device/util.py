@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@ import functools
 import re
 import typing
 from pathlib import Path
+import json
 
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
 from rapyuta_io.clients.device import Device
+from rapyuta_io.utils import RestClient
+from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.config import new_client
+from riocli.config import get_config_from_context, new_client
 from riocli.constants import Colors
 from riocli.utils import is_valid_uuid
 
@@ -119,6 +122,21 @@ def fetch_devices(
             result.append(device)
 
     return result
+
+def migrate_device_to_project(ctx: click.Context, device_id: str, dest_project_id: str) -> None:
+    config = get_config_from_context(ctx)
+    host = config.data.get('core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io')
+    url = '{}/api/device-manager/v0/devices/{}/migrate'.format(host, device_id)
+    headers = config.get_auth_header()
+    payload = {'project': dest_project_id}
+
+    response = RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload)
+    err_msg = 'error in the api call'
+    data = json.loads(response.text)
+
+    if not response.ok:
+        err_msg = data.get('response', {}).get('error', '')
+        raise Exception(err_msg)
 
 
 def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, str):

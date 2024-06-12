@@ -116,7 +116,7 @@ class ResolverCache(object, metaclass=_Singleton):
 
     def _guid_functor(self, kind):
         mapping = {
-            'secret': lambda x: munchify(x).metadata.name,
+            'secret': lambda x: munchify(x).metadata.guid,
             "project": lambda x: munchify(x).metadata.guid,
             "package": lambda x: munchify(x)['id'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
