@@ -30,6 +30,31 @@ from riocli.constants.colors import Colors
 @click.argument('ref_2', type=str)
 @click.pass_context
 def diff_revisions(ctx: click.Context, ref_1: str, ref_2: str):
+    """
+    Diff between two revisions of the same or different trees.
+
+    The ref is a slash ('/') separated string.
+
+    * The first part can be 'org' or 'proj' defining the scope of the reference. 
+
+    * The second part defines the name of the Tree.
+
+    * The third optional part defines the revision-id or milestone of the Tree.
+
+    Examples:
+
+    * org/tree-name 
+
+    * org/tree-name/rev-id
+
+    * org/tree-name/milestone
+
+    * proj/tree-name
+
+    * proj/tree-name/rev-id
+
+    * proj/tree-name/milestone
+    """
     try:
         ref_1_keys = fetch_ref_keys(ref_1)
         ref_2_keys = fetch_ref_keys(ref_2)
