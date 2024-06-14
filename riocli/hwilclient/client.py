@@ -25,6 +25,34 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 from riocli.utils import generate_short_guid
 
 
+def trim_suffix(name):
+    if len(name) == 0 or name[0].isalnum():
+        return name
+
+    return trim_suffix(name[1:])
+
+
+def trim_prefix(name):
+    if len(name) == 0 or name[len(name) - 1].isalnum():
+        return name
+
+    return trim_prefix(name[:len(name) - 1])
+
+def sanitize_label(name):
+    if len(name) == 0:
+        return name
+
+    name = name[0:63]
+    name = trim_suffix(name)
+    name = trim_prefix(name)
+
+    r = ''
+    for c in name:
+        if c.isalnum() or c in ['-', '_', '.']:
+            r = r + c
+
+    return r
+
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
 
@@ -100,11 +128,15 @@ class Client(object):
         labels = labels or {}
         labels.update({"agent": "rapyuta-io-cli"})
 
+        sanitized_labels = {}
+        for key, value in labels.items():
+            sanitized_labels.update({sanitize_label(key): sanitize_label(value)})
+
         payload = {
             "kind": "VIRTUAL",
             "name": name,
             "architecture": arch,
-            "labels": labels,
+            "labels": sanitized_labels,
             "flavor": self.ARCH_OS_DICT.get(arch).get(os).get(codename)
         }
 
