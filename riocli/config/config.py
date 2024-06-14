@@ -23,7 +23,8 @@ from typing import Optional
 from click import get_app_dir
 from rapyuta_io import Client
 
-from riocli.exceptions import LoggedOut, NoOrganizationSelected, NoProjectSelected
+from riocli.exceptions import LoggedOut, NoOrganizationSelected, NoProjectSelected, HwilLoggedOut
+from riocli.hwilclient import Client as HwilClient
 from riocli.v2client import Client as v2Client
 
 
@@ -47,7 +48,6 @@ class Configuration(object):
     def __init__(self, filepath: Optional[str] = None):
         self._filepath = filepath
         self.exists = True
-
 
         # If config file does not exist, then initialize an empty dictionary instead.
         if not os.path.exists(self.filepath):
@@ -108,6 +108,17 @@ class Configuration(object):
             project = None
 
         return v2Client(self, auth_token=token, project=project)
+
+    def new_hwil_client(self: Configuration) -> HwilClient:
+        if 'hwil_auth_token' not in self.data:
+            raise HwilLoggedOut
+
+        if 'environment' in self.data:
+            os.environ['RIO_CONFIG'] = self.filepath
+
+        token = self.data.get('hwil_auth_token', None)
+
+        return HwilClient(auth_token=token)
 
     def get_auth_header(self: Configuration) -> dict:
         if not ('auth_token' in self.data and 'project_id' in self.data):
