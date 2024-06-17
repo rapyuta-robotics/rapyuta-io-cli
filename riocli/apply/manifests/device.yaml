@@ -4,6 +4,9 @@ metadata:
   name: "device-docker" # Required
   project: "project-guid"
   labels:
+    custom_label_1: label1
+    custom_label_2: label2
+    custom_label_3: label3
     app: test
 spec:
   python: "3"
@@ -11,6 +14,10 @@ spec:
   docker:
     enabled: True # Required
     rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
+  configVariables:
+    custom_config_variable_1: value1
+    custom_config_variable_2: value2
+
 ---
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
@@ -43,3 +50,32 @@ spec:
   preinstalled:
     enabled: True
     catkinWorkspace: "/home/rapyuta/catkin_ws"
+
+---
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "virtual-device-docker" # Required
+  project: "project-guid"
+  labels:
+    custom_label_1: label1
+    custom_label_2: label2
+    custom_label_3: label3
+    app: test
+spec:
+  python: "3"
+  rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
+  virtual:
+    enabled: True # Required
+    product: "sootballs" # Required Options: ["sootballs", "flaptter", "oks"]
+    arch: "amd64" # Options: ["amd64" (default), "arm64" ]
+    os: "ubuntu" # Options: ["ubuntu" (default), "debian" ]
+    codename: "focal" # Options: ["bionic", "focal" (default), "jammy", "bullseye"]
+    highperf: False # Optional [True, False (default)]
+  docker:
+    enabled: True # Required
+    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
+  configVariables:
+    custom_config_variable_1: value1
+    custom_config_variable_2: value2
+

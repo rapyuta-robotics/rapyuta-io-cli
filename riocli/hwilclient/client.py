@@ -22,36 +22,8 @@ from munch import Munch, munchify
 from rapyuta_io.utils import ConflictError, RetriesExhausted, UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from riocli.utils import generate_short_guid
+from riocli.utils import generate_short_guid, sanitize_label
 
-
-def trim_suffix(name):
-    if len(name) == 0 or name[0].isalnum():
-        return name
-
-    return trim_suffix(name[1:])
-
-
-def trim_prefix(name):
-    if len(name) == 0 or name[len(name) - 1].isalnum():
-        return name
-
-    return trim_prefix(name[:len(name) - 1])
-
-def sanitize_label(name):
-    if len(name) == 0:
-        return name
-
-    name = name[0:63]
-    name = trim_suffix(name)
-    name = trim_prefix(name)
-
-    r = ''
-    for c in name:
-        if c.isalnum() or c in ['-', '_', '.']:
-            r = r + c
-
-    return r
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
