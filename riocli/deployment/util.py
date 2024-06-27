@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,15 @@
 # limitations under the License.
 import functools
 import re
-from typing import List
+import typing
 
-from riocli.config import new_client
-from riocli.deployment.model import Deployment
+import click
+from rapyuta_io import DeploymentPhaseConstants
+from rapyuta_io.clients.deployment import Deployment
+
+from riocli.config import new_client, new_v2_client
+from riocli.constants import Colors
+from riocli.deployment.list import DEFAULT_PHASES
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
 from riocli.v2client import Client
@@ -30,11 +35,52 @@ ALL_PHASES = [
     DeploymentPhaseConstants.DeploymentPhaseStopped,
 ]
 
-DEFAULT_PHASES = [
-    DeploymentPhaseConstants.DeploymentPhaseInProgress,
-    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
-    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
-]
+
+def name_to_guid(f: typing.Callable) -> typing.Callable:
+    @functools.wraps(f)
+    def decorated(**kwargs: typing.Any) -> None:
+        try:
+            client = new_v2_client()
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
+
+        name = kwargs.pop('deployment_name')
+        guid = None
+
+        if name.startswith('dep-'):
+            guid = name
+            name = None
+
+        try:
+            if name is None:
+                name = get_deployment_name(client, guid)
+
+            if guid is None:
+                guid = get_deployment_guid(client, name)
+
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
+
+        kwargs['deployment_name'] = name
+        kwargs['deployment_guid'] = guid
+        f(**kwargs)
+
+    return decorated
+
+
+def get_deployment_guid(client: Client, name: str) -> str:
+    deployment = client.get_deployment(name)
+    return deployment.metadata.guid
+
+
+def get_deployment_name(client: Client, guid: str) -> str:
+    deployments = client.list_deployments(query={'guids': [guid]})
+    if len(deployments) == 0:
+        raise DeploymentNotFound
+
+    return deployments[0].metadata.name
 
 
 def select_details(deployment_guid, component_name=None, exec_name=None) -> (str, str, str):
@@ -76,8 +122,8 @@ def fetch_deployments(
         client: Client,
         deployment_name_or_regex: str,
         include_all: bool,
-) -> List[Deployment]:
-    deployments = client.list_deployments(query={"phases": DEFAULT_PHASES})
+) -> typing.List[Deployment]:
+    deployments = client.list_deployments(query={'phases': DEFAULT_PHASES})
     result = []
     for deployment in deployments:
         if (include_all or deployment_name_or_regex == deployment.metadata.name or
@@ -89,7 +135,7 @@ def fetch_deployments(
     return result
 
 
-def print_deployments_for_confirmation(deployments: List[Deployment]):
+def print_deployments_for_confirmation(deployments: typing.List[Deployment]):
     headers = ['Name', 'GUID', 'Phase', 'Status']
 
     data = []

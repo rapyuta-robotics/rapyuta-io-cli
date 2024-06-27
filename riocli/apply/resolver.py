@@ -138,7 +138,11 @@ class ResolverCache(object, metaclass=_Singleton):
             "staticroute": self.v2client.list_static_routes,
             "disk": self.v2client.list_disks,
             "network": self.v2client.list_networks,
-            "deployment": functools.partial(self.v2client.list_deployments),
+            "deployment": functools.partial(self.v2client.list_deployments,
+                                            query={'phases': ['InProgress',
+                                                              'Succeeded',
+                                                              'FailedToStart',
+                                                              'Provisioning']}),
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
             "usergroup": self.client.list_usergroups
