@@ -82,7 +82,7 @@ class Client(object):
     def list_projects(
             self,
             organization_guid: str = None,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         List all projects in an organization
@@ -697,8 +697,10 @@ class Client(object):
 
         return munchify(data)
 
-    def _walk_pages(self, c: RestClient, params: dict = {}, limit: Optional[int] = None) -> Munch:
+    def _walk_pages(self, c: RestClient, params: dict = None, limit: Optional[int] = None) -> Munch:
         offset, result = 0, []
+
+        params = params or {}
 
         if limit is not None:
             params["limit"] = limit
@@ -731,26 +733,8 @@ class Client(object):
         url = "{}/v2/packages/".format(self._host)
         headers = self._get_auth_header()
 
-        params = {}
-        params.update(query or {})
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("packages: {}".format(err_msg))
-            packages = data.get('items', [])
-            if not packages:
-                break
-            offset = data['metadata']['continue']
-            result.extend(packages)
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
     def create_package(self, payload: dict) -> Munch:
         """
@@ -772,7 +756,7 @@ class Client(object):
     def get_package(
             self,
             name: str,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         List all packages in a project
@@ -816,7 +800,7 @@ class Client(object):
 
     def list_networks(
             self,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         List all networks in a project
@@ -865,7 +849,7 @@ class Client(object):
     def get_network(
             self,
             name: str,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         get a network in a project
@@ -889,8 +873,11 @@ class Client(object):
 
         return munchify(data)
 
-    def delete_network(self, network_name: str,
-                       query: dict = None) -> Munch:
+    def delete_network(
+            self,
+            network_name: str,
+            query: dict = None,
+    ) -> Munch:
         """
         Delete a secret
         """
@@ -957,26 +944,8 @@ class Client(object):
         url = "{}/v2/deployments/".format(self._host)
         headers = self._get_auth_header()
 
-        params = {
-            "continue": 0,
-        }
-        params.update(query or {})
-        result = []
-        while True:
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("deployments: {}".format(err_msg))
-            deployments = data.get('items', [])
-            if not deployments:
-                break
-            offset = data['metadata']['continue']
-            params.update({"continue": offset})
-            result.extend(deployments)
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
     def create_deployment(self, deployment: dict) -> Munch:
         """
@@ -996,19 +965,11 @@ class Client(object):
 
         return munchify(data)
 
-    def get_deployment(
-            self,
-            name: str,
-            query: dict = None
-    ):
+    def get_deployment(self, name: str):
         url = "{}/v2/deployments/{}/".format(self._host, name)
         headers = self._get_auth_header()
 
-        params = {}
-        params.update(query or {})
-
-        response = RestClient(url).method(HttpMethod.GET).query_param(
-            params).headers(headers).execute()
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
         data = json.loads(response.text)
 
         if response.status_code == http.HTTPStatus.NOT_FOUND:
@@ -1107,7 +1068,7 @@ class Client(object):
 
     def list_disks(
             self,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         List all disks in a project
@@ -1115,26 +1076,8 @@ class Client(object):
         url = "{}/v2/disks/".format(self._host)
         headers = self._get_auth_header()
 
-        params = {}
-        params.update(query or {})
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("disks: {}".format(err_msg))
-            disks = data.get('items', [])
-            if not disks:
-                break
-            offset = data['metadata']['continue']
-            result.extend(disks)
-
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
     def get_disk(self, name: str) -> Munch:
         """
