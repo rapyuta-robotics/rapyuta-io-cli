@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -124,7 +124,8 @@ def job_stop(deployment_guid: str, deployment_name: str, component_instance_ids:
 @click.argument('deployment-name')
 @click.option('--component-instance-ids', help='Filter by component instance ids ', multiple=True)
 @click.option('--guids', help='Filter by job guids ', multiple=True)
-@click.option('--statuses', help='Filter by rosbag job statuses ', multiple=True, default=['Starting', 'Running'],
+@click.option('--statuses', help='Filter by rosbag job statuses ', multiple=True,
+              default=['Starting', 'Running', 'Stopped', 'Stopping', 'Error'],
               type=click.Choice(['Starting', 'Running', 'Error', 'Stopping', 'Stopped'], case_sensitive=True))
 @deployment_name_to_guid
 def job_list(deployment_guid: str, deployment_name: str,
