@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,19 +22,18 @@ from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
 ALL_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
-    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
-    DeploymentPhaseConstants.DEPLOYMENT_STOPPED,
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
+    'Stopped',
 ]
 
 DEFAULT_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
 ]
 
 
@@ -56,7 +55,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        deployments = client.list_deployments()
+        deployments = client.list_deployments(query={'phases': phase})
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
