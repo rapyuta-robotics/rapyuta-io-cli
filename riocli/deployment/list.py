@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,25 @@ import typing
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.deployment.model import Deployment
-from riocli.deployment.util import ALL_PHASES, DEFAULT_PHASES
-
 from riocli.config import new_v2_client
 from riocli.constants import Colors
+from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
+
+ALL_PHASES = [
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
+    'Stopped',
+]
+
+DEFAULT_PHASES = [
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
+]
 
 
 @click.command(
@@ -41,8 +54,8 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     List the deployments in the selected project
     """
     try:
-        client = new_v2_client()
-        deployments = client.list_deployments(query={"phases": phase, "deviceName": device})
+        client = new_v2_client(with_project=True)
+        deployments = client.list_deployments(query={'phases': phase})
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
