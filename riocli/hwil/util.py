@@ -20,7 +20,7 @@ import click
 
 from riocli.config import new_hwil_client
 from riocli.constants import Colors
-from riocli.device.util import DeviceNotFound
+from riocli.exceptions import DeviceNotFound
 from riocli.hwilclient import Client
 
 

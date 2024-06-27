@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
+import json
 import re
 import typing
 from pathlib import Path
-import json
 
 import click
+from munch import Munch
 from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
 from rapyuta_io.clients.device import Device
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.config import get_config_from_context, new_client
+from riocli.config import get_config_from_context, new_client, new_hwil_client
+from riocli.config.config import Configuration
 from riocli.constants import Colors
-from riocli.utils import is_valid_uuid
+from riocli.exceptions import DeviceNotFound
+from riocli.hwil.util import execute_command, find_device_id
+from riocli.utils import is_valid_uuid, trim_suffix, trim_prefix
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -123,6 +127,7 @@ def fetch_devices(
 
     return result
 
+
 def migrate_device_to_project(ctx: click.Context, device_id: str, dest_project_id: str) -> None:
     config = get_config_from_context(ctx)
     host = config.data.get('core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io')
@@ -171,7 +176,81 @@ def is_remote_path(src, devices=[]):
     return None, src
 
 
-class DeviceNotFound(Exception):
-    def __init__(self, message='device not found'):
-        self.message = message
-        super().__init__(self.message)
+def create_hwil_device(spec: dict, metadata: dict) -> Munch:
+    """Create a new hardware-in-the-loop device."""
+    os = spec['virtual']['os']
+    codename = spec['virtual']['codename']
+    arch = spec['virtual']['arch']
+    labels = hwil_device_labels(spec.virtual.product, metadata.name)
+    device_name = f"{metadata['name']}-{spec['virtual']['product']}-{labels['user']}"
+    device_name = sanitize_hwil_device_name(device_name)
+    client = new_hwil_client()
+
+    try:
+        device_id = find_device_id(client, device_name)
+        return client.get_device(device_id)
+    except DeviceNotFound:
+        pass
+
+    try:
+        response = client.create_device(device_name, arch, os, codename, labels)
+        client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=3)
+        return response
+    except Exception as e:
+        raise e
+
+
+def execute_onboard_command(device_id: str, onboard_command: str) -> None:
+    """Execute the onboard command on a hardware-in-the-loop device."""
+    client = new_hwil_client()
+    try:
+        code, _, stderr = execute_command(client, device_id, onboard_command)
+        if code != 0:
+            raise Exception(f"Failed with exit code {code}: {stderr}")
+    except Exception as e:
+        raise e
+
+
+def hwil_device_labels(product_name, device_name) -> typing.Dict:
+    data = Configuration().data
+    user_email = data['email_id']
+    project_id = data['project_id']
+    organization_id = data['organization_id']
+    user_email = user_email.split('@')[0]
+
+    return {
+        "user": user_email,
+        "organization": organization_id,
+        "project": project_id,
+        "product": product_name,
+        "rapyuta_device_name": device_name,
+    }
+
+
+def update_device_labels(metadata, response) -> None:
+    device_labels = {
+        "hwil_device_id": str(response.id),
+        "hwil_device_name": response.name,
+        "arch": response.architecture,
+        "flavor": response.flavor,
+        "hwil_device_username": response.username,
+    }
+
+    existing_labels = metadata.get('labels', {})
+    existing_labels.update(device_labels)
+
+
+def sanitize_hwil_device_name(name):
+    if len(name) == 0:
+        return name
+
+    name = name[0:50]
+    name = trim_suffix(name)
+    name = trim_prefix(name)
+
+    r = ''
+    for c in name:
+        if c.isalnum() or c in ['-', '_']:
+            r = r + c
+
+    return r

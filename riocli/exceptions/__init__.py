@@ -42,3 +42,9 @@ class HwilLoggedOut(Exception):
         return """Not logged in to HWIL. Please login first
         $ rio hwil login 
         """
+
+
+class DeviceNotFound(Exception):
+    def __init__(self, message='device not found'):
+        self.message = message
+        super().__init__(self.message)

@@ -53,6 +53,52 @@ definitions:
           - "2"
           - "3"
         default: "3"
+      configVariables:
+        $ref: "#/definitions/stringMap"
+      virtual:
+        oneOf:
+          - properties:
+              enabled:
+                enum:
+                  - False
+            required:
+              - enabled
+          - properties:
+              enabled:
+                enum:
+                  - True
+              product:
+                type: string
+                enum:
+                  - sootballs
+                  - flaptter
+                  - oks
+              arch:
+                type: string
+                enum:
+                  - amd64
+                  - arm64
+                default: amd64
+              os:
+                type: string
+                enum:
+                  - ubuntu
+                  - debian
+                default: ubuntu
+              codename:
+                type: string
+                enum:
+                  - bionic
+                  - focal
+                  - jammy
+                  - bullseye
+                default: focal
+              highperf:
+                type: boolean
+                default: False
+            required:
+              - enabled
+              - product
     dependencies:
       docker:
         oneOf:
