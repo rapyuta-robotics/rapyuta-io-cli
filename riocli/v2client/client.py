@@ -722,7 +722,7 @@ class Client(object):
 
     def list_packages(
             self,
-            query: dict = None
+            query: dict = {}
     ) -> Munch:
         """
         List all packages in a project
@@ -730,26 +730,9 @@ class Client(object):
         url = "{}/v2/packages/".format(self._host)
         headers = self._config.get_auth_header()
 
-        params = {}
-        params.update(query or {})
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("packages: {}".format(err_msg))
-            packages = data.get('items', [])
-            if not packages:
-                break
-            offset = data['metadata']['continue']
-            result.extend(packages)
 
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
     def create_package(self, payload: dict) -> Munch:
         """
@@ -913,7 +896,7 @@ class Client(object):
 
     def list_deployments(
         self,
-        query: dict = None
+        query: dict = {}
     ) -> Munch:
         """
         List all deployments in a project
@@ -921,29 +904,9 @@ class Client(object):
         url = "{}/v2/deployments/".format(self._host)
         headers = self._config.get_auth_header()
 
-        params = {}
-        params.update(query or {})
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-                "limit": 50,
-                "phases": ["Succeeded"],
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("deployments: {}".format(err_msg))
-            deployments = data.get('items', [])
-            if not deployments:
-                break
-            offset = data['metadata']['continue']
-            result.extend(deployments)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
-        return munchify(result)
-    
     def create_deployment(self, deployment: dict) -> Munch:
         """
         Create a new deployment
@@ -965,16 +928,12 @@ class Client(object):
     def get_deployment(
         self,
         name: str,
-        query: dict = None
     ):
         url = "{}/v2/deployments/{}/".format(self._host, name)
         headers = self._config.get_auth_header()
 
-        params = {}
-        params.update(query or {})
 
-        response = RestClient(url).method(HttpMethod.GET).query_param(
-            params).headers(headers).execute()
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
         data = json.loads(response.text)
 
         if response.status_code == http.HTTPStatus.NOT_FOUND:
@@ -1022,7 +981,7 @@ class Client(object):
 
     def list_disks(
             self,
-            query: dict = None
+            query: dict = {}
     ) -> Munch:
         """
         List all disks in a project
@@ -1030,26 +989,9 @@ class Client(object):
         url = "{}/v2/disks/".format(self._host)
         headers = self._config.get_auth_header()
 
-        params = {}
-        params.update(query or {})
-        offset, result = 0, []
-        while True:
-            params.update({
-                "continue": offset,
-            })
-            response = RestClient(url).method(HttpMethod.GET).query_param(
-                params).headers(headers).execute()
-            data = json.loads(response.text)
-            if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("disks: {}".format(err_msg))
-            disks = data.get('items', [])
-            if not disks:
-                break
-            offset = data['metadata']['continue']
-            result.extend(disks)
 
-        return munchify(result)
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
 
     def get_disk(self, name: str) -> Munch:
         """
