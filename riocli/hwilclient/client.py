@@ -119,8 +119,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("hwil: {}".format(err_msg))
+            raise Exception("hwil: {}".format(response.text))
 
         return munchify(data)
 
@@ -136,11 +135,12 @@ class Client(object):
         url = f"{self._host}/device/{device_id}"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
         handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("hwil: {}".format(err_msg))
+            raise Exception("hwil: {}".format(response.text))
 
         return munchify(data)
 
@@ -163,8 +163,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("hwil: {}".format(err_msg))
+            raise Exception("hwil: {}".format(response.text))
 
         return munchify(data)
 
@@ -177,8 +176,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("hwil: {}".format(err_msg))
+            raise Exception("hwil: {}".format(response.text))
 
         return munchify(data)
 
@@ -194,8 +192,7 @@ class Client(object):
 
             data = json.loads(response.text)
             if not response.ok:
-                err_msg = data.get('error')
-                raise Exception("hwil: {}".format(err_msg))
+                raise Exception("hwil: {}".format(response.text))
 
             device = munchify(data)
             if device.status != 'IDLE':
@@ -216,8 +213,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            err_msg = data.get('error')
-            raise Exception("hwil: {}".format(err_msg))
+            raise Exception("hwil: {}".format(response.text))
 
         return munchify(data)
 
