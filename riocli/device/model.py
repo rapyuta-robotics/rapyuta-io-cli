@@ -18,11 +18,11 @@ from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
 from riocli.device.util import (
     create_hwil_device,
+    delete_hwil_device,
     execute_onboard_command,
     find_device_guid,
-    update_device_labels
+    make_device_labels_from_hwil_device
 )
-from riocli.exceptions import DeviceNotFound
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 
@@ -32,10 +32,6 @@ class Device(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        # For virtual devices, always return False to ensure re-onboarding is done even if the device already exists
-        if self.spec.get('virtual', {}).get('enabled', False):
-            return False
-
         guid, obj = self.rc.find_depends({
             "kind": "device",
             "nameOrGUID": self.metadata.name,
@@ -48,33 +44,84 @@ class Device(Model):
 
     def create_object(self, client: Client, **kwargs) -> v1Device:
         if not self.spec.get('virtual', {}).get('enabled', False):
-            device = client.create_device(self.to_v1())
-            return device
+            try:
+                device = client.create_device(self.to_v1())
+                return device
+            except Exception as e:
+                raise e
 
-        hwil_response = create_hwil_device(self.spec, self.metadata)
         try:
-            device_uuid = find_device_guid(client, self.metadata.name)
-            device = client.get_device(device_uuid)
-        except DeviceNotFound:
-            update_device_labels(self.metadata, hwil_response)
+            # Create the HWIL device.
+            hwil_response = create_hwil_device(self.spec, self.metadata)
+
+            # Generate labels to store HWIL metadata in rapyuta.io device.
+            l = make_device_labels_from_hwil_device(hwil_response)
+            self.metadata.get('labels', {}).update(l)
+
+            # Create the rapyuta.io device.
             device = client.create_device(self.to_v1())
+
+            # On-board the HWIL device using the onboard script.
+            onboard_script = device.onboard_script()
+            onboard_command = onboard_script.full_command()
+            execute_onboard_command(hwil_response.id, onboard_command)
+
+            return device
         except Exception as e:
             raise e
 
-        onboard_script = device.onboard_script()
-        onboard_command = onboard_script.full_command()
+    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
+        virtual = self.spec.get('virtual', {}).get('enabled', False)
+
+        if not virtual:
+            return
+
+        device_uuid = find_device_guid(client, self.metadata.name)
+        device = client.get_device(device_uuid)
+
+        # Nothing to do if the device is already online or initializing.
+        if device['status'] in ('ONLINE', 'INITIALIZING'):
+            return
+
+        device_labels = device.get('labels', {})
+        # Convert list to dict for easy access.
+        device_labels = {l['key']: l for l in device_labels}
+
+        # Otherwise, re-onboard the device.
         try:
+            hwil_response = create_hwil_device(self.spec, self.metadata)
+            labels = make_device_labels_from_hwil_device(hwil_response)
+
+            # Add or update labels in the device.
+            for k, v in labels.items():
+                if k in device_labels:
+                    device_labels[k]['value'] = v
+                    device.update_label(device_labels[k])
+                    continue
+
+                device.add_label(k, v)
+
+            onboard_script = device.onboard_script()
+            onboard_command = onboard_script.full_command()
             execute_onboard_command(hwil_response.id, onboard_command)
         except Exception as e:
             raise e
 
         return device
 
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
-
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        obj.delete()
+        if self.spec.get('virtual', {}).get('enabled', False):
+            try:
+                device_uuid = find_device_guid(client, self.metadata.name)
+                device = client.get_device(device_uuid)
+                delete_hwil_device(device)
+            except Exception as e:
+                raise e
+
+        try:
+            obj.delete()
+        except Exception as e:
+            raise e
 
     def to_v1(self) -> v1Device:
         python_version = DevicePythonVersion(self.spec.python)

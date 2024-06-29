@@ -30,7 +30,7 @@ from riocli.config.config import Configuration
 from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
 from riocli.hwil.util import execute_command, find_device_id
-from riocli.utils import is_valid_uuid, trim_suffix, trim_prefix
+from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -194,13 +194,44 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
 
     try:
         response = client.create_device(device_name, arch, os, codename, labels)
-        client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=3)
+        client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
+
+        if response.status == 'FAILED':
+            raise Exception('device has failed')
+
         return response
     except Exception as e:
         raise e
 
 
-def execute_onboard_command(device_id: str, onboard_command: str) -> None:
+def delete_hwil_device(device: Device) -> None:
+    """Delete a hardware-in-the-loop device.
+
+    This is a helper method that deletes a HWIL device
+    associated with the rapyuta.io device.
+    """
+    labels = device.get('labels', {})
+    if not labels:
+        raise DeviceNotFound(message='hwil device not found')
+
+    device_id = None
+
+    for l in labels:
+        if l['key'] == 'hwil_device_id':
+            device_id = l['value']
+            break
+
+    if device_id is None:
+        raise DeviceNotFound(message='hwil device not found')
+
+    client = new_hwil_client()
+    try:
+        client.delete_device(device_id)
+    except Exception as e:
+        raise e
+
+
+def execute_onboard_command(device_id: int, onboard_command: str) -> None:
     """Execute the onboard command on a hardware-in-the-loop device."""
     client = new_hwil_client()
     try:
@@ -227,17 +258,14 @@ def hwil_device_labels(product_name, device_name) -> typing.Dict:
     }
 
 
-def update_device_labels(metadata, response) -> None:
-    device_labels = {
-        "hwil_device_id": str(response.id),
-        "hwil_device_name": response.name,
-        "arch": response.architecture,
-        "flavor": response.flavor,
-        "hwil_device_username": response.username,
+def make_device_labels_from_hwil_device(d: Munch) -> dict:
+    return {
+        "hwil_device_id": str(d.id),
+        "hwil_device_name": d.name,
+        "arch": d.architecture,
+        "flavor": d.flavor,
+        "hwil_device_username": d.username,
     }
-
-    existing_labels = metadata.get('labels', {})
-    existing_labels.update(device_labels)
 
 
 def sanitize_hwil_device_name(name):
