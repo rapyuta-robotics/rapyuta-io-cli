@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_hwil_client
-from riocli.constants import Colors
+from riocli.constants import Colors, Symbols
 from riocli.hwil.util import name_to_id
-from riocli.utils.ssh_shell import SSHShell
 
 
 @click.command(
@@ -33,7 +33,13 @@ def ssh(device_name: str, device_id: str, spinner=None) -> None:
     """SSH into the hardware-in-the-loop device."""
     try:
         device = new_hwil_client().get_device(device_id)
-        SSHShell(device.static_ip, device.username, device.password).connect()
+
+        if not device.get('static_ip'):
+            click.secho(f'{Symbols.ERROR} Device does not have a static IP address', fg=Colors.RED)
+            raise SystemExit(1)
+
+        click.secho(f'{Symbols.INFO} Enter this password when prompted: {device.password}', fg=Colors.BRIGHT_CYAN)
+        os.system(f'ssh {device.username}@{device["static_ip"]}')
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
