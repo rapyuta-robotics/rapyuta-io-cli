@@ -178,30 +178,31 @@ def is_remote_path(src, devices=[]):
 
 def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     """Create a new hardware-in-the-loop device."""
-    os = spec['virtual']['os']
-    codename = spec['virtual']['codename']
-    arch = spec['virtual']['arch']
-    labels = hwil_device_labels(spec.virtual.product, metadata.name)
-    device_name = f"{metadata['name']}-{spec['virtual']['product']}-{labels['user']}"
-    device_name = sanitize_hwil_device_name(device_name)
+    virtual = spec['virtual']
+    os = virtual['os']
+    codename = virtual['codename']
+    arch = virtual['arch']
+    product = virtual['product']
+    name = metadata['name']
+
+    labels = hwil_device_labels(product, name)
+    device_name = sanitize_hwil_device_name(f"{name}-{product}-{labels['user']}")
+
     client = new_hwil_client()
 
     try:
         device_id = find_device_id(client, device_name)
         return client.get_device(device_id)
     except DeviceNotFound:
-        pass
+        pass  # Do nothing and proceed.
 
-    try:
-        response = client.create_device(device_name, arch, os, codename, labels)
-        client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
+    response = client.create_device(device_name, arch, os, codename, labels)
+    client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
 
-        if response.status == 'FAILED':
-            raise Exception('device has failed')
+    if response.status == 'FAILED':
+        raise Exception('device has failed')
 
-        return response
-    except Exception as e:
-        raise e
+    return response
 
 
 def delete_hwil_device(device: Device) -> None:
@@ -225,10 +226,7 @@ def delete_hwil_device(device: Device) -> None:
         raise DeviceNotFound(message='hwil device not found')
 
     client = new_hwil_client()
-    try:
-        client.delete_device(device_id)
-    except Exception as e:
-        raise e
+    client.delete_device(device_id)
 
 
 def execute_onboard_command(device_id: int, onboard_command: str) -> None:
