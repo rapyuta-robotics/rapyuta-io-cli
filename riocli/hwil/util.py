@@ -73,7 +73,7 @@ def find_device_id(client: Client, name: str) -> str:
     raise DeviceNotFound(message="HWIL device not found")
 
 
-def execute_command(client: Client, device_id: str, command: str) -> typing.Tuple[int, str, str]:
+def execute_command(client: Client, device_id: int, command: str) -> typing.Tuple[int, str, str]:
     """Executes a command and waits for it to complete."""
     try:
         response = client.execute_command(device_id, command)
