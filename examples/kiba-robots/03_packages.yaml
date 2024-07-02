@@ -147,7 +147,8 @@ spec:
   executables:
     - type: docker
       name: django
-      command: /code/docker/entrypoint.sh
+      command:
+      - /code/docker/entrypoint.sh
       docker:
         image: rrdockerhub/sootballs_wcs:1.14.0-rc4
         pullSecret:

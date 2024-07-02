@@ -62,7 +62,7 @@ class ResolverCache(object, metaclass=_Singleton):
         "organization": "^org-[a-z]{24}$",
         "project": "^project-[a-z]{24}$",
         "secret": "^secret-[a-z]{24}$",
-        "package": "^pkg-[a-z]{24}$",
+        "package": "^pkg-[a-z0-9]{20}$",
         "staticroute": "^staticroute-[a-z]{24}$",
         "disk": "^disk-[a-z]{24}$",
         "deployment": "^dep-[a-z]{24}$",
@@ -118,12 +118,12 @@ class ResolverCache(object, metaclass=_Singleton):
         mapping = {
             'secret': lambda x: munchify(x).metadata.guid,
             "project": lambda x: munchify(x).metadata.guid,
-            "package": lambda x: munchify(x)['id'],
+            "package": lambda x: munchify(x)['metadata']['guid'],
             "staticroute": lambda x: munchify(x)['metadata']['guid'],
-            "deployment": lambda x: munchify(x)['deploymentId'],
-            "network": lambda x: munchify(x).guid,
+            "deployment": lambda x: munchify(x)['metadata']['guid'],
+            "network": lambda x: munchify(x)['metadata']['guid'],
             # This is only temporarily like this
-            "disk": lambda x: munchify(x)['internalDeploymentGUID'],
+            "disk": lambda x: munchify(x)['metadata']['guid'],
             "device": lambda x: munchify(x)['uuid'],
             "managedservice": lambda x: munchify(x)['metadata']['name'],
             "usergroup": lambda x: munchify(x).guid
@@ -134,13 +134,11 @@ class ResolverCache(object, metaclass=_Singleton):
         mapping = {
             'secret': self.v2client.list_secrets,
             "project": self.v2client.list_projects,
-            "package": self.client.get_all_packages,
+            "package": self.v2client.list_packages,
             "staticroute": self.v2client.list_static_routes,
-            "deployment": functools.partial(self.client.get_all_deployments,
-                                            phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                                    DeploymentPhaseConstants.PROVISIONING]),
-            "network": self._list_networks,
-            "disk": self._list_disks,
+            "disk": self.v2client.list_disks,
+            "network": self.v2client.list_networks,
+            "deployment": functools.partial(self.v2client.list_deployments),
             "device": self.client.get_all_devices,
             "managedservice": self._list_managedservices,
             "usergroup": self.client.list_usergroups
@@ -153,12 +151,15 @@ class ResolverCache(object, metaclass=_Singleton):
             'secret': lambda name, secrets: filter(lambda i: i.metadata.name == name, secrets),
             "project": lambda name, projects: filter(lambda i: i.metadata.name == name, projects),
             "package": lambda name, obj_list, version: filter(
-                lambda x: name == x.name and version == x['packageVersion'], obj_list),
+                lambda x: name == x.metadata.name and version == x.metadata.version, obj_list),
             "staticroute": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name.rsplit('-', 1)[0], obj_list),
-            "deployment": self._generate_find_guid_functor(),
-            "network": self._generate_find_guid_functor(),
-            "disk": self._generate_find_guid_functor(),
+            "network": lambda name, obj_list, network_type: filter(
+                lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
+            "deployment": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name, obj_list),
+            "disk": lambda name, obj_list: filter(
+                lambda x: name == x.metadata.name,  obj_list),
             "device": self._generate_find_guid_functor(),
             "managedservice": lambda name, instances: filter(lambda i: i.metadata.name == name, instances),
             "usergroup": lambda name, groups: filter(lambda i: i.name == name, groups),
@@ -181,20 +182,6 @@ class ResolverCache(object, metaclass=_Singleton):
             networks.extend(routed)
 
         return networks
-
-    def _list_disks(self):
-        config = Configuration()
-        catalog_host = config.data.get(
-            'catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
-        url = '{}/disk'.format(catalog_host)
-        headers = config.get_auth_header()
-        response = RestClient(url).method(
-            HttpMethod.GET).headers(headers).execute()
-        data = json.loads(response.text)
-        if not response.ok:
-            err_msg = data.get('error')
-            raise Exception(err_msg)
-        return munchify(data)
 
     def _list_managedservices(self):
         instances = ManagedService.list_instances()

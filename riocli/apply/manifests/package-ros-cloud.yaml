@@ -4,7 +4,6 @@ metadata:
   name: "package-ros-cloud" # Required
   version: "v1.0.0" # Required
   description: "A RIO cloud ROS package"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -14,7 +13,8 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
-      command: "roslaunch talker talker.launch"
+      command:
+      - "roslaunch talker talker.launch"
       runAsBash: True
       simulation: False
       limits:

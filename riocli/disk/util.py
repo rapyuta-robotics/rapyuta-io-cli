@@ -11,116 +11,60 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
-import json
-import time
 import typing
+import re
 
-import click
 from rapyuta_io import Client
 from rapyuta_io.clients.persistent_volumes import DiskCapacity, DiskType
 from rapyuta_io.utils.rest_client import RestClient, HttpMethod
 
 from riocli.config import Configuration, new_client
 from riocli.constants import Colors, Symbols
-
+from riocli.disk.model import Disk
+from riocli.utils import tabulate_data
 
 class DiskNotFound(Exception):
     def __init__(self):
         super().__init__('Disk not found')
 
 
-def _api_call(
-        method: str,
-        guid: typing.Union[str, None] = None,
-        payload: typing.Union[typing.Dict, None] = None,
-        load_response: bool = True,
-) -> typing.Any:
-    config = Configuration()
-    catalog_host = config.data.get(
-        'catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
+def fetch_disks(
+        client: Client,
+        disk_name_or_regex: str,
+        include_all: bool,
+) -> typing.List[Disk]:
 
-    url = '{}/disk'.format(catalog_host)
-    if guid:
-        url = '{}/{}'.format(url, guid)
+    disks = client.list_disks()
 
-    headers = config.get_auth_header()
-    response = RestClient(url).method(method).headers(
-        headers).execute(payload=payload)
+    if include_all:
+        return disks
 
-    data = None
-    if load_response:
-        data = json.loads(response.text)
+    result = []
+    for n in disks:
+        if re.search(disk_name_or_regex, n.metadata.name):
+            result.append(n)
 
-    if not response.ok:
-        err_msg = data.get('error')
-        raise Exception(err_msg)
-    return data
+    return result
 
+def is_disk_ready(client: Client , name: str) -> bool:
+    disk = client.get_disk(name)
+    return disk.status.get("status", "") == "Available"
 
-def name_to_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
-        client = new_client()
-        name = kwargs.pop('disk_name')
-        guid = None
+def display_disk_list(disks: typing.Any, show_header: bool = True):
+    headers = []
+    if show_header:
+        headers = (
+            'Disk ID', 'Name', 'Status', 'Capacity',
+            'Used', 'Available', 'Used By',
+        )
 
-        if name.startswith('disk-'):
-            guid = name
-            name = None
+    data = [[d.metadata.guid,
+             d.metadata.name,
+             d.status.get("status"),
+             d.spec.capacity,
+             d.spec.get("CapacityUsed"),
+             d.spec.get("CapacityAvailable"),
+             d.get("diskBound", {}).get("DeploymentName")]
+            for d in disks]
 
-        if name is None:
-            name = get_disk_name(client, guid)
-
-        if guid is None:
-            try:
-                guid = find_disk_guid(client, name)
-            except Exception as e:
-                click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
-                raise SystemExit(1) from e
-
-        kwargs['disk_name'] = name
-        kwargs['disk_guid'] = guid
-        f(**kwargs)
-
-    return decorated
-
-
-def get_disk_name(client: Client, guid: str) -> str:
-    disk = _api_call(HttpMethod.GET, guid=guid)
-    return disk['name']
-
-
-def find_disk_guid(client: Client, name: str) -> str:
-    try:
-        disks = _api_call(HttpMethod.GET)
-        for disk in disks:
-            if disk['name'] == name:
-                return disk['guid']
-        raise DiskNotFound()
-    except Exception:
-        raise DiskNotFound()
-
-
-def create_cloud_disk(disk_name: str, capacity: int) -> typing.Dict:
-    """
-    Creates a new cloud disk and waits until it is provisioned
-    """
-    payload = {
-        "name": disk_name,
-        "diskType": DiskType.SSD,
-        "runtime": "cloud",
-        "capacity": DiskCapacity(capacity).value,
-    }
-
-    disk = _api_call(HttpMethod.POST, payload=payload)
-
-    while not is_disk_ready(disk.get('guid')):
-        time.sleep(5)
-
-    return disk
-
-
-def is_disk_ready(disk_guid: str) -> bool:
-    disk = _api_call(HttpMethod.GET, disk_guid, load_response=True)
-    return disk.get('status') != 'Pending'
+    tabulate_data(data, headers)

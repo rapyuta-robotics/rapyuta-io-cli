@@ -50,6 +50,7 @@ def execute_command(
     """
     Execute commands on cloud deployment
     """
+    # TODO(Romil): Move to V2 client
     try:
         comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
 

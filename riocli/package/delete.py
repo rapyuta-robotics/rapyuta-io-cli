@@ -14,15 +14,17 @@
 from queue import Queue
 
 import click
-from rapyuta_io.clients.package import Package
+import functools
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
 from riocli.package.util import fetch_packages, print_packages_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from rapyuta_io import Client
+from rapyuta_io.clients.package import Package
 
 
 @click.command('delete')
@@ -46,7 +48,7 @@ def delete_package(
     """
     Delete the package from the Platform
     """
-    client = new_client()
+    client = new_v2_client()
 
     if not (package_name_or_regex or delete_all):
         spinner.text = "Nothing to delete"
@@ -54,7 +56,7 @@ def delete_package(
         return
 
     try:
-        packages = fetch_packages(client, package_name_or_regex, delete_all, package_version)
+        packages = fetch_packages(client, package_name_or_regex, delete_all)
     except Exception as e:
         spinner.text = click.style(
             'Failed to find package(s): {}'.format(e), Colors.RED)
@@ -76,8 +78,9 @@ def delete_package(
             click.confirm('Do you want to delete the above package(s)?', default=True, abort=True)
 
     try:
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=_apply_delete, items=packages,
+            f=f, items=packages,
             workers=workers, key=lambda x: x[0]
         )
 
@@ -107,11 +110,10 @@ def delete_package(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-
-def _apply_delete(result: Queue, package: Package) -> None:
-    name_version = "{}@{}".format(package.packageName, package.packageVersion)
+def _apply_delete(client: Client ,result: Queue, package: Package) -> None:
+    name_version = "{}@{}".format(package.metadata.name, package.metadata.version)
     try:
-        package.delete()
+        client.delete_package(package_name=package.metadata.name, query={"version": package.metadata.version})
         result.put((name_version, True))
     except Exception:
         result.put((name_version, False))

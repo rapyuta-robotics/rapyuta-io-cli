@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,21 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
 
-from riocli.constants import Colors
-from riocli.config import new_v2_client
-from riocli.disk.util import display_disk_list
-
-@click.command('list')
-def list_disks() -> None:
-    """
-    List the disks in the selected project
-    """
-    try:
-        client = new_v2_client(with_project=True)
-        disks = client.list_disks()
-        display_disk_list(disks, show_header=True)
-    except Exception as e:
-        click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
+class Regions:
+    JP = 'jp'
+    US = 'us'
