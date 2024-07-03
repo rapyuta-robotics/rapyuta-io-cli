@@ -185,7 +185,7 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     product = virtual['product']
     name = metadata['name']
 
-    labels = hwil_device_labels(product, name)
+    labels = make_hwil_labels(virtual, name)
     device_name = sanitize_hwil_device_name(f"{name}-{product}-{labels['user']}")
 
     client = new_hwil_client()
@@ -240,20 +240,23 @@ def execute_onboard_command(device_id: int, onboard_command: str) -> None:
         raise e
 
 
-def hwil_device_labels(product_name, device_name) -> typing.Dict:
+def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
     data = Configuration().data
     user_email = data['email_id']
-    project_id = data['project_id']
-    organization_id = data['organization_id']
     user_email = user_email.split('@')[0]
 
-    return {
+    labels = {
         "user": user_email,
-        "organization": organization_id,
-        "project": project_id,
-        "product": product_name,
+        "organization": data['organization_id'],
+        "project": data['project_id'],
+        "product": spec['product'],
         "rapyuta_device_name": device_name,
     }
+
+    if spec.get("highperf", False):
+        labels["highperf"] = ""
+
+    return labels
 
 
 def make_device_labels_from_hwil_device(d: Munch) -> dict:
