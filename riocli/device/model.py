@@ -51,8 +51,9 @@ class Device(Model):
         hwil_response = create_hwil_device(self.spec, self.metadata)
 
         # Generate labels to store HWIL metadata in rapyuta.io device.
-        l = make_device_labels_from_hwil_device(hwil_response)
-        self.metadata.get('labels', {}).update(l)
+        labels = make_device_labels_from_hwil_device(hwil_response)
+        labels.update(self.metadata.get('labels', {}))
+        self.metadata.labels = labels
 
         # Create the rapyuta.io device.
         device = client.create_device(self.to_v1())
