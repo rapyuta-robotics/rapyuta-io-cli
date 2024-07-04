@@ -1,3 +1,22 @@
+# [7.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.5.0...v7.6.0) (2024-07-04)
+
+
+### Bug Fixes
+
+* **device:** sets device labels correctly ([#329](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/329)) ([a3ac73d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a3ac73d6da5f1ae6eb8d9d95b5763bb391f3e7f4))
+* **device:** sets highperf label on virtual device ([#328](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/328)) ([1eb7906](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1eb7906641d700a50e47b791a19311a6d6f7b542))
+* **project:** updates subnet when vpn is already enabled ([#324](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/324)) ([e8d553b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e8d553bc297772b3d774245c0ab7853c886a0c18))
+
+
+### Features
+
+* **configtree:** add export command ([6f236ae](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6f236aedbd93999f7ed12156b747e116492c8948))
+* **configtree:** add support for diff ([7df605e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7df605ea6b04e9c3f3109d9ce45904314b32527d))
+* **configtree:** add support for merge ([a1d273f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a1d273f5069f48d8f32ac5d0888d6ac416be2dc5))
+* **configtree:** add support for milestone ([6ada3f7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6ada3f7189287a799e66badfa6e4fa61bb5cd93d))
+* **device:** supports onboarding hwil devices via device manifest ([#323](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/323)) ([7c257f1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7c257f16ce1fb3a8fa9f3997a1b8c9055ac52184))
+* **hwil:** implements hwil command ([#319](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/319)) ([3e24b0b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3e24b0b115dba39544e170ddb8c08b1e450a49de))
+
 # [7.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.4.1...v7.5.0) (2024-06-12)
 
 
