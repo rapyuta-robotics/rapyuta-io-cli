@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
+import json
 import re
 import typing
 from pathlib import Path
-import json
 
 import click
+from munch import Munch
 from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
 from rapyuta_io.clients.device import Device
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.config import get_config_from_context, new_client
+from riocli.config import get_config_from_context, new_client, new_hwil_client
+from riocli.config.config import Configuration
 from riocli.constants import Colors
-from riocli.utils import is_valid_uuid
+from riocli.exceptions import DeviceNotFound
+from riocli.hwil.util import execute_command, find_device_id
+from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -123,6 +127,7 @@ def fetch_devices(
 
     return result
 
+
 def migrate_device_to_project(ctx: click.Context, device_id: str, dest_project_id: str) -> None:
     config = get_config_from_context(ctx)
     host = config.data.get('core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io')
@@ -171,7 +176,110 @@ def is_remote_path(src, devices=[]):
     return None, src
 
 
-class DeviceNotFound(Exception):
-    def __init__(self, message='device not found'):
-        self.message = message
-        super().__init__(self.message)
+def create_hwil_device(spec: dict, metadata: dict) -> Munch:
+    """Create a new hardware-in-the-loop device."""
+    virtual = spec['virtual']
+    os = virtual['os']
+    codename = virtual['codename']
+    arch = virtual['arch']
+    product = virtual['product']
+    name = metadata['name']
+
+    labels = make_hwil_labels(virtual, name)
+    device_name = sanitize_hwil_device_name(f"{name}-{product}-{labels['user']}")
+
+    client = new_hwil_client()
+
+    try:
+        device_id = find_device_id(client, device_name)
+        return client.get_device(device_id)
+    except DeviceNotFound:
+        pass  # Do nothing and proceed.
+
+    response = client.create_device(device_name, arch, os, codename, labels)
+    client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
+
+    if response.status == 'FAILED':
+        raise Exception('device has failed')
+
+    return response
+
+
+def delete_hwil_device(device: Device) -> None:
+    """Delete a hardware-in-the-loop device.
+
+    This is a helper method that deletes a HWIL device
+    associated with the rapyuta.io device.
+    """
+    labels = device.get('labels', {})
+    if not labels:
+        raise DeviceNotFound(message='hwil device not found')
+
+    device_id = None
+
+    for l in labels:
+        if l['key'] == 'hwil_device_id':
+            device_id = l['value']
+            break
+
+    if device_id is None:
+        raise DeviceNotFound(message='hwil device not found')
+
+    client = new_hwil_client()
+    client.delete_device(device_id)
+
+
+def execute_onboard_command(device_id: int, onboard_command: str) -> None:
+    """Execute the onboard command on a hardware-in-the-loop device."""
+    client = new_hwil_client()
+    try:
+        code, _, stderr = execute_command(client, device_id, onboard_command)
+        if code != 0:
+            raise Exception(f"Failed with exit code {code}: {stderr}")
+    except Exception as e:
+        raise e
+
+
+def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
+    data = Configuration().data
+    user_email = data['email_id']
+    user_email = user_email.split('@')[0]
+
+    labels = {
+        "user": user_email,
+        "organization": data['organization_id'],
+        "project": data['project_id'],
+        "product": spec['product'],
+        "rapyuta_device_name": device_name,
+    }
+
+    if spec.get("highperf", False):
+        labels["highperf"] = ""
+
+    return labels
+
+
+def make_device_labels_from_hwil_device(d: Munch) -> dict:
+    return {
+        "hwil_device_id": str(d.id),
+        "hwil_device_name": d.name,
+        "arch": d.architecture,
+        "flavor": d.flavor,
+        "hwil_device_username": d.username,
+    }
+
+
+def sanitize_hwil_device_name(name):
+    if len(name) == 0:
+        return name
+
+    name = name[0:50]
+    name = trim_suffix(name)
+    name = trim_prefix(name)
+
+    r = ''
+    for c in name:
+        if c.isalnum() or c in ['-', '_']:
+            r = r + c
+
+    return r

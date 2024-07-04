@@ -575,11 +575,11 @@ class Client(object):
 
         return munchify(data)
 
-    def list_config_tree_revisions(self, tree_name: str) -> Munch:
+    def list_config_tree_revisions(self, tree_name: str, labels: str = '') -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
         headers = self._get_auth_header(with_org=True)
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
-        return self._walk_pages(client)
+        return self._walk_pages(client, params={'labelSelector': labels})
 
     def initialize_config_tree_revision(self, tree_name: str) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)

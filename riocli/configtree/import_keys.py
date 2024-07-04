@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from pathlib import Path
 from typing import Optional, Iterable
 
@@ -23,7 +22,7 @@ from yaspin.core import Yaspin
 from riocli.config import new_v2_client
 from riocli.configtree.etcd import import_in_etcd
 from riocli.configtree.revision import Revision
-from riocli.configtree.util import Metadata
+from riocli.configtree.util import Metadata, export_to_files
 from riocli.constants import Symbols, Colors
 from riocli.utils.spinner import with_spinner
 
@@ -36,6 +35,8 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--commit/--no-commit', 'commit', is_flag=True, type=bool, )
 @click.option('--update-head/--no-update-head', 'update_head', is_flag=True, type=bool)
+@click.option('--milestone', 'milestone', type=str,
+              help='Minestone name for the imported revision.')
 @click.option('--etcd-endpoint', 'etcd_endpoint', type=str,
               help='Import keys to local etcd instead of rapyuta.io cloud')
 @click.option('--export-directory', 'export_directory', type=str,
@@ -56,6 +57,7 @@ def import_keys(
         files: Iterable[str],
         commit: bool,
         update_head: bool,
+        milestone: Optional[str],
         export_directory: Optional[str],
         etcd_endpoint: Optional[str],
         etcd_port: Optional[int],
@@ -98,7 +100,7 @@ def import_keys(
     try:
         client = new_v2_client(with_project=(not with_org))
         with Revision(tree_name=tree_name, commit=commit, client=client, spinner=spinner,
-                      with_org=with_org) as rev:
+                      with_org=with_org, milestone=milestone) as rev:
             rev_id = rev.revision_id
 
             for key, value in data.items():
@@ -161,11 +163,3 @@ def split_metadata(input: Iterable) -> (Iterable, Iterable):
         content[key], metadata[key] = split_metadata(value)
 
     return content, metadata
-
-
-def export_to_files(base_dir: str, data: dict) -> None:
-    base_dir = os.path.abspath(base_dir)
-
-    for file_name, file_data in data.items():
-        file_path = os.path.join(base_dir, '{}.yaml'.format(file_name))
-        benedict(file_data).to_yaml(filepath=file_path)

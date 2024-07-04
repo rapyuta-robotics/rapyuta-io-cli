@@ -33,7 +33,7 @@ from riocli.utils.spinner import with_spinner
 @click.option('--subnets', type=click.STRING, multiple=True, default=(),
               help='Subnet ranges for the project. For example: 10.81.0.0/16')
 @name_to_guid
-@with_spinner()
+@with_spinner(text="Updating VPN state...")
 def vpn(
         project_name: str,
         project_guid: str,
@@ -59,20 +59,18 @@ def vpn(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    # Check the current state of VPN and avoid making the update call.
-    if project['spec']['features']['vpn'].get('enabled', False) == enable:
-        expected_state = "enabled" if enable else "disabled"
-        spinner.text = click.style('VPN is already {}.'.format(expected_state), fg=Colors.GREEN)
-        spinner.green.ok(Symbols.SUCCESS)
-        return
-
     project["spec"]["features"]["vpn"] = {
         "enabled": enable,
-        "subnets": (subnets or []) if enable else []
+        "subnets": subnets or []
     }
 
-    state = 'Enabling' if enable else 'Disabling'
-    spinner.text = click.style('{} VPN...'.format(state), fg=Colors.YELLOW)
+    is_vpn_enabled = project["spec"]["features"]["vpn"].get("enabled", False)
+
+    status = 'Enabling VPN...' if enable else 'Disabling VPN...'
+    if is_vpn_enabled and subnets:
+        status = 'Updating the VPN subnet ranges for the project...'
+
+    spinner.text = status
 
     try:
         client.update_project(project_guid, project)

@@ -39,6 +39,13 @@ def new_v2_client(config_inst: Configuration = None, with_project: bool = True):
     return config_inst.new_v2_client(with_project=with_project)
 
 
+def new_hwil_client(config_inst: Configuration = None):
+    if not config_inst:
+        config_inst = Configuration()
+
+    return config_inst.new_hwil_client()
+
+
 def get_config_from_context(ctx: click.Context) -> Configuration:
     config_obj = ctx.obj
 

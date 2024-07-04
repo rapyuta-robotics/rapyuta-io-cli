@@ -19,6 +19,7 @@ import string
 import subprocess
 import sys
 import typing
+import uuid
 from pathlib import Path
 from shutil import get_terminal_size, move
 from tempfile import TemporaryDirectory
@@ -261,3 +262,37 @@ def update_appimage(version: str):
             raise e
         except Exception as e:
             raise e
+
+
+def generate_short_guid() -> str:
+    return uuid.uuid4().hex[:8]
+
+
+def trim_suffix(name):
+    if len(name) == 0 or name[0].isalnum():
+        return name
+
+    return trim_suffix(name[1:])
+
+
+def trim_prefix(name):
+    if len(name) == 0 or name[len(name) - 1].isalnum():
+        return name
+
+    return trim_prefix(name[:len(name) - 1])
+
+
+def sanitize_label(name):
+    if len(name) == 0:
+        return name
+
+    name = name[0:63]
+    name = trim_suffix(name)
+    name = trim_prefix(name)
+
+    r = ''
+    for c in name:
+        if c.isalnum() or c in ['-', '_', '.']:
+            r = r + c
+
+    return r
