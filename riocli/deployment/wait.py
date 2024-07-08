@@ -12,15 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+import typing
+import time
+
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.utils import RetriesExhausted, DeploymentNotRunningException
-
 from riocli.config import new_v2_client
-from riocli.constants import Colors
-from riocli.constants import Symbols
+from riocli.constants import Colors, Symbols, Status
 from riocli.deployment.util import name_to_guid
 from riocli.utils.spinner import with_spinner
 
+from rapyuta_io import Client
+
+def poll_deployment_till_ready(client: Client, deployment: typing.Any, retry_count=50, sleep_interval=6):
+    for _ in range(retry_count):
+        if deployment.status.status == Status.RUNNING:
+            return deployment
+
+        time.sleep(sleep_interval)
+        deployment = client.get_deployment(deployment.metadata.name)
+    return deployment
 
 @click.command(
     'wait',
@@ -38,12 +49,13 @@ def wait_for_deployment(
     Wait until the deployment succeeds/fails
     """
     try:
-        # TODO(Romil): test once the v2 deployment client is ready with status
         client = new_v2_client()
         deployment = client.get_deployment(deployment_name)
-        # TODO(ankit): Fix the poll_deployment_till_ready for Runtime Error
-        status = deployment.poll_deployment_till_ready()
-        spinner.text = click.style('Deployment status: {}'.format(status.status), fg=Colors.GREEN)
+
+        retry_count = int(kwargs.get('retry_count'))
+        retry_interval = int(kwargs.get('retry_interval'))
+        deployment = poll_deployment_till_ready(client, deployment, retry_count, retry_interval)
+        spinner.text = click.style('Deployment status: {}'.format(deployment.status.status), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except RetriesExhausted as e:
         spinner.write(click.style(str(e), fg=Colors.RED))
