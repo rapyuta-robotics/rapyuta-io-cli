@@ -24,7 +24,6 @@ from riocli.deployment.status import status
 from riocli.deployment.update import update_deployment
 from riocli.deployment.wait import wait_for_deployment
 
-
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,

@@ -14,6 +14,8 @@
 import typing
 from typing import Union, Any, Dict
 from munch import munchify, unmunchify
+import click
+import time
 
 from rapyuta_io import Client
 from rapyuta_io.clients.common_models import Limits
@@ -26,6 +28,7 @@ from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.v2client.client import NetworkNotFound
 from riocli.config import new_v2_client
+from riocli.constants import Colors, Symbols, Status
 
 class Network(Model):
     def __init__(self, *args, **kwargs):
@@ -42,6 +45,15 @@ class Network(Model):
         except NetworkNotFound:
             return False
 
+    def poll_deployment_till_ready(self, client: Client, network: typing.Any, retry_count = 50, sleep_interval = 6):
+        for _ in range(retry_count):
+            if network.status and network.status.status == Status.RUNNING:
+                return network
+
+            time.sleep(sleep_interval)
+            network = client.get_network(network.metadata.name)
+        return network
+
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()
 
@@ -50,6 +62,24 @@ class Network(Model):
         network = unmunchify(self)
         network.pop("rc", None)
         r = client.create_network(network)
+
+        retry_count = int(kwargs.get('retry_count'))
+        retry_interval = int(kwargs.get('retry_interval'))
+
+        try:
+            r = self.poll_deployment_till_ready(
+                client = client,
+                network = r,
+                retry_count=retry_count,
+                sleep_interval=retry_interval,
+            )
+        except Exception as e:
+            click.secho(">> {}: Error polling for network ({}:{})".format(
+                Symbols.WARNING,
+                self.kind.lower(),
+                self.metadata.name), fg=Colors.YELLOW)
+
+
         return unmunchify(r)
 
     def update_object(self, client: Client,

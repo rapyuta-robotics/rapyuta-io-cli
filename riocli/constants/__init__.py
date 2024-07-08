@@ -15,5 +15,6 @@
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
 from riocli.constants.regions import Regions
+from riocli.constants.status import Status
 
-__all__ = [Colors, Symbols, Regions]
+__all__ = [Colors, Symbols, Regions, Status]
