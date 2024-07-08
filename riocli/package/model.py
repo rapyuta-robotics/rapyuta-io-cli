@@ -44,6 +44,12 @@ class Package(Model):
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()
 
+        # incase createdAt and updatedAt are present they are in datetime format
+        # they need to be converted to isoformat for serializing request
+        # or just dont pass the values as they are not needed.
+        self.metadata.createdAt = None
+        self.metadata.updatedAt = None
+
         # convert to a dict and remove the ResolverCache
         # field since it's not JSON serializable
         package = unmunchify(self)
