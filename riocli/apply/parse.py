@@ -13,6 +13,7 @@
 # limitations under the License.
 import copy
 import json
+from os import stat
 import queue
 import threading
 import typing
@@ -23,6 +24,7 @@ import jinja2
 import yaml
 from tabulate import tabulate
 
+from riocli.apply.custom import get_interface_ip
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
@@ -48,7 +50,7 @@ class Applier(object):
     }
 
     def __init__(self, files: typing.List, values, secrets):
-        self.environment = None
+        self.environment = self._initialize_jinja_environment()
         self.input_file_paths = files
         self.config = Configuration()
         self.client = self.config.new_client()
@@ -61,8 +63,6 @@ class Applier(object):
         self.secrets = {}
         self.values = {}
         self.diagram = Graphviz(direction='LR', format='svg')
-        if values or secrets:
-            self.environment = jinja2.Environment()
 
         if values:
             self.values = self._load_file_content(
@@ -87,6 +87,12 @@ class Applier(object):
         }
 
         return values
+
+    @staticmethod
+    def _initialize_jinja_environment() -> jinja2.Environment:
+        environment = jinja2.Environment()
+        environment.filters['get_interface_ip'] = get_interface_ip
+        return environment
 
     # Public Functions
     def order(self):
