@@ -67,12 +67,26 @@ class Applier(object):
         if values:
             self.values = self._load_file_content(
                 values, is_value=True, is_secret=False)[0]
+        # Inject rio Namespace
+        self.values = self._inject_rio_namespace(self.values)
 
         if secrets:
             self.secrets = self._load_file_content(
                 secrets, is_value=True, is_secret=True)[0]
 
         self._process_file_list(files)
+
+    def _inject_rio_namespace(self, values: typing.Optional[dict] = {}) -> dict:
+        if not values:
+            values = {}
+
+        values['rio'] = {
+            'project': self.config.project_guid,
+            'organization': self.config.organization_guid,
+            'email_id': self.config.data.get('email_id'),
+        }
+
+        return values
 
     # Public Functions
     def order(self):
