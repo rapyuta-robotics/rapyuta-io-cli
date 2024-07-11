@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,28 @@
 from pathlib import Path
 
 import click
+import yaml
 from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
+from riocli.utils import tabulate_data
+
+
+@click.command(
+    'list-examples',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+    help='List all examples supported in rio explain command'
+)
+def list_examples() -> None:
+    path = Path(__file__).parent.joinpath('manifests')
+
+    examples = []
+    for each in path.glob('*.yaml'):
+        examples.append([each.name.split('.yaml')[0]])
+
+    tabulate_data(examples, ['Examples'])
 
 
 @click.command(
