@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from typing import Iterable
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.apply.explain import explain
+from riocli.apply.explain import explain, list_examples
 from riocli.apply.parse import Applier
 from riocli.apply.template import template
 from riocli.apply.util import process_files_values_secrets
