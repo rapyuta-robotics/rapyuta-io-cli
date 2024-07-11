@@ -121,11 +121,11 @@ definitions:
         enum:
           - docker
           - preInstalled
-        command:
-          type: array
-          items:
-            type: string
-          description: Command to execute for the Exec probe.
+      command:
+        type: array
+        items:
+          type: string
+        description: Command to execute for the Exec probe.
       runAsBash:
         type: boolean
         default: True
