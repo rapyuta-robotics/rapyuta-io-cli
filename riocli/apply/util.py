@@ -57,5 +57,5 @@ def process_files_values_secrets(files, values, secrets):
         if abs_secrets in glob_files:
             glob_files.remove(abs_secrets)
 
-    glob_files = list(set(glob_files))
+    glob_files = sorted(list(set(glob_files)))
     return glob_files, abs_values, abs_secret
