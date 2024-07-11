@@ -82,7 +82,6 @@ def login(
             raise SystemExit(1)
 
         ctx.obj.data['email_id'] = email
-        ctx.obj.data['password'] = password
         ctx.obj.data['auth_token'] = get_token(email, password)
 
     # Save if the file does not already exist
