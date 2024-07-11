@@ -252,25 +252,37 @@ class Applier(object):
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
-        if not is_secret:
-            with open(file_name) as opened:
-                data = opened.read()
-        else:
-            data = run_bash('sops -d {}'.format(file_name))
+        """Load the file content and return the parsed data.
 
-        # TODO: If no Kind in yaml/json, then skip
+        When the file is a template, render it using values or secrets.
+        """
+        try:
+            if is_secret:
+                data = run_bash(f'sops -d {file_name}')
+            else:
+                with open(file_name) as f:
+                    data = f.read()
+        except Exception as e:
+            raise Exception(f'Error loading file {file_name}: {str(e)}')
+
+        # When the file is a template, render it using
+        # values or secrets.
         if not (is_value or is_secret):
             if self.environment or file_name.endswith('.j2'):
-                template = self.environment.from_string(data)
+                try:
+                    template = self.environment.from_string(data)
+                except Exception as e:
+                    raise Exception(f'Error loading template {file_name}: {str(e)}')
+
                 template_args = self.values
+
                 if self.secrets:
                     template_args['secrets'] = self.secrets
+
                 try:
                     data = template.render(**template_args)
                 except Exception as ex:
-                    click.secho('{} yaml parsing error. Msg: {}'.format(
-                        file_name, str(ex)))
-                    raise ex
+                    raise Exception(f'Failed to parse {file_name}: {str(ex)}')
 
                 file_name = file_name.rstrip('.j2')
 
@@ -281,19 +293,13 @@ class Applier(object):
                 loaded = json.loads(data)
                 loaded_data.append(loaded)
             except json.JSONDecodeError as ex:
-                ex_message = '{} yaml parsing error. Msg: {}'.format(
-                    file_name, str(ex))
-                raise Exception(ex_message)
-
+                raise Exception(f'Failed to parse {file_name}: {str(ex)}')
         elif file_name.endswith('yaml') or file_name.endswith('yml'):
             try:
                 loaded = yaml.safe_load_all(data)
                 loaded_data = list(loaded)
-
             except yaml.YAMLError as e:
-                ex_message = '{} yaml parsing error. Msg: {}'.format(
-                    file_name, str(e))
-                raise Exception(ex_message)
+                raise Exception(f'Failed to parse {file_name}: {str(ex)}')
 
         if not loaded_data:
             click.secho('{} file is empty'.format(file_name))
