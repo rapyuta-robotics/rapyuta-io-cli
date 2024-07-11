@@ -52,6 +52,10 @@ def select_organization(
     organizations = client.get_user_organizations()
     organizations = sorted(organizations, key=lambda org: org.name.lower())
 
+    if len(organizations) == 0:
+        click.secho("You are not a part of any organization", fg=Colors.BLACK, bg=Colors.WHITE)
+        raise SystemExit(1)
+
     org_map = {o.guid: o.name for o in organizations}
 
     if not org_guid:
@@ -95,6 +99,11 @@ def select_project(
 
     # Sort projects based on their names for an easier selection
     projects = sorted(projects, key=lambda p: p.metadata.name.lower())
+
+    if len(projects) == 0:
+        click.secho("You are not a part of any project", fg=Colors.BLACK, bg=Colors.WHITE)
+        raise SystemExit(1)
+
     project_map = dict()
 
     for project in projects:
