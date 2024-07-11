@@ -124,10 +124,7 @@ definitions:
           - docker
           - preInstalled
       command:
-        type: array
-        items:
-          type: string
-        description: Command to execute for the Exec probe.
+        "$ref": "#/definitions/commandSpec"
       runAsBash:
         type: boolean
         default: True
@@ -180,10 +177,7 @@ definitions:
         enum:
           - docker
       command:
-        type: array
-        items:
-          type: string
-        description: Command to execute for the Exec probe.
+        "$ref": "#/definitions/commandSpec"
       runAsBash:
         type: boolean
         default: True
@@ -225,6 +219,13 @@ definitions:
                       - depends
                 required:
                   - image
+
+  commandSpec:
+    oneOf:
+      - type: array
+        items:
+          type: string
+      - type: string
 
   portNumber:
     type: integer

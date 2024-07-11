@@ -42,106 +42,53 @@ class Package(Model):
         return obj
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
-        client = new_v2_client()
+        v2_client = new_v2_client()
 
-        # incase createdAt and updatedAt are present they are in datetime format
-        # they need to be converted to isoformat for serializing request
-        # or just dont pass the values as they are not needed.
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
-
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        package = unmunchify(self)
-        package.pop("rc", None)
-        r = client.create_package(package)
+        r = v2_client.create_package(self._sanitize_package())
         return unmunchify(r)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
 
         pass
 
+    @staticmethod
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        client = new_v2_client()
-        client.delete_package(obj.metadata.name, query={"version": obj.metadata.version})
-
-    def to_v1(self):
-        # return v1Project(self.metadata.name)
-        pass
-
-    def _get_rosendpoint_struct(self, rosEndpoints, filter_type):
-        topic_list = filter(lambda x: x.type == filter_type, rosEndpoints)
-        return_list = []
-        for topic in topic_list:
-            if topic.compression is False:
-                topic.compression = ""
-            else:
-                topic.compression = "snappy"
-            return_list.append(topic)
-        return return_list
-
-    def _map_executable(self, exec):
-        exec_object = munchify({
-            "name": exec.name,
-            "simulationOptions": {
-                "simulation": exec.simulation if 'simulation' in exec else False
-            }
-        })
-
-        if 'limits' in exec:
-            exec_object.limits = {
-                'cpu': exec.limits.get('cpu', 0.0),
-                'memory': exec.limits.get('memory', 0)
-            }
-
-        if 'livenessProbe' in exec:
-            exec_object.livenessProbe = exec.livenessProbe
-
-        if 'command' in exec:
-            c = []
-
-            if exec.get('runAsBash'):
-                c = ['/bin/bash', '-c']
-
-            if isinstance(exec.command, list):
-                c.extend(exec.command)
-            else:
-                c.append(exec.command)
-
-            exec_object.cmd = c
-
-        if exec.type == 'docker':
-            exec_object.docker = exec.docker.image
-            if 'pullSecret' in exec.docker and exec.docker.pullSecret.depends:
-                secret_guid, secret = self.rc.find_depends(exec.docker.pullSecret.depends)
-                exec_object.secret = secret_guid
-
-            if exec.docker.get('imagePullPolicy'):
-                exec_object.imagePullPolicy = exec.docker.imagePullPolicy
-
-        # TODO handle preinstalled
-
-        return exec_object
-
-    def _map_endpoints(self, endpoint):
-        exposedExternally = endpoint.type.split("-")[0] == 'external'
-        proto = "-".join(endpoint.type.split("-")[1:])
-        if 'tls-tcp' in proto:
-            proto = 'tcp'
-
-        if 'range' in endpoint.type:
-            proto = proto.replace("-range", '')
-            return {
-                "name": endpoint.name, "exposeExternally": exposedExternally,
-                "portRange": endpoint.portRange, "proto": proto.upper()}
-        else:
-            return {
-                "name": endpoint.name, "exposeExternally": exposedExternally,
-                "port": endpoint.port, "targetPort": endpoint.targetPort, "proto": proto.upper()}
+        v2_client = new_v2_client()
+        v2_client.delete_package(obj.metadata.name, query={"version": obj.metadata.version})
 
     @classmethod
     def pre_process(cls, client: Client, d: typing.Dict) -> None:
         pass
+
+    def _sanitize_package(self) -> typing.Dict:
+        # Unset createdAt and updatedAt to avoid timestamp parsing issue.
+        self.metadata.createdAt = None
+        self.metadata.updatedAt = None
+
+        self._convert_command()
+
+        data = unmunchify(self)
+
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        data.pop("rc", None)
+
+        return data
+
+    def _convert_command(self):
+        for exec in self.spec.executables:
+            if exec.get('command') is not None:
+                c = []
+
+                if exec.get('runAsBash'):
+                    c = ['/bin/bash', '-c']
+
+                if isinstance(exec.command, list):
+                    c.extend(exec.command)
+                else:
+                    c.append(exec.command)
+
+                exec.command = c
 
     @staticmethod
     def validate(data):
