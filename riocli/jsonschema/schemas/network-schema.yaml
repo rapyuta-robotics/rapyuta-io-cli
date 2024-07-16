@@ -65,8 +65,8 @@ definitions:
               runtime:
                 enum:
                   - device
-              deviceGUID:
-                "$ref": "#/definitions/uuid"
+              depends:
+                "$ref": "#/definitions/depends"
               networkInterface:
                 type: string
               restartPolicy:
@@ -74,7 +74,7 @@ definitions:
                 default: always
 
             required:
-              - deviceGUID
+              - depends
               - networkInterface
 
   rosDistro:
@@ -125,6 +125,15 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  depends:
+    type: object
+    properties:
+      kind:
+        const: Device
+        default: Device
+      nameOrGUID:
+        type: string
 
   resourceLimits:
     type: object
