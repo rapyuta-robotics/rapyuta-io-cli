@@ -15,7 +15,8 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.deployment import Deployment, DeploymentPhaseConstants
+from riocli.v2client.enums import DeploymentPhaseConstants
+from rapyuta_io.clients.deployment import Deployment
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -23,19 +24,20 @@ from riocli.deployment.util import process_deployment_errors
 from riocli.utils import tabulate_data
 
 ALL_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
-    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
-    DeploymentPhaseConstants.DEPLOYMENT_STOPPED,
+    DeploymentPhaseConstants.DeploymentPhaseInProgress,
+    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
+    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
+    DeploymentPhaseConstants.DeploymentPhaseStopped,
+    DeploymentPhaseConstants.DeploymentPhaseFailedToStart,
+    DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate,
 ]
 
 DEFAULT_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
+    DeploymentPhaseConstants.DeploymentPhaseInProgress,
+    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
+    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
+    DeploymentPhaseConstants.DeploymentPhaseFailedToStart,
+    DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate
 ]
 
 
@@ -46,7 +48,7 @@ DEFAULT_PHASES = [
     help_options_color=Colors.GREEN,
 )
 @click.option('--device', prompt_required=False, default='', type=str,
-              help='Filter the Deployment list by Device ID')
+              help='Filter the Deployment list by Device name')
 @click.option('--phase', prompt_required=False, multiple=True,
               type=click.Choice(ALL_PHASES),
               default=DEFAULT_PHASES,
@@ -63,7 +65,7 @@ def list_deployments(
     """
     try:
         client = new_v2_client(with_project=True)
-        deployments = client.list_deployments()
+        deployments = client.list_deployments(query={"phases": phase, "deviceName": device})
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
