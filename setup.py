@@ -24,7 +24,7 @@ setup(
         ]
     },
     include_package_data=True,
-    entry_points={"console_scripts": ["rio = riocli.bootstrap:cli"]},
+    entry_points={"console_scripts": ["rio = riocli.bootstrap:safe_cli"]},
     version=version,
     description="Rapyuta.io CLI Python command line application.",
     long_description=long_descr,
