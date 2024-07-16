@@ -33,7 +33,7 @@ def status(deployment_name: str) -> None:
     try:
         client = new_v2_client()
         deployment = client.get_deployment(deployment_name)
-        click.secho(deployment.status)
+        click.secho(deployment.status.aggregateStatus)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
