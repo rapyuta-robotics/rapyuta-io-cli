@@ -16,19 +16,25 @@ from __future__ import annotations
 import http
 import json
 import os
+import time
 from hashlib import md5
 from typing import List, Optional, Dict, Any
 
+import click
 import magic
 import requests
 from munch import munchify, Munch
-
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
+
+from riocli.v2client.enums import DeploymentPhaseConstants
+from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning
+
 
 class DeploymentNotFound(Exception):
     def __init__(self, message='deployment not found!'):
         self.message = message
         super().__init__(self.message)
+
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
@@ -51,10 +57,12 @@ def handle_server_errors(response: requests.Response):
     if status_code > 504:
         raise Exception('unknown server error')
 
+
 class NetworkNotFound(Exception):
     def __init__(self, message='network not found!'):
         self.message = message
         super().__init__(self.message)
+
 
 class Client(object):
     """
@@ -722,8 +730,6 @@ class Client(object):
 
         return munchify(result)
 
-    
-
     def list_packages(
             self,
             query: dict = None
@@ -816,7 +822,6 @@ class Client(object):
             raise Exception("package: {}".format(err_msg))
 
         return munchify(data)
-    
 
     def list_networks(
             self,
@@ -911,13 +916,13 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
-            raise Exception("package: {}".format(err_msg))
+            raise Exception("network: {}".format(err_msg))
 
         return munchify(data)
 
     def list_deployments(
-        self,
-        query: dict = None
+            self,
+            query: dict = None
     ) -> Munch:
         """
         List all deployments in a project
@@ -947,7 +952,7 @@ class Client(object):
             result.extend(deployments)
 
         return munchify(result)
-    
+
     def create_deployment(self, deployment: dict) -> Munch:
         """
         Create a new deployment
@@ -965,11 +970,11 @@ class Client(object):
             raise Exception("deployment: {}".format(err_msg))
 
         return munchify(data)
-        
+
     def get_deployment(
-        self,
-        name: str,
-        query: dict = None
+            self,
+            name: str,
+            query: dict = None
     ):
         url = "{}/v2/deployments/{}/".format(self._host, name)
         headers = self._config.get_auth_header()
@@ -1023,6 +1028,42 @@ class Client(object):
             raise Exception("deployment: {}".format(err_msg))
 
         return munchify(data)
+
+    def poll_deployment(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+            ready_phases: List[str] = None,
+    ) -> Munch:
+        if ready_phases is None:
+            ready_phases = []
+
+        deployment = self.get_deployment(name)
+
+        status = deployment.status
+
+        for _ in range(retry_count):
+            if status.phase in ready_phases:
+                return deployment
+
+            if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
+                errors = status.error_codes or []
+                if 'DEP_E153' in errors:  # DEP_E153 (image-pull error) will persist across retries
+                    return deployment
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
+                return deployment
+            elif status.phase in [DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate.value,
+                                  DeploymentPhaseConstants.DeploymentPhaseFailedToStart.value,
+                                  DeploymentPhaseConstants.DeploymentPhaseStopped.value]:
+                raise DeploymentNotRunning('Deployment not running. Deployment status: {}'.format(status.phase))
+
+            time.sleep(sleep_interval)
+            deployment = self.get_deployment(name)
+            status = deployment.status
+
+        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Deployment status: {}'.format(
+            retry_count, sleep_interval, status.phase))
 
     def list_disks(
             self,
