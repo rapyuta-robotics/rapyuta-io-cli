@@ -15,6 +15,9 @@
 
 __version__ = "7.2.1"
 
+import os
+import pretty_traceback
+
 import click
 import rapyuta_io.version
 from click import Context
@@ -64,6 +67,16 @@ from riocli.vpn import vpn
 def cli(ctx: Context, config: str = None):
     ctx.obj = Configuration(filepath=config)
 
+
+def safe_cli():
+    if os.environ.get("DEBUG", "false").lower() != "true":
+        try:
+            cli()
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
+    else:
+        cli()
 
 @cli.command("help")
 @click.pass_context
