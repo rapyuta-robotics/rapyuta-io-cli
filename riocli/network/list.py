@@ -41,7 +41,7 @@ def list_networks(network: str) -> None:
         if network in ("both", ""):
             networks = client.list_networks()
         else:
-            networks = client.list_networks(query={"network_type": network})
+            networks = client.list_networks(query={"networkType": network})
 
         networks = sorted(networks, key=lambda n: n.metadata.name.lower())
         _display_network_list(networks, show_header=True)
