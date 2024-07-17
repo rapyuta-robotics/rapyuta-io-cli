@@ -12,8 +12,6 @@ class DeploymentPhaseConstants(str, enum.Enum):
     DeploymentPhaseInProgress = "InProgress"
     DeploymentPhaseProvisioning = "Provisioning"
     DeploymentPhaseSucceeded = "Succeeded"
-    DeploymentPhaseFailedToUpdate = "FailedToUpdate"
-    DeploymentPhaseFailedToStart = "FailedToStart"
     DeploymentPhaseStopped = "Stopped"
 
 
