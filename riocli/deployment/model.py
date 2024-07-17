@@ -16,6 +16,7 @@ import typing
 from munch import unmunchify
 from rapyuta_io import Client
 from rapyuta_io.clients.catalog_client import Package
+from rapyuta_io.clients.deployment import DeploymentNotRunningException
 from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy
 from rapyuta_io.clients.rosbag import (OverrideOptions, ROSBagCompression, ROSBagJob, ROSBagOnDemandUploadOptions,
                                        ROSBagOptions, ROSBagTimeRange, ROSBagUploadTypes, TopicOverrideInfo,
