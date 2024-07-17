@@ -87,14 +87,14 @@ def delete_network(
             workers=workers, key=lambda x: x[0]
         )
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
 
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
@@ -117,7 +117,7 @@ def delete_network(
 def _apply_delete(client: Client, result: Queue, network: Network) -> None:
     try:
         client.delete_network(network_name=network.metadata.name)
-        result.put((network.metadata.name, True))
+        result.put((network.metadata.name, True, 'Network Deleted Successfully'))
     except Exception as e:
         click.secho()
-        result.put((network.metadata.name, False))
+        result.put((network.metadata.name, False, str(e)))
