@@ -20,20 +20,14 @@ import time
 from hashlib import md5
 from typing import List, Optional, Dict, Any
 
-import click
 import magic
 import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.v2client.enums import DeploymentPhaseConstants
-from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning, ImagePullError
-
-
-class DeploymentNotFound(Exception):
-    def __init__(self, message='deployment not found!'):
-        self.message = message
-        super().__init__(self.message)
+from riocli.v2client.error import (RetriesExhausted, DeploymentNotRunning, ImagePullError,
+                                   NetworkNotFound)
 
 
 def handle_server_errors(response: requests.Response):
@@ -56,12 +50,6 @@ def handle_server_errors(response: requests.Response):
     # Anything else that is not known
     if status_code > 504:
         raise Exception('unknown server error')
-
-
-class NetworkNotFound(Exception):
-    def __init__(self, message='network not found!'):
-        self.message = message
-        super().__init__(self.message)
 
 
 class Client(object):
@@ -738,7 +726,7 @@ class Client(object):
         List all packages in a project
         """
         url = "{}/v2/packages/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -766,7 +754,7 @@ class Client(object):
         Create a new package
         """
         url = "{}/v2/packages/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=payload)
         handle_server_errors(response)
@@ -787,7 +775,7 @@ class Client(object):
         List all packages in a project
         """
         url = "{}/v2/packages/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -807,7 +795,7 @@ class Client(object):
         Delete a secret
         """
         url = "{}/v2/packages/{}/".format(self._host, package_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -831,7 +819,7 @@ class Client(object):
         List all networks in a project
         """
         url = "{}/v2/networks/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -859,7 +847,7 @@ class Client(object):
         Create a new network
         """
         url = "{}/v2/networks/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=payload)
         handle_server_errors(response)
@@ -880,7 +868,7 @@ class Client(object):
         get a network in a project
         """
         url = "{}/v2/networks/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -904,7 +892,7 @@ class Client(object):
         Delete a secret
         """
         url = "{}/v2/networks/{}/".format(self._host, network_name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -928,7 +916,7 @@ class Client(object):
         List all deployments in a project
         """
         url = "{}/v2/deployments/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {
             "continue": 0,
@@ -957,7 +945,7 @@ class Client(object):
         Create a new deployment
         """
         url = "{}/v2/deployments/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         deployment["metadata"]["projectGUID"] = headers["project"]
         response = RestClient(url).method(HttpMethod.POST).headers(
@@ -976,7 +964,7 @@ class Client(object):
             query: dict = None
     ):
         url = "{}/v2/deployments/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -999,7 +987,7 @@ class Client(object):
         Update a deployment
         """
         url = "{}/v2/deployments/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PATCH).headers(
             headers).execute(payload=dep)
         handle_server_errors(response)
@@ -1015,7 +1003,7 @@ class Client(object):
         Delete a deployment
         """
         url = "{}/v2/deployments/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         params = {}
         params.update(query or {})
         response = RestClient(url).method(
@@ -1070,7 +1058,7 @@ class Client(object):
         List all disks in a project
         """
         url = "{}/v2/disks/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
 
         params = {}
         params.update(query or {})
@@ -1098,7 +1086,7 @@ class Client(object):
         Get a Disk by its name
         """
         url = "{}/v2/disks/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.GET).headers(headers).execute()
 
@@ -1116,7 +1104,7 @@ class Client(object):
         Create a new disk
         """
         url = "{}/v2/disks/".format(self._host)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=disk)
 
@@ -1134,7 +1122,7 @@ class Client(object):
         Delete a disk by its name
         """
         url = "{}/v2/disks/{}/".format(self._host, name)
-        headers = self._config.get_auth_header()
+        headers = self._get_auth_header()
         response = RestClient(url).method(
             HttpMethod.DELETE).headers(headers).execute()
 
