@@ -22,7 +22,6 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
   envArgs:
     - name: TEST_KEY
       value: test_value
@@ -41,6 +40,4 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      topics:
-        - "/telemetry"
       interface: eth0

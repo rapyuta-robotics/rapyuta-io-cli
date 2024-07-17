@@ -4,9 +4,9 @@ kind: "Network"
 metadata:
   name: "network-routed-cloud"
   project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   type: "routed" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
@@ -26,7 +26,8 @@ spec:
   type: "routed" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
   runtime: "device" # Required, Options: [cloud, device]
-  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  depends: # Required
+    nameOrGuid: device-name
   networkInterface: "eth0" # Required
   restartPolicy: "always" # Options: [always, never, onFailure]
 ---
@@ -35,9 +36,9 @@ kind: "Network"
 metadata:
   name: "network-native-cloud"
   project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   type: "native" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
@@ -57,6 +58,7 @@ spec:
   type: "native" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
   runtime: "device" # Required, Options: [cloud, device]
-  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  depends: # Required
+    nameOrGuid: device-name
   networkInterface: "eth0" # Required
   restartPolicy: "always" # Options: [always, never, onFailure]
