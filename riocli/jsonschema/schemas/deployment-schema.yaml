@@ -57,19 +57,11 @@ definitions:
         "$ref": "#/definitions/networkDepends"
       interface:
         type: string
-      topics:
-        type: array
-        items:
-          type: string
 
   cloudNetworkAttachSpec:
     properties:
       depends:
         "$ref": "#/definitions/networkDepends"
-      topics:
-        type: array
-        items:
-          type: string
 
   cloudVolumeAttachSpec:
     type: object

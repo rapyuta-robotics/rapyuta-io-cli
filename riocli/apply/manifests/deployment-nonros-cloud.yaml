@@ -7,9 +7,9 @@ metadata:
     nameOrGUID: "package-nonros-cloud"
     version: "v1.0.0"
   project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   runtime: cloud # Options: [device, cloud]
   depends:
@@ -42,4 +42,3 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
