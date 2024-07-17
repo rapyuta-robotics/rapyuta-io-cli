@@ -8,9 +8,9 @@ metadata:
     nameOrGUID: "package-ros-cloud"
     version: "v1.0.0"
   project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   runtime: cloud # Options: [device, cloud]
   depends:
@@ -38,8 +38,6 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-routed-cloud"
-      topics:
-        - "/telemetry"
   managedServices:
     - depends:
         kind: managedservice
@@ -52,7 +50,6 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
   rosBagJobs:
     - name: "testbag1" # Required
       recordOptions: # Required

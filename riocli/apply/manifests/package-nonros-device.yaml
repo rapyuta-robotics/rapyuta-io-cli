@@ -15,8 +15,9 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: preInstalled # Options: [docker (default), preInstalled]
-      command:
-       - "roslaunch talker talker.launch"
+      command: # Command supports both array and string
+        - "sleep infinity"
+      # command: "sleep infinity"
       runAsBash: True
       limits: # Optional
         cpu: 0.025 # Unit: Core (Optional)
@@ -30,7 +31,6 @@ spec:
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
         timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimun: 10
-
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
