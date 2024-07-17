@@ -17,25 +17,19 @@ from munch import unmunchify
 
 import click
 from rapyuta_io import Client
-from rapyuta_io.clients import ObjDict
 from rapyuta_io.clients.catalog_client import Package
-from rapyuta_io.clients.deployment import DeploymentNotRunningException, DeploymentPhaseConstants
-from rapyuta_io.clients.native_network import NativeNetwork
-from rapyuta_io.clients.package import ExecutableMount, ProvisionConfiguration, RestartPolicy
+from rapyuta_io.clients.deployment import DeploymentNotRunningException
+from rapyuta_io.clients.package import ProvisionConfiguration, RestartPolicy
 from rapyuta_io.clients.rosbag import (OverrideOptions, ROSBagCompression, ROSBagJob, ROSBagOnDemandUploadOptions,
                                        ROSBagOptions, ROSBagTimeRange, ROSBagUploadTypes, TopicOverrideInfo,
                                        UploadOptions)
-from rapyuta_io.clients.routed_network import RoutedNetwork
-from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.constants import Colors
 from riocli.config import new_v2_client
 from riocli.deployment.errors import ERRORS
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.parameter.utils import list_trees
 from riocli.static_route.util import find_static_route_guid
-from riocli.utils.cache import get_cache
 
 
 class Deployment(Model):

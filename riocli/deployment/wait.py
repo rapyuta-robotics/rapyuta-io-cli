@@ -17,7 +17,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning
+from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning, ImagePullError
 
 
 @click.command(
@@ -38,13 +38,17 @@ def wait_for_deployment(
     try:
         client = new_v2_client()
         deployment = client.poll_deployment(deployment_name)
-        spinner.text = click.style('Deployment status: {}'.format(deployment.status.status), fg=Colors.GREEN)
+        spinner.text = click.style('Phase: Succeeded Status: {}'.format(deployment.status.status), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except RetriesExhausted as e:
         spinner.write(click.style(str(e), fg=Colors.RED))
         spinner.text = click.style('Try again', Colors.RED)
         spinner.red.fail(Symbols.ERROR)
     except DeploymentNotRunning as e:
+        spinner.text = click.style(str(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
+    except ImagePullError as e:
         spinner.text = click.style(str(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
