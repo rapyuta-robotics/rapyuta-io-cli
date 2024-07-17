@@ -13,10 +13,10 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
-      command:
+      command: # Command supports both array and string
        - "roslaunch talker talker.launch"
+      # command: "roslaunch talker talker.launch"
       runAsBash: True
-      simulation: False
       limits:
         cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
@@ -111,7 +111,6 @@ spec:
   ros:
     enabled: True
     version: melodic # Required, Options: [ kinetic, melodic, noetic ]
-    inboundScopedTargeted: False
     rosEndpoints:
       - type: topic # Required, Options: [ topic, service, action ]
         name: "/telemetry"
@@ -148,8 +147,9 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
-      command:
-        - "shell-cmd"
+      command: # Command supports both array and string
+       - "shell-cmd"
+      # command: "shell-cmd"
       runAsBash: True
       limits: # Optional
         cpu: 0.025 # Unit: Core (Optional)
@@ -241,7 +241,6 @@ spec:
   ros:
     enabled: True
     version: melodic # Required, Options: [ kinetic, melodic, noetic ]
-    inboundScopedTargeted: False
     rosEndpoints:
       - type: topic # Required, Options: [ topic, service, action ]
         name: "/telemetry"
@@ -277,10 +276,10 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
-      command:
-       - "sleep infinity"
+      command: # Command supports both array and string
+        - "sleep infinity"
+      # command: "sleep infinity"
       runAsBash: True
-      simulation: False
       limits:
         cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
@@ -344,7 +343,7 @@ spec:
   executables: # Required
     - name: "exec-docker-01"
       type: docker # Options: [docker (default), preInstalled]
-      command: 
+      command:
        - "roslaunch talker talker.launch"
       runAsBash: True
       limits: # Optional
@@ -453,7 +452,6 @@ spec:
   ros:
     enabled: True
     version: melodic # Required, Options: [ kinetic, melodic, noetic ]
-    inboundScopedTargeted: False
     rosEndpoints:
       - type: topic # Required, Options: [ topic, service, action ]
         name: "/telemetry"
@@ -493,7 +491,6 @@ spec:
       type: docker # Options: [docker (default), build, preInstalled]
       command:
        - "roslaunch talker talker.launch"
-      simulation: False
       runAsBash: False
       limits:
         cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
