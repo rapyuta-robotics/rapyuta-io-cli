@@ -930,15 +930,13 @@ class Client(object):
         url = "{}/v2/deployments/".format(self._host)
         headers = self._config.get_auth_header()
 
-        params = {}
+        params = {
+            "continue": 0,
+            "limit": 100,
+        }
         params.update(query or {})
-        offset, result = 0, []
+        result = []
         while True:
-            params.update({
-                "continue": offset,
-                "limit": 50,
-                "phases": ["Succeeded", "InProgress", "Provisioning", "FailedToUpdate", "FailedToStart"],
-            })
             response = RestClient(url).method(HttpMethod.GET).query_param(
                 params).headers(headers).execute()
             data = json.loads(response.text)
@@ -949,6 +947,7 @@ class Client(object):
             if not deployments:
                 break
             offset = data['metadata']['continue']
+            params.update({"continue": offset})
             result.extend(deployments)
 
         return munchify(result)

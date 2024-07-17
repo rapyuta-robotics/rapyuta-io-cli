@@ -28,16 +28,12 @@ ALL_PHASES = [
     DeploymentPhaseConstants.DeploymentPhaseProvisioning,
     DeploymentPhaseConstants.DeploymentPhaseSucceeded,
     DeploymentPhaseConstants.DeploymentPhaseStopped,
-    DeploymentPhaseConstants.DeploymentPhaseFailedToStart,
-    DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate,
 ]
 
 DEFAULT_PHASES = [
     DeploymentPhaseConstants.DeploymentPhaseInProgress,
     DeploymentPhaseConstants.DeploymentPhaseProvisioning,
     DeploymentPhaseConstants.DeploymentPhaseSucceeded,
-    DeploymentPhaseConstants.DeploymentPhaseFailedToStart,
-    DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate
 ]
 
 
@@ -80,15 +76,13 @@ def display_deployment_list(
 ):
     headers = []
     if show_header:
-        headers = ('Name', 'Status', 'Phase', 'Errors')
-        if wide:
-            headers += ('Package', 'Deployment ID',)
+        headers = ('Deployment ID', 'Name', 'Phase', 'Package', 'Creation Time (UTC)', 'Stopped Time (UTC)')
 
     data = []
     for deployment in deployments:
         package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID, deployment.metadata.depends.version)
         phase = deployment.status.phase if deployment.status else ""
         data.append([deployment.metadata.guid, deployment.metadata.name,
-                     phase, package_name_version])
+                     phase, package_name_version, deployment.metadata.createdAt, deployment.metadata.get('deletedAt')])
 
     tabulate_data(data, headers=headers)
