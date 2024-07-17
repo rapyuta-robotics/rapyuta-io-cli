@@ -27,6 +27,7 @@ from riocli.utils.execute import apply_func_with_result
 from rapyuta_io import Client
 from riocli.network.model import Network
 
+
 @click.command(
     'delete',
     cls=HelpColorsCommand,
@@ -111,6 +112,7 @@ def delete_network(
             'Failed to delete network(s): {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
 
 def _apply_delete(client: Client, result: Queue, network: Network) -> None:
     try:
