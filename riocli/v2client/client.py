@@ -27,7 +27,7 @@ from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.v2client.enums import DeploymentPhaseConstants
-from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning
+from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning, ImagePullError
 
 
 class DeploymentNotFound(Exception):
@@ -1048,15 +1048,13 @@ class Client(object):
                 return deployment
 
             if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
-                errors = status.error_codes or []
+                errors = status.get('error_codes', [])
                 if 'DEP_E153' in errors:  # DEP_E153 (image-pull error) will persist across retries
-                    return deployment
+                    raise ImagePullError('Deployment not running. Phase: Provisioning Status: {}'.format(status.phase))
             elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
                 return deployment
-            elif status.phase in [DeploymentPhaseConstants.DeploymentPhaseFailedToUpdate.value,
-                                  DeploymentPhaseConstants.DeploymentPhaseFailedToStart.value,
-                                  DeploymentPhaseConstants.DeploymentPhaseStopped.value]:
-                raise DeploymentNotRunning('Deployment not running. Deployment status: {}'.format(status.phase))
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
+                raise DeploymentNotRunning('Deployment not running. Phase: Stopped  Status: {}'.format(status.phase))
 
             time.sleep(sleep_interval)
             deployment = self.get_deployment(name)
