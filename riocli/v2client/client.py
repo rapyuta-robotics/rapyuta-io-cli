@@ -20,12 +20,14 @@ import time
 from hashlib import md5
 from typing import List, Optional, Dict, Any
 
+import click
 import magic
 import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-from riocli.v2client.enums import DeploymentPhaseConstants
+from riocli.constants import Colors
+from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
 from riocli.v2client.error import (RetriesExhausted, DeploymentNotRunning, ImagePullError,
                                    NetworkNotFound)
 
@@ -908,6 +910,40 @@ class Client(object):
 
         return munchify(data)
 
+    def poll_network(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+            ready_phases: List[str] = None,
+    ) -> Munch:
+        if ready_phases is None:
+            ready_phases = []
+
+        network = self.get_network(name)
+
+        status = network.status
+
+        for _ in range(retry_count):
+            if status.phase in ready_phases:
+                return network
+
+            if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
+                errors = status.get('error_codes', [])
+                if 'DEP_E153' in errors:  # DEP_E153 (image-pull error) will persist across retries
+                    raise ImagePullError('Network not running. Phase: Provisioning Status: {}'.format(status.phase))
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
+                return network
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
+                raise DeploymentNotRunning('Network not running. Phase: Stopped  Status: {}'.format(status.phase))
+
+            time.sleep(sleep_interval)
+            network = self.get_network(name)
+            status = network.status
+
+        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Network status: {}'.format(
+            retry_count, sleep_interval, status.phase))
+
     def list_deployments(
             self,
             query: dict = None
@@ -1050,6 +1086,21 @@ class Client(object):
         raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Deployment status: {}'.format(
             retry_count, sleep_interval, status.phase))
 
+    def stream_deployment_logs(
+            self,
+            name: str,
+            executable: str,
+            replica: int = 0,
+    ):
+        url = "{}/v2/deployments/{}/logs/?replica={}&executable={}".format(self._host, name, replica, executable)
+        headers = self._get_auth_header()
+
+        curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(
+            headers['project'], headers['Authorization'], url)
+        click.echo(click.style(curl, fg=Colors.BLUE, italic=True))
+
+        os.system(curl)
+
     def list_disks(
             self,
             query: dict = None
@@ -1134,3 +1185,28 @@ class Client(object):
             raise Exception("disks: {}".format(err_msg))
 
         return munchify(data)
+
+    def poll_disk(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+    ) -> Munch:
+        disk = self.get_disk(name)
+
+        status = disk.status
+
+        for _ in range(retry_count):
+            if status.status in [DiskStatusConstants.DiskStatusAvailable.value,
+                                 DiskStatusConstants.DiskStatusReleased.value,
+                                 DiskStatusConstants.DiskStatusBound.value]:
+                return disk
+            elif status.status == DiskStatusConstants.DiskStatusFailed.value:
+                raise DeploymentNotRunning('Disk not running. Status: {}'.format(status.status))
+
+            time.sleep(sleep_interval)
+            disk = self.get_disk(name)
+            status = disk.status
+
+        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Disk status: {}'.format(
+            retry_count, sleep_interval, status.status))
