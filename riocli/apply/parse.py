@@ -186,7 +186,7 @@ class Applier(object):
             action = 'UPDATE'
             if not self.resolved_objects[node]['src'] == 'remote':
                 action = 'CREATE'
-            elif delete:
+            if delete:
                 action = 'DELETE'
             kind = node.split(":")[0]
             expected_time = round(
