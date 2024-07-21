@@ -11,30 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
+from queue import Queue
+
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.utils.rest_client import HttpMethod
 from yaspin.api import Yaspin
-from queue import Queue
-import functools
 
 from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
 from riocli.disk.model import Disk
 from riocli.disk.util import fetch_disks, display_disk_list
-from riocli.utils.spinner import with_spinner
-from riocli.utils.execute import apply_func_with_result
 from riocli.utils import tabulate_data
-
-from rapyuta_io import Client
-
-
-def _apply_delete(client: Client, result: Queue, disk: Disk) -> None:
-    try:
-        client.delete_disk(name = disk.metadata.name)
-        result.put((disk.metadata.name, True))
-    except Exception as e:
-        result.put((disk.metadata.name, False))
+from riocli.utils.execute import apply_func_with_result
+from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
 
 @click.command(
@@ -45,6 +36,8 @@ def _apply_delete(client: Client, result: Queue, disk: Disk) -> None:
 )
 @click.option('--force', '-f', is_flag=True, default=False,
               help='Skip confirmation', type=bool)
+@click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
+              help='Deletes all deployments in the project')
 @click.option('--workers', '-w',
               help="Number of parallel workers while running deleting disks. Defaults to 10",
               type=int, default=10)
@@ -96,14 +89,14 @@ def delete_disk(
             workers=workers, key=lambda x: x[0]
         )
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
 
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
@@ -121,3 +114,11 @@ def delete_disk(
             'Failed to delete disk(s): {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+
+def _apply_delete(client: Client, result: Queue, disk: Disk) -> None:
+    try:
+        client.delete_disk(name=disk.metadata.name)
+        result.put((disk.metadata.name, True, 'Disk deleted successfully'))
+    except Exception as e:
+        result.put((disk.metadata.name, False, str(e)))
