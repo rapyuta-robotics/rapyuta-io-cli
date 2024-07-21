@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-import time
-
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.persistent_volumes import DiskCapacity
+from yaspin.api import Yaspin
 
 from riocli.constants import Colors, Symbols, Regions
-from riocli.disk.util import is_disk_ready
+from riocli.disk.enum import DiskCapacity
 from riocli.utils.spinner import with_spinner
 from riocli.config import new_v2_client
 
@@ -38,6 +36,7 @@ SUPPORTED_REGIONS = [
     Regions.US,
 ]
 
+
 @click.command(
     'create',
     cls=HelpColorsCommand,
@@ -45,38 +44,35 @@ SUPPORTED_REGIONS = [
     help_options_color=Colors.GREEN,
 )
 @click.argument('disk-name', type=str)
-@click.option('--capacity', 'capacity', type=click.Choice(SUPPORTED_CAPACITIES),
-              default=DiskCapacity.GiB_4.value, help='Disk size in GiB')
+@click.option('--capacity', 'capacity', type=click.INT,
+              default=DiskCapacity.GiB_4.value, help='Disk size in GiB. [4|8|16|32|64|128|256|512]')
 @click.option('--region', 'region', type=click.Choice(SUPPORTED_REGIONS),
               default=Regions.JP, help='Region to create the disk in')
-
 @with_spinner(text="Creating a new disk...")
 def create_disk(
         disk_name: str,
         capacity: int = 4,
         region: str = 'jp',
-        spinner=None,
+        spinner: Yaspin = None
 ) -> None:
     """
     Creates a new disk
     """
-    try:
-        client = new_v2_client()
-        payload = {
-            "metadata": {
-                "name": disk_name,
-                "region": region
-            },
-            "spec": {
-                "capacity": capacity,
-                "runtime": "cloud"
-            }
+    client = new_v2_client()
+    payload = {
+        "metadata": {
+            "name": disk_name,
+            "region": region
+        },
+        "spec": {
+            "capacity": capacity,
+            "runtime": "cloud"
         }
-        
+    }
+
+    try:
         client.create_disk(payload)
-        while not is_disk_ready(client, disk_name):
-            time.sleep(3)
-        
+        client.poll_disk(disk_name)
         spinner.text = click.style(
             'Disk {} created successfully.'.
             format(disk_name), fg=Colors.GREEN)

@@ -17,6 +17,7 @@ from riocli.constants import Colors
 from riocli.config import new_v2_client
 from riocli.disk.util import display_disk_list
 
+
 @click.command('list')
 def list_disks() -> None:
     """

@@ -11,22 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from os import stat
 import typing
-from time import sleep
-from munch import unmunchify
-import time
 
 import click
-from munch import munchify
-from rapyuta_io import Client
-from rapyuta_io.utils.rest_client import HttpMethod
+from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.constants import Colors, Symbols, Status
-
+from riocli.constants import Colors, Symbols
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
+from riocli.v2client import Client
 
 
 class Disk(Model):
@@ -47,37 +41,19 @@ class Disk(Model):
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         v2_client = new_v2_client()
 
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        self.pop("rc", None)
-        disk = unmunchify(self)
-        r = v2_client.create_disk(disk)
-
+        r = v2_client.create_disk(self._sanitize_disk())
         retry_count = int(kwargs.get('retry_count'))
         retry_interval = int(kwargs.get('retry_interval'))
         try:
-            r = self.poll_deployment_till_ready(
-                client = v2_client,
-                disk = r,
-                retry_count=retry_count,
-                sleep_interval=retry_interval,
-            )
+            v2_client.poll_disk(r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval)
         except Exception as e:
             click.secho(">> {}: Error polling for disk ({}:{})".format(
                 Symbols.WARNING,
                 self.kind.lower(),
                 self.metadata.name), fg=Colors.YELLOW)
+            click.secho(str(e), fg=Colors.YELLOW)
 
         return unmunchify(r)
-
-    def poll_deployment_till_ready(self, client: Client, disk: typing.Any, retry_count = 50, sleep_interval = 6):
-        for _ in range(retry_count):
-            if disk.status.status == Status.AVAILABLE:
-                return disk
-
-            time.sleep(sleep_interval)
-            disk = client.get_disk(disk.metadata.name)
-        return disk
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
         pass
@@ -94,3 +70,16 @@ class Disk(Model):
     def validate(d):
         schema = load_schema('disk')
         schema.validate(d)
+
+    def _sanitize_disk(self) -> typing.Dict:
+        # Unset createdAt and updatedAt to avoid timestamp parsing issue.
+        self.metadata.createdAt = None
+        self.metadata.updatedAt = None
+
+        data = unmunchify(self)
+
+        # convert to a dict and remove the ResolverCache
+        # field since it's not JSON serializable
+        data.pop("rc", None)
+
+        return data
