@@ -19,12 +19,12 @@ from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
+from riocli.package.model import Package
 from riocli.package.util import fetch_packages, print_packages_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from rapyuta_io import Client
-from rapyuta_io.clients.package import Package
+from riocli.v2client import Client
 
 
 @click.command('delete')
@@ -56,7 +56,7 @@ def delete_package(
         return
 
     try:
-        packages = fetch_packages(client, package_name_or_regex, delete_all)
+        packages = fetch_packages(client, package_name_or_regex, package_version, delete_all)
     except Exception as e:
         spinner.text = click.style(
             'Failed to find package(s): {}'.format(e), Colors.RED)
@@ -85,13 +85,13 @@ def delete_package(
         )
 
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
@@ -110,10 +110,11 @@ def delete_package(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-def _apply_delete(client: Client ,result: Queue, package: Package) -> None:
+
+def _apply_delete(client: Client, result: Queue, package: Package) -> None:
     name_version = "{}@{}".format(package.metadata.name, package.metadata.version)
     try:
         client.delete_package(package_name=package.metadata.name, query={"version": package.metadata.version})
-        result.put((name_version, True))
-    except Exception:
-        result.put((name_version, False))
+        result.put((name_version, True, 'Package deleted successfully'))
+    except Exception as e:
+        result.put((name_version, False, str(e)))

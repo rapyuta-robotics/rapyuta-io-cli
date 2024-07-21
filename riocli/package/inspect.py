@@ -15,8 +15,10 @@ import click
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.package.util import find_package
 from riocli.utils import inspect_with_format
 from riocli.utils.selector import show_selection
+
 
 @click.command('inspect')
 @click.option('--version', 'package_version', type=str,
@@ -30,32 +32,7 @@ def inspect_package(format_type: str, package_name: str, package_version: str) -
     """
     try:
         client = new_v2_client()
-        package_obj = None
-        if package_name.startswith("pkg-"):
-            packages = client.list_packages(query = {"guid": package_name})
-            if packages:
-                obj = packages[0]
-                package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
-
-        elif package_name and package_version:
-            package_obj = client.get_package(package_name, query = {"version": package_version})
-        elif package_name:
-            packages = client.list_packages(query={"name": package_name})
-
-            if len(packages) == 0:
-                click.secho("package not found", fg='red')
-                raise SystemExit(1)
-
-            options = {}
-            package_objs = {}
-            for pkg in packages:
-                options[pkg.metadata.guid] = '{} ({})'.format(pkg.metadata.name, pkg.metadata.version)
-                package_objs[pkg.metadata.guid] = pkg
-            choice = show_selection(options, header='Following packages were found with the same name')
-            obj = package_objs[choice]
-            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
-
-
+        package_obj = find_package(client, package_name, package_version)
         if not package_obj:
             click.secho("package not found", fg='red')
             raise SystemExit(1)
