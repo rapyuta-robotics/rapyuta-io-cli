@@ -11,75 +11,61 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
 import re
-import typing
 from typing import List
 
 import click
-from rapyuta_io import Client
-from rapyuta_io.clients.package import Package
+from munch import Munch
 
-from riocli.config import new_client
+from riocli.package.model import Package
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
+from riocli.v2client import Client
 
 
-def name_to_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
-        try:
-            client = new_client()
-        except Exception as e:
-            click.secho(str(e), fg='red')
+def find_package(client: Client,
+                 package_name: str,
+                 package_version: str,
+                 ) -> Munch | None:
+
+    package_obj = None
+
+    if package_name.startswith("pkg-"):
+        packages = client.list_packages(query={"guid": package_name})
+        if not packages:
+            raise Exception('Package not found')
+
+        obj = packages[0]
+        package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+    elif package_name and package_version:
+        package_obj = client.get_package(package_name, query={"version": package_version})
+    elif package_name:
+        packages = client.list_packages(query={"name": package_name})
+
+        if len(packages) == 0:
+            click.secho("package not found", fg='red')
             raise SystemExit(1)
 
-        name = kwargs.pop('package_name')
-        guid = None
-        version = kwargs.pop('package_version')
+        if len(packages) == 1:
+            obj = packages[0]
+            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+        else:
+            options = {}
+            package_objs = {}
+            for pkg in packages:
+                options[pkg.metadata.guid] = '{} ({})'.format(pkg.metadata.name, pkg.metadata.version)
+                package_objs[pkg.metadata.guid] = pkg
+            choice = show_selection(options, header='Following packages were found with the same name')
+            obj = package_objs[choice]
+            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
 
-        if name.startswith('pkg-') or name.startswith('io-'):
-            guid = name
-            name = None
-
-        if name is None:
-            name = get_package_name(client, guid)
-
-        if guid is None:
-            guid = find_package_guid(client, name, version)
-
-        kwargs['package_name'] = name
-        kwargs['package_guid'] = guid
-        f(**kwargs)
-
-    return decorated
-
-
-def get_package_name(client: Client, guid: str) -> str:
-    pkg = client.get_package(guid)
-    return pkg.packageName
-
-
-def find_package_guid(client: Client, name: str, version: str = None) -> str:
-    packages = client.get_all_packages(name=name, version=version)
-    if len(packages) == 0:
-        click.secho("package not found", fg='red')
-        raise SystemExit(1)
-
-    if len(packages) == 1:
-        return packages[0].packageId
-
-    options = {}
-    for pkg in packages:
-        options[pkg.packageId] = '{} ({})'.format(pkg.packageName, pkg.packageVersion)
-
-    choice = show_selection(options, header='Following packages were found with the same name')
-    return choice
+    return package_obj
 
 
 def fetch_packages(
         client: Client,
         package_name_or_regex: str,
+        package_version: str,
         include_all: bool,
 ) -> List[Package]:
     packages = client.list_packages()
@@ -90,8 +76,14 @@ def fetch_packages(
         if 'io-public' in pkg.metadata.guid:
             continue
 
-        if include_all or re.search(package_name_or_regex, pkg.metadata.name):
+        if include_all:
             result.append(pkg)
+
+        if re.search(package_name_or_regex, pkg.metadata.name):
+            if package_version and package_version == pkg.metadata.version:
+                result.append(pkg)
+            elif not package_version:
+                result.append(pkg)
 
     return result
 

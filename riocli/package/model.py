@@ -11,17 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import typing
 
-from munch import munchify, unmunchify
+from munch import unmunchify
 
-from rapyuta_io import Client
-from rapyuta_io.clients.package import RestartPolicy
-
+from riocli.config import new_v2_client
 from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.config import new_v2_client
+from riocli.package.enum import RestartPolicy
+from riocli.v2client import Client
+
 
 class Package(Model):
     RESTART_POLICY = {
@@ -48,10 +47,8 @@ class Package(Model):
         return unmunchify(r)
 
     def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-
         pass
 
-    @staticmethod
     def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
         v2_client = new_v2_client()
         v2_client.delete_package(obj.metadata.name, query={"version": obj.metadata.version})
