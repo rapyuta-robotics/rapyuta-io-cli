@@ -18,17 +18,27 @@ import typing
 from typing import List
 
 import click
-from rapyuta_io import Client, DeploymentPhaseConstants
-from rapyuta_io.clients import Device
-from rapyuta_io.clients.deployment import Deployment
-from rapyuta_io.clients.package import ExecutableMount
-from rapyuta_io.utils import InvalidParameterException, OperationNotAllowedError
-from rapyuta_io.utils.constants import DEVICE_ID
 
 from riocli.config import new_client
 from riocli.constants import Colors
+from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
+from riocli.v2client import Client
+from riocli.v2client.enums import DeploymentPhaseConstants
+
+ALL_PHASES = [
+    DeploymentPhaseConstants.DeploymentPhaseInProgress,
+    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
+    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
+    DeploymentPhaseConstants.DeploymentPhaseStopped,
+]
+
+DEFAULT_PHASES = [
+    DeploymentPhaseConstants.DeploymentPhaseInProgress,
+    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
+    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
+]
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -121,12 +131,13 @@ class DeploymentNotFound(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 def fetch_deployments(
         client: Client,
         deployment_name_or_regex: str,
         include_all: bool,
 ) -> List[Deployment]:
-    deployments = client.list_deployments()
+    deployments = client.list_deployments(query={"phases": DEFAULT_PHASES})
     result = []
     for deployment in deployments:
         if (include_all or deployment_name_or_regex == deployment.metadata.name or
@@ -143,6 +154,8 @@ def print_deployments_for_confirmation(deployments: List[Deployment]):
 
     data = []
     for deployment in deployments:
-        data.append([deployment.metadata.name, deployment.metadata.guid, deployment.status.phase, deployment.status.status])
+        data.append(
+            [deployment.metadata.name, deployment.metadata.guid, deployment.status.phase,
+             deployment.status.aggregateStatus])
 
     tabulate_data(data, headers)

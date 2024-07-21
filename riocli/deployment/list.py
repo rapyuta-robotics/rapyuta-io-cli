@@ -15,25 +15,13 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from riocli.v2client.enums import DeploymentPhaseConstants
-from rapyuta_io.clients.deployment import Deployment
+
+from riocli.deployment.model import Deployment
+from riocli.deployment.util import ALL_PHASES, DEFAULT_PHASES
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
-
-ALL_PHASES = [
-    DeploymentPhaseConstants.DeploymentPhaseInProgress,
-    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
-    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
-    DeploymentPhaseConstants.DeploymentPhaseStopped,
-]
-
-DEFAULT_PHASES = [
-    DeploymentPhaseConstants.DeploymentPhaseInProgress,
-    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
-    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
-]
 
 
 @click.command(
@@ -53,7 +41,7 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
     List the deployments in the selected project
     """
     try:
-        client = new_v2_client(with_project=True)
+        client = new_v2_client()
         deployments = client.list_deployments(query={"phases": phase, "deviceName": device})
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True)
@@ -69,7 +57,8 @@ def display_deployment_list(deployments: typing.List[Deployment], show_header: b
 
     data = []
     for deployment in deployments:
-        package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID, deployment.metadata.depends.version)
+        package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID,
+                                                deployment.metadata.depends.version)
         phase = deployment.status.phase if deployment.status else ""
         data.append([deployment.metadata.guid, deployment.metadata.name,
                      phase, package_name_version, deployment.metadata.createdAt, deployment.metadata.get('deletedAt')])
