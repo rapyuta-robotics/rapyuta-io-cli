@@ -38,7 +38,7 @@ def wait_for_deployment(
     try:
         client = new_v2_client()
         deployment = client.poll_deployment(deployment_name)
-        spinner.text = click.style('Phase: Succeeded Status: {}'.format(deployment.status.status), fg=Colors.GREEN)
+        spinner.text = click.style('Phase: Succeeded Status: {}'.format(deployment.status.aggregateStatus), fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except RetriesExhausted as e:
         spinner.write(click.style(str(e), fg=Colors.RED))
