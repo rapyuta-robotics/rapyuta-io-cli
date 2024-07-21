@@ -157,7 +157,7 @@ class ResolverCache(object, metaclass=_Singleton):
             "network": lambda name, obj_list, network_type: filter(
                 lambda x: name == x.metadata.name and network_type == x.spec.type,  obj_list),
             "deployment": lambda name, obj_list: filter(
-                lambda x: name == x.metadata.name, obj_list),
+                lambda x: name == x.metadata.name and not x.metadata.get('deletedAt'), obj_list),
             "disk": lambda name, obj_list: filter(
                 lambda x: name == x.metadata.name,  obj_list),
             "device": self._generate_find_guid_functor(),

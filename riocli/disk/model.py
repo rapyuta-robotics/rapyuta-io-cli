@@ -28,15 +28,12 @@ class Disk(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> typing.Any:
-        _, disk = self.rc.find_depends({
+        guid, disk = self.rc.find_depends({
             'kind': 'disk',
             'nameOrGUID': self.metadata.name
         })
 
-        if not disk:
-            return False
-
-        return disk
+        return disk if guid else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         v2_client = new_v2_client()

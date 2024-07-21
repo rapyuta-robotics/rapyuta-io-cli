@@ -319,13 +319,8 @@ class Applier(object):
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
-<<<<<<< HEAD
-                if (name_or_guid == obj_name) and (
-                        'version' in dependency and obj['packageVersion'] == dependency.get('version')):
-=======
                 if (name_or_guid == obj_name) and ('version' in dependency and
                                                     obj.metadata.version == dependency.get('version')):
->>>>>>> 52515c9 (feat(deployment): uses v2 deployments APIs)
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
