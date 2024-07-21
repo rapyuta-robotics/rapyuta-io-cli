@@ -29,15 +29,9 @@ class Network(Model):
         self.update(*args, **kwargs)
 
     def find_object(self, client: Client) -> bool:
-        try:
-            network, obj = self.rc.find_depends({"kind": self.kind.lower(),
-                                                 "nameOrGUID": self.metadata.name}, self.spec.type)
-            if not network:
-                return False
-
-            return obj
-        except NetworkNotFound:
-            return False
+        network, obj = self.rc.find_depends({"kind": self.kind.lower(),
+                                             "nameOrGUID": self.metadata.name}, self.spec.type)
+        return obj if network else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         client = new_v2_client()

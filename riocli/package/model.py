@@ -35,10 +35,7 @@ class Package(Model):
     def find_object(self, client: Client):
         guid, obj = self.rc.find_depends({"kind": self.kind.lower(), "nameOrGUID": self.metadata.name},
                                          self.metadata.version)
-        if not guid:
-            return False
-
-        return obj
+        return obj if guid else False
 
     def create_object(self, client: Client, **kwargs) -> typing.Any:
         v2_client = new_v2_client()
