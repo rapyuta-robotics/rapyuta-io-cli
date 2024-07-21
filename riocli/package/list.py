@@ -14,10 +14,11 @@
 import typing
 
 import click
-from rapyuta_io.clients.package import Package
 
 from riocli.config import new_v2_client
+from riocli.package.model import Package
 from riocli.utils import tabulate_data
+
 
 @click.command('list')
 @click.option('--filter', 'filter_word', type=str, default=None,
@@ -29,10 +30,11 @@ def list_packages(filter_word: str) -> None:
     try:
         client = new_v2_client(with_project=True)
         packages = client.list_packages()
-        _display_package_list(packages, filter_word,show_header=True)
+        _display_package_list(packages, filter_word, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
+
 
 def _display_package_list(
         packages: typing.List[Package],
