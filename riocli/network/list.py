@@ -16,8 +16,6 @@ import click
 from click_help_colors import HelpColorsCommand
 from munch import Munch
 
-from rapyuta_io import DeploymentPhaseConstants
-
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
@@ -56,15 +54,14 @@ def _display_network_list(
 ) -> None:
     headers = []
     if show_header:
-        headers = ('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase')
+        headers = ('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase', 'Status')
     data = []
     for network in networks:
         phase = network.status.phase if network.status else ""
+        status = network.status.status if network.status else ""
         network_type = network.spec.type
 
-        if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
-            continue
         data.append(
-            [network.metadata.guid, network.metadata.name, network.spec.runtime, network_type, phase])
+            [network.metadata.guid, network.metadata.name, network.spec.runtime, network_type, phase, status])
 
     tabulate_data(data, headers)

@@ -24,8 +24,8 @@ from riocli.utils.spinner import with_spinner
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 
-from rapyuta_io import Client
 from riocli.network.model import Network
+from riocli.v2client import Client
 
 
 @click.command(
@@ -119,5 +119,4 @@ def _apply_delete(client: Client, result: Queue, network: Network) -> None:
         client.delete_network(network_name=network.metadata.name)
         result.put((network.metadata.name, True, 'Network Deleted Successfully'))
     except Exception as e:
-        click.secho()
         result.put((network.metadata.name, False, str(e)))

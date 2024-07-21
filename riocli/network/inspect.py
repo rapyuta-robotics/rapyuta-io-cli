@@ -19,6 +19,7 @@ from riocli.utils import inspect_with_format
 from riocli.config import new_v2_client
 from munch import unmunchify
 
+
 @click.command('inspect')
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
