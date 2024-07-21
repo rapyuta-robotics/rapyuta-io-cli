@@ -11,24 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from queue import Queue
-
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.deployment import Deployment
 import functools
 from queue import Queue
 
-
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
+from riocli.deployment.model import Deployment
 from riocli.deployment.util import fetch_deployments
 from riocli.deployment.util import print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
-from rapyuta_io import Client
 
 @click.command(
     'delete',
@@ -93,13 +90,13 @@ def delete_deployment(
         )
 
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
@@ -123,6 +120,6 @@ def delete_deployment(
 def _apply_delete(client: Client, result: Queue, deployment: Deployment) -> None:
     try:
         client.delete_deployment(name=deployment.metadata.name)
-        result.put((deployment.metadata.name, True))
-    except Exception:
-        result.put((deployment.metadata.name, False))
+        result.put((deployment.metadata.name, True, 'Deployment Deleted Successfully'))
+    except Exception as e:
+        result.put((deployment.metadata.name, False, str(e)))

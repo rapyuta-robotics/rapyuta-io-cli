@@ -16,7 +16,6 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.deployment.util import name_to_guid
 
 
 @click.command(
