@@ -26,7 +26,7 @@ from riocli.v2client import Client
 def find_package(client: Client,
                  package_name: str,
                  package_version: str,
-                 ) -> Munch | None:
+                 ) -> Munch:
 
     package_obj = None
 
