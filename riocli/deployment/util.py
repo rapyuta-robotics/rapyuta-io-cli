@@ -11,16 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 import functools
 import re
-import typing
 from typing import List
 
-import click
-
 from riocli.config import new_client
-from riocli.constants import Colors
 from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
@@ -39,56 +34,6 @@ DEFAULT_PHASES = [
     DeploymentPhaseConstants.DeploymentPhaseProvisioning,
     DeploymentPhaseConstants.DeploymentPhaseSucceeded,
 ]
-
-
-def name_to_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
-    def decorated(**kwargs: typing.Any) -> None:
-        try:
-            client = new_client()
-        except Exception as e:
-            click.secho(str(e), fg=Colors.RED)
-            raise SystemExit(1) from e
-
-        name = kwargs.pop('deployment_name')
-        guid = None
-
-        if name.startswith('dep-'):
-            guid = name
-            name = None
-
-        try:
-            if name is None:
-                name = get_deployment_name(client, guid)
-
-            if guid is None:
-                guid = find_deployment_guid(client, name)
-        except Exception as e:
-            click.secho(str(e), fg=Colors.RED)
-            raise SystemExit(1) from e
-
-        kwargs['deployment_name'] = name
-        kwargs['deployment_guid'] = guid
-        f(**kwargs)
-
-    return decorated
-
-
-def get_deployment_name(client: Client, guid: str) -> str:
-    deployment = client.get_deployment(guid)
-    return deployment.name
-
-
-def find_deployment_guid(client: Client, name: str) -> str:
-    find_func = functools.partial(client.get_all_deployments,
-                                  phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                          DeploymentPhaseConstants.PROVISIONING])
-    deployments = find_func()
-    for deployment in deployments:
-        if deployment.name == name:
-            return deployment.deploymentId
-
-    raise DeploymentNotFound()
 
 
 def select_details(deployment_guid, component_name=None, exec_name=None) -> (str, str, str):
@@ -124,12 +69,6 @@ def select_details(deployment_guid, component_name=None, exec_name=None) -> (str
         pod_name = show_selection(pods, 'Choose the pod')
 
     return selected_component.componentID, exec_meta.id, pod_name
-
-
-class DeploymentNotFound(Exception):
-    def __init__(self, message='deployment not found!'):
-        self.message = message
-        super().__init__(self.message)
 
 
 def fetch_deployments(
