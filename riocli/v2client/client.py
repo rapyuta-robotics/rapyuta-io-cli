@@ -30,6 +30,7 @@ from riocli.constants import Colors
 from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
 from riocli.v2client.error import (RetriesExhausted, DeploymentNotRunning, ImagePullError,
                                    NetworkNotFound, DeploymentNotFound)
+from riocli.v2client.util import process_errors
 
 
 def handle_server_errors(response: requests.Response):
@@ -941,8 +942,10 @@ class Client(object):
             network = self.get_network(name)
             status = network.status
 
-        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Network status: {}'.format(
-            retry_count, sleep_interval, status.phase))
+        msg = 'Retries exhausted: Tried {} times with {}s interval. Network: phase={} status={} \n{}'.format(
+            retry_count, sleep_interval, status.phase, status.status, process_errors(status.get('error_codes', [])))
+
+        raise RetriesExhausted(msg)
 
     def list_deployments(
             self,
@@ -1082,8 +1085,10 @@ class Client(object):
             deployment = self.get_deployment(name)
             status = deployment.status
 
-        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Deployment status: {}'.format(
-            retry_count, sleep_interval, status.phase))
+        msg = 'Retries exhausted: Tried {} times with {}s interval. Deployment: phase={} status={} \n{}'.format(
+            retry_count, sleep_interval, status.phase, status.status, process_errors(status.get('error_codes', [])))
+
+        raise RetriesExhausted(msg)
 
     def stream_deployment_logs(
             self,
@@ -1207,5 +1212,5 @@ class Client(object):
             disk = self.get_disk(name)
             status = disk.status
 
-        raise RetriesExhausted('Retried {} time done with an interval of {} seconds. Disk status: {}'.format(
+        raise RetriesExhausted('Retries exhausted: Tried {} times with {}s interval. Disk: status={}'.format(
             retry_count, sleep_interval, status.status))
