@@ -29,7 +29,7 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 from riocli.constants import Colors
 from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
 from riocli.v2client.error import (RetriesExhausted, DeploymentNotRunning, ImagePullError,
-                                   NetworkNotFound)
+                                   NetworkNotFound, DeploymentNotFound)
 
 
 def handle_server_errors(response: requests.Response):
@@ -880,7 +880,7 @@ class Client(object):
         data = json.loads(response.text)
 
         if response.status_code == http.HTTPStatus.NOT_FOUND:
-            raise NetworkNotFound()
+            raise NetworkNotFound("network: {} not found".format(name))
 
         if not response.ok:
             err_msg = data.get('error')
@@ -956,7 +956,6 @@ class Client(object):
 
         params = {
             "continue": 0,
-            "limit": 100,
         }
         params.update(query or {})
         result = []
@@ -1010,7 +1009,7 @@ class Client(object):
         data = json.loads(response.text)
 
         if response.status_code == http.HTTPStatus.NOT_FOUND:
-            raise Exception("deployment: {} not found".format(name))
+            raise DeploymentNotFound("deployment: {} not found".format(name))
 
         if not response.ok:
             err_msg = data.get('error')
