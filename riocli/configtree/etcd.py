@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 from base64 import b64encode
 from typing import Optional
 
@@ -52,6 +53,22 @@ def import_in_etcd(
                 'value': enc_val
             }
         })
+
+    sentinel_key = b64encode('/sentinel_key'.encode('utf-8')).decode()
+    sentinel_val = b64encode(f'{time.time_ns()}|riocli-import'.encode('utf-8')).decode()
+
+    compares.append({
+        'key': sentinel_key,
+        'result': 'EQUAL',
+        'target': 'VALUE',
+        'value': sentinel_val,
+    })
+    failures.append({
+        'request_put': {
+            'key': sentinel_key,
+            'value': sentinel_val,
+        }
+    })
 
     txn = {
         'compare': compares,
