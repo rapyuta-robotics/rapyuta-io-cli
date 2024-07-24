@@ -221,11 +221,9 @@ definitions:
                   - image
 
   commandSpec:
-    oneOf:
-      - type: array
-        items:
-          type: string
-      - type: string
+    type: ["array", "string", "null"]
+    items:
+      type: string
 
   portNumber:
     type: integer
