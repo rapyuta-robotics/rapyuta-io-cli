@@ -55,8 +55,6 @@ definitions:
     properties:
       depends:
         "$ref": "#/definitions/networkDepends"
-      interface:
-        type: string
 
   cloudNetworkAttachSpec:
     properties:

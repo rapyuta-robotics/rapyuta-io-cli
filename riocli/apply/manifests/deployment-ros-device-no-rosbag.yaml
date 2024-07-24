@@ -36,8 +36,6 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-native-device"
-      interface: eth0
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      interface: eth0
