@@ -73,6 +73,7 @@ definitions:
                   - sootballs
                   - flaptter
                   - oks
+                  - platform
               arch:
                 type: string
                 enum:
