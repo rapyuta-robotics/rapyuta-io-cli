@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional
 from base64 import b64encode
+from typing import Optional
+
 from etcd3gw import Etcd3Client
 
 
-def import_in_etcd(data: dict, endpoint: str, port: Optional[int] = None, prefix: Optional[str] = None) -> None:
-    if port is None:
-        port = 2379
-
+def import_in_etcd(
+        data: dict,
+        endpoint: str,
+        port: Optional[int] = 2379,
+        prefix: Optional[str] = None,
+) -> None:
     cli = Etcd3Client(host=endpoint, port=port)
 
     if prefix:
@@ -30,9 +33,10 @@ def import_in_etcd(data: dict, endpoint: str, port: Optional[int] = None, prefix
 
     compares, failures = [], []
 
+    prefix = prefix or ''
+
     for key, val in data.items():
-        if prefix:
-            key = '{}/{}'.format(prefix, key)
+        key = '{}/{}'.format(prefix, key)
 
         enc_key = b64encode(str(key).encode('utf-8')).decode()
         enc_val = b64encode(str(val).encode('utf-8')).decode()
@@ -56,8 +60,9 @@ def import_in_etcd(data: dict, endpoint: str, port: Optional[int] = None, prefix
 
     cli.transaction(txn)
 
+
 def _delete_all_keys(client: Etcd3Client) -> None:
     null_char = '\x00'
-    enc_null  = b64encode(null_char.encode('utf-8')).decode()
+    enc_null = b64encode(null_char.encode('utf-8')).decode()
 
     client.delete('\x00', range_end=enc_null)
