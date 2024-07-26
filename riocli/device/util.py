@@ -95,11 +95,11 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
+        file_name = kwargs.pop('file_name')
+
         device_guid = kwargs.get('device_guid')
         device = client.get_device(device_id=device_guid)
-        requests = device.list_uploaded_files_for_device()
-
-        file_name = kwargs.pop('file_name')
+        requests = device.list_uploaded_files_for_device(filter_by_filename=file_name)
 
         file_name, request_id = find_request_id(requests, file_name)
 
