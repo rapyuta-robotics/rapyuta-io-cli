@@ -22,6 +22,7 @@ from riocli.apply.parse import Applier
 from riocli.apply.template import template
 from riocli.apply.util import process_files_values_secrets
 from riocli.constants import Colors
+from riocli.utils import print_centered_text
 
 
 @click.command(
@@ -74,7 +75,7 @@ def apply(
         click.secho('No files specified', fg=Colors.RED)
         raise SystemExit(1)
 
-    click.secho("----- Files Processed ----", fg=Colors.YELLOW)
+    print_centered_text('Files Processed')
     for file in glob_files:
         click.secho(file, fg=Colors.YELLOW)
 
@@ -93,6 +94,7 @@ def apply(
     if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
+    print_centered_text('Applying Manifests')
     rc.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
 
 
@@ -137,4 +139,5 @@ def delete(
     if not silent and not dryrun:
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
+    print_centered_text('Deleting Resources')
     rc.delete(dryrun=dryrun)

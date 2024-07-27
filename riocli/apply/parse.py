@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 import json
 import queue
 import threading
@@ -21,31 +20,17 @@ from graphlib import TopologicalSorter
 import click
 import jinja2
 import yaml
-from tabulate import tabulate
 
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
-from riocli.utils import dump_all_yaml, print_separator, run_bash
+from riocli.utils import dump_all_yaml, run_bash
 from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
 
 
 class Applier(object):
     DEFAULT_MAX_WORKERS = 6
-
-    EXPECTED_TIME = {
-        "organization": 3,
-        "project": 3,
-        "secret": 3,
-        "package": 3,
-        "staticroute": 3,
-        "disk": 180,
-        "deployment": 240,
-        "network": 120,
-        "device": 5,
-        "user": 3,
-    }
 
     def __init__(self, files: typing.List, values, secrets):
         self.environment = None
@@ -179,28 +164,6 @@ class Applier(object):
                 self._add_graph_node(key)
                 number_of_objects = number_of_objects + 1
 
-        resource_list = []
-        total_time = 0
-
-        for node in copy.deepcopy(self.graph).static_order():
-            action = 'UPDATE'
-            if not self.resolved_objects[node]['src'] == 'remote':
-                action = 'CREATE'
-            elif delete:
-                action = 'DELETE'
-            kind = node.split(":")[0]
-            expected_time = round(
-                self.EXPECTED_TIME.get(kind.lower(), 5) / 60, 2)
-            total_time += expected_time
-            resource_list.append([node, action, expected_time])
-
-        if not template:
-            self._display_context(
-                total_time=total_time,
-                total_objects=number_of_objects,
-                resource_list=resource_list
-            )
-
         if check_missing:
             missing_resources = []
             for key, item in self.resolved_objects.items():
@@ -299,7 +262,7 @@ class Applier(object):
                 loaded = yaml.safe_load_all(data)
                 loaded_data = list(loaded)
             except yaml.YAMLError as e:
-                raise Exception(f'Failed to parse {file_name}: {str(ex)}')
+                raise Exception(f'Failed to parse {file_name}: {str(e)}')
 
         if not loaded_data:
             click.secho('{} file is empty'.format(file_name))
@@ -357,8 +320,7 @@ class Applier(object):
                         dependent_key, obj_guid, dependency, obj)
 
                 if (name_or_guid == obj_name) and (
-                        'version' in dependency and obj[
-                    'packageVersion'] == dependency.get('version')):
+                        'version' in dependency and obj['packageVersion'] == dependency.get('version')):
                     self._add_remote_object_to_resolve_tree(
                         dependent_key, obj_guid, dependency, obj)
 
@@ -409,32 +371,6 @@ class Applier(object):
         self.diagram.visualize()
 
     # Utils
-    def _display_context(
-            self,
-            total_time: int,
-            total_objects: int,
-            resource_list: typing.List
-    ) -> None:
-        headers = [
-            click.style('Resource Context', bold=True, fg=Colors.YELLOW)]
-        context = [
-            ['Expected Time (mins)', round(total_time, 2)],
-            ['Files', len(self.files)],
-            ['Resources', total_objects],
-        ]
-        click.echo(tabulate(context, headers=headers,
-                            tablefmt='simple', numalign='center'))
-
-        # Display Resource Inventory
-        headers = []
-        for header in ['Resource', 'Action', 'Expected Time (mins)']:
-            headers.append(click.style(header, fg=Colors.YELLOW, bold=True))
-
-        print_separator()
-        click.echo(tabulate(resource_list, headers=headers,
-                            tablefmt='simple', numalign='center'))
-        print_separator()
-
     @staticmethod
     def _get_attr(obj, accept_keys):
         metadata = None
