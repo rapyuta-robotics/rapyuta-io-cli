@@ -296,3 +296,9 @@ def sanitize_label(name):
             r = r + c
 
     return r
+
+
+def print_centered_text(text: str, color: str = Colors.YELLOW):
+    col, _ = get_terminal_size()
+    text = click.style(f' {text} '.center(col, '-'), fg=color, bold=True)
+    click.echo(text)
