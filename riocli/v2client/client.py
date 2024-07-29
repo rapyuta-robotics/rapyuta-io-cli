@@ -13,7 +13,6 @@
 # limitations under the License.
 from __future__ import annotations
 
-import http
 import json
 import os
 import time
@@ -22,37 +21,13 @@ from typing import List, Optional, Dict, Any
 
 import click
 import magic
-import requests
 from munch import munchify, Munch
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.constants import Colors
 from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
-from riocli.v2client.error import (RetriesExhausted, DeploymentNotRunning, ImagePullError,
-                                   NetworkNotFound, DeploymentNotFound)
-from riocli.v2client.util import process_errors
-
-
-def handle_server_errors(response: requests.Response):
-    status_code = response.status_code
-    # 500 Internal Server Error
-    if status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
-        raise Exception('internal server error')
-    # 501 Not Implemented
-    if status_code == http.HTTPStatus.NOT_IMPLEMENTED:
-        raise Exception('not implemented')
-    # 502 Bad Gateway
-    if status_code == http.HTTPStatus.BAD_GATEWAY:
-        raise Exception('bad gateway')
-    # 503 Service Unavailable
-    if status_code == http.HTTPStatus.SERVICE_UNAVAILABLE:
-        raise Exception('service unavailable')
-    # 504 Gateway Timeout
-    if status_code == http.HTTPStatus.GATEWAY_TIMEOUT:
-        raise Exception('gateway timeout')
-    # Anything else that is not known
-    if status_code > 504:
-        raise Exception('unknown server error')
+from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning, ImagePullError
+from riocli.v2client.util import process_errors, handle_server_errors
 
 
 class Client(object):
@@ -709,7 +684,7 @@ class Client(object):
             params["continue"] = offset
 
             response = c.query_param(params).execute()
-            data = json.loads(response.text)
+            data = response.json()
             if not response.ok:
                 err_msg = data.get('error')
                 raise Exception("listing: {}".format(err_msg))
@@ -837,6 +812,7 @@ class Client(object):
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=payload)
+
         handle_server_errors(response)
 
         data = json.loads(response.text)
@@ -862,10 +838,10 @@ class Client(object):
 
         response = RestClient(url).method(HttpMethod.GET).query_param(
             params).headers(headers).execute()
-        data = json.loads(response.text)
 
-        if response.status_code == http.HTTPStatus.NOT_FOUND:
-            raise NetworkNotFound("network: {} not found".format(name))
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
 
         if not response.ok:
             err_msg = data.get('error')
@@ -957,7 +933,9 @@ class Client(object):
         deployment["metadata"]["projectGUID"] = headers["project"]
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=deployment)
+
         handle_server_errors(response)
+
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get('error')
@@ -970,10 +948,10 @@ class Client(object):
         headers = self._get_auth_header()
 
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
-        data = json.loads(response.text)
 
-        if response.status_code == http.HTTPStatus.NOT_FOUND:
-            raise DeploymentNotFound("deployment: {} not found".format(name))
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
 
         if not response.ok:
             err_msg = data.get('error')

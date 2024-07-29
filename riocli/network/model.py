@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,75 +11,40 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-from typing import Any, Dict
 
-import click
 from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.constants import Colors, Symbols
-from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
-from riocli.v2client.client import NetworkNotFound, Client
+from riocli.v2client.error import HttpNotFoundError, HttpAlreadyExistsError
 
 
 class Network(Model):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def find_object(self, client: Client) -> bool:
-        network, obj = self.rc.find_depends({"kind": self.kind.lower(),
-                                             "nameOrGUID": self.metadata.name}, self.spec.type)
-        return obj if network else False
-
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
+    def apply(self, *args, **kwargs) -> None:
         client = new_v2_client()
 
-        r = client.create_network(self._sanitize_network())
+        self.metadata.createdAt = None
+        self.metadata.updatedAt = None
 
         retry_count = int(kwargs.get('retry_count'))
         retry_interval = int(kwargs.get('retry_interval'))
 
         try:
-            r = client.poll_network(r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval)
+            r = client.create_network(unmunchify(self))
+            client.poll_network(r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval)
+        except HttpAlreadyExistsError:
+            pass
         except Exception as e:
-            click.secho(">> {}: Error polling for network ({}:{})".format(
-                Symbols.WARNING,
-                self.kind.lower(),
-                self.metadata.name), fg=Colors.YELLOW)
-            click.secho(str(e), fg=Colors.YELLOW)
+            raise e
 
-        return unmunchify(r)
-
-    def update_object(self, client: Client, obj: typing.Any) -> Any:
-        pass
-
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+    def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
-        client.delete_network(obj.metadata.name)
 
-    @classmethod
-    def pre_process(cls, client: Client, d: Dict) -> None:
-        pass
-
-    @staticmethod
-    def validate(data):
-        """
-        Validates if network data is matching with its corresponding schema
-        """
-        schema = load_schema('network')
-        schema.validate(data)
-
-    def _sanitize_network(self) -> typing.Dict:
-        # Unset createdAt and updatedAt to avoid timestamp parsing issue.
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
-
-        data = unmunchify(self)
-
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        data.pop("rc", None)
-
-        return data
+        try:
+            client.delete_network(self.metadata.name)
+        except HttpNotFoundError:
+            pass

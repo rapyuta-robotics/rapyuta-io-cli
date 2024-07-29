@@ -20,13 +20,15 @@ from graphlib import TopologicalSorter
 import click
 import jinja2
 import yaml
+from munch import munchify
 
-from riocli.apply.resolver import ResolverCache
-from riocli.config import Configuration
+from riocli.apply.util import get_model, print_resolved_objects, message_with_prompt
 from riocli.constants import Colors, Symbols
-from riocli.utils import dump_all_yaml, run_bash
+from riocli.utils import dump_all_yaml, run_bash, print_centered_text
 from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
+
+DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
 
 class Applier(object):
@@ -35,14 +37,10 @@ class Applier(object):
     def __init__(self, files: typing.List, values, secrets):
         self.environment = None
         self.input_file_paths = files
-        self.config = Configuration()
-        self.client = self.config.new_client()
-        self.dependencies = {}
         self.objects = {}
         self.resolved_objects = {}
         self.files = {}
         self.graph = TopologicalSorter()
-        self.rc = ResolverCache(self.client)
         self.secrets = {}
         self.values = {}
         self.diagram = Graphviz(direction='LR', format='svg')
@@ -59,15 +57,12 @@ class Applier(object):
 
         self._process_file_list(files)
 
-    # Public Functions
-    def order(self):
-        return self.graph.static_order()
-
     @with_spinner(text='Applying...', timer=True)
     def apply(self, *args, **kwargs):
         spinner = kwargs.get('spinner')
         kwargs['workers'] = int(kwargs.get('workers')
                                 or self.DEFAULT_MAX_WORKERS)
+
         apply_func = self.apply_async
         if kwargs['workers'] == 1:
             apply_func = self.apply_sync
@@ -83,26 +78,26 @@ class Applier(object):
 
     def apply_async(self, *args, **kwargs):
         workers = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
+
         task_queue = queue.Queue()
         done_queue = queue.Queue()
 
         def worker():
             while True:
                 o = task_queue.get()
-                if o in self.resolved_objects and 'manifest' in \
-                        self.resolved_objects[o]:
+                if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
                     try:
                         self._apply_manifest(o, *args, **kwargs)
                     except Exception as ex:
-                        click.secho(
-                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(
-                                o, str(ex)))
                         done_queue.put(ex)
                         continue
 
                 task_queue.task_done()
                 done_queue.put(o)
 
+        # Start the workers that will accept tasks from the task_queue
+        # and process them. Upon completion, they will put the object
+        # in the done_queue.
         worker_list = []
         for worker_id in range(workers):
             worker_list.append(threading.Thread(target=worker, daemon=True))
@@ -119,6 +114,7 @@ class Applier(object):
             else:
                 raise Exception(done_obj)
 
+        # Block until the task_queue is empty.
         task_queue.join()
 
     def apply_sync(self, *args, **kwargs):
@@ -150,49 +146,72 @@ class Applier(object):
         manifests = [o for _, o in self.objects.items()]
         dump_all_yaml(manifests)
 
-    def parse_dependencies(
-            self,
-            check_missing=True,
-            delete=False,
-            template=False
-    ):
-        number_of_objects = 0
-        for f, data in self.files.items():
+    def parse_dependencies(self):
+        for _, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
                 self._add_graph_node(key)
-                number_of_objects = number_of_objects + 1
 
-        if check_missing:
-            missing_resources = []
-            for key, item in self.resolved_objects.items():
-                if 'src' in item and item['src'] == 'missing':
-                    missing_resources.append(key)
+        print_centered_text("Parsed Resources")
+        print_resolved_objects(self.resolved_objects)
 
-            if missing_resources:
-                click.secho(
-                    "Missing resources found in yaml. Please ensure the "
-                    "following are either available in your YAML or created"
-                    " on the server. {}".format(
-                        set(missing_resources)), fg=Colors.RED)
+    def show_dependency_graph(self):
+        """Lauches mermaid.live dependency graph"""
+        self.diagram.visualize()
 
-                raise SystemExit(1)
+    def _apply_manifest(self, obj_key: str, *args, **kwargs) -> None:
+        """Instantiate and apply the object manifest"""
+        spinner = kwargs.get('spinner')
+        dryrun = kwargs.get("dryrun", False)
 
-    # Manifest Operations via base.py
-    def _apply_manifest(self, obj_key, *args, **kwargs):
         obj = self.objects[obj_key]
-        cls = ResolverCache.get_model(obj)
-        ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', ResolverCache(self.client))
-        ist.apply(self.client, *args, **kwargs)
+        kls = get_model(obj)
+        kls.validate(obj)
+        ist = kls(munchify(obj))
 
-    def _delete_manifest(self, obj_key, *args, **kwargs):
+        message_with_prompt("{} Applying {}...".format(
+            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+
+        try:
+            if not dryrun:
+                ist.apply(*args, **kwargs)
+        except Exception as ex:
+            message_with_prompt("{} Failed to apply {}. Error: {}".format(
+                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
+            raise ex
+
+        message_with_prompt("{} Applied {}".format(
+            Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
+
+    def _delete_manifest(self, obj_key: str, *args, **kwargs) -> None:
+        """Instantiate and delete the object manifest"""
+        spinner = kwargs.get('spinner')
+        dryrun = kwargs.get("dryrun", False)
+
         obj = self.objects[obj_key]
-        cls = ResolverCache.get_model(obj)
-        ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', ResolverCache(self.client))
-        ist.delete(self.client, obj, *args, **kwargs)
+        kls = get_model(obj)
+        kls.validate(obj)
+        ist = kls(munchify(obj))
+
+        message_with_prompt("{} Deleting {}...".format(
+            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+
+        # If a resource has a label with DELETE_POLICY_LABEL set
+        # to 'retain', it should not be deleted.
+        labels = obj.get('metadata', {}).get('labels', {})
+        can_delete = labels.get(DELETE_POLICY_LABEL) != 'retain'
+
+        try:
+            if not dryrun and can_delete:
+                ist.delete(*args, **kwargs)
+        except Exception as ex:
+            message_with_prompt("{} Failed to delete {}. Error: {}".format(
+                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
+            raise ex
+
+        message_with_prompt("{} Deleted {}.".format(
+            Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
 
     # File Loading Operations
 
@@ -281,6 +300,11 @@ class Applier(object):
 
     # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
+        # TODO(pallab): let resources determine their own dependencies and return them
+        # kls = get_model(model)
+        # for dependency in kls.parse_dependencies(model):
+        #     self._resolve_dependency(dependent_key, dependency)
+
         for key, value in model.items():
             if key == "depends":
                 if 'kind' in value and value.get('kind'):
@@ -306,85 +330,7 @@ class Applier(object):
         name_or_guid = dependency.get('nameOrGUID')
         key = '{}:{}'.format(kind, name_or_guid)
 
-        self._initialize_kind_dependency(kind)
-        guid = ResolverCache._maybe_guid(kind, name_or_guid)
-
-        obj_list = self.rc.list_objects(kind)
-        for obj in obj_list:
-            obj_guid = self._get_attr(obj, ResolverCache.GUID_KEYS)
-            obj_name = self._get_attr(obj, ResolverCache.NAME_KEYS)
-
-            if kind == 'package':
-                if guid and obj_guid == guid:
-                    self._add_remote_object_to_resolve_tree(
-                        dependent_key, obj_guid, dependency, obj)
-
-                if (name_or_guid == obj_name) and ('version' in dependency and
-                                                    obj.metadata.version == dependency.get('version')):
-                    self._add_remote_object_to_resolve_tree(
-                        dependent_key, obj_guid, dependency, obj)
-
-            # Special handling for Static route since it doesn't have a name field.
-            # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
-            elif kind == 'staticroute' and name_or_guid in obj_name:
-                self._add_remote_object_to_resolve_tree(
-                    dependent_key, obj_guid, dependency, obj)
-
-            elif (guid and obj_guid == guid) or (name_or_guid == obj_name):
-                self._add_remote_object_to_resolve_tree(
-                    dependent_key, obj_guid, dependency, obj)
-
-        self.dependencies[kind][name_or_guid] = {'local': True}
         self._add_graph_edge(dependent_key, key)
-
-        if key not in self.resolved_objects:
-            self.resolved_objects[key] = {'src': 'missing'}
-
-    def _add_remote_object_to_resolve_tree(self, dependent_key, guid,
-                                           dependency, obj):
-        kind = dependency.get('kind')
-        name_or_guid = dependency.get('nameOrGUID')
-        key = '{}:{}'.format(kind, name_or_guid)
-        self.dependencies[kind][name_or_guid] = {
-            'guid': guid, 'raw': obj, 'local': False}
-        if key not in self.resolved_objects:
-            self.resolved_objects[key] = {}
-        self.resolved_objects[key]['guid'] = guid
-        self.resolved_objects[key]['raw'] = obj
-        self.resolved_objects[key]['src'] = 'remote'
-
-        self._add_graph_edge(dependent_key, key)
-
-        dependency['guid'] = guid
-        if kind.lower() == "disk":
-            dependency['depGuid'] = obj.metadata.guid
-
-        if kind.lower() == "deployment":
-            dependency['guid'] = obj.metadata.guid
-
-    def _initialize_kind_dependency(self, kind):
-        if not self.dependencies.get(kind):
-            self.dependencies[kind] = {}
-
-    def show_dependency_graph(self):
-        """Lauches mermaid.live dependency graph"""
-        self.diagram.visualize()
-
-    # Utils
-    @staticmethod
-    def _get_attr(obj, accept_keys):
-        metadata = None
-
-        if hasattr(obj, 'metadata'):
-            metadata = getattr(obj, 'metadata')
-
-        for key in accept_keys:
-            if hasattr(obj, key):
-                return getattr(obj, key)
-            if metadata is not None and hasattr(metadata, key):
-                return getattr(metadata, key)
-
-        raise Exception('guid resolve failed')
 
     @staticmethod
     def _get_object_key(obj: dict) -> str:
