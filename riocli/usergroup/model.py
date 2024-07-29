@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
 import typing
 
 from munch import unmunchify
-from rapyuta_io import Client
 
-from riocli.config import new_v2_client
-from riocli.jsonschema.validate import load_schema
+from riocli.config import new_client, new_v2_client, Configuration
 from riocli.model import Model
 from riocli.organization.utils import get_organization_details
+from riocli.usergroup.util import find_usergroup_guid, UserGroupNotFound
 
 USER_GUID = 'guid'
 USER_EMAIL = 'emailID'
@@ -28,48 +27,65 @@ USER_EMAIL = 'emailID'
 class UserGroup(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.update(*args, **kwargs)
+
+        self.user_email_to_guid_map = {}
+        self.project_name_to_guid_map = {}
+
+    def apply(self, *args, **kwargs) -> None:
+        v1client = new_client()
         v2client = new_v2_client()
-        organization_details = get_organization_details(self.metadata.organization)
-        user_projects = v2client.list_projects(self.metadata.organization)
+
+        organization_id = self.metadata.organization or Configuration().organization_guid
+        existing = None
+
+        try:
+            guid = find_usergroup_guid(v1client, organization_id, self.metadata.name)
+            existing = v1client.get_usergroup(organization_id, guid)
+        except UserGroupNotFound:
+            pass
+        except Exception as e:
+            raise e
+
+        organization_details = get_organization_details(organization_id)
+        user_projects = v2client.list_projects(organization_id)
 
         self.project_name_to_guid_map = {p['metadata']['name']: p['metadata']['guid'] for p in user_projects}
         self.user_email_to_guid_map = {user[USER_EMAIL]: user[USER_GUID] for user in organization_details['users']}
 
-    def unmunchify(self) -> typing.Dict:
-        """Unmuchify self"""
-        usergroup = unmunchify(self)
-        usergroup.pop('rc', None)
-        usergroup.pop('project_name_to_guid_map', None)
-        usergroup.pop('user_email_to_guid_map', None)
+        sanitized = self._sanitize()
+        payload = self._modify_payload(sanitized)
 
-        return usergroup
+        if not existing:
+            try:
+                payload['spec']['name'] = sanitized['metadata']['name']
+                v1client.create_usergroup(self.metadata.organization, payload['spec'])
+                return
+            except Exception as e:
+                raise e
 
-    def find_object(self, client: Client) -> typing.Any:
-        group_guid, usergroup = self.rc.find_depends({
-            'kind': self.kind.lower(),
-            'nameOrGUID': self.metadata.name,
-            'organization': self.metadata.organization
-        })
+        payload = self._generate_update_payload(existing, payload)
+        v1client.update_usergroup(organization_id, existing.guid, payload)
 
-        if not usergroup:
-            return False
+    def delete(self, *args, **kwargs) -> None:
+        v1client = new_client()
 
-        return usergroup
+        organization_id = self.metadata.organization or Configuration().organization_guid
 
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
-        usergroup = self.unmunchify()
-        payload = self._modify_payload(usergroup)
-        # Inject the user group name in the payload
-        payload['spec']['name'] = usergroup['metadata']['name']
-        return client.create_usergroup(self.metadata.organization, payload['spec'])
+        try:
+            guid = find_usergroup_guid(v1client, organization_id, self.metadata.name)
+            v1client.delete_usergroup(organization_id, guid)
+        except UserGroupNotFound:
+            pass
+        except Exception as e:
+            raise e
 
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        payload = self._modify_payload(self.unmunchify())
-        payload = self._create_update_payload(obj, payload)
-        return client.update_usergroup(self.metadata.organization, obj.guid, payload)
+    def _sanitize(self) -> typing.Dict:
+        u = unmunchify(self)
+        u.pop('project_name_to_guid_map', None)
+        u.pop('user_email_to_guid_map', None)
 
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        return client.delete_usergroup(self.metadata.organization, obj.guid)
+        return u
 
     def _modify_payload(self, group: typing.Dict) -> typing.Dict:
         group['spec']['userGroupRoleInProjects'] = []
@@ -94,17 +110,8 @@ class UserGroup(Model):
 
         return group
 
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
-
     @staticmethod
-    def validate(data):
-        schema = load_schema('usergroup')
-        schema.validate(data)
-
-    @staticmethod
-    def _create_update_payload(old: typing.Any, new: typing.Dict) -> typing.Dict:
+    def _generate_update_payload(old: typing.Any, new: typing.Dict) -> typing.Dict:
         payload = {
             'name': old.name,
             'guid': old.guid,
