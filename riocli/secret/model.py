@@ -11,62 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 from munch import unmunchify
-from rapyuta_io import Client
 
 from riocli.config import new_v2_client
-from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Secret(Model):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def find_object(self, client: Client) -> bool:
-        _, secret = self.rc.find_depends({
-            'kind': 'secret',
-            'nameOrGUID': self.metadata.name
-        })
-
-        if not secret:
-            return False
-
-        return secret
-
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
-        client = new_v2_client()
-
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        secret = unmunchify(self)
-        secret.pop("rc", None)
-        r = client.create_secret(secret)
-        return unmunchify(r)
-
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
+    def apply(self, *args, **kwargs) -> None:
         client = new_v2_client()
 
         secret = unmunchify(self)
-        secret.pop("rc", None)
 
-        r = client.update_secret(obj.metadata.name, secret)
-        return unmunchify(r)
+        try:
+            client.create_secret(unmunchify(self))
+        except HttpAlreadyExistsError:
+            client.update_secret(self.metadata.name, secret)
 
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
+    def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
-        client.delete_secret(obj.metadata.name)
 
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
-
-    @staticmethod
-    def validate(data):
-        """
-        Validates if secret data is matching with its corresponding schema
-        """
-        schema = load_schema('secret')
-        schema.validate(data)
+        try:
+            client.delete_secret(self.metadata.name)
+        except HttpNotFoundError:
+            pass

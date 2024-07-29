@@ -78,10 +78,18 @@ def get_device_name(client: Client, guid: str) -> str:
 
 
 def find_device_guid(client: Client, name: str) -> str:
-    devices = client.get_all_devices()
+    devices = client.get_all_devices(device_name=name)
     for device in devices:
         if device.name == name:
             return device.uuid
+
+    raise DeviceNotFound()
+
+def find_device_by_name(client: Client, name: str) -> Device:
+    devices = client.get_all_devices(device_name=name)
+    for device in devices:
+        if device.name == name:
+            return device
 
     raise DeviceNotFound()
 

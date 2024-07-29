@@ -20,6 +20,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.apply.explain import explain, list_examples
 from riocli.apply.parse import Applier
 from riocli.apply.template import template
+from riocli.apply.util import print_resolved_objects
 from riocli.apply.util import process_files_values_secrets
 from riocli.constants import Colors
 from riocli.utils import print_centered_text
@@ -79,8 +80,8 @@ def apply(
     for file in glob_files:
         click.secho(file, fg=Colors.YELLOW)
 
-    rc = Applier(glob_files, abs_values, abs_secrets)
-    rc.parse_dependencies()
+    applier = Applier(glob_files, abs_values, abs_secrets)
+    applier.parse_dependencies()
 
     if show_graph and dryrun:
         click.secho('You cannot dry run and launch the graph together.',
@@ -88,14 +89,14 @@ def apply(
         return
 
     if show_graph:
-        rc.show_dependency_graph()
+        applier.show_dependency_graph()
         return
 
     if not silent and not dryrun:
-        click.confirm("Do you want to proceed?", default=True, abort=True)
+        click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text('Applying Manifests')
-    rc.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
+    applier.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
 
 
 @click.command(
@@ -133,11 +134,15 @@ def delete(
         click.secho('no files specified', fg=Colors.RED)
         raise SystemExit(1)
 
-    rc = Applier(glob_files, abs_values, abs_secrets)
-    rc.parse_dependencies(check_missing=False, delete=True)
+    print_centered_text('Files Processed')
+    for file in glob_files:
+        click.secho(file, fg=Colors.YELLOW)
+
+    applier = Applier(glob_files, abs_values, abs_secrets)
+    applier.parse_dependencies()
 
     if not silent and not dryrun:
-        click.confirm("Do you want to proceed?", default=True, abort=True)
+        click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text('Deleting Resources')
-    rc.delete(dryrun=dryrun)
+    applier.delete(dryrun=dryrun)

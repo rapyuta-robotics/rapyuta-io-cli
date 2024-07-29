@@ -16,10 +16,9 @@ import typing
 from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.jsonschema.validate import load_schema
 from riocli.model import Model
 from riocli.package.enum import RestartPolicy
-from riocli.v2client import Client
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Package(Model):
@@ -30,64 +29,53 @@ class Package(Model):
     }
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def find_object(self, client: Client):
-        guid, obj = self.rc.find_depends({"kind": self.kind.lower(), "nameOrGUID": self.metadata.name},
-                                         self.metadata.version)
-        return obj if guid else False
+    def apply(self, *args, **kwargs) -> None:
+        client = new_v2_client()
 
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
-        v2_client = new_v2_client()
+        package = self._sanitize_package()
 
-        r = v2_client.create_package(self._sanitize_package())
-        return unmunchify(r)
+        try:
+            client.create_package(package)
+        except HttpAlreadyExistsError:
+            pass
 
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
+    def delete(self, *args, **kwargs) -> None:
+        client = new_v2_client()
 
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        v2_client = new_v2_client()
-        v2_client.delete_package(obj.metadata.name, query={"version": obj.metadata.version})
-
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
+        try:
+            client.delete_package(
+                self.metadata.name,
+                query={"version": self.metadata.version}
+            )
+        except HttpNotFoundError:
+            pass
 
     def _sanitize_package(self) -> typing.Dict:
         # Unset createdAt and updatedAt to avoid timestamp parsing issue.
         self.metadata.createdAt = None
         self.metadata.updatedAt = None
 
-        self._convert_command()
+        self._sanitize_command()
 
-        data = unmunchify(self)
+        return unmunchify(self)
 
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        data.pop("rc", None)
+    def _sanitize_command(self):
+        for e in self.spec.executables:
+            # Skip if command is not set.
+            if not e.get('command'):
+                continue
 
-        return data
+            c = []
 
-    def _convert_command(self):
-        for exec in self.spec.executables:
-            if exec.get('command') is not None:
-                c = []
+            if e.get('runAsBash'):
+                c = ['/bin/bash', '-c']
 
-                if exec.get('runAsBash'):
-                    c = ['/bin/bash', '-c']
+            if isinstance(e.command, list):
+                c.extend(e.command)
+            else:
+                c.append(e.command)
 
-                if isinstance(exec.command, list):
-                    c.extend(exec.command)
-                else:
-                    c.append(exec.command)
-
-                exec.command = c
-
-    @staticmethod
-    def validate(data):
-        """
-        Validates if package data is matching with its corresponding schema
-        """
-        schema = load_schema('package')
-        schema.validate(data)
+            e.command = c
