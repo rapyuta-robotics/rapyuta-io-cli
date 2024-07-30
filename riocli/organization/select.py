@@ -51,7 +51,7 @@ def select_organization(
     """
     ctx = get_root_context(ctx)
 
-    if ctx.obj.data['organization_id'] == organization_guid:
+    if ctx.obj.data.get('organization_id') == organization_guid:
         click.secho("You are already in the '{}' organization".format(
             organization_name), fg=Colors.GREEN)
         return
