@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_organization_guid
 from riocli.utils.spinner import with_spinner
 
@@ -37,6 +37,7 @@ def create_project(
         project_name: str,
         organization_guid: str,
         organization_name: str,
+        organization_short_id: str,
         spinner=None,
 ) -> None:
     """
