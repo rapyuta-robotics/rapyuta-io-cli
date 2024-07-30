@@ -40,6 +40,7 @@ def list_projects(
         ctx: click.Context = None,
         organization_guid: str = None,
         organization_name: str = None,
+        organization_short_id: str = None,
         wide: bool = False,
 ) -> None:
     """

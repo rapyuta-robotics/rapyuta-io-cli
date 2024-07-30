@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ def select_organization(
         ctx: click.Context,
         organization_name: str,
         organization_guid: str,
+        organization_short_id: str,
         interactive: bool,
 ) -> None:
     """
@@ -58,6 +59,7 @@ def select_organization(
 
     ctx.obj.data['organization_id'] = organization_guid
     ctx.obj.data['organization_name'] = organization_name
+    ctx.obj.data['organization_short_id'] = organization_short_id
 
     if sys.stdout.isatty() and interactive:
         select_project(ctx.obj, organization=organization_guid)
