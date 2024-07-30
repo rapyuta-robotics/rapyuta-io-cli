@@ -20,7 +20,6 @@ from rapyuta_io import Client
 from riocli.config import new_client, new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
-from riocli.utils.selector import show_selection
 from riocli.v2client import Client as v2Client
 
 
@@ -77,31 +76,22 @@ def get_project_name(client: v2Client, guid: str) -> str:
     return project.metadata.name
 
 
-def find_organization_guid(client: Client, name: str) -> str:
+def find_organization_guid(client: Client, name: str) -> typing.Tuple[str, str]:
     organizations = client.get_user_organizations()
-    options = {}
 
     for organization in organizations:
         if organization.name == name:
-            options[organization.guid] = '{} ({})'.format(organization.name,
-                                                          organization.url)
+            return organization.guid, organization.short_guid
 
-    if len(options) == 1:
-        return list(options.keys())[0]
-
-    if len(options) == 0:
-        raise Exception("User is not part of organization: {}".format(name))
-
-    choice = show_selection(options,
-                            header='Following packages were found with the same name')
-    return choice
+    raise OrganizationNotFound(
+        "User is not part of organization with guid: {}".format(guid))
 
 
-def get_organization_name(client: Client, guid: str) -> str:
+def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
     organizations = client.get_user_organizations()
     for organization in organizations:
         if organization.guid == guid:
-            return organization.name
+            return organization.name, organization.short_guid
 
     raise OrganizationNotFound(
         "User is not part of organization with guid: {}".format(guid))
@@ -113,19 +103,23 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
         client = new_client(with_project=False)
         name = kwargs.get('organization_name')
         guid = None
+        short_id = None
 
         if name:
             try:
                 if name.startswith('org-'):
                     guid = name
-                    name = get_organization_name(client, guid)
+                    name, short_id = get_organization_name(client, guid)
                 else:
-                    guid = find_organization_guid(client, name)
+                    guid, short_id = find_organization_guid(client, name)
             except Exception as e:
                 click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
+
         kwargs['organization_name'] = name
         kwargs['organization_guid'] = guid
+        kwargs['organization_short_id'] = short_id
+
         f(*args, **kwargs)
 
     return decorated
