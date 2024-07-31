@@ -143,7 +143,13 @@ class Applier(object):
             spinner.red.fail(Symbols.ERROR)
 
     def print_resolved_manifests(self):
-        manifests = [o for _, o in self.objects.items()]
+        """Validates and prints the resolved manifests"""
+        manifests = []
+        for _, o in self.objects.items():
+            kls = get_model(o)
+            kls.validate(o)
+            manifests.append(o)
+
         dump_all_yaml(manifests)
 
     def parse_dependencies(self):

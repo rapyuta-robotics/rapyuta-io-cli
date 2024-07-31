@@ -33,6 +33,7 @@ from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
 from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
+from riocli.model import Model
 
 KIND_TO_CLASS = {
     'project': Project,
@@ -48,7 +49,7 @@ KIND_TO_CLASS = {
 }
 
 
-def get_model(data: dict) -> typing.Any:
+def get_model(data: dict) -> Model:
     """Get the model class based on the kind"""
     kind = data.get('kind', None)
     if kind is None:
