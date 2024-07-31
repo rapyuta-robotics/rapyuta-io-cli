@@ -7,7 +7,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-cloud"
     version: "v1.0.0"
-  project: "project-guid"
   region: jp
   labels:
     app: test

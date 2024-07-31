@@ -7,7 +7,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:

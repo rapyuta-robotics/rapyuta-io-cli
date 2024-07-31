@@ -1,8 +1,7 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Disk"
 metadata:
-  name: "disk"
-  project: "project-guid"
+  name: "disk-name"
   labels:
     app: test
 spec:
