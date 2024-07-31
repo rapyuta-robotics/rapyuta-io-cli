@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,5 +46,5 @@ def template(values: str, secrets: str, files: Iterable[str]) -> None:
         click.secho('No files specified', fg=Colors.RED)
         raise SystemExit(1)
 
-    rc = Applier(glob_files, abs_values, abs_secrets)
-    rc.print_resolved_manifests()
+    applier = Applier(glob_files, abs_values, abs_secrets)
+    applier.print_resolved_manifests()
