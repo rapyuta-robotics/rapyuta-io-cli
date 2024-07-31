@@ -4,7 +4,7 @@ metadata:
   name: "package-nonros-device" # Required
   version: "v1.0.0" # Required
   description: "A RIO non ROS device package"
-  #project: "project-guid"
+  #
   labels:
     app: test
 spec:

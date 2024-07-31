@@ -3,7 +3,6 @@ apiVersion: api.rapyuta.io/v2
 kind: UserGroup
 metadata:
   name: usergroup_name
-  organization: org-bqgpmsafgnvnawlkuvxtxohs
   labels:
     key: value
 spec:

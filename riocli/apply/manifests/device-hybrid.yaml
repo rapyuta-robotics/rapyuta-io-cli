@@ -3,7 +3,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
 metadata:
   name: "device-hybrid" # Required
-  project: "project-guid"
   labels:
     app: test
 spec:

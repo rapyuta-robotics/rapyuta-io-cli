@@ -3,7 +3,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-routed-cloud"
-  project: "project-guid"
   region: jp
   labels:
     app: test
@@ -19,7 +18,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-routed-device"
-  project: "project-guid"
+
   labels:
     app: test
 spec:
@@ -35,7 +34,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-native-cloud"
-  project: "project-guid"
+
   region: jp
   labels:
     app: test
@@ -51,7 +50,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-native-device"
-  project: "project-guid"
+
   labels:
     app: test
 spec:
