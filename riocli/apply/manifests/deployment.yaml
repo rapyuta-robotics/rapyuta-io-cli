@@ -7,7 +7,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-cloud"
     version: "v1.0.0"
-  project: "project-guid"
   region: jp
   labels:
     app: test
@@ -104,7 +103,6 @@ metadata:
     kind: package
     nameOrGUID: "package-nonros-cloud"
     version: "v1.0.0"
-  project: "project-guid"
   region: jp
   labels:
     app: test
@@ -149,7 +147,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-no-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -185,7 +182,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -280,7 +276,6 @@ metadata:
     kind: package
     nameOrGUID: "package-nonros-device"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:

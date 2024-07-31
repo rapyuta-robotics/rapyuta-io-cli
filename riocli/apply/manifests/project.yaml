@@ -2,7 +2,6 @@ apiVersion: api.rapyuta.io/v2
 kind: Project
 metadata:
   name: test-project-name
-  organizationGUID: org-guid
   labels:
     purpose: testing
     version: 1.0
