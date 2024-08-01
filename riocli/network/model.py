@@ -15,8 +15,9 @@
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client.error import HttpNotFoundError, HttpAlreadyExistsError
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Network(Model):
@@ -47,4 +48,4 @@ class Network(Model):
         try:
             client.delete_network(self.metadata.name)
         except HttpNotFoundError:
-            pass
+            raise ResourceNotFound

@@ -16,6 +16,7 @@ import typing
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.package.enum import RestartPolicy
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
@@ -51,7 +52,7 @@ class Package(Model):
                 query={"version": self.metadata.version}
             )
         except HttpNotFoundError:
-            pass
+            raise ResourceNotFound
 
     def _sanitize_package(self) -> typing.Dict:
         # Unset createdAt and updatedAt to avoid timestamp parsing issue.

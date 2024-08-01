@@ -13,7 +13,8 @@
 # limitations under the License.
 from munch import unmunchify
 
-from riocli.config import new_v2_client, Configuration
+from riocli.config import Configuration, new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
@@ -41,4 +42,4 @@ class StaticRoute(Model):
         try:
             client.delete_static_route(f'{self.metadata.name}-{short_id}')
         except HttpNotFoundError:
-            pass
+            raise ResourceNotFound

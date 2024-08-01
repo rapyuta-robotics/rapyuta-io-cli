@@ -15,10 +15,11 @@ import typing
 
 from munch import unmunchify
 
-from riocli.config import new_client, new_v2_client, Configuration
+from riocli.config import Configuration, new_client, new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.organization.utils import get_organization_details
-from riocli.usergroup.util import find_usergroup_guid, UserGroupNotFound
+from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
 
 USER_GUID = 'guid'
 USER_EMAIL = 'emailID'
@@ -76,7 +77,7 @@ class UserGroup(Model):
             guid = find_usergroup_guid(v1client, organization_id, self.metadata.name)
             v1client.delete_usergroup(organization_id, guid)
         except UserGroupNotFound:
-            pass
+            raise ResourceNotFound
         except Exception as e:
             raise e
 

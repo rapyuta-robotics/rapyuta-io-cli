@@ -20,7 +20,6 @@ from click_help_colors import HelpColorsCommand
 from riocli.apply.explain import explain, list_examples
 from riocli.apply.parse import Applier
 from riocli.apply.template import template
-from riocli.apply.util import print_resolved_objects
 from riocli.apply.util import process_files_values_secrets
 from riocli.constants import Colors
 from riocli.utils import print_centered_text
@@ -116,12 +115,22 @@ def apply(
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
+@click.option('--workers', '-w',
+              help="number of parallel workers while running apply "
+                   "command. defaults to 6.", type=int)
+@click.option('--retry-count', '-rc', type=int, default=50,
+              help="Number of retries before a resource creation times out status, defaults to 50")
+@click.option('--retry-interval', '-ri', type=int, default=6,
+              help="Interval between retries defaults to 6")
 @click.argument('files', nargs=-1)
 def delete(
         values: str,
         secrets: str,
         files: Iterable[str],
+        retry_count: int = 50,
+        retry_interval: int = 6,
         dryrun: bool = False,
+        workers: int = 6,
         silent: bool = False
 ) -> None:
     """
@@ -145,4 +154,4 @@ def delete(
         click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text('Deleting Resources')
-    applier.delete(dryrun=dryrun)
+    applier.delete(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
