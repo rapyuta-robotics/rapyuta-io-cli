@@ -15,10 +15,11 @@
 from munch import unmunchify
 from waiting import wait
 
-from riocli.config import new_v2_client, Configuration
+from riocli.config import Configuration, new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.project.util import find_project_guid, ProjectNotFound
-from riocli.v2client.error import HttpNotFoundError, HttpAlreadyExistsError
+from riocli.project.util import ProjectNotFound, find_project_guid
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 PROJECT_READY_TIMEOUT = 150
 
@@ -55,7 +56,7 @@ class Project(Model):
             guid = find_project_guid(client, self.metadata.name, Configuration().data['organization_id'])
             client.delete_project(guid)
         except (HttpNotFoundError, ProjectNotFound):
-            pass
+            raise ResourceNotFound
 
     def is_ready(self) -> bool:
         client = new_v2_client()
