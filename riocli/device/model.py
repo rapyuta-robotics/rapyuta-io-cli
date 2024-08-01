@@ -15,14 +15,9 @@
 from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
 from riocli.config import new_client
-from riocli.device.util import (
-    create_hwil_device,
-    delete_hwil_device,
-    execute_onboard_command,
-    find_device_by_name,
-    make_device_labels_from_hwil_device,
-    DeviceNotFound,
-)
+from riocli.device.util import (DeviceNotFound, create_hwil_device, delete_hwil_device, execute_onboard_command,
+                                find_device_by_name, make_device_labels_from_hwil_device)
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 
 
@@ -85,7 +80,7 @@ class Device(Model):
         try:
             device = find_device_by_name(client, self.metadata.name)
         except DeviceNotFound:
-            return
+            raise ResourceNotFound
 
         if self.spec.get('virtual', {}).get('enabled', False):
             delete_hwil_device(device)

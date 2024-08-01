@@ -15,6 +15,7 @@
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
@@ -38,4 +39,4 @@ class ManagedService(Model):
         try:
             client.delete_instance(self.metadata.name)
         except HttpNotFoundError:
-            pass
+            raise ResourceNotFound
