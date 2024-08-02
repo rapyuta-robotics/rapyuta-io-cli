@@ -1,9 +1,0 @@
-dependencies:
-  - name: org.unyscape.wordpress
-    version: '<1.0.5,>1.0.0'
-  - name: rio.db.postgres
-    version: '^11.0.1'
-  - name: rio.ml.cvat.psql-redis-aio55555
-    version: '*'
-  - name: rio.db.redis
-    version: '*'
