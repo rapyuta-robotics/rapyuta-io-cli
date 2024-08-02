@@ -20,6 +20,7 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
+from riocli.v2client.util import process_errors
 
 ALL_PHASES = [
     'InProgress',
@@ -63,7 +64,7 @@ def list_deployments(
         client = new_v2_client(with_project=True)
         deployments = client.list_deployments(query={'phases': phase})
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
-        display_deployment_list(deployments, show_header=True)
+        display_deployment_list(deployments, show_header=True, wide=wide)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -76,14 +77,29 @@ def display_deployment_list(
 ):
     headers = []
     if show_header:
-        headers = ('Deployment ID', 'Name', 'Phase', 'Package', 'Creation Time (UTC)', 'Stopped Time (UTC)')
+        headers = ['Name', 'Package', 'Creation Time (UTC)', 'Phase', 'Status']
+
+    if show_header and wide:
+        headers.extend(['Deployment ID', 'Stopped Time (UTC)'])
 
     data = []
-    for deployment in deployments:
-        package_name_version = "{} ({})".format(deployment.metadata.depends.nameOrGUID,
-                                                deployment.metadata.depends.version)
-        phase = deployment.status.phase if deployment.status else ""
-        data.append([deployment.metadata.guid, deployment.metadata.name,
-                     phase, package_name_version, deployment.metadata.createdAt, deployment.metadata.get('deletedAt')])
+    for d in deployments:
+        package_name_version = f'{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})'
+        phase = d.get('status', {}).get('phase', '')
+
+        status = ''
+
+        if d.status:
+            if d.status.get('error_codes'):
+                status = click.style(process_errors(d.status.error_codes, no_action=True), fg=Colors.RED)
+            else:
+                status = d.status.status
+
+        row = [d.metadata.name, package_name_version, d.metadata.createdAt, phase, status]
+
+        if wide:
+            row.extend([d.metadata.guid, d.metadata.get('deletedAt')])
+
+        data.append(row)
 
     tabulate_data(data, headers=headers)
