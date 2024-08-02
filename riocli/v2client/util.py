@@ -24,7 +24,7 @@ from riocli.v2client.constants import DEPLOYMENT_ERRORS as ERRORS
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
-def process_errors(errors: typing.List[str]) -> str:
+def process_errors(errors: typing.List[str], no_action: bool = False) -> str:
     """Process the deployment errors and return the formatted error message"""
     err_fmt = '[{}] {}\nAction: {}'
     support_action = ('Report the issue together with the relevant'
@@ -50,7 +50,10 @@ def process_errors(errors: typing.List[str]) -> str:
         description = click.style(description, fg=Colors.RED)
         action = click.style(action, fg=Colors.GREEN)
 
-        msgs.append(err_fmt.format(code, description, action))
+        if no_action:
+            msgs.append(f'[{code}]: {description}')
+        else:
+            msgs.append(err_fmt.format(code, description, action))
 
     return '\n'.join(msgs)
 
