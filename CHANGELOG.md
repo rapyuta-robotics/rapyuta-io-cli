@@ -1,3 +1,34 @@
+# [8.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.6.0...v8.0.0) (2024-08-02)
+
+
+### Bug Fixes
+
+* **apply:** print file name when there is a parsing error ([413ce94](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/413ce94d7a5b039753342951b04411c2bc88ab91))
+* **auth:** do not save password in cli config ([08a399c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/08a399c52874b13786d4f9114fa3ae84b98ce95c))
+* **bootstrap:** handle exceptions thrown by the cli ([d703df3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d703df3d107c2656b1ff128d49f89769ee739860))
+* **configtree:** prefix keys with '/' when importing to etcd ([#336](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/336)) ([9c74fb5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9c74fb54c24c2083c4c7aa72a9c33dd4fa52d764))
+* **configtree:** update sentinel key when tree is imported in etcd ([#337](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/337)) ([8ea304b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8ea304b914e5708d2ce8cb87ac9c88de11ff7b7c))
+* **deployment:** show errors in deployments list ([66f2c7f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/66f2c7f721181df35b3d4d6102f4d74d35f9024c))
+* **device:** filter uploaded files by name in name_to_request_id ([7348be2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7348be2a022bfea965000d147e2804e053fb5757))
+* **jsonschema:** add platform as a product for virtual devices ([#338](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/338)) ([6eb50f0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6eb50f0ab2bfb5e169b97654a94d7c5edbe3d6a9))
+* **organization:** fix organization select command ([#339](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/339)) ([7943a4a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7943a4afa43cb1a191664b1c460473889201ade5))
+* **package:** update the imageTag regex to support semver tags ([#335](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/335)) ([6e17408](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6e1740805365c89e3b35427e70e6ab8e94aa1ad9))
+* **v2client:** set organizationguid header by default ([#330](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/330)) ([eaa1185](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/eaa118513676370fefdc3e6867094d443192dd1f))
+
+
+### Features
+
+* adds command to list explain examples ([3fc228e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3fc228efed5db5e79f31826bfc851339ad121182))
+* **template:** sort rendered templates by file-name ([161ddfc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/161ddfcb257caece8be40b272abbb6d1f643b165))
+
+
+### BREAKING CHANGES
+
+* **auth:** The password is no longer saved in the riocli
+config.json file.
+
+Wrike Ticket: https://www.wrike.com/open.htm?id=1162009098
+
 # [7.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.5.0...v7.6.0) (2024-07-04)
 
 

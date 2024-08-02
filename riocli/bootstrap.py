@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "7.6.0"
+__version__ = "8.0.0"
 
 import os
 import pretty_traceback
