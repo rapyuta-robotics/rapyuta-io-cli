@@ -18,11 +18,11 @@ import typing
 from graphlib import TopologicalSorter
 
 import click
-import jinja2
 import yaml
 from munch import munchify
 
-from riocli.apply.util import get_model, message_with_prompt, print_resolved_objects
+from riocli.apply.util import (get_model, init_jinja_environment, message_with_prompt, print_resolved_objects)
+from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import ResourceNotFound
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
@@ -35,21 +35,22 @@ class Applier(object):
     DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
     def __init__(self, files: typing.List, values, secrets):
-        self.environment = None
-        self.input_file_paths = files
+        self.files = {}
+        self.values = {}
+        self.secrets = {}
         self.objects = {}
         self.resolved_objects = {}
-        self.files = {}
+        self.input_file_paths = files
+        self.config = Configuration()
         self.graph = TopologicalSorter()
-        self.secrets = {}
-        self.values = {}
+        self.environment = init_jinja_environment()
         self.diagram = Graphviz(direction='LR', format='svg')
-        if values or secrets:
-            self.environment = jinja2.Environment()
 
         if values:
             self.values = self._load_file_content(
                 values, is_value=True, is_secret=False)[0]
+
+        self.values = self._inject_rio_namespace(self.values)
 
         if secrets:
             self.secrets = self._load_file_content(
@@ -422,3 +423,21 @@ class Applier(object):
             raise ValueError('[kind:{}] name is required.'.format(kind))
 
         return '{}:{}'.format(kind, name_or_guid)
+
+    def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
+        values = values or {}
+
+        values['rio'] = {
+            'project': {
+                'name': self.config.data.get('project_name'),
+                'guid': self.config.project_guid,
+            },
+            'organization': {
+                'name': self.config.data.get('organization_name'),
+                'guid': self.config.organization_guid,
+                'short_id': self.config.organization_short_id,
+            },
+            'email_id': self.config.data.get('email_id'),
+        }
+
+        return values

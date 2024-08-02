@@ -19,13 +19,16 @@ from datetime import datetime
 from shutil import get_terminal_size
 
 import click
+import jinja2
 from yaspin.api import Yaspin
 
+from riocli.apply.filters import FILTERS
 from riocli.constants import Colors
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
 from riocli.managedservice.model import ManagedService
+from riocli.model import Model
 from riocli.network.model import Network
 from riocli.package.model import Package
 from riocli.project.model import Project
@@ -33,7 +36,6 @@ from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
 from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
-from riocli.model import Model
 
 KIND_TO_CLASS = {
     'project': Project,
@@ -132,3 +134,12 @@ def print_resolved_objects(objects: typing.Dict) -> None:
         data.append([kind.title(), name])
 
     tabulate_data(data, headers=['Kind', 'Name'])
+
+
+def init_jinja_environment():
+    """Initialize Jinja2 environment with custom filters"""
+    environment = jinja2.Environment()
+    for name, func in FILTERS.items():
+        environment.filters[name] = func
+
+    return environment
