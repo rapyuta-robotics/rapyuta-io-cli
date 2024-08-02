@@ -141,6 +141,6 @@ def print_deployments_for_confirmation(deployments: typing.List[Deployment]):
     for deployment in deployments:
         data.append(
             [deployment.metadata.name, deployment.metadata.guid, deployment.status.phase,
-             deployment.status.aggregateStatus])
+             deployment.status.status])
 
     tabulate_data(data, headers)
