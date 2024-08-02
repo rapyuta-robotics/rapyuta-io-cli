@@ -46,11 +46,11 @@ def token(email: str, password: str, level: int = 0):
     if not email:
         email = config.data.get("email_id", None)
 
-    if not password:
-        password = config.data.get("password", None)
+    password = password or click.prompt('Password', hide_input=True)
 
     if not config.exists or not email or not password:
         raise LoggedOut
 
     new_token = get_token(email, password)
+
     click.echo(new_token)

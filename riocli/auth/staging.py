@@ -13,8 +13,6 @@
 # limitations under the License.
 import click
 
-from riocli.auth.login import select_project, select_organization
-from riocli.auth.util import get_token
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
@@ -62,15 +60,12 @@ def environment(ctx: click.Context, interactive: bool, name: str):
         )
         return
 
-    # Since credentials are retained, try fetching a token with the same.
-    email = ctx.obj.data.get('email_id', None)
-    password = ctx.obj.data.get('password', None)
-    ctx.obj.data['auth_token'] = get_token(email, password)
-
-    organization = select_organization(ctx.obj)
-    select_project(ctx.obj, organization=organization)
+    ctx.obj.data['email_id'] = None
+    ctx.obj.data['auth_token'] = None
 
     ctx.obj.save()
+
+    click.secho(f'Your environment is set to {name}. Please login again using `rio auth login`', fg=Colors.GREEN)
 
 
 def _configure_environment(config: Configuration, name: str) -> None:

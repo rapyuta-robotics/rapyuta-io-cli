@@ -26,15 +26,27 @@ from riocli.exceptions import LoggedOut
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
-def refresh_token(ctx: click.Context):
+@click.option(
+    '--password',
+    type=str,
+    prompt=True,
+    hide_input=True,
+    help='Password for the rapyuta.io account',
+)
+def refresh_token(ctx: click.Context, password: str):
     """
     Refreshes the authentication token after it expires
     """
     email = ctx.obj.data.get('email_id', None)
-    password = ctx.obj.data.get('password', None)
 
-    if not ctx.obj.exists or not email or not password:
-        raise LoggedOut
+    try:
+        if not ctx.obj.exists or not email or not password:
+            raise LoggedOut
+    except LoggedOut as e:
+        click.secho(str(e), fg=Colors.RED)
+        raise SystemExit(1) from e
+
+    click.secho(f'Refreshing token for {email}...', fg=Colors.YELLOW)
 
     ctx.obj.data['auth_token'] = get_token(email, password)
 

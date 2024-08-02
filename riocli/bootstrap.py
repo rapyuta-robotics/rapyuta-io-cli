@@ -15,6 +15,9 @@
 
 __version__ = "7.6.0"
 
+import os
+import pretty_traceback
+
 import click
 import rapyuta_io.version
 from click import Context
@@ -22,17 +25,17 @@ from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
-from riocli.apply import apply, explain, delete, template
+from riocli.apply import apply, explain, delete, template, list_examples
 from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
 from riocli.configtree import config_trees
-from riocli.hwil import hwildevice
 from riocli.constants import Colors, Symbols
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
+from riocli.hwil import hwildevice
 from riocli.managedservice import managedservice
 from riocli.network import network
 from riocli.organization import organization
@@ -64,6 +67,16 @@ from riocli.vpn import vpn
 def cli(ctx: Context, config: str = None):
     ctx.obj = Configuration(filepath=config)
 
+
+def safe_cli():
+    if os.environ.get("DEBUG", "false").lower() != "true":
+        try:
+            cli()
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
+    else:
+        cli()
 
 @cli.command("help")
 @click.pass_context
@@ -118,6 +131,7 @@ def update(silent: bool) -> None:
 cli.add_command(apply)
 cli.add_command(chart)
 cli.add_command(explain)
+cli.add_command(list_examples)
 cli.add_command(delete)
 cli.add_command(auth)
 cli.add_command(project)

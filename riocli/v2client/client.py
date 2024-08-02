@@ -59,14 +59,13 @@ class Client(object):
         self._project = project
         self._token = 'Bearer {}'.format(auth_token)
 
-    def _get_auth_header(self: Client, with_org: bool = False, with_project: bool = True) -> dict:
+    def _get_auth_header(self: Client, with_project: bool = True) -> dict:
         headers = dict(Authorization=self._token)
+
+        headers['organizationguid'] = self._config.organization_guid
 
         if with_project and self._project is not None:
             headers['project'] = self._project
-
-        if with_org:
-            headers['organizationguid'] = self._config.organization_guid
 
         return headers
 
@@ -120,6 +119,11 @@ class Client(object):
         """
         url = "{}/v2/projects/".format(self._host)
         headers = self._get_auth_header(with_project=False)
+
+        # Set the organizationguid header
+        if spec['metadata'].get('organizationGUID'):
+            headers['organizationguid'] = spec['metadata'].get('organizationGUID')
+
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=spec)
 
@@ -507,13 +511,13 @@ class Client(object):
     # ConfigTrees APIs
     def list_config_trees(self) -> Munch:
         url = "{}/v2/configtrees/".format(self._host)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client)
 
     def create_config_tree(self, tree_spec: dict) -> Munch:
         url = "{}/v2/configtrees/".format(self._host)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute(payload=tree_spec)
         handle_server_errors(response)
@@ -527,7 +531,7 @@ class Client(object):
 
     def delete_config_tree(self, tree_name: str) -> Munch:
         url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(
             headers).execute()
         handle_server_errors(response)
@@ -549,7 +553,7 @@ class Client(object):
             'keyPrefixes': filter_prefixes,
             'revision': rev_id,
         }
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(
             headers).query_param(query).execute()
         handle_server_errors(response)
@@ -563,7 +567,7 @@ class Client(object):
 
     def set_revision_config_tree(self, tree_name: str, spec: dict) -> Munch:
         url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=spec)
         handle_server_errors(response)
@@ -577,13 +581,13 @@ class Client(object):
 
     def list_config_tree_revisions(self, tree_name: str, labels: str = '') -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client, params={'labelSelector': labels})
 
     def initialize_config_tree_revision(self, tree_name: str) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(
             headers).execute()
         handle_server_errors(response)
@@ -597,7 +601,7 @@ class Client(object):
 
     def commit_config_tree_revision(self, tree_name: str, rev_id: str, payload: dict) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PATCH).headers(
             headers).execute(payload=payload)
         handle_server_errors(response)
@@ -611,7 +615,7 @@ class Client(object):
 
     def store_keys_in_revision(self, tree_name: str, rev_id: str, payload: Any) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.PUT).headers(
             headers).execute(payload=payload)
         handle_server_errors(response)
@@ -625,7 +629,7 @@ class Client(object):
 
     def store_key_in_revision(self, tree_name: str, rev_id: str, key: str, value: str, perms: int = 644) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         headers['Content-Type'] = 'kv'
         headers['X-Checksum'] = md5(str(value).encode('utf-8')).hexdigest()
         headers['X-Permissions'] = str(perms)
@@ -648,7 +652,7 @@ class Client(object):
         content_type = magic.from_file(file_path, mime=True)
 
         url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         headers['Content-Type'] = content_type
         headers['X-Permissions'] = perms
 
@@ -674,7 +678,7 @@ class Client(object):
 
     def delete_key_in_revision(self, tree_name: str, rev_id: str, key: str) -> Munch:
         url = "{}/v2/configtrees/{}/revisions/{}/{}".format(self._host, tree_name, rev_id, key)
-        headers = self._get_auth_header(with_org=True)
+        headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
 

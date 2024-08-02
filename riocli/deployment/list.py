@@ -19,6 +19,7 @@ from rapyuta_io.clients.deployment import Deployment, DeploymentPhaseConstants
 
 from riocli.config import new_client
 from riocli.constants import Colors
+from riocli.deployment.util import process_deployment_errors
 from riocli.utils import tabulate_data
 
 ALL_PHASES = [
@@ -50,7 +51,13 @@ DEFAULT_PHASES = [
               type=click.Choice(ALL_PHASES),
               default=DEFAULT_PHASES,
               help='Filter the Deployment list by Phases')
-def list_deployments(device: str, phase: typing.List[str]) -> None:
+@click.option('--wide', '-w', is_flag=True, default=False,
+              help='Print more details', type=bool)
+def list_deployments(
+        device: str,
+        phase: typing.List[str],
+        wide: bool = False,
+) -> None:
     """
     List the deployments in the selected project
     """
@@ -58,21 +65,36 @@ def list_deployments(device: str, phase: typing.List[str]) -> None:
         client = new_client()
         deployments = client.get_all_deployments(device_id=device, phases=phase)
         deployments = sorted(deployments, key=lambda d: d.name.lower())
-        display_deployment_list(deployments, show_header=True)
+        display_deployment_list(deployments, show_header=True, wide=wide)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
-def display_deployment_list(deployments: typing.List[Deployment], show_header: bool = True):
+def display_deployment_list(
+        deployments: typing.List[Deployment],
+        show_header: bool = True,
+        wide: bool = False,
+):
     headers = []
     if show_header:
-        headers = ('Deployment ID', 'Name', 'Phase', 'Package')
+        headers = ('Name', 'Status', 'Phase', 'Errors')
+        if wide:
+            headers += ('Package', 'Deployment ID',)
 
     data = []
     for deployment in deployments:
         package_name_version = "{} ({})".format(deployment.packageName, deployment.packageVersion)
-        data.append([deployment.deploymentId, deployment.name,
-                     deployment.phase, package_name_version])
+        row = [
+            deployment.name,
+            deployment.status,
+            deployment.phase,
+            process_deployment_errors(deployment.get('errorCode', []), no_action=True)
+        ]
+
+        if wide:
+            row += [package_name_version, deployment.deploymentId]
+
+        data.append(row)
 
     tabulate_data(data, headers=headers)
