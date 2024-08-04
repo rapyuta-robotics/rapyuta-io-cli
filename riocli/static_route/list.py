@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
 from typing import List
 
 import click
@@ -21,23 +22,27 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
+
 @click.command(
     'list',
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-def list_static_routes() -> None:
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
+def list_static_routes(labels: typing.List[str]) -> None:
     """
     List the static routes in the selected project
     """
     try:
         client = new_v2_client(with_project=True)
-        routes = client.list_static_routes()
+        routes = client.list_static_routes(query={'labelSelector': labels})
         _display_routes_list(routes)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
+
 
 def _display_routes_list(routes: List[StaticRoute]) -> None:
     headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']

@@ -32,6 +32,8 @@ from riocli.utils import tabulate_data
 )
 @click.option('--organization', 'organization_name',
               help='List projects for an organization')
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
 @click.option('--wide', '-w', is_flag=True, default=False,
               help='Print more details', type=bool)
 @click.pass_context
@@ -41,6 +43,7 @@ def list_projects(
         organization_guid: str = None,
         organization_name: str = None,
         organization_short_id: str = None,
+        labels: typing.List[str] = (),
         wide: bool = False,
 ) -> None:
     """
@@ -54,9 +57,11 @@ def list_projects(
         click.secho('{} {}'.format(Symbols.ERROR, err_msg), fg=Colors.RED)
         raise SystemExit(1)
 
+    query = {'labelSelector': labels}
+
     try:
         client = new_v2_client(with_project=False)
-        projects = client.list_projects(organization_guid=organization_guid)
+        projects = client.list_projects(organization_guid=organization_guid, query=query)
         projects = sorted(projects, key=lambda p: p.metadata.name.lower())
         current = ctx.obj.data.get('project_id', None)
         _display_project_list(projects, current, show_header=True, wide=wide)
