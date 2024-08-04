@@ -17,17 +17,17 @@ import json
 import os
 import time
 from hashlib import md5
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import click
 import magic
-from munch import munchify, Munch
+from munch import Munch, munchify
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.constants import Colors
 from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
-from riocli.v2client.error import RetriesExhausted, DeploymentNotRunning, ImagePullError
-from riocli.v2client.util import process_errors, handle_server_errors
+from riocli.v2client.error import DeploymentNotRunning, ImagePullError, RetriesExhausted
+from riocli.v2client.util import handle_server_errors, process_errors
 
 
 class Client(object):
@@ -919,7 +919,6 @@ class Client(object):
         """
         url = "{}/v2/deployments/".format(self._host)
         headers = self._get_auth_header()
-
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client, params=query)
 

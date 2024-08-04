@@ -50,19 +50,27 @@ DEFAULT_PHASES = [
               type=click.Choice(ALL_PHASES),
               default=DEFAULT_PHASES,
               help='Filter the Deployment list by Phases')
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
 @click.option('--wide', '-w', is_flag=True, default=False,
               help='Print more details', type=bool)
 def list_deployments(
         device: str,
         phase: typing.List[str],
+        labels: typing.List[str],
         wide: bool = False,
 ) -> None:
     """
     List the deployments in the selected project
     """
+    query = {
+        'phases': phase,
+        'labelSelector': labels,
+    }
+
     try:
         client = new_v2_client(with_project=True)
-        deployments = client.list_deployments(query={'phases': phase})
+        deployments = client.list_deployments(query=query)
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True, wide=wide)
     except Exception as e:

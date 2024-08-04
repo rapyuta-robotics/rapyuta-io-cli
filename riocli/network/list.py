@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import typing
+
 import click
 from click_help_colors import HelpColorsCommand
 from munch import Munch
@@ -29,18 +30,20 @@ from riocli.utils import tabulate_data
 )
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native', 'both']), default='both')
-def list_networks(network: str) -> None:
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
+def list_networks(network: str, labels: typing.List[str]) -> None:
     """
     List the networks in the selected project
     """
     try:
         client = new_v2_client(with_project=True)
 
-        if network in ("both", ""):
-            networks = client.list_networks()
-        else:
-            networks = client.list_networks(query={"networkType": network})
+        query = {'labelSelector': labels}
+        if network not in ("both", ""):
+            query.update({"networkType": network})
 
+        networks = client.list_networks(query=query)
         networks = sorted(networks, key=lambda n: n.metadata.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
