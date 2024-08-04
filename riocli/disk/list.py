@@ -11,22 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
+import typing
 
-from riocli.constants import Colors
+import click
+from click_help_colors import HelpColorsCommand
+
 from riocli.config import new_v2_client
+from riocli.constants import Colors
 from riocli.disk.util import display_disk_list
 
 
-@click.command('list')
-def list_disks() -> None:
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
+def list_disks(labels: typing.List[str]) -> None:
     """
     List the disks in the selected project
     """
     try:
         client = new_v2_client(with_project=True)
-        disks = client.list_disks()
+        disks = client.list_disks(query={'labelSelector': labels})
         display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
+        raise SystemExit(1) from e
