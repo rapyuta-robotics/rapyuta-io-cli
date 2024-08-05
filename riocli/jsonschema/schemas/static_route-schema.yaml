@@ -43,7 +43,7 @@ definitions:
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   staticRouteGUID:
     type: string
-    pattern: "^staticroute-[a-z]{24}$"
+    pattern: "^staticroute-([a-z0-9]{20}|[a-z]{24})$"
   stringMap:
     type: object
     additionalProperties:
