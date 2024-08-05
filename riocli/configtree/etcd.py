@@ -27,6 +27,11 @@ def import_in_etcd(
 ) -> None:
     cli = Etcd3Client(host=endpoint, port=port)
 
+    try:
+        cli.status()
+    except Exception as e:
+        raise ConnectionError(f'cannot connect to etcd server at {endpoint}:{port}')
+
     if prefix:
         cli.delete_prefix(prefix)
     else:
