@@ -628,21 +628,9 @@ definitions:
   projectGUID:
     type: string
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
-  secretGUID:
-    type: string
-    pattern: "^secret-[a-z]{24}$"
-  diskGUID:
-    type: string
-    pattern: "^disk-[a-z]{24}$"
   packageGUID:
     type: string
-    pattern: "^pkg-[a-z0-9]{20}$"
-  deploymentGUID:
-    type: string
-    pattern: "^dep-[a-z]{24}$"
-  networkGUID:
-    type: string
-    pattern: "^network-[a-z]{24}$"
+    pattern: "^pkg-([a-z0-9]{20}|[a-z]{24})$"
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
