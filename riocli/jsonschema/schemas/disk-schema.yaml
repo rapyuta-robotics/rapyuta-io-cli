@@ -41,10 +41,10 @@ definitions:
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   diskGUID:
     type: string
-    pattern: "^disk-[a-z]{24}$"
+    pattern: "^disk-([a-z0-9]{20}|[a-z]{24})$"
   packageGUID:
     type: string
-    pattern: "^pkg-[a-z0-9]{20}$"
+    pattern: "^pkg-([a-z0-9]{20}|[a-z]{24})$"
   stringMap:
     type: object
     additionalProperties:

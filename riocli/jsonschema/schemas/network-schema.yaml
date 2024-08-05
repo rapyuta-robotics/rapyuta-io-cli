@@ -114,7 +114,7 @@ definitions:
       - name
   networkGUID:
     type: string
-    pattern: "^network-[a-z]{24}$"
+    pattern: "^network-([a-z0-9]{20}|[a-z]{24})$"
   projectGUID:
     type: string
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
