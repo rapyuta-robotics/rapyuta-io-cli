@@ -84,7 +84,7 @@ def find_organization_guid(client: Client, name: str) -> typing.Tuple[str, str]:
             return organization.guid, organization.short_guid
 
     raise OrganizationNotFound(
-        "User is not part of organization with guid: {}".format(guid))
+        "User is not part of organization: {}".format(name))
 
 
 def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
@@ -94,7 +94,7 @@ def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
             return organization.name, organization.short_guid
 
     raise OrganizationNotFound(
-        "User is not part of organization with guid: {}".format(guid))
+        "User is not part of organization: {}".format(guid))
 
 
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
