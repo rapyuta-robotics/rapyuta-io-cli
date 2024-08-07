@@ -161,7 +161,7 @@ definitions:
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
               features:
-                type: object
+                type: ["object", "null"]
                 properties:
                   params:
                     type: object
@@ -189,7 +189,7 @@ definitions:
                 items:
                   "$ref": "#/definitions/deploymentDepends"
               features:
-                type: object
+                type: ["object", "null"]
                 properties:
                   vpn:
                     type: object
