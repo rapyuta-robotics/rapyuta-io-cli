@@ -1,3 +1,11 @@
+# [8.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v8.0.0...v8.1.0) (2024-08-08)
+
+
+### Features
+
+* **configtree:** support yaml format while exporting trees ([9bd00c6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9bd00c608506d1043130890b55ae05d8e93247c3))
+* **configtree:** supports overrides when importing config from files ([734e529](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/734e529e23747dc9ad4a8da309d80815e066da48))
+
 # [8.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v7.6.0...v8.0.0) (2024-08-02)
 
 
