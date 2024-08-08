@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+from os import stat
 import queue
 import threading
 import typing
@@ -21,6 +22,7 @@ import click
 import jinja2
 import yaml
 
+from riocli.apply.custom import get_interface_ip
 from riocli.apply.resolver import ResolverCache
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
@@ -33,7 +35,7 @@ class Applier(object):
     DEFAULT_MAX_WORKERS = 6
 
     def __init__(self, files: typing.List, values, secrets):
-        self.environment = None
+        self.environment = self._initialize_jinja_environment()
         self.input_file_paths = files
         self.config = Configuration()
         self.client = self.config.new_client()
@@ -46,18 +48,36 @@ class Applier(object):
         self.secrets = {}
         self.values = {}
         self.diagram = Graphviz(direction='LR', format='svg')
-        if values or secrets:
-            self.environment = jinja2.Environment()
 
         if values:
             self.values = self._load_file_content(
                 values, is_value=True, is_secret=False)[0]
+        # Inject rio Namespace
+        self.values = self._inject_rio_namespace(self.values)
 
         if secrets:
             self.secrets = self._load_file_content(
                 secrets, is_value=True, is_secret=True)[0]
 
         self._process_file_list(files)
+
+    def _inject_rio_namespace(self, values: typing.Optional[dict] = {}) -> dict:
+        if not values:
+            values = {}
+
+        values['rio'] = {
+            'project': self.config.project_guid,
+            'organization': self.config.organization_guid,
+            'email_id': self.config.data.get('email_id'),
+        }
+
+        return values
+
+    @staticmethod
+    def _initialize_jinja_environment() -> jinja2.Environment:
+        environment = jinja2.Environment()
+        environment.filters['get_interface_ip'] = get_interface_ip
+        return environment
 
     # Public Functions
     def order(self):
