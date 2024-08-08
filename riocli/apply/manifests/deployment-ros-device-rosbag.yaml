@@ -7,7 +7,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -24,17 +23,16 @@ spec:
     - execName: exec-docker
       mountPath: "/tmp" # Path on container
       subPath: "/tmp" # Path on device
+      uid: 1000 # Optional userid for subpath
+      gid: 1000 # Optional groupid for subpath
+      perm: 755 # Optional permissions for subpath
   rosNetworks:
     - depends:
         kind: network
         nameOrGUID: "network-native-device"
-      interface: eth0
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      topics:
-        - "/telemetry"
-      interface: eth0
   rosBagJobs:
     - name: "testbag1" # Required
       recordOptions: # Required

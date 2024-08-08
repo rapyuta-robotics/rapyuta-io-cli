@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ def blob_download(guid: str, filename: str, download_dir: str) -> None:
 @click.option('--device-ids', help='Filter by device ids ', multiple=True)
 @click.option('--statuses', help='Filter by rosbag blob statuses ',
               type=click.Choice(['Starting', 'Uploading', 'Uploaded', 'Error'], case_sensitive=True),
-              multiple=True, default=['Uploaded'])
+              multiple=True, default=['Uploaded', 'Uploading', 'Starting'])
 def blob_list(guids: typing.List[str], deployment_ids: typing.List[str], component_instance_ids: typing.List[str],
               job_ids: typing.List[str], device_ids: typing.List[str], statuses: typing.List[str]) -> None:
     """

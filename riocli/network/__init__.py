@@ -15,11 +15,9 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
-from riocli.network.create import create_network
 from riocli.network.delete import delete_network
 from riocli.network.inspect import inspect_network
 from riocli.network.list import list_networks
-from riocli.network.logs import network_logs
 
 
 @click.group(
@@ -35,8 +33,6 @@ def network() -> None:
     pass
 
 
-network.add_command(create_network)
 network.add_command(delete_network)
 network.add_command(list_networks)
 network.add_command(inspect_network)
-network.add_command(network_logs)

@@ -1,9 +1,0 @@
-apiVersion: "apiextensions.rapyuta.io/v1"
-kind: "Network"
-metadata:
-  name: "sootballs"
-spec:
-  runtime: "cloud"
-  type: "routed"
-  rosDistro: "melodic"
-  resourceLimits: "small"

@@ -6,7 +6,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-no-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -22,7 +21,6 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
   envArgs:
     - name: TEST_KEY
       value: test_value
@@ -37,10 +35,6 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-native-device"
-      interface: eth0
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      topics:
-        - "/telemetry"
-      interface: eth0

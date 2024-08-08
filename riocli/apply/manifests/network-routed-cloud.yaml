@@ -2,7 +2,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-routed-cloud"
-  project: "project-guid"
+  region: jp
   labels:
     app: test
 spec:
@@ -10,5 +10,5 @@ spec:
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
   runtime: "cloud" # Required, Options: [cloud, device]
   resourceLimits:
-    cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
-    memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
+    cpu: 0.5 # Unit: Core Options: [Multiple of 0.025, <= 8]
+    memory: 1024 # Unit: MB Options: [Multiple of 128, <= 32768]

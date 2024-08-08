@@ -48,3 +48,9 @@ class DeviceNotFound(Exception):
     def __init__(self, message='device not found'):
         self.message = message
         super().__init__(self.message)
+
+
+class ResourceNotFound(Exception):
+    def __init__(self, message='resource not found'):
+        self.message = message
+        super().__init__(self.message)

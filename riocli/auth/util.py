@@ -20,7 +20,7 @@ from rapyuta_io.utils import UnauthorizedError
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
-from riocli.project.util import find_project_guid, find_organization_guid
+from riocli.project.util import find_project_guid, find_organization_guid, get_organization_name
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
 
@@ -42,11 +42,20 @@ def select_organization(
     """
     client = config.new_client(with_project=False)
 
-    org_guid = None
+    org_guid, org_name, short_id = None, None, None
 
     if organization:
-        org_guid = organization if organization.startswith(
-            'org-') else find_organization_guid(client, name=organization)
+        if organization.startswith('org-'):
+            org_guid = organization
+            org_name, short_id = get_organization_name(client, org_guid)
+        else:
+            org_guid, short_id = find_organization_guid(client, name=organization)
+
+    if org_guid and org_name and short_id:
+        config.data['organization_id'] = org_guid
+        config.data['organization_name'] = org_name
+        config.data['organization_short_id'] = short_id
+        return org_guid
 
     # fetch user organizations and sort them on their name
     organizations = client.get_user_organizations()
@@ -56,7 +65,11 @@ def select_organization(
         click.secho("You are not a part of any organization", fg=Colors.BLACK, bg=Colors.WHITE)
         raise SystemExit(1)
 
-    org_map = {o.guid: o.name for o in organizations}
+    org_map, org_short_guids = {}, {}
+
+    for o in organizations:
+        org_map[o.guid] = o.name
+        org_short_guids[o.guid] = o.short_guid
 
     if not org_guid:
         org_guid = show_selection(org_map, "Select an organization:")
@@ -67,6 +80,7 @@ def select_organization(
 
     config.data['organization_id'] = org_guid
     config.data['organization_name'] = org_map[org_guid]
+    config.data['organization_short_id'] = org_short_guids[org_guid]
 
     return org_guid
 

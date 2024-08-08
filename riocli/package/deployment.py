@@ -13,24 +13,31 @@
 # limitations under the License.
 import click
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.deployment.list import display_deployment_list
-from riocli.package.util import name_to_guid
+from riocli.package.util import find_package
+from riocli.utils.selector import show_selection
 
 
 @click.command('deployments')
 @click.option('--version', 'package_version', type=str,
               help='Semantic version of the Package, only used when name is used instead of GUID')
 @click.argument('package-name')
-@name_to_guid
-def list_package_deployments(package_name: str, package_guid: str) -> None:
+def list_package_deployments(package_name: str, package_version: str) -> None:
     """
     List the deployments of the package
     """
     try:
-        client = new_client()
-        package = client.get_package(package_guid)
-        deployments = package.deployments()
+        client = new_v2_client()
+
+        package_obj = find_package(client, package_name, package_version)
+        if not package_obj:
+            click.secho("package not found", fg='red')
+            raise SystemExit(1)
+
+        deployments = client.list_deployments(
+            query={'packageName': package_obj.metadata.name, 'packageVersion': package_obj.metadata.version})
+
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')

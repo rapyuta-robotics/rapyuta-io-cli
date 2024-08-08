@@ -4,7 +4,7 @@ metadata:
   name: "package-nonros-device" # Required
   version: "v1.0.0" # Required
   description: "A RIO non ROS device package"
-  project: "project-guid"
+  #
   labels:
     app: test
 spec:
@@ -14,8 +14,10 @@ spec:
     restart: always # Options: [always, never, onfailure]
   executables: # Required
     - name: "exec-docker"
-      type: docker # Options: [docker (default), preInstalled]
-      command: "roslaunch talker talker.launch"
+      type: preInstalled # Options: [docker (default), preInstalled]
+      command: # Command supports both array and string
+        - "sleep infinity"
+      # command: "sleep infinity"
       runAsBash: True
       limits: # Optional
         cpu: 0.025 # Unit: Core (Optional)
@@ -24,12 +26,11 @@ spec:
         httpGet:
           path: "/"
           port: 90
-        initialDelaySeconds: 5  # Number of seconds after the container has started before liveness probes are initiated.
+        initialDelaySeconds: 50  # Number of seconds after the container has started before liveness probes are initiated.
         periodSeconds: 10 # How often (in seconds) to perform the probe.
         failureThreshold: 1 # Minimum consecutive failures for the probe to be considered failed after having succeeded.
         successThreshold: 3 # Minimum consecutive successes for the probe to be considered successful after having failed.
         timeoutSeconds: 10 # Number of seconds after which the probe times out. Minimun: 10
-
       docker:
         image: "busybox:latest"
         imagePullPolicy: "Always" # Always, Never, IfNotPresent(default)
@@ -39,8 +40,9 @@ spec:
             nameOrGUID: "secret-docker"
     - name: "exec-preInstalled"
       type: preInstalled # Options: [docker (default), preInstalled]
-      command: "roslaunch talker talker.launch"
-  environmentVars:
+      command:
+       - "roslaunch talker talker.launch"
+  environmentArgs:
     - name: "key1" # Required
       default: "key1-value"
       description: "A environment variable"

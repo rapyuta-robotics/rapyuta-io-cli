@@ -2,7 +2,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
 metadata:
   name: "device-docker" # Required
-  project: "project-guid"
   labels:
     custom_label_1: label1
     custom_label_2: label2
@@ -23,7 +22,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
 metadata:
   name: "device-preinstalled" # Required
-  project: "project-guid"
+
   labels:
     app: test
 spec:
@@ -38,7 +37,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
 metadata:
   name: "device-hybrid" # Required
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -56,7 +54,6 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Device"
 metadata:
   name: "virtual-device-docker" # Required
-  project: "project-guid"
   labels:
     custom_label_1: label1
     custom_label_2: label2

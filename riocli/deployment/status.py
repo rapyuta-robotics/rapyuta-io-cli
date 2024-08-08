@@ -14,9 +14,8 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.deployment.util import name_to_guid
 
 
 @click.command(
@@ -26,15 +25,14 @@ from riocli.deployment.util import name_to_guid
     help_options_color=Colors.GREEN,
 )
 @click.argument('deployment-name', type=str)
-@name_to_guid
-def status(deployment_name: str, deployment_guid: str) -> None:
+def status(deployment_name: str) -> None:
     """
     Current status of the deployment
     """
     try:
-        client = new_client()
-        deployment = client.get_deployment(deployment_guid)
-        click.secho(deployment.status)
+        client = new_v2_client()
+        deployment = client.get_deployment(deployment_name)
+        click.secho(deployment.status.status)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

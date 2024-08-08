@@ -28,6 +28,23 @@ definitions:
         "$ref": "#/definitions/rosDistro"
       runtime:
         "$ref": "#/definitions/runtime"
+      discoveryServer:
+        allOf:
+          - "$ref": "#/definitions/discoveryServerData"
+          - if:
+              properties:
+                rosDistro:
+                  const: foxy
+            then:
+              properties:
+                serverID:
+                  type: integer
+                  default: 0
+                serverPort:
+                  type: integer
+                  default: 11811
+            else:
+              not: { }
     required:
       - type
       - rosDistro
@@ -48,8 +65,8 @@ definitions:
               runtime:
                 enum:
                   - device
-              deviceGUID:
-                "$ref": "#/definitions/uuid"
+              depends:
+                "$ref": "#/definitions/depends"
               networkInterface:
                 type: string
               restartPolicy:
@@ -57,7 +74,7 @@ definitions:
                 default: always
 
             required:
-              - deviceGUID
+              - depends
               - networkInterface
 
   rosDistro:
@@ -65,6 +82,7 @@ definitions:
       - melodic
       - kinetic
       - noetic
+      - foxy
   restartPolicy:
     enum:
       - always
@@ -96,7 +114,7 @@ definitions:
       - name
   networkGUID:
     type: string
-    pattern: "^network-[a-z]{24}$"
+    pattern: "^network-([a-z0-9]{20}|[a-z]{24})$"
   projectGUID:
     type: string
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
@@ -107,6 +125,15 @@ definitions:
   uuid:
     type: string
     pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  depends:
+    type: object
+    properties:
+      kind:
+        const: Device
+        default: Device
+      nameOrGUID:
+        type: string
 
   resourceLimits:
     type: object
@@ -120,3 +147,10 @@ definitions:
     required:
     - cpu
     - memory
+  discoveryServerData:
+    type: object
+    properties:
+      serverID:
+        type: integer
+      serverPort:
+        type: integer

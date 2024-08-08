@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from rapyuta_io.clients.package import Package
+from munch import unmunchify
 
-from riocli.config import new_client
-from riocli.package.util import name_to_guid
+from riocli.config import new_v2_client
+from riocli.package.util import find_package
 from riocli.utils import inspect_with_format
+from riocli.utils.selector import show_selection
 
 
 @click.command('inspect')
@@ -25,38 +26,19 @@ from riocli.utils import inspect_with_format
 @click.option('--format', '-f', 'format_type', default='yaml',
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('package-name')
-@name_to_guid
-def inspect_package(format_type: str, package_name: str, package_guid: str) -> None:
+def inspect_package(format_type: str, package_name: str, package_version: str) -> None:
     """
     Inspect the package resource
     """
     try:
-        client = new_client()
-        package = client.get_package(package_guid)
-        data = make_package_inspectable(package)
-        inspect_with_format(data, format_type)
+        client = new_v2_client()
+        package_obj = find_package(client, package_name, package_version)
+        if not package_obj:
+            click.secho("package not found", fg='red')
+            raise SystemExit(1)
+
+        inspect_with_format(unmunchify(package_obj), format_type)
+
     except Exception as e:
         click.secho(str(e), fg='red')
         raise SystemExit(1)
-
-
-def make_package_inspectable(package: Package) -> dict:
-    return {
-        'created_at': package.CreatedAt,
-        'updated_at': package.UpdatedAt,
-        'deleted_at': package.DeletedAt,
-        'guid': package.guid,
-        'package_version': package.packageVersion,
-        'description': package.description,
-        'package_name': package.packageName,
-        'creator': package.creator,
-        'owner_project': package.ownerProject,
-        'tags': package.tags,
-        'plans': package.plans,
-        'status': package.status,
-        'is_public': package.isPublic,
-        'category': package.category,
-        'bindable': package.bindable,
-        'api_version': package.apiVersion,
-        'package_id': package.packageId,
-    }

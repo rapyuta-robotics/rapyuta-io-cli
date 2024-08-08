@@ -79,8 +79,8 @@ def apply(
     for file in glob_files:
         click.secho(file, fg=Colors.YELLOW)
 
-    rc = Applier(glob_files, abs_values, abs_secrets)
-    rc.parse_dependencies()
+    applier = Applier(glob_files, abs_values, abs_secrets)
+    applier.parse_dependencies()
 
     if show_graph and dryrun:
         click.secho('You cannot dry run and launch the graph together.',
@@ -88,14 +88,14 @@ def apply(
         return
 
     if show_graph:
-        rc.show_dependency_graph()
+        applier.show_dependency_graph()
         return
 
     if not silent and not dryrun:
-        click.confirm("Do you want to proceed?", default=True, abort=True)
+        click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text('Applying Manifests')
-    rc.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
+    applier.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
 
 
 @click.command(
@@ -115,12 +115,22 @@ def apply(
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
+@click.option('--workers', '-w',
+              help="number of parallel workers while running apply "
+                   "command. defaults to 6.", type=int)
+@click.option('--retry-count', '-rc', type=int, default=50,
+              help="Number of retries before a resource creation times out status, defaults to 50")
+@click.option('--retry-interval', '-ri', type=int, default=6,
+              help="Interval between retries defaults to 6")
 @click.argument('files', nargs=-1)
 def delete(
         values: str,
         secrets: str,
         files: Iterable[str],
+        retry_count: int = 50,
+        retry_interval: int = 6,
         dryrun: bool = False,
+        workers: int = 6,
         silent: bool = False
 ) -> None:
     """
@@ -133,11 +143,15 @@ def delete(
         click.secho('no files specified', fg=Colors.RED)
         raise SystemExit(1)
 
-    rc = Applier(glob_files, abs_values, abs_secrets)
-    rc.parse_dependencies(check_missing=False, delete=True)
+    print_centered_text('Files Processed')
+    for file in glob_files:
+        click.secho(file, fg=Colors.YELLOW)
+
+    applier = Applier(glob_files, abs_values, abs_secrets)
+    applier.parse_dependencies()
 
     if not silent and not dryrun:
-        click.confirm("Do you want to proceed?", default=True, abort=True)
+        click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text('Deleting Resources')
-    rc.delete(dryrun=dryrun)
+    applier.delete(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)

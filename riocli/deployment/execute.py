@@ -23,7 +23,7 @@ else:
     from riocli.utils.spinner import DummySpinner as Spinner
 
 from riocli.constants import Colors
-from riocli.deployment.util import name_to_guid, select_details
+from riocli.deployment.util import select_details
 from riocli.utils.execute import run_on_cloud
 
 
@@ -39,7 +39,7 @@ from riocli.utils.execute import run_on_cloud
               help='Name of a executable in the component')
 @click.argument('deployment-name', type=str)
 @click.argument('command', nargs=-1)
-@name_to_guid
+# @name_to_guid
 def execute_command(
         component_name: str,
         exec_name: str,

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,14 +28,17 @@ def logout(ctx: click.Context):
     """
     Log out from the Rapyuta.io account using the CLI.
     """
-
     if not ctx.obj.exists:
         return
 
-    ctx.obj.data.pop('auth_token', None)
-    ctx.obj.data.pop('password', None)
     ctx.obj.data.pop('email_id', None)
+    ctx.obj.data.pop('auth_token', None)
     ctx.obj.data.pop('project_id', None)
+    ctx.obj.data.pop('project_name', None)
+    ctx.obj.data.pop('organization_id', None)
+    ctx.obj.data.pop('organization_name', None)
+    ctx.obj.data.pop('organization_short_id', None)
+
     ctx.obj.save()
 
     click.secho('{} Logged out successfully.'.format(Symbols.SUCCESS), fg=Colors.GREEN)

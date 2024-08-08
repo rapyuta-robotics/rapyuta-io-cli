@@ -3,7 +3,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-routed-cloud"
-  project: "project-guid"
+  region: jp
   labels:
     app: test
 spec:
@@ -18,14 +18,15 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-routed-device"
-  project: "project-guid"
+
   labels:
     app: test
 spec:
   type: "routed" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
   runtime: "device" # Required, Options: [cloud, device]
-  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  depends: # Required
+    nameOrGuid: device-name
   networkInterface: "eth0" # Required
   restartPolicy: "always" # Options: [always, never, onFailure]
 ---
@@ -33,7 +34,8 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-native-cloud"
-  project: "project-guid"
+
+  region: jp
   labels:
     app: test
 spec:
@@ -48,13 +50,14 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Network"
 metadata:
   name: "network-native-device"
-  project: "project-guid"
+
   labels:
     app: test
 spec:
   type: "native" # Required, Options: [routed, native]
   rosDistro: "melodic" # Required, Options: [kinetic, melodic, noetic]
   runtime: "device" # Required, Options: [cloud, device]
-  deviceGUID: "0eac4320-b36e-4104-b3a9-6bdc2cd37aec" # Required
+  depends: # Required
+    nameOrGuid: device-name
   networkInterface: "eth0" # Required
   restartPolicy: "always" # Options: [always, never, onFailure]
