@@ -21,8 +21,9 @@ from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs
 from riocli.deployment.status import status
-from riocli.deployment.update import update_deployment
+from riocli.deployment.update import update_deployment, restart_deployment
 from riocli.deployment.wait import wait_for_deployment
+
 
 @click.group(
     invoke_without_command=False,
@@ -32,7 +33,7 @@ from riocli.deployment.wait import wait_for_deployment
 )
 def deployment():
     """
-    Deployment of the packages
+    Deployed instances of a Package.
     """
     pass
 
@@ -45,3 +46,4 @@ deployment.add_command(wait_for_deployment)
 deployment.add_command(status)
 deployment.add_command(execute_command)
 deployment.add_command(update_deployment)
+deployment.add_command(restart_deployment)

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ from riocli.v2client import Client
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
+    deprecated=True,
 )
 @click.option('--force', '-f', '--silent', is_flag=True, default=False,
               help='Skip confirmation')
@@ -52,9 +53,58 @@ def update_deployment(
         update_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
+    """Updates one or more deployments"""
+    _update(force, workers, deployment_name_or_regex, update_all, spinner)
+
+
+@click.command(
+    'restart',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--force', '-f', '--silent', is_flag=True, default=False,
+              help='Skip confirmation')
+@click.option('-a', '--all', 'update_all', is_flag=True, default=False,
+              help='Deletes all deployments in the project')
+@click.option('--workers', '-w',
+              help="number of parallel workers while running update deployment "
+                   "command. defaults to 10.", type=int, default=10)
+@click.argument('deployment-name-or-regex', type=str, default="")
+@with_spinner(text="Updating...")
+def restart_deployment(
+        force: bool,
+        workers: int,
+        deployment_name_or_regex: str,
+        update_all: bool = False,
+        spinner: Yaspin = None,
+) -> None:
+    """Restarts one or more deployments by name or regex.
+
+    Examples:
+
+    Restart a specific deployment
+
+    >> rio deployment restart amr01
+
+    Restart all deployments in the project
+
+    >> rio deployment restart --all
+
+    Restart deployments matching a regex.
+
+    >> rio deployment restart amr.*
     """
-    Updates one more deployments
-    """
+    _update(force, workers, deployment_name_or_regex, update_all, spinner)
+
+
+def _update(
+        force: bool,
+        workers: int,
+        deployment_name_or_regex: str,
+        update_all: bool = False,
+        spinner: Yaspin = None,
+) -> None:
     client = new_v2_client()
     if not (deployment_name_or_regex or update_all):
         spinner.text = "Nothing to update"
@@ -126,11 +176,7 @@ def _apply_update(
         deployment: Deployment,
 ) -> None:
     try:
-        dep = client.get_deployment(deployment.metadata.name)
-        if not dep:
-            result.put((deployment.metadata.name, False))
-            return
         client.update_deployment(deployment.metadata.name, deployment)
-        result.put((deployment.metadata.name, True, 'Deployment Updated Successfully'))
+        result.put((deployment.metadata.name, True, 'Restarted'))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))
