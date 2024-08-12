@@ -73,6 +73,7 @@ class Deployment(Model):
 
         retry_count = int(kwargs.get('retry_count'))
         retry_interval = int(kwargs.get('retry_interval'))
+        wait_for_dependencies = bool(kwargs.get('wait_for_dependencies', False))
 
         if 'runtime' in self.spec and runtime != self.spec.runtime:
             raise Exception('>> runtime mismatch => deployment:{}.runtime !== package:{}.runtime '.format(
@@ -92,15 +93,20 @@ class Deployment(Model):
                 provision_config.add_parameter(component_name, items.name,
                                                items.value)
 
+        ready_phases = [DeploymentPhaseConstants.PROVISIONING.value,
+                        DeploymentPhaseConstants.SUCCEEDED.value]
+
+        if wait_for_dependencies:
+            ready_phases = [DeploymentPhaseConstants.SUCCEEDED.value]
+
         # Add Dependent Deployment
         if 'depends' in self.spec:
             for item in self.spec.depends:
                 dep_guid, dep = self.rc.find_depends(item)
                 if dep is None and dep_guid:
                     dep = client.get_deployment(dep_guid)
-                provision_config.add_dependent_deployment(dep, ready_phases=[
-                    DeploymentPhaseConstants.PROVISIONING.value,
-                    DeploymentPhaseConstants.SUCCEEDED.value])
+
+                provision_config.add_dependent_deployment(dep, ready_phases=ready_phases)
 
         # Add Network
         if 'rosNetworks' in self.spec:
@@ -248,9 +254,9 @@ class Deployment(Model):
         deployment = pkg.provision(self.metadata.name, provision_config)
 
         try:
-            deployment.poll_deployment_till_ready(retry_count=retry_count, sleep_interval=retry_interval,
-                                                  ready_phases=[DeploymentPhaseConstants.PROVISIONING.value,
-                                                                DeploymentPhaseConstants.SUCCEEDED.value])
+            deployment.poll_deployment_till_ready(retry_count=retry_count,
+                                                  sleep_interval=retry_interval,
+                                                  ready_phases=ready_phases)
         except DeploymentNotRunningException as e:
             errors = process_deployment_errors(e.deployment_status.errors)
             raise Exception(errors) from e

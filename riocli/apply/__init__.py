@@ -53,6 +53,8 @@ from riocli.utils import print_centered_text
               help="Number of retries before a resource creation times out status, defaults to 50")
 @click.option('--retry-interval', '-ri', type=int, default=6,
               help="Interval between retries defaults to 6")
+@click.option('--wait-for-dependencies', '-wfd', is_flag=True, default=False,
+              help="Wait for dependencies to be running before applying the resource")
 @click.argument('files', nargs=-1)
 def apply(
         values: str,
@@ -64,6 +66,7 @@ def apply(
         workers: int = 6,
         silent: bool = False,
         show_graph: bool = False,
+        wait_for_dependencies: bool = False,
 ) -> None:
     """
     Apply resource manifests
@@ -95,7 +98,13 @@ def apply(
         click.confirm("Do you want to proceed?", default=True, abort=True)
 
     print_centered_text('Applying Manifests')
-    rc.apply(dryrun=dryrun, workers=workers, retry_count=retry_count, retry_interval=retry_interval)
+    rc.apply(
+        dryrun=dryrun,
+        workers=workers,
+        retry_count=retry_count,
+        retry_interval=retry_interval,
+        wait_for_dependencies=wait_for_dependencies,
+    )
 
 
 @click.command(
