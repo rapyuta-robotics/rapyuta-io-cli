@@ -22,9 +22,10 @@ if sys.stdout.isatty():
 else:
     from riocli.utils.spinner import DummySpinner as Spinner
 
-from riocli.constants import Colors
-from riocli.deployment.util import select_details
-from riocli.utils.execute import run_on_cloud
+from riocli.config import new_v2_client
+from riocli.config import new_client
+from riocli.constants import Colors, Status
+from riocli.utils.execute import run_on_device
 
 
 @click.command(
@@ -33,33 +34,58 @@ from riocli.utils.execute import run_on_cloud
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--component', 'component_name', default=None,
-              help='Name of the component in the deployment')
+@click.option('--user', default='root')
+@click.option('--shell', default='/bin/bash')
 @click.option('--exec', 'exec_name', default=None,
               help='Name of a executable in the component')
 @click.argument('deployment-name', type=str)
 @click.argument('command', nargs=-1)
-# @name_to_guid
 def execute_command(
-        component_name: str,
+        user: str,
+        shell: str,
         exec_name: str,
         deployment_name: str,
-        deployment_guid: str,
         command: typing.List[str]
 ) -> None:
     """
     Execute commands on cloud deployment
     """
     try:
-        comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
+        client = new_v2_client()
+
+        deployment = client.get_deployment(deployment_name)
+        if not deployment:
+            click.secho(f'Deployment `{deployment_name}` not found', fg=Colors.RED)
+            raise SystemExit(1)
+        
+        if deployment.status.status != Status.RUNNING:
+            click.secho(f'Deployment `{deployment_name}` is not in Running state', fg=Colors.RED)
+            raise SystemExit(1)
+        
+        if deployment.spec.runtime != 'device':
+            click.secho(f'Execution on cloud deployments is not supported', fg=Colors.RED)
+            raise SystemExit(1)
+        
+        v1_client = new_client()
+        devices = v1_client.get_all_devices(online_device=True)
+        device = next((device for device in devices if device.name == deployment.spec.device.depends.nameOrGUID), None)
+
+        if not device:
+            click.secho(f'Device `{deployment.spec.device.depends.nameOrGUID}` not found or is not online', fg=Colors.RED)
+            raise SystemExit(1)
 
         with Spinner(text='Executing command `{}`...'.format(command)):
-            stdout, stderr = run_on_cloud(deployment_guid, comp_id, exec_id, pod_name, command)
+            response = run_on_device(
+                device_guid=device.deviceId,
+                user=user,
+                shell=shell,
+                command=command,
+                background=False,
+                deployment=deployment,
+                exec_name=exec_name
+            )
+        click.secho(response, fg=Colors.YELLOW)
 
-        if stderr:
-            click.secho(stderr, fg=Colors.RED)
-        if stdout:
-            click.secho(stdout, fg=Colors.YELLOW)
     except Exception as e:
         click.secho(e, fg=Colors.RED)
         raise SystemExit(1)
