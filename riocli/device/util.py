@@ -87,9 +87,8 @@ def find_device_guid(client: Client, name: str) -> str:
 
 def find_device_by_name(client: Client, name: str) -> Device:
     devices = client.get_all_devices(device_name=name)
-    for device in devices:
-        if device.name == name:
-            return device
+    if devices:
+        return devices[0]
 
     raise DeviceNotFound()
 

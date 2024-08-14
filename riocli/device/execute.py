@@ -29,14 +29,12 @@ from riocli.utils.execute import run_on_device
 )
 @click.option('--user', default='root')
 @click.option('--shell', default='/bin/bash')
-@click.option('--deployment', default=None)
 @click.argument('device-name', type=str)
 @click.argument('command', nargs=-1)
 @name_to_guid
 def execute_command(
         device_name: str,
         device_guid: str,
-        deployment: str,
         user: str,
         shell: str,
         command: typing.List[str]
@@ -51,7 +49,6 @@ def execute_command(
             shell=shell,
             command=command,
             background=False,
-            deployment=deployment
         )
 
         click.secho(response)

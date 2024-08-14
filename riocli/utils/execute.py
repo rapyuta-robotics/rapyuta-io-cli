@@ -19,30 +19,38 @@ from queue import Queue
 
 from rapyuta_io import Command
 
-from riocli.utils.selector import show_selection
-from riocli.config import Configuration, new_client
-
-from riocli.config import new_v2_client
-
+from riocli.config import new_client
 
 def run_on_device(
-        device_guid: str,
-        command: typing.List[str],
+        device_guid: str = None,
+        command: typing.List[str] = None,
         user: str = 'root',
         shell: str = '/bin/bash',
         background: bool = False,
         deployment: str = None,
-        exec_name: str = None
+        exec_name: str = None,
+        device_name: str = None
 ) -> str:
     client = new_client()
-    device = client.get_device(device_id=device_guid)
 
-    client = new_v2_client()
-    package = client.get_package(deployment.metadata.depends.nameOrGUID, query={"version": deployment.metadata.depends.version})
+    device = None
+    if device_guid:
+        device = client.get_device(device_id=device_guid)
+    elif device_name:
+        devices = client.get_all_devices(device_name=device_name)
+        if devices:
+            device = devices[0]
+    else:
+        raise ValueError('Either `device_guid` or `device_name` must be specified')
 
-    if exec_name is None:
-        executables = [e.name for e in package.spec.executables]
-        exec_name = show_selection(executables, '\nChoose the executable')
+    if not device:
+        raise ValueError('Device not found or is not online')
+
+    if deployment and exec_name is None:
+        raise ValueError('The `exec_name` argument is required when `deployment` is specified')
+    
+    if not command:
+        raise ValueError('The `command` argument is required')
 
     cmd = ' '.join(command)
     if deployment:

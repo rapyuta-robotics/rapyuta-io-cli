@@ -27,7 +27,6 @@ from riocli.config import new_client
 from riocli.constants import Colors, Status
 from riocli.utils.execute import run_on_device
 
-
 @click.command(
     'execute',
     cls=HelpColorsCommand,
@@ -48,7 +47,7 @@ def execute_command(
         command: typing.List[str]
 ) -> None:
     """
-    Execute commands on cloud deployment
+    Execute commands on device deployment
     """
     try:
         client = new_v2_client()
@@ -63,28 +62,28 @@ def execute_command(
             raise SystemExit(1)
         
         if deployment.spec.runtime != 'device':
-            click.secho(f'Execution on cloud deployments is not supported', fg=Colors.RED)
+            click.secho(f'Only device runtime is supported.', fg=Colors.RED)
             raise SystemExit(1)
         
-        v1_client = new_client()
-        devices = v1_client.get_all_devices(online_device=True)
-        device = next((device for device in devices if device.name == deployment.spec.device.depends.nameOrGUID), None)
-
-        if not device:
-            click.secho(f'Device `{deployment.spec.device.depends.nameOrGUID}` not found or is not online', fg=Colors.RED)
-            raise SystemExit(1)
+        if exec_name is None:
+            package = client.get_package(deployment.metadata.depends.nameOrGUID, query={"version": deployment.metadata.depends.version})
+            executables = [e.name for e in package.spec.executables]
+            if len(executables) == 1:
+                exec_name = executables[0]
+            else:
+                exec_name = show_selection(executables, '\nChoose the executable')
 
         with Spinner(text='Executing command `{}`...'.format(command)):
             response = run_on_device(
-                device_guid=device.deviceId,
                 user=user,
                 shell=shell,
                 command=command,
                 background=False,
                 deployment=deployment,
-                exec_name=exec_name
+                exec_name=exec_name,
+                device_name=deployment.spec.device.depends.nameOrGUID
             )
-        click.secho(response, fg=Colors.YELLOW)
+        click.echo(response)
 
     except Exception as e:
         click.secho(e, fg=Colors.RED)
