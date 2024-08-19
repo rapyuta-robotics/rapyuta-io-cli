@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ if sys.stdout.isatty():
 else:
     from riocli.utils.spinner import DummySpinner as Spinner
 
-from riocli.constants import Colors
-from riocli.deployment.util import select_details
-from riocli.utils.execute import run_on_cloud
+from riocli.config import new_v2_client
+from riocli.constants import Colors, Status, Symbols
+from riocli.utils.execute import run_on_device
+from riocli.utils.selector import show_selection
 
 
 @click.command(
@@ -33,33 +34,58 @@ from riocli.utils.execute import run_on_cloud
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--component', 'component_name', default=None,
-              help='Name of the component in the deployment')
+@click.option('--user', default='root')
+@click.option('--shell', default='/bin/bash')
 @click.option('--exec', 'exec_name', default=None,
               help='Name of a executable in the component')
 @click.argument('deployment-name', type=str)
 @click.argument('command', nargs=-1)
-# @name_to_guid
 def execute_command(
-        component_name: str,
+        user: str,
+        shell: str,
         exec_name: str,
         deployment_name: str,
-        deployment_guid: str,
         command: typing.List[str]
 ) -> None:
     """
-    Execute commands on cloud deployment
+    Execute commands on a device deployment
     """
     try:
-        comp_id, exec_id, pod_name = select_details(deployment_guid, component_name, exec_name)
+        client = new_v2_client()
+
+        deployment = client.get_deployment(deployment_name)
+        if not deployment:
+            click.secho(f'{Symbols.ERROR} Deployment `{deployment_name}` not found', fg=Colors.RED)
+            raise SystemExit(1)
+
+        if deployment.status.status != Status.RUNNING:
+            click.secho(f'{Symbols.ERROR} Deployment `{deployment_name}` is not running', fg=Colors.RED)
+            raise SystemExit(1)
+
+        if deployment.spec.runtime != 'device':
+            click.secho(f'Only device runtime is supported.', fg=Colors.RED)
+            raise SystemExit(1)
+
+        if exec_name is None:
+            package = client.get_package(deployment.metadata.depends.nameOrGUID,
+                                         query={"version": deployment.metadata.depends.version})
+            executables = [e.name for e in package.spec.executables]
+            if len(executables) == 1:
+                exec_name = executables[0]
+            else:
+                exec_name = show_selection(executables, '\nSelect executable')
 
         with Spinner(text='Executing command `{}`...'.format(command)):
-            stdout, stderr = run_on_cloud(deployment_guid, comp_id, exec_id, pod_name, command)
-
-        if stderr:
-            click.secho(stderr, fg=Colors.RED)
-        if stdout:
-            click.secho(stdout, fg=Colors.YELLOW)
+            response = run_on_device(
+                user=user,
+                shell=shell,
+                command=command,
+                background=False,
+                deployment=deployment,
+                exec_name=exec_name,
+                device_name=deployment.spec.device.depends.nameOrGUID
+            )
+        click.echo(response)
     except Exception as e:
         click.secho(e, fg=Colors.RED)
         raise SystemExit(1)

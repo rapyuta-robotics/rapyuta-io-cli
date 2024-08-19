@@ -18,56 +18,45 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
 from rapyuta_io import Command
-from rapyuta_io.utils import RestClient
-from rapyuta_io.utils.rest_client import HttpMethod
 
-from riocli.config import Configuration, new_client
-
-_CLOUD_RUN_REMOTE_COMMAND = '{}/serviceinstance/{}/cmd'
-
-
-def run_on_cloud(deployment_guid: str, comp_id: str, exec_id: str, pod_name: str, command: typing.List[str]) -> (
-        str, str):
-    """
-    run_on_cloud uses the RunCommand API of the IOBroker to execute arbitrary commands on the cloud deployment
-    containers.
-    """
-    config = Configuration()
-    rest = RestClient(_run_cloud_url(config, deployment_guid)).headers(config.get_auth_header()).method(HttpMethod.PUT)
-    resp = rest.execute(payload=_run_cloud_data(comp_id, exec_id, pod_name, command))
-    data = json.loads(resp.text)
-    if 'err' in data and data['err']:
-        raise Exception(data['err'])
-
-    return data['stdout'], data['stderr']
-
-
-def _run_cloud_data(comp_id: str, exec_id: str, pod_name: str, command: typing.List[str]) -> dict:
-    return {
-        'componentId': comp_id,
-        'executableId': exec_id,
-        'podName': pod_name,
-        'command': command,
-    }
-
-
-def _run_cloud_url(config: Configuration, deployment_guid: str) -> str:
-    host = config.data.get('catalog_host', 'https://gacatalog.apps.okd4v2.prod.rapyuta.io')
-    return _CLOUD_RUN_REMOTE_COMMAND.format(host, deployment_guid)
-
+from riocli.config import new_client
 
 def run_on_device(
-        device_guid: str,
-        command: typing.List[str],
+        device_guid: str = None,
+        command: typing.List[str] = None,
         user: str = 'root',
         shell: str = '/bin/bash',
         background: bool = False,
+        deployment: str = None,
+        exec_name: str = None,
+        device_name: str = None
 ) -> str:
     client = new_client()
-    device = client.get_device(device_id=device_guid)
-    cmd = ' '.join(command)
-    return device.execute_command(Command(cmd, shell=shell, bg=background, runas=user))
 
+    device = None
+    if device_guid:
+        device = client.get_device(device_id=device_guid)
+    elif device_name:
+        devices = client.get_all_devices(device_name=device_name)
+        if devices:
+            device = devices[0]
+    else:
+        raise ValueError('Either `device_guid` or `device_name` must be specified')
+
+    if not device:
+        raise ValueError('Device not found or is not online')
+
+    if deployment and exec_name is None:
+        raise ValueError('The `exec_name` argument is required when `deployment` is specified')
+    
+    if not command:
+        raise ValueError('The `command` argument is required')
+
+    cmd = ' '.join(command)
+    if deployment:
+        cmd = 'script -q -c "dectl exec {} -- {}"'.format(exec_name, cmd)
+
+    return device.execute_command(Command(cmd, shell=shell, bg=background, runas=user))
 
 def apply_func(
         f: typing.Callable,

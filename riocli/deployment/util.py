@@ -81,42 +81,6 @@ def get_deployment_name(client: Client, guid: str) -> str:
 
     return deployments[0].metadata.name
 
-
-def select_details(deployment_guid, component_name=None, exec_name=None) -> (str, str, str):
-    client = new_client()
-    deployment = client.get_deployment(deployment_guid)
-    if deployment.phase != DeploymentPhaseConstants.SUCCEEDED.value:
-        raise Exception('Deployment is not in succeeded phase')
-
-    if component_name is None:
-        components = [c.name for c in deployment.componentInfo]
-        component_name = show_selection(components, 'Choose the component')
-
-    for component in deployment.componentInfo:
-        if component.name == component_name:
-            selected_component = component
-
-    if exec_name is None:
-        executables = [e.name for e in selected_component.executableMetaData]
-        exec_name = show_selection(executables, 'Choose the executable')
-
-    for executable in selected_component.executableMetaData:
-        if executable.name == exec_name:
-            exec_meta = executable
-
-    for executable in selected_component.executablesStatusInfo:
-        if executable.id == exec_meta.id:
-            exec_status = executable
-
-    if len(exec_status.metadata) == 1:  # If there is a single pod
-        pod_name = exec_status.metadata[0].podName
-    else:
-        pods = [p.podName for p in exec_status.metadata[0]]
-        pod_name = show_selection(pods, 'Choose the pod')
-
-    return selected_component.componentID, exec_meta.id, pod_name
-
-
 def fetch_deployments(
         client: Client,
         deployment_name_or_regex: str,
