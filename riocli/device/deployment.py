@@ -13,19 +13,17 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.deployment import DeploymentPhaseConstants
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.deployment.list import display_deployment_list
 from riocli.device.util import name_to_guid
 
-PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
-    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
+DEFAULT_PHASES = [
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
 ]
 
 
@@ -38,12 +36,10 @@ PHASES = [
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_deployments(device_name: str, device_guid: str) -> None:
-    """
-    Lists all the deployments running on the Device
-    """
+    """Lists all the deployments running on the device."""
     try:
-        client = new_client()
-        deployments = client.get_all_deployments(device_id=device_guid, phases=PHASES)
+        client = new_v2_client()
+        deployments = client.list_deployments(query={'deviceName': device_name, 'phases': DEFAULT_PHASES})
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
