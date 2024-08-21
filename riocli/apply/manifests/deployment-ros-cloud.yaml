@@ -15,6 +15,7 @@ spec:
   depends:
     - kind: deployment
       nameOrGUID: "dep-guid"
+      wait: false # Options: [true, false] Wait until dependency is ready
   envArgs:
     - name: TEST_KEY
       value: test_value
