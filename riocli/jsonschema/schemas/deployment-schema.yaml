@@ -471,6 +471,8 @@ definitions:
         type: string
       guid:
         type: string
+      wait:
+        type: boolean
   managedServiceDepends:
     properties:
       kind:
