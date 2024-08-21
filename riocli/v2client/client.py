@@ -1039,7 +1039,6 @@ class Client(object):
 
         curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(
             headers['project'], headers['Authorization'], url)
-        click.echo(click.style(curl, fg=Colors.BLUE, italic=True))
 
         os.system(curl)
 
@@ -1122,8 +1121,7 @@ class Client(object):
 
         for _ in range(retry_count):
             if status.status in [DiskStatusConstants.DiskStatusAvailable.value,
-                                 DiskStatusConstants.DiskStatusReleased.value,
-                                 DiskStatusConstants.DiskStatusBound.value]:
+                                 DiskStatusConstants.DiskStatusReleased.value]:
                 return disk
             elif status.status == DiskStatusConstants.DiskStatusFailed.value:
                 raise DeploymentNotRunning('Disk not running. Status: {}'.format(status.status))
