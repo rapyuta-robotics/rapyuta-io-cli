@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -26,13 +25,13 @@ from riocli.constants import Colors
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--replica', 'replica', default=None,
+@click.option('--replica', 'replica', default=0,
               help='Replica identifier of the deployment')
 @click.option('--exec', 'exec_name', default=None,
               help='Name of a executable in the component')
 @click.argument('deployment-name', type=str)
 def deployment_logs(
-        replica: str,
+        replica: int,
         exec_name: str,
         deployment_name: str,
 ) -> None:
@@ -40,6 +39,7 @@ def deployment_logs(
     Stream live logs from cloud deployments (not supported for device deployments)
     """
     try:
+        # TODO(pallab): when no exec name is given, implement the logic to set default or prompt a selection.
         client = new_v2_client()
         client.stream_deployment_logs(deployment_name, exec_name, replica)
     except Exception as e:
