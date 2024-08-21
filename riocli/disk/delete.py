@@ -102,6 +102,13 @@ def delete_disk(
         with spinner.hidden():
             tabulate_data(data, headers=['Name', 'Status'])
 
+        # When no disk is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete disk(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
+
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
