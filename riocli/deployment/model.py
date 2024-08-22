@@ -17,7 +17,7 @@ import typing
 from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.constants import Status
+from riocli.constants import Status, ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client import Client
@@ -29,7 +29,7 @@ class Deployment(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> typing.Any:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         hard_dependencies = [d.nameOrGUID for d in self.spec.get('depends', []) if d.get('wait', False)]
 
         client = new_v2_client()
@@ -43,8 +43,9 @@ class Deployment(Model):
 
         try:
             client.create_deployment(unmunchify(self))
+            return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            pass
+            return ApplyResult.EXISTS
 
     def delete(self, *args, **kwargs):
         client = new_v2_client()

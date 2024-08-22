@@ -23,7 +23,7 @@ from munch import munchify
 
 from riocli.apply.util import (get_model, init_jinja_environment, message_with_prompt, print_resolved_objects)
 from riocli.config import Configuration
-from riocli.constants import Colors, Symbols
+from riocli.constants import Colors, Symbols, ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import Graphviz
@@ -81,10 +81,10 @@ class Applier(object):
 
         try:
             apply_func(*args, **kwargs)
-            spinner.text = 'Apply successful.'
+            spinner.text = click.style('Apply successful.', fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = 'Apply failed. Error: {}'.format(e)
+            spinner.text = click.style('Apply failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -135,10 +135,10 @@ class Applier(object):
 
         try:
             delete_func(*args, **kwargs)
-            spinner.text = 'Delete successful.'
+            spinner.text = click.style('Delete successful.', fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = 'Delete failed. Error: {}'.format(e)
+            spinner.text = click.style('Delete failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -253,15 +253,24 @@ class Applier(object):
         kls.validate(obj)
         ist = kls(munchify(obj))
 
+        obj_key = click.style(obj_key, bold=True)
+
         message_with_prompt("{} Applying {}...".format(
             Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
 
         try:
+            result = ApplyResult.CREATED
             if not dryrun:
-                ist.apply(*args, **kwargs)
+                result = ist.apply(*args, **kwargs)
 
-            message_with_prompt("{} Applied {}".format(
-                Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
+            if result == ApplyResult.EXISTS:
+                message_with_prompt("{} {} already exists".format(
+                    Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+                return
+
+            message_with_prompt("{} {} {}".format(
+                Symbols.SUCCESS, result, obj_key),
+                fg=Colors.GREEN, spinner=spinner)
         except Exception as ex:
             message_with_prompt("{} Failed to apply {}. Error: {}".format(
                 Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
@@ -277,6 +286,8 @@ class Applier(object):
         kls.validate(obj)
         ist = kls(munchify(obj))
 
+        obj_key = click.style(obj_key, bold=True)
+
         message_with_prompt("{} Deleting {}...".format(
             Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
 
@@ -289,7 +300,7 @@ class Applier(object):
             if not dryrun and can_delete:
                 ist.delete(*args, **kwargs)
 
-            message_with_prompt("{} Deleted {}.".format(
+            message_with_prompt("{} Deleted {}".format(
                 Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
         except ResourceNotFound:
             message_with_prompt("{} {} not found".format(

@@ -15,6 +15,7 @@
 from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
 from riocli.config import new_client
+from riocli.constants import ApplyResult
 from riocli.device.util import (DeviceNotFound, create_hwil_device, delete_hwil_device, execute_onboard_command,
                                 find_device_by_name, make_device_labels_from_hwil_device)
 from riocli.exceptions import ResourceNotFound
@@ -25,7 +26,7 @@ class Device(Model):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_client()
 
         device = None
@@ -39,11 +40,15 @@ class Device(Model):
         if not self.spec.get('virtual', {}).get('enabled', False):
             if device is None:
                 client.create_device(self.to_v1())
-            return
+                return ApplyResult.CREATED
+
+            return ApplyResult.EXISTS
 
         # Return if the device is already online or initializing.
         if device and device['status'] in ('ONLINE', 'INITIALIZING'):
-            return
+            return ApplyResult.EXISTS
+
+        result = ApplyResult.CREATED if device is None else ApplyResult.UPDATED
 
         # Create the HWIL (virtual) device and then generate the labels
         # to store HWIL metadata in rapyuta.io device.
@@ -73,6 +78,8 @@ class Device(Model):
         onboard_script = device.onboard_script()
         onboard_command = onboard_script.full_command()
         execute_onboard_command(hwil_response.id, onboard_command)
+
+        return result
 
     def delete(self, *args, **kwargs) -> None:
         client = new_client()
