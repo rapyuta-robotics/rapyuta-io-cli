@@ -1,4 +1,4 @@
-name: Github Pages for Documentation
+name: 📝 Github Pages for Documentation
 on:
   push:
     branches:
