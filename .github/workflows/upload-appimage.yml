@@ -1,4 +1,4 @@
-name: Upload AppImage
+name: ⬆️ Upload AppImage
 on:
   push:
     branches:

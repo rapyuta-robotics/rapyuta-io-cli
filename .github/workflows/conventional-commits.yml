@@ -1,4 +1,4 @@
-name: Check Commit Hygiene 💬
+name: 💬 Check Commit Hygiene
 
 on:
   pull_request:
