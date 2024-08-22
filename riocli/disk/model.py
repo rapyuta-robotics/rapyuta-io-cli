@@ -15,6 +15,7 @@
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
@@ -25,7 +26,7 @@ class Disk(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
 
         self.metadata.createdAt = None
@@ -41,8 +42,9 @@ class Disk(Model):
                 retry_count=retry_count,
                 sleep_interval=retry_interval,
             )
+            return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            pass
+            return ApplyResult.EXISTS
         except Exception as e:
             raise e
 

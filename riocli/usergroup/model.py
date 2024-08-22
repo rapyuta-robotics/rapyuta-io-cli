@@ -16,6 +16,7 @@ import typing
 from munch import unmunchify
 
 from riocli.config import Configuration, new_client, new_v2_client
+from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.organization.utils import get_organization_details
@@ -33,7 +34,7 @@ class UserGroup(Model):
         self.user_email_to_guid_map = {}
         self.project_name_to_guid_map = {}
 
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         v1client = new_client()
         v2client = new_v2_client()
 
@@ -61,12 +62,13 @@ class UserGroup(Model):
             try:
                 payload['spec']['name'] = sanitized['metadata']['name']
                 v1client.create_usergroup(self.metadata.organization, payload['spec'])
-                return
+                return ApplyResult.CREATED
             except Exception as e:
                 raise e
 
         payload = self._generate_update_payload(existing, payload)
         v1client.update_usergroup(organization_id, existing.guid, payload)
+        return ApplyResult.UPDATED
 
     def delete(self, *args, **kwargs) -> None:
         v1client = new_client()

@@ -16,6 +16,7 @@ from munch import unmunchify
 from waiting import wait
 
 from riocli.config import Configuration, new_v2_client
+from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.project.util import ProjectNotFound, find_project_guid
@@ -30,7 +31,7 @@ class Project(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
 
         project = unmunchify(self)
@@ -42,10 +43,11 @@ class Project(Model):
             r = client.create_project(project)
             wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT,
                  sleep_seconds=(1, 30, 2))
+            return ApplyResult.CREATED
         except HttpAlreadyExistsError:
             guid = find_project_guid(client, self.metadata.name, Configuration().organization_guid)
             client.update_project(guid, project)
-            return
+            return ApplyResult.UPDATED
         except Exception as e:
             raise e
 

@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 
 from munch import Munch
 
+from riocli.constants import ApplyResult
 from riocli.jsonschema.validate import load_schema
 
 DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
@@ -41,7 +42,7 @@ class Model(ABC, Munch):
     schema that are defined in the schema files.
     """
     @abstractmethod
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         """Create or update the object.
 
         This method should be implemented by the subclasses. It should

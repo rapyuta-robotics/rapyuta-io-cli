@@ -16,6 +16,7 @@ import typing
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.package.enum import RestartPolicy
@@ -33,15 +34,16 @@ class Package(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> None:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
 
         package = self._sanitize_package()
 
         try:
             client.create_package(package)
+            return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            pass
+            return ApplyResult.EXISTS
 
     def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()

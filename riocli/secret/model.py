@@ -15,6 +15,7 @@
 from munch import unmunchify
 
 from riocli.config import new_v2_client
+from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
@@ -32,8 +33,10 @@ class Secret(Model):
 
         try:
             client.create_secret(unmunchify(self))
+            return ApplyResult.CREATED
         except HttpAlreadyExistsError:
             client.update_secret(self.metadata.name, secret)
+            return ApplyResult.UPDATED
 
     def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
