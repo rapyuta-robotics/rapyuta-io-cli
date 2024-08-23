@@ -100,6 +100,11 @@ def import_keys(
 
     Note: If --etcd-endpoint is provided, the keys are imported to the local etcd cluster instead of the rapyuta.io cloud.
     """
+    if not files:
+        spinner.text = click.style('No files provided.', fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
+
     data, metadata = _process_files_with_overrides(files, overrides, spinner)
 
     if export_directory is not None:
