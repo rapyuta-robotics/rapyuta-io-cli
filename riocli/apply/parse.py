@@ -250,7 +250,12 @@ class Applier(object):
 
         obj = self.objects[obj_key]
         kls = get_model(obj)
-        kls.validate(obj)
+
+        try:
+            kls.validate(obj)
+        except Exception as ex:
+            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+
         ist = kls(munchify(obj))
 
         obj_key = click.style(obj_key, bold=True)
@@ -274,7 +279,7 @@ class Applier(object):
         except Exception as ex:
             message_with_prompt("{} Failed to apply {}. Error: {}".format(
                 Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
-            raise ex
+            raise Exception(f'{obj_key}: {str(ex)}')
 
     def _delete_manifest(self, obj_key: str, *args, **kwargs) -> None:
         """Instantiate and delete the object manifest"""
@@ -283,7 +288,12 @@ class Applier(object):
 
         obj = self.objects[obj_key]
         kls = get_model(obj)
-        kls.validate(obj)
+
+        try:
+            kls.validate(obj)
+        except Exception as ex:
+            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+
         ist = kls(munchify(obj))
 
         obj_key = click.style(obj_key, bold=True)
@@ -309,7 +319,7 @@ class Applier(object):
         except Exception as ex:
             message_with_prompt("{} Failed to delete {}. Error: {}".format(
                 Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
-            raise ex
+            raise Exception(f'{obj_key}: {str(ex)}')
 
     def _process_file_list(self, files):
         for f in files:
