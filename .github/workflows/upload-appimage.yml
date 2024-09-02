@@ -7,6 +7,18 @@ on:
   pull_request:
 
 jobs:
+  # clean:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: pr-deleter
+  #       uses: maheshrayas/action-pr-comment-delete@v3.0
+  #       with:
+  #         github_token: '${{ secrets.GITHUB_TOKEN }}'
+  #         org: 'rapyuta-robotics'
+  #         repo: 'rapyuta-io-cli'
+  #         user: 'github-actions[bot]' #commented by the userid
+  #         issue: '${{ github.event.number }}'
+
   upload-appimage:
     runs-on: ubuntu-20.04
     steps:
@@ -33,6 +45,25 @@ jobs:
           path: ${{ github.workspace }}/scripts/rio*.AppImage
           if-no-files-found: error
           retention-days: 15
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install gh
+
+          
+      - name: Delete existing comments
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          # Get all comments on the PR
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[].id')
+
+          # Loop through each comment and delete it
+          for COMMENT_ID in $COMMENTS; do
+            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
+          done
 
       - name: Artifact Comment on PR
         if: github.event_name == 'pull_request'
