@@ -51,6 +51,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
 
+          
       - name: Delete existing comments
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
