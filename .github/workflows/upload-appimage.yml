@@ -15,8 +15,8 @@ jobs:
         uses: maheshrayas/action-pr-comment-delete@v3.0
         with:
           github_token: '${{ secrets.GITHUB_TOKEN }}'
-          org: rapyuta-robotics
-          repo: rapyuta-io-cli
+          org: 'rapyuta-robotics'
+          repo: 'rapyuta-io-cli'
           user: 'github-actions[bot]' #commented by the userid
           issue: '${{ github.event.number }}'
 
@@ -57,11 +57,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          gh auth login --with-token <<< "${GITHUB_TOKEN}"
-          COMMENTS=$(gh pr view $PR_NUMBER --json comments --jq '.comments[].id')
+          # Get all comments on the PR
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[].id')
+
+          # Loop through each comment and delete it
           for COMMENT_ID in $COMMENTS; do
-            gh pr comment delete $COMMENT_ID --repo ${{ github.repository }}
+            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
           done
+        # run: |
+        #   gh auth login --with-token <<< "${GITHUB_TOKEN}"
+        #   COMMENTS=$(gh pr view $PR_NUMBER --json comments --jq '.comments[].id')
+        #   for COMMENT_ID in $COMMENTS; do
+        #     gh pr comment delete $COMMENT_ID --repo ${{ github.repository }}
+        #   done
 
       - name: Artifact Comment on PR
         if: github.event_name == 'pull_request'
