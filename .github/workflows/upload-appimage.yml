@@ -34,8 +34,44 @@ jobs:
           if-no-files-found: error
           retention-days: 15
 
-      - name: Artifact Comment on PR
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install gh
+
+      - name: Edit the last bot comment
+        id: edit-comment
         if: github.event_name == 'pull_request'
+        run: |
+          set -e
+          gh pr comment $PR_NUMBER --edit-last -b "
+          **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
+          "
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.number }}
+        continue-on-error: true
+        
+        
+      - name: Delete existing bot comments
+        if: steps.edit-comment.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          # Get all comments on the PR where the author is the bot
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[] | select(.user.login == "github-actions[bot]") | .id')
+      
+          # Loop through each bot comment and delete it
+          for COMMENT_ID in $COMMENTS; do
+            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
+          done
+        
+
+      - name: Artifact Comment on PR
+        # if: github.event_name == 'pull_request'
+        if: steps.edit-comment.outcome == 'failure'
         run: |
           gh pr comment $PR_NUMBER -b  "
           **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
