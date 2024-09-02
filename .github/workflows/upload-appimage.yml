@@ -7,18 +7,18 @@ on:
   pull_request:
 
 jobs:
-  # Test Commit Message
-  clean:
-    runs-on: ubuntu-latest
-    steps:
-      - name: pr-deleter
-        uses: maheshrayas/action-pr-comment-delete@v3.0
-        with:
-          github_token: '${{ secrets.GITHUB_TOKEN }}'
-          org: 'rapyuta-robotics'
-          repo: 'rapyuta-io-cli'
-          user: 'github-actions[bot]' #commented by the userid
-          issue: '${{ github.event.number }}'
+  # # Test Commit Message
+  # clean:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: pr-deleter
+  #       uses: maheshrayas/action-pr-comment-delete@v3.0
+  #       with:
+  #         github_token: '${{ secrets.GITHUB_TOKEN }}'
+  #         org: 'rapyuta-robotics'
+  #         repo: 'rapyuta-io-cli'
+  #         user: 'github-actions[bot]' #commented by the userid
+  #         issue: '${{ github.event.number }}'
 
   upload-appimage:
     runs-on: ubuntu-20.04
@@ -51,7 +51,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install gh
-    
+    # Again test commit message
       - name: Delete existing comments
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,12 +64,6 @@ jobs:
           for COMMENT_ID in $COMMENTS; do
             gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
           done
-        # run: |
-        #   gh auth login --with-token <<< "${GITHUB_TOKEN}"
-        #   COMMENTS=$(gh pr view $PR_NUMBER --json comments --jq '.comments[].id')
-        #   for COMMENT_ID in $COMMENTS; do
-        #     gh pr comment delete $COMMENT_ID --repo ${{ github.repository }}
-        #   done
 
       - name: Artifact Comment on PR
         if: github.event_name == 'pull_request'
