@@ -306,6 +306,11 @@ class Applier(object):
         labels = obj.get('metadata', {}).get('labels', {})
         can_delete = labels.get(self.DELETE_POLICY_LABEL) != 'retain'
 
+        if not can_delete:
+            message_with_prompt("{} {} cannot be deleted since deletion policy is set to 'retain'".format(
+                Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+            return
+
         try:
             if not dryrun and can_delete:
                 ist.delete(*args, **kwargs)
