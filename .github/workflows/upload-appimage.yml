@@ -34,6 +34,15 @@ jobs:
           if-no-files-found: error
           retention-days: 15
 
+      - name: pr-deleter
+        uses: maheshrayas/action-pr-comment-delete@v3.0
+        with:
+          github_token: '${{ secrets.GITHUB_TOKEN }}'
+          org: rapyuta-robotics
+          repo: rapyuta-io-cli
+          user: 'github-actions[bot]' #commented by the userid
+          issue: '${{github.event.number}}'
+
       - name: Artifact Comment on PR
         if: github.event_name == 'pull_request'
         run: |
