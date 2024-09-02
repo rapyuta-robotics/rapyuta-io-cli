@@ -7,18 +7,6 @@ on:
   pull_request:
 
 jobs:
-  # clean:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: pr-deleter
-  #       uses: maheshrayas/action-pr-comment-delete@v3.0
-  #       with:
-  #         github_token: '${{ secrets.GITHUB_TOKEN }}'
-  #         org: 'rapyuta-robotics'
-  #         repo: 'rapyuta-io-cli'
-  #         user: 'github-actions[bot]' #commented by the userid
-  #         issue: '${{ github.event.number }}'
-
   upload-appimage:
     runs-on: ubuntu-20.04
     steps:
@@ -51,22 +39,39 @@ jobs:
           sudo apt-get update
           sudo apt-get install gh
 
-          
-      - name: Delete existing comments
+      - name: Edit the last bot comment
+        id: edit-comment
+        if: github.event_name == 'pull_request'
+        run: |
+          set -e
+          gh pr comment $PR_NUMBER --edit-last -b "
+          **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
+          "
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          PR_NUMBER: ${{ github.event.number }}
+        continue-on-error: true
+        
+        
+      - name: Delete existing bot comments
+        if: steps.edit-comment.outcome == 'failure'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          # Get all comments on the PR
-          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[].id')
-
-          # Loop through each comment and delete it
+          # Get all comments on the PR where the author is the bot
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[] | select(.user.login == "github-actions[bot]") | .id')
+      
+          # Loop through each bot comment and delete it
           for COMMENT_ID in $COMMENTS; do
             gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
           done
+        
 
       - name: Artifact Comment on PR
-        if: github.event_name == 'pull_request'
+        # if: github.event_name == 'pull_request'
+        if: steps.edit-comment.outcome == 'failure'
         run: |
           gh pr comment $PR_NUMBER -b  "
           **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
