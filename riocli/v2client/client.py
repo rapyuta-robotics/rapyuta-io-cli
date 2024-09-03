@@ -21,7 +21,6 @@ from typing import Any, Dict, List, Optional
 
 import click
 import magic
-from docutils.nodes import header
 from munch import Munch, munchify
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
