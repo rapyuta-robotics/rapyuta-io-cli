@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 
 import click
 import magic
+from docutils.nodes import header
 from munch import Munch, munchify
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
@@ -49,6 +50,10 @@ class Client(object):
 
         if with_project and self._project is not None:
             headers['project'] = self._project
+
+        custom_client_request_id = os.getenv('REQUEST_ID')
+        if custom_client_request_id:
+            headers['X-Request-ID'] = custom_client_request_id
 
         return headers
 
