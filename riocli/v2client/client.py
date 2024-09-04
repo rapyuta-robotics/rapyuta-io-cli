@@ -50,6 +50,10 @@ class Client(object):
         if with_project and self._project is not None:
             headers['project'] = self._project
 
+        custom_client_request_id = os.getenv('REQUEST_ID')
+        if custom_client_request_id:
+            headers['X-Request-ID'] = custom_client_request_id
+
         return headers
 
     # Project APIs
