@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
+
 import click
 from click_help_colors import HelpColorsCommand
 from munch import unmunchify
@@ -18,6 +20,8 @@ from munch import unmunchify
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import inspect_with_format
+
+DEPLOYMENT_GUID_PATTERN = r'(^dep-[a-z0-9]+$|^inst-[a-z0-9]+$)'
 
 
 @click.command(
@@ -38,7 +42,14 @@ def inspect_deployment(
     """
     try:
         client = new_v2_client()
-        deployment_obj = client.get_deployment(deployment_name)
+        deployment_obj = None
+
+        if re.fullmatch(DEPLOYMENT_GUID_PATTERN, deployment_name):
+            deployments = client.list_deployments(query={'guids': [deployment_name]})
+            if deployments:
+                deployment_obj = deployments[0]
+        else:
+            deployment_obj = client.get_deployment(deployment_name)
 
         if not deployment_obj:
             click.secho("deployment not found", fg='red')
