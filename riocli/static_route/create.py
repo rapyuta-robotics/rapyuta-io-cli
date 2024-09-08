@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
+
 @click.command(
     'create',
     cls=HelpColorsCommand,
@@ -27,8 +28,12 @@ from riocli.utils.spinner import with_spinner
 @click.argument('name', type=str)
 @with_spinner(text="Creating static route...")
 def create_static_route(name: str, spinner=None) -> None:
-    """
-    Creates a new static route
+    """Create a new static route
+
+    Please note that the name you provide while creating the
+    static route will be suffixed with the organization's
+    short guid in the backend. Please run the list command
+    to view the name of the static route and inspect it later.
     """
     try:
         client = new_v2_client(with_project=True)

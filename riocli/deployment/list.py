@@ -60,8 +60,21 @@ def list_deployments(
         labels: typing.List[str],
         wide: bool = False,
 ) -> None:
-    """
-    List the deployments in the selected project
+    """List the deployments in the current project
+
+    You can filter the deployments by phase and labels.
+
+    The -w or --wide flag prints more details about the deployments.
+
+    Usage Examples:
+
+      Filter by phase
+
+      $ rio deployment list --phase InProgress --phase Stopped
+
+      Filter by labels
+
+      $ rio deployment list --label key1=value1 --label key2=value2
     """
     query = {
         'phases': phase,

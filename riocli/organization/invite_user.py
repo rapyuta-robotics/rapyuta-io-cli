@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,18 @@ from riocli.utils.context import get_root_context
 @click.argument('user-email', type=str)
 @click.pass_context
 def invite_user(ctx: click.Context, user_email: str) -> None:
-    """
-    Invite a new user to the current organization
+    """Invite a new user to the current organization.
+
+    If the user does not have a rapyuta.io account, they will
+    receive an email with an invitation to join the organization.
+    If the user already has an account, they will be added to
+    the organization.
+
+    Usage Examples:
+
+      Add a new user to the organization
+
+      $ rio organization invite-user user@email.com
     """
     ctx = get_root_context(ctx)
 

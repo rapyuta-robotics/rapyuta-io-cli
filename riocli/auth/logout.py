@@ -25,9 +25,7 @@ from riocli.constants import Colors, Symbols
 )
 @click.pass_context
 def logout(ctx: click.Context):
-    """
-    Log out from the Rapyuta.io account using the CLI.
-    """
+    """Log out from your rapyuta.io account."""
     if not ctx.obj.exists:
         return
 

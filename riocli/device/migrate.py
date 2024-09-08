@@ -16,10 +16,9 @@ from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import new_client
+from riocli.constants import Colors, Symbols
 from riocli.device.util import migrate_device_to_project, name_to_guid
 from riocli.project.util import name_to_guid as project_name_to_guid
-
-from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 
@@ -45,8 +44,16 @@ def migrate_project(ctx: click.Context, device_name: str, device_guid: str,
                     project_name: str, project_guid: str,
                     enable_vpn: bool, advertise_routes: bool,
                     spinner: Yaspin) -> None:
-    """
-    Migrate the device from current project to the target project.
+    """Migrate a device from current project to the target project.
+
+    This process may take some time since it involves multiple steps.
+
+    Optionally, you can enable VPN on the device after migration. Use
+    the --enable-vpn flag to enable VPN on the device.
+
+    If you want to advertise the subnets configured in the project to VPN peers,
+    use the --advertise-routes flag. This is usually applicable for edge devices
+    that are configured as subnet routers.
     """
     try:
         migrate_device_to_project(ctx, device_guid, project_guid)
@@ -58,12 +65,14 @@ def migrate_project(ctx: click.Context, device_name: str, device_guid: str,
             spinner.text = 'Enabling VPN on device...'
             client = new_client()
             client.set_project(project_guid)
-            client.toggle_features(device_id=device_guid, features=[('vpn', True)],
-                                config={'vpn': {'advertise_routes': advertise_routes}})
+            client.toggle_features(
+                device_id=device_guid,
+                features=[('vpn', True)],
+                config={'vpn': {'advertise_routes': advertise_routes}},
+            )
             spinner.write(click.style('{} Enabled VPN on the device.'.format(Symbols.SUCCESS), fg=Colors.GREEN))
     except Exception as e:
         spinner.text = click.style(
             'Failed to migrate device: {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
-

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
+
 @click.command(
     'delete',
     cls=HelpColorsCommand,
@@ -32,8 +33,10 @@ def delete_static_route(
         force: bool,
         spinner=None,
 ) -> None:
-    """
-    Deletes a static route
+    """Delete a static route.
+
+    To skip confirmation, use the ``--force`` or ``-f`` or
+    the ``--silent`` flag.
     """
     with spinner.hidden():
         if not force:

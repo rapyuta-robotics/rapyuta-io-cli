@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ from riocli.utils import tabulate_data
     help_options_color='green',
 )
 def device_metrics():
-    """
-    Device Metrics
+    """Interact with device metrics.
+
+    You can list, subscribe or unsubscribe to metrics for a device
+    conveniently from the CLI.
     """
     pass
 
@@ -42,9 +44,7 @@ def device_metrics():
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_metrics(device_name: str, device_guid: str) -> None:
-    """
-    Lists all the available metrics for the Device
-    """
+    """Lists all the available metrics for a device."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -60,9 +60,7 @@ def list_metrics(device_name: str, device_guid: str) -> None:
 @click.argument('metric', type=click.Choice(['cpu', 'memory', 'disk', 'diskio', 'network', 'wireless']))
 @name_to_guid
 def subscribe_metrics(device_name: str, device_guid: str, metric: str) -> None:
-    """
-    Subscribes the metrics to start collecting it
-    """
+    """Subscribe to a metric to start collecting it."""
     try:
         client = new_client()
         with spinner():
@@ -79,9 +77,7 @@ def subscribe_metrics(device_name: str, device_guid: str, metric: str) -> None:
 @click.argument('metric', type=click.Choice(['cpu', 'memory', 'disk', 'diskio', 'network', 'wireless']))
 @name_to_guid
 def unsubscribe_metrics(device_name: str, device_guid: str, metric: str) -> None:
-    """
-    Un-subscribes the metrics to stop collecting it
-    """
+    """Unsubscribe a metric to stop collecting it."""
     try:
         client = new_client()
         with spinner():

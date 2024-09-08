@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,18 +19,21 @@ from click_repl import repl
 from prompt_toolkit.history import FileHistory, ThreadedHistory
 
 from riocli.config import Configuration
+from riocli.constants import Colors
 from riocli.shell.prompt import prompt_callback
 
 
 @click.command(
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def shell(ctx: click.Context):
-    """
-    Interactive Shell for Rapyuta.io
+    """Start an interactive shell
+
+    The shell provides an interactive environment to run commands
+    and is useful for running multiple commands in a single session.
     """
     start_shell(ctx)
 
@@ -38,8 +41,8 @@ def shell(ctx: click.Context):
 @click.command(
     'repl',
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
     hidden=True
 )
 @click.pass_context

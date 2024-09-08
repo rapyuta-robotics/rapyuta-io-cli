@@ -29,6 +29,7 @@ from riocli.utils import tabulate_data
     help='List all examples supported in rio explain command'
 )
 def list_examples() -> None:
+    """List all examples supported in rio explain command."""
     path = Path(__file__).parent.joinpath('manifests')
 
     examples = []
@@ -49,6 +50,24 @@ def list_examples() -> None:
               default=None)
 @click.argument('resource')
 def explain(resource: str, templates: str = None) -> None:
+    """Explain a resource manifest for the given type.
+
+    The explain command can be used to generate a sample
+    resource manifest using the examples that are shown
+    in the output. This is particularly useful to understand
+    the structure of the manifest and the fields that are
+    required for the resource.
+
+    Usage Examples:
+
+        View examples for deployment
+
+        $ rio explain deployment
+
+        View examples for usergroup
+
+        $ rio explain usergroup
+    """
     if templates:
         path = Path(templates)
     else:

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,8 +54,27 @@ def apply_configurations(
         device_name_pattern: str = None,
         silent: bool = False,
 ) -> None:
-    """
-    Apply a set of configurations to a list of devices
+    """Apply a set of configuration parameter trees to a list of devices.
+
+    You can either specify the device names using the ``--devices`` flag or
+    use the ``--device-name-pattern`` flag to apply configurations to devices.
+
+    Note that the ``--devices`` flag will be ignored if the ``--device-name-pattern``
+    flag is provided.
+
+    You can specify the trees to apply using the ``--tree-names`` flag.
+
+    Skip the confirmation prompt by using the ``--force`` or ``--silent`` or the ``-f`` flag.
+
+    Usage Examples:
+
+        Apply configurations to a list of devices
+
+            $ rio parameter apply --devices device1 --devices device2 --tree-names tree1
+
+        Apply configurations to devices using a regex pattern
+
+            $ rio parameter apply --device-name-pattern 'amr.*' --tree-names params
     """
     client = new_client()
 

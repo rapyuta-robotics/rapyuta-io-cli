@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ def wait_for_deployment(
         deployment_name: str,
         spinner=None,
 ) -> None:
-    """
-    Wait until the deployment succeeds/fails
+    """Wait until the deployment succeeds/fails
+
+    This command is useful in scripts or automation when you
+    explicitly want to wait for the deployment to succeed.
     """
     try:
         client = new_v2_client()

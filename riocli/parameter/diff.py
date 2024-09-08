@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,9 @@ from riocli.parameter.utils import filter_trees
               help='Tree names to fetch')
 @click.argument('path', type=click.Path(exists=True), required=False)
 def diff_configurations(path: str, tree_names: Tuple = None) -> None:
-    """
-    Diff between the local and cloud configuration trees.
+    """Diff between the local and cloud configuration trees.
+
+    You can specify the tree names to diff using the ``--tree-names`` flag.
     """
     trees = filter_trees(path, tree_names)
 

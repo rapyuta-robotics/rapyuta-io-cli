@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import os
 import click
 
 from riocli.config import Configuration
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid
 from riocli.utils import run_bash
 from riocli.utils.execute import run_on_device
@@ -28,8 +28,11 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Initializing device...", timer=True)
 @name_to_guid
 def device_init(device_name: str, device_guid: str, spinner=None) -> None:
-    """
-    Initialize device for use with device tools. This is required to be executed first before all tools sub-commands.
+    """Initialize a device for use with device tools.
+
+    This is required to be executed first before all tools sub-commands.
+    The command will install the necessary tools on the device and locally
+    on the machine you are running this command on.
     """
     try:
         _setup_device(device_guid=device_guid, spinner=spinner)

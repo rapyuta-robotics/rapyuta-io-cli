@@ -30,7 +30,14 @@ from riocli.hwil.util import name_to_id
 @click.argument('device-name', required=True, type=str)
 @name_to_id
 def ssh(device_name: str, device_id: str, spinner=None) -> None:
-    """SSH into the hardware-in-the-loop device."""
+    """SSH into a hardware-in-the-loop device.
+
+    This command acts as a wrapper on top of the ``ssh`` command.
+    It fetches the static IP address of the device and logs you in
+    using the username configured for the device at the time of its
+    creation. You will be prompted for the password which is also
+    presented to you on the terminal.
+    """
     try:
         device = new_hwil_client().get_device(device_id)
 

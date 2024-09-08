@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,33 @@ def delete_chart(
         secrets: str,
         dryrun: bool = False,
         silent: bool = False) -> None:
-    """Uninstall a chart."""
+    """Delete a chart.
+
+    The delete command is based on the `rio delete` command
+    and is used to delete a chart that you have installed
+    using the `rio chart apply` command. The manifest files
+    are pulled from the rapyuta-charts repository. The command
+    accepts custom values and secrets files that you may have
+    used while installing the chart.
+
+    You can skip confirmation by using the `--silent` or `--force`
+    or the `-f` flag.
+
+    The `--dryrun` flag can be used to test the deletion process
+    without actually deleting the chart.
+
+    Repository: https://github.com/rapyuta-robotics/rapyuta-charts
+
+    Usage Examples:
+
+        Delete a chart
+
+        $ rio chart delete postgres
+
+        Delete a chart without confirmation
+
+        $ rio chart delete postgres --silent
+    """
     versions = find_chart(chart)
     if len(versions) > 1:
         click.secho('More than one charts are available, '

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@ import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.constants import Colors, Symbols, Regions
+from riocli.config import new_v2_client
+from riocli.constants import Colors, Regions, Symbols
 from riocli.disk.enum import DiskCapacity
 from riocli.utils.spinner import with_spinner
-from riocli.config import new_v2_client
 
 SUPPORTED_CAPACITIES = [
     DiskCapacity.GiB_4.value,
@@ -55,8 +55,17 @@ def create_disk(
         region: str = 'jp',
         spinner: Yaspin = None
 ) -> None:
-    """
-    Creates a new disk
+    """Creates a new cloud disk.
+
+    You can create a disk with a specific capacity and region.
+    The command will create a disk and wait until it is ready
+    to use.
+
+    Usage Examples:
+
+        Create a new 4GB disk in the JP region
+
+            $ rio disk create DISK_NAME --capacity 4 --region jp
     """
     client = new_v2_client()
     payload = {

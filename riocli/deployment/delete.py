@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.deployment.model import Deployment
-from riocli.deployment.util import fetch_deployments
-from riocli.deployment.util import print_deployments_for_confirmation
+from riocli.deployment.util import fetch_deployments, print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
@@ -50,8 +49,34 @@ def delete_deployment(
         workers: int = 10,
         spinner=None,
 ) -> None:
-    """
-    Deletes one or more deployments given a name or a pattern
+    """Delete one or more deployments with a name or a regex pattern.
+
+    You can specify a deployment name or a regex pattern to delete one
+    or more deployment.
+
+    If you want to delete all the deployments, then
+    simply use the ``--all`` flag.
+
+    If you want to delete deployments without confirmation, then use the
+    ``--force`` or ``--silent`` or ``-f``
+
+    Usage Examples:
+
+        Delete a deployment by name
+
+            $ rio deployment delete DEPLOYMENT_NAME
+
+        Delete a deployment without confirmation
+
+            $ rio deployment delete DEPLOYMENT_NAME --force
+
+        Delete all deployments in the project
+
+            $ rio deployment delete --all
+
+        Delete deployments using regex pattern
+
+            $ rio deployment delete "DEPLOYMENT.*"
     """
     client = new_v2_client()
     if not (deployment_name_or_regex or delete_all):

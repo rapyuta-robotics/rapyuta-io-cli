@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,12 +28,10 @@ from riocli.utils import tabulate_data
 )
 @click.pass_context
 def list_organizations(ctx: click.Context) -> None:
-    """
-    List all the organizations that you are a part of
+    """List all the organizations for the current user.
 
-    Example:
-
-        rio organization list
+    You will only see the organizations that you are a
+    part of. The current organization is highlighted in green.
     """
     try:
         client = new_client(with_project=False)

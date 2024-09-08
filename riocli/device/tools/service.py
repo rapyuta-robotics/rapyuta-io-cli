@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from riocli.utils.execute import run_on_device
 @click.argument('device-name', type=str)
 @name_to_guid
 def status_all(device_name: str, device_guid: str) -> None:
+    """Get the status of all services on the device."""
     try:
         remote_service_cmd_list = ['service', '--status-all']
         response = run_on_device(device_guid=device_guid, command=remote_service_cmd_list)
@@ -31,6 +32,7 @@ def status_all(device_name: str, device_guid: str) -> None:
 
 
 def run_service_cmd(device_guid, service_name, service_cmd=""):
+    """Run a service command on the device."""
     try:
         remote_service_cmd_list = ['service', service_name, service_cmd]
         response = run_on_device(device_guid=device_guid, command=remote_service_cmd_list)
@@ -45,6 +47,7 @@ def run_service_cmd(device_guid, service_name, service_cmd=""):
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def status(device_name: str, device_guid: str, service_name) -> None:
+    """Get the status of a service on the device."""
     run_service_cmd(device_guid, service_name, 'status')
 
 
@@ -53,6 +56,7 @@ def status(device_name: str, device_guid: str, service_name) -> None:
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def start(device_name: str, device_guid: str, service_name) -> None:
+    """Start a service on the device."""
     run_service_cmd(device_guid, service_name, 'start')
 
 
@@ -61,6 +65,7 @@ def start(device_name: str, device_guid: str, service_name) -> None:
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def stop(device_name: str, device_guid: str, service_name) -> None:
+    """Stop a service on the device."""
     run_service_cmd(device_guid, service_name, 'stop')
 
 
@@ -69,6 +74,7 @@ def stop(device_name: str, device_guid: str, service_name) -> None:
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def reload(device_name: str, device_guid: str, service_name) -> None:
+    """Reload a service on the device."""
     run_service_cmd(device_guid, service_name, 'reload')
 
 
@@ -77,6 +83,7 @@ def reload(device_name: str, device_guid: str, service_name) -> None:
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def force_reload(device_name: str, device_guid: str, service_name) -> None:
+    """Force reload a service on the device."""
     run_service_cmd(device_guid, service_name, 'force_reload')
 
 
@@ -85,13 +92,17 @@ def force_reload(device_name: str, device_guid: str, service_name) -> None:
 @click.argument('service-name', nargs=1)
 @name_to_guid
 def restart(device_name: str, device_guid: str, service_name) -> None:
+    """Restart a service on the device."""
     run_service_cmd(device_guid, service_name, 'restart')
 
 
-@click.group()
+@click.group(
+    hidden=True
+)
 def service():
-    """
-    System manager commands
+    """System management commands for services on the device.
+
+    Offers a set of commands to manage services on the device.
     """
     pass
 

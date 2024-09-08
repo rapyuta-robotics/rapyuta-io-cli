@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,9 @@ from riocli.utils import tabulate_data
     help_options_color=Colors.GREEN,
 )
 def device_labels() -> None:
-    """
-    Device Labels
+    """Manage device labels.
+
+    Labels a key-value pair that you can attach to a device.
     """
     pass
 
@@ -42,9 +43,7 @@ def device_labels() -> None:
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_labels(device_name: str, device_guid: str) -> None:
-    """
-    List all the labels for the Device
-    """
+    """List all the labels for a device."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -61,9 +60,7 @@ def list_labels(device_name: str, device_guid: str) -> None:
 @click.argument('value', type=str)
 @name_to_guid
 def create_label(device_name: str, device_guid: str, key: str, value: str) -> None:
-    """
-    Create a label for the Device
-    """
+    """Create a new label on a device"""
     try:
         with spinner():
             client = new_client()
@@ -81,9 +78,7 @@ def create_label(device_name: str, device_guid: str, key: str, value: str) -> No
 @click.argument('value', type=str)
 @name_to_guid
 def update_label(device_name: str, device_guid: str, key: str, value: str) -> None:
-    """
-    Update the label for the Device
-    """
+    """Update a label on a device"""
     try:
         with spinner():
             _update_label(device_guid, key, value)
@@ -98,9 +93,7 @@ def update_label(device_name: str, device_guid: str, key: str, value: str) -> No
 @click.argument('key', type=str)
 @name_to_guid
 def delete_label(device_name: str, device_guid: str, key: str) -> None:
-    """
-    Delete the label for the Device
-    """
+    """Delete a label on a device."""
     try:
         with spinner():
             _delete_label(device_guid, key)

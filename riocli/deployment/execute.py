@@ -47,8 +47,31 @@ def execute_command(
         deployment_name: str,
         command: typing.List[str]
 ) -> None:
-    """
-    Execute commands on a device deployment
+    """Execute a command on a device deployment
+
+    You can execute a command on a deployment running on a device.
+    In case there are more than one executable in the deployment,
+    you can specify the executable name using the ``--exec`` option.
+    If you do not specify the executable name, you will be prompted
+    to select one from the list of executables. If the deployment
+    only has one executable, it will be selected automatically.
+
+    You can specify the shell using the ``--shell`` option. The default
+    shell is ``/bin/bash``. You can also specify the user using the ``--user``
+    option. The default user is ``root``.
+
+    Please ensure that you enclose the command in quotes to avoid
+    any issues with the command parsing.
+
+    Usage Examples:
+
+        Execute a command on a device deployment with one executable
+
+            $ rio deployment execute DEPLOYMENT_NAME 'ls -l'
+
+        Execute a command on a device deployment with multiple executables
+
+            $ rio deployment execute DEPLOYMENT_NAME --exec EXECUTABLE_NAME 'ls -l'
     """
     try:
         client = new_v2_client()

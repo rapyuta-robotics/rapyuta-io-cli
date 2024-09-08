@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.spinner import with_spinner
 
@@ -37,8 +37,10 @@ def delete_project(
         project_guid: str,
         spinner=None,
 ) -> None:
-    """
-    Deletes a project
+    """Delete a project.
+
+    You can skip the confirmation prompt by using the ``--force``
+    or ``-f`` or the ``--silent`` flag.
     """
     if not force:
         with spinner.hidden():

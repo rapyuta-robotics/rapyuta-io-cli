@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,7 @@ from riocli.utils.context import get_root_context
 )
 @click.pass_context
 def list_users(ctx: click.Context) -> None:
-    """
-    Lists all users in the organization.
-    """
+    """Lists all users in the organization."""
     ctx = get_root_context(ctx)
     current_user_email = ctx.obj.data.get('email_id')
 

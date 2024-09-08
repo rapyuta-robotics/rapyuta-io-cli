@@ -2,7 +2,7 @@
 import os
 import sys
 
-project = u'rapyuta.io CLI'
+project = u'CLI'
 copyright = u'2024, Rapyuta Robotics'
 author = u'Rapyuta Robotics'
 
@@ -26,8 +26,8 @@ html_theme = 'furo'
 html_favicon = 'favicon.ico'
 html_static_path = ['_static']
 html_theme_options = {
-    "light_logo": "logo-light-mode.png",
-    "dark_logo": "logo-dark-mode.png",
+    "light_logo": "logo-light-mode.svg",
+    "dark_logo": "logo-dark-mode.svg",
 }
 html_css_files = ['css/rio-sphinx.css']
 html_js_files = ['js/rio-sphinx.js']

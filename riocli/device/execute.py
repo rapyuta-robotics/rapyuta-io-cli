@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,8 +39,18 @@ def execute_command(
         shell: str,
         command: typing.List[str]
 ) -> None:
-    """
-    Execute commands on the Device
+    """Execute commands on a device.
+
+    You can specify the user and shell to run the command in.
+    To specify the user, use the --user flag. The default is
+    root. To specify the shell, use the --shell flag. The default
+    shell is /bin/bash.
+
+    Make sure you put your command in quotes to avoid any issues.
+
+    Usage Examples:
+
+        $ rio device execute DEVICE_NAME "ls -l"
     """
     try:
         response = run_on_device(
