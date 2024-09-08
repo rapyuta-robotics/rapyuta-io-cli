@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ def inspect_deployment(
         format_type: str,
         deployment_name: str,
 ) -> None:
-    """
-    Inspect the deployment resource
+    """Inspect the deployment resource
+
+    Prints the deployment resource in the specified format.
+    The supported formats are ``json`` and ``yaml``. Default is ``yaml``.
     """
     try:
         client = new_v2_client()

@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@ from riocli.constants import Colors
 )
 @click.argument('deployment-name', type=str)
 def status(deployment_name: str) -> None:
-    """
-    Current status of the deployment
+    """Print the current status of a deployment.
+
+    The command simply prints the current status of the deployment.
+    This is useful in scripts and automation where you need to check
+    the status of a deployment.
     """
     try:
         client = new_v2_client()

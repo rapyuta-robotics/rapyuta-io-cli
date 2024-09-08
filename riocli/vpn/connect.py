@@ -51,8 +51,20 @@ _TAILSCALE_CMD_FORMAT = 'tailscale up --auth-key={} --login-server={} --reset --
 @click.pass_context
 @with_spinner(text="Connecting...")
 def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
-    """
-    Connect to the current project's VPN network
+    """Connect to the current project's VPN network.
+
+    Simpy run the command to connect to the VPN network
+    of the current project. If ``tailscale`` isn't found
+    on the system then the command will prompt to install
+    the required tools.
+
+    If the VPN is not enabled in the
+    project, the command will inform the user to enable
+    it on the project.
+
+    If you are already connected to the VPN, the command
+    will prompt to stop the current connection and connect
+    to the project's VPN.
     """
     config = get_config_from_context(ctx)
 

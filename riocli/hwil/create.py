@@ -45,7 +45,35 @@ def create_device(
         codename: str,
         spinner: Yaspin = None,
 ) -> None:
-    """Create a new hardware-in-the-loop device."""
+    """Create a new hardware-in-the-loop device.
+
+    You can specify the parameters to create the kind of device
+    you want using the --arch, --os and the --codename flags.
+
+    The --arch defines the architecture of the device, which
+    can be either amd64 or arm64.
+
+    The --os defines the type of the OS, which can be either
+    debian or ubuntu.
+
+    The --codename defines the code name of the OS, which can
+    be either bionic, focal, jammy or bullseye.
+
+    Usage Example:
+
+      Create a new device with the name 'my-device' and the default
+
+      $ rio hwil create my-device
+
+        Create a new device with the name 'my-device' and custom
+        parameters for example, arm64 architecture, debian OS and
+        bullseye codename.
+
+        $ rio hwil create my-device --arch arm64 --os debian --codename bullseye
+
+    Note: All combinations of the --arch, --os and --codename flags may not always
+    work. Please contact io-support for more information.
+    """
     info = click.style(f'{Symbols.INFO} Device configuration = {os}:{codename}:{arch}',
                        fg=Colors.CYAN, bold=True)
     spinner.write(info)

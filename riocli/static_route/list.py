@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,16 @@ from riocli.utils import tabulate_data
 @click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
               default=(), help='Filter the deployment list by labels')
 def list_static_routes(labels: typing.List[str]) -> None:
-    """
-    List the static routes in the selected project
+    """List the static routes in the current project.
+
+    You can filter the list by providing labels using
+    the ``--label`` or ``-l`` flag.
+
+    Usage Examples:
+
+        List static routes with label 'app=web'
+
+            $ rio static-route list --label app=web
     """
     try:
         client = new_v2_client(with_project=True)

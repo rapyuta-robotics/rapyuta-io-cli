@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,7 @@ from riocli.utils.context import get_root_context
 @click.argument('user-email', type=str)
 @click.pass_context
 def remove_user(ctx: click.Context, user_email: str) -> None:
-    """
-    Remove a user from the current organization
+    """Remove a user from the current organization
     """
     ctx = get_root_context(ctx)
 

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
 from riocli.config import new_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.device.tools.util import copy_from_device, copy_to_device
 from riocli.device.util import is_remote_path
 from riocli.utils.spinner import with_spinner
@@ -32,8 +32,17 @@ from riocli.utils.spinner import with_spinner
 @click.argument('destination', nargs=1)
 @with_spinner(text='Copying files...')
 def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
-    """
-    An scp like interface to copy files to and from the device
+    """SCP like interface to copy files to and from a device.
+
+    Usage Examples:
+
+        Copy a file from local filesystem to the device
+
+        $ rio device tools scp /path/to/local/file <device-id|device-name>:/path/to/remote/file
+
+        Copy a file from the device to the local filesystem
+
+        $ rio device tools scp <device-id|device-name>:/path/to/remote/file /path/to/local/file
     """
     try:
         client = new_client()

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,8 +47,34 @@ def upload_configurations(
         delete_existing: bool = False,
         silent: bool = False
 ) -> None:
-    """
-    Upload a directories as configuration parameters.
+    """Upload directories as configuration parameter trees.
+
+    You can upload one or more directories as configuration
+    parameter trees on rapyuta.io. If you do not wish to
+    upload all the directories as a tree you can specify
+    the directory names using the ``--tree-names`` flag.
+    Directories that match the tree names will be parsed and
+    uploaded.
+
+    You can also specify the ``--recreate`` or ``--delete-existing``
+    flag to overwrite the existing parameter tree on rapyuta.io.
+
+    You can skip the confirmation prompt by using the ``--force`` or
+    ``--silent`` or the ``-f`` flag.
+
+    Usage Examples:
+
+        Upload all directories as configuration parameter trees
+
+            $ rio parameter upload .
+
+        Upload only the directories "config" and "secrets"
+
+            $ rio parameter upload . --tree-names config --tree-names secrets
+
+        Recreate the existing parameter tree
+
+            $ rio parameter upload . --recreate
     """
     try:
         trees = filter_trees(path, tree_names)

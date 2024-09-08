@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,15 @@ from riocli.parameter.upload import upload_configurations
     help_options_color=Colors.GREEN,
 )
 def parameter() -> None:
-    """
-    Manage configuration parameters for your devices and deployments
+    """Configuration parameters for your devices and deployments.
+
+    The configuration parameters are file based configs that are
+    stored in a directory-like structure. You can upload, download,
+    and apply these configurations to your devices and deployments.
+
+    The platform ensures the availability of the configurations at
+    predefined paths on the devices and deployments as well as the
+    deployments in the cloud.
     """
     pass
 

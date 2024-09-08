@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.disk.model import Disk
-from riocli.disk.util import fetch_disks, display_disk_list
+from riocli.disk.util import display_disk_list, fetch_disks
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
@@ -37,7 +37,7 @@ from riocli.v2client import Client
 @click.option('--force', '-f', is_flag=True, default=False,
               help='Skip confirmation', type=bool)
 @click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
-              help='Deletes all deployments in the project')
+              help='Deletes all disks in the project')
 @click.option('--workers', '-w',
               help="Number of parallel workers while running deleting disks. Defaults to 10",
               type=int, default=10)
@@ -50,8 +50,34 @@ def delete_disk(
         workers: int = 10,
         spinner: Yaspin = None
 ) -> None:
-    """
-    Deletes a disk
+    """Delete one or more disks with a name or a regex pattern.
+
+    You can specify a name or a regex pattern to delete one
+    or more disks.
+
+    If you want to delete all the disks, then
+    simply use the ``--all`` flag.
+
+    If you want to delete disks without confirmation, then use the
+    ``--force`` or ``--silent`` or ``-f``.
+
+    Usage Examples:
+
+        Delete a disk by name
+
+            $ rio disk delete DISK_NAME
+
+        Delete a disk without confirmation
+
+            $ rio disk delete DISK_NAME --force
+
+        Delete all disks in the project
+
+            $ rio disk delete --all
+
+        Delete disks using regex pattern
+
+            $ rio disk delete "DISK.*"
     """
     client = new_v2_client()
 

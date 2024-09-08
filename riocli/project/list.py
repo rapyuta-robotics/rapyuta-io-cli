@@ -46,8 +46,22 @@ def list_projects(
         labels: typing.List[str] = (),
         wide: bool = False,
 ) -> None:
-    """
-    List all the projects you are part of
+    """List all the projects you are a part of in current organization.
+
+    You can also filter the list by specifying labels using the ``--label``
+    or the ``-l`` flag.
+
+    For more details, you can use the ``--wide`` or the ``-w`` flag.
+
+    Usage Examples:
+
+        List all projects with label "release=3.0"
+
+            $ rio project list --label release=3.0
+
+        List projects with the wide option
+
+            $ rio project list --wide
     """
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get('organization_id')

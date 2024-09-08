@@ -32,19 +32,19 @@ from riocli.utils import print_centered_text
     help_options_color=Colors.GREEN,
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False,
-              help='dry run the yaml files without applying any change')
+              help='Dry run the yaml files without applying any change')
 @click.option('--show-graph', '-g', is_flag=True, default=False,
               help='Opens a mermaid.live dependency graph')
 @click.option('--values', '-v',
-              help="path to values yaml file. key/values "
+              help="Path to values yaml file. Key/values "
                    "specified in the values file can be "
                    "used as variables in template YAMLs")
 @click.option('--secrets', '-s',
-              help="secret files are sops encoded value files. "
+              help="Secret files are sops encoded value files. "
                    "rio-cli expects sops to be authorized for "
                    "decoding files on this computer")
 @click.option('--workers', '-w',
-              help="number of parallel workers while running apply "
+              help="Number of parallel workers while running apply "
                    "command. defaults to 6.", type=int)
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
@@ -65,8 +65,46 @@ def apply(
         silent: bool = False,
         show_graph: bool = False,
 ) -> None:
-    """
-    Apply resource manifests
+    """Apply resource manifests.
+
+    The apply command provides the mechanism to create or update
+    resources on rapyuta.io. The resources are defined in YAML manifests allowing for
+    a declarative and repeatable process. The command can take multiple
+    files, paths or globs as arguments and parse the manifests to
+    create or update resources. It also supports Jinja templating
+    and secret management with sops.
+
+    You can provide a values file with the ``--values`` option and a
+    sops encrypted secret file with ``--secret`` option. Currently, the
+    command supports only one values and secret file.
+
+    You can use the ``--show-graph`` option to visualize the
+    dependency graph of the resources defined in the manifests.
+
+    The --dryrun option can be used to execute the manifests without
+    actually creating the resources. This is useful to validate the
+    manifests before applying them.
+
+    You can specify the number of parallel workers with the ``--workers``
+    option. The default value is ``6``.
+
+    The ``--silent``, ``--force`` or ``-f`` option lets you skip the confirmation
+    prompt before applying the manifests. This is particularly useful
+    in CI/CD pipelines.
+
+    Usage Examples:
+
+        Apply a single manifest file with secret and values file.
+
+            $ rio apply -v values.yaml -s secrets.yaml manifest.yaml
+
+        Apply manifests from a directory with secret and values file.
+
+            $ rio apply -v values.yaml -s secrets.yaml templates/
+
+        Apply manifests from a directory without confirmation prompt.
+
+            $ rio apply -f templates/
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)
@@ -105,7 +143,7 @@ def apply(
     help_options_color=Colors.GREEN,
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False,
-              help='dry run the yaml files without applying any change')
+              help='Dry run the yaml files without applying any change')
 @click.option('--values', '-v',
               help="Path to values yaml file. key/values specified in the"
                    " values file can be used as variables in template YAMLs")
@@ -116,7 +154,7 @@ def apply(
               type=click.BOOL, default=False,
               help="Skip confirmation")
 @click.option('--workers', '-w',
-              help="number of parallel workers while running apply "
+              help="Number of parallel workers while running apply "
                    "command. defaults to 6.", type=int)
 @click.option('--retry-count', '-rc', type=int, default=50,
               help="Number of retries before a resource creation times out status, defaults to 50")
@@ -133,8 +171,41 @@ def delete(
         workers: int = 6,
         silent: bool = False
 ) -> None:
-    """
-    Removes resources defined in the manifest
+    """Removes resources via manifests
+
+    The delete command provides the mechanism to remove resources on
+    rapyuta.io defined in YAML manifests making the process declarative
+    and repeatable. The command can take multiple files, paths or globs
+    as arguments and parse the manifests to remove resources. It also
+    supports Jinja templating and secret management with sops. You can
+    provide a values file with the --values option and a sops encrypted
+    secret file with ``--secret`` option. Currently, the command supports
+    only one values and secret file.
+
+    The ``--dryrun`` option can be used to execute the manifests without
+    actually deleting the resources. This is useful to validate the
+    manifests before applying them.
+
+    You can specify the number of parallel workers with the ``--workers``
+    option. The default value is ``6``.
+
+    The ``--silent``, ``--force`` or ``-f`` option lets you skip the confirmation
+    prompt before applying the manifests. This is particularly useful
+    in CI/CD pipelines.
+
+    Usage Examples:
+
+        Delete a single manifest file with secret and values file.
+
+            $ rio delete -v values.yaml -s secrets.yaml manifest.yaml
+
+        Delete manifests from a directory with secret and values file.
+
+            $ rio delete -v values.yaml -s secrets.yaml templates/
+
+        Delete manifests from a directory without confirmation prompt.
+
+            $ rio delete -f templates/
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)

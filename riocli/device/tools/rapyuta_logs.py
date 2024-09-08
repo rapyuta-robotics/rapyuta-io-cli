@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,11 @@ from riocli.utils.ssh_tunnel import get_free_tcp_port
 @click.argument('device-name', type=str)
 @name_to_guid
 def rapyuta_agent_logs(device_name: str, device_guid: str) -> None:
+    """Stream rapyuta agent logs from the device.
+
+    This is useful for debugging issues with the rapyuta
+    agent running on the device.
+    """
     try:
         path = random_string(8, 5)
         local_port = get_free_tcp_port()

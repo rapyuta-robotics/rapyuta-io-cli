@@ -16,14 +16,12 @@ import re
 import typing
 
 import click
-from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.clients.deployment import Deployment
 
-from riocli.config import new_client, new_v2_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.deployment.list import DEFAULT_PHASES
 from riocli.utils import tabulate_data
-from riocli.utils.selector import show_selection
 from riocli.v2client import Client
 from riocli.v2client.enums import DeploymentPhaseConstants
 
@@ -77,9 +75,10 @@ def get_deployment_guid(client: Client, name: str) -> str:
 def get_deployment_name(client: Client, guid: str) -> str:
     deployments = client.list_deployments(query={'guids': [guid]})
     if len(deployments) == 0:
-        raise DeploymentNotFound
+        raise Exception('deployment not found')
 
     return deployments[0].metadata.name
+
 
 def fetch_deployments(
         client: Client,

@@ -37,9 +37,7 @@ def inspect_device(
         device_name: str,
         device_id: str
 ) -> None:
-    """
-    Inspect the hardware-in-the-loop device.
-    """
+    """Print the details of a hardware-in-the-loop device."""
     client = new_hwil_client()
 
     try:

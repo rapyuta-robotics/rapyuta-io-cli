@@ -53,7 +53,7 @@ def update_deployment(
         update_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
-    """Updates one or more deployments"""
+    """Use the restart command instead"""
     _update(force, workers, deployment_name_or_regex, update_all, spinner)
 
 
@@ -81,19 +81,19 @@ def restart_deployment(
 ) -> None:
     """Restarts one or more deployments by name or regex.
 
-    Examples:
+    Usage Examples:
 
     Restart a specific deployment
 
-    >> rio deployment restart amr01
+    $ rio deployment restart amr01
 
     Restart all deployments in the project
 
-    >> rio deployment restart --all
+    $ rio deployment restart --all
 
     Restart deployments matching a regex.
 
-    >> rio deployment restart amr.*
+    $ rio deployment restart amr.*
     """
     _update(force, workers, deployment_name_or_regex, update_all, spinner)
 

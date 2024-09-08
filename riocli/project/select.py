@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,8 +34,10 @@ def select_project(
         project_name: str,
         project_guid: str,
 ) -> None:
-    """
-    Sets the given project in the CLI context. All other resources use this project to act upon.
+    """Switch to a different project in the current organization.
+
+    The project will be set in the CLI's context and will be used
+    for all the subsequent commands.
     """
     ctx = get_root_context(ctx)
 

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,8 @@
 from datetime import datetime, timedelta
 
 import click
-from click_help_colors import HelpColorsCommand
-from click_help_colors import HelpColorsGroup
-from rapyuta_io.clients import LogsUploadRequest, LogUploads, SharedURL
+from click_help_colors import HelpColorsCommand, HelpColorsGroup
+from rapyuta_io.clients import LogUploads, LogsUploadRequest, SharedURL
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
@@ -33,8 +32,10 @@ from riocli.utils.spinner import with_spinner
     help_options_color=Colors.RED,
 )
 def device_uploads() -> None:
-    """
-    Uploaded files from the Device
+    """Manage file uploads from a device.
+
+    Provides a convenient way to upload from a device to the cloud
+    and later download, share and perform operations on the uploaded files.
     """
     pass
 
@@ -46,6 +47,11 @@ def device_uploads() -> None:
 @click.argument('device-name', type=str)
 @name_to_guid
 def list_uploads(device_name: str, device_guid: str) -> None:
+    """List all files uploaded from a device.
+
+    Lists all the files uploaded from a device along
+    with their size and status.
+    """
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -81,6 +87,34 @@ def create_upload(
         purge: bool,
         spinner=None,
 ) -> None:
+    """Upload a file from a device to the cloud.
+
+    You can set the maximum upload rate for the upload operation
+    --max-upload-rate flag. The default rate is 1MB/s.
+
+    If there already exists a file upload with the same name, you
+    can override it using the --override flag. The default is set
+    to false.
+
+    Setting the --purge flag will delete the file from the device
+    once it is uploaded. The default is set to false. This option
+    is useful when you want to free up space on the device after
+    uploading the file.
+
+    Usage Examples:
+
+      Upload a file from a device with a max upload rate of 2MB/s
+
+      $ rio device uploads create DEVICE_NAME FILE_NAME FILE_PATH --max-upload-rate 2097152
+
+      Upload a file from the device and delete it after it uploads
+
+      $ rio device uploads create DEVICE_NAME FILE_NAME FILE_PATH --purge
+
+      Upload a file from the device and override the existing file on the cloud
+
+        $ rio device uploads create DEVICE_NAME FILE_NAME FILE_PATH --override
+    """
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -116,6 +150,7 @@ def upload_status(
         file_name: str,
         request_id: str,
 ) -> None:
+    """Check the status of a file upload."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -144,6 +179,7 @@ def delete_upload(
         request_id: str,
         spinner=None
 ) -> None:
+    """Delete an uploaded file."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -174,6 +210,7 @@ def download_log(
         request_id: str,
         spinner=None
 ) -> None:
+    """Download a file from the device."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -204,6 +241,7 @@ def cancel_upload(
         request_id: str,
         spinner=None
 ) -> None:
+    """Cancel an ongoing upload operation."""
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
@@ -236,6 +274,21 @@ def shared_url(
         expiry: int,
         spinner=None
 ) -> None:
+    """Share a URL for an uploaded file.
+
+    The command creates a shared public URL for the file
+    uploaded from the device. The URl can be used to download
+    the file later from any location.
+
+    Optionally, you can set an expiry on the URL using the
+    --expiry flag. The default expiry is 7 days.
+
+    Usage Examples:
+
+      Share a URL for an uploaded file with 10 day expiry
+
+      $ rio device uploads share DEVICE_NAME FILE_NAME --expiry 10
+    """
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)

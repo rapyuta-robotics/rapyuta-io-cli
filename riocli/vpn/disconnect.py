@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,14 @@ from riocli.vpn.util import (
 )
 @click.pass_context
 def disconnect(ctx: click.Context):
-    """
-    Disconnect from the project's VPN network
+    """Disconnect from the project's VPN network.
+
+    Simply run the command to disconnect from the VPN network.
+
+    If ``tailscale`` isn't found on the system then the command will
+    prompt to install the required tools. While it may seem unnecessary
+    to install the tools to disconnect, it is works as a safety measure
+    to ensure that the user has the required tools to connect to the VPN.
     """
     try:
         install_vpn_tools()

@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,8 +40,10 @@ def create_project(
         organization_short_id: str,
         spinner=None,
 ) -> None:
-    """
-    Creates a new project
+    """Create a new project.
+
+    If you do not specify the organization, the project will
+    be created in the current organization.
     """
     if not organization_guid:
         organization_guid = ctx.obj.data.get('organization_id')
