@@ -34,7 +34,20 @@ class StaticRoute(Model):
             client.create_static_route(static_route)
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            client.update_static_route(self.metadata.name, static_route)
+            # It may be the case that a static route with the
+            # same name exists in a different project within
+            # the same organization. In that case, we need to
+            # raise an exception since we cannot create or
+            # update a static route that already exists in
+            # another project.
+            short_id = Configuration().organization_short_id
+            route_name = f'{self.metadata.name}-{short_id}'
+            try:
+                client.get_static_route(route_name)
+            except HttpNotFoundError:
+                raise Exception(f'{route_name} already exists in another project')
+
+            client.update_static_route(route_name, static_route)
             return ApplyResult.UPDATED
 
     def delete(self, *args, **kwargs) -> None:
