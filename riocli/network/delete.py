@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
-from click_help_colors import HelpColorsCommand
-from yaspin.api import Yaspin
 import functools
 from queue import Queue
 
+import click
+from click_help_colors import HelpColorsCommand
+from yaspin.api import Yaspin
+
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
+from riocli.network.model import Network
 from riocli.network.util import fetch_networks, print_networks_for_confirmation
-from riocli.utils.spinner import with_spinner
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
-
-from riocli.network.model import Network
+from riocli.utils.spinner import with_spinner
 from riocli.v2client import Client
 
 
@@ -99,6 +99,13 @@ def delete_network(
 
         with spinner.hidden():
             tabulate_data(data, headers=['Name', 'Status'])
+
+        # When no network is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete network(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
 
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
