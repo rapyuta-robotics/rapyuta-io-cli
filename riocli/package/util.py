@@ -78,6 +78,7 @@ def fetch_packages(
 
         if include_all:
             result.append(pkg)
+            continue
 
         if re.search(package_name_or_regex, pkg.metadata.name):
             if package_version and package_version == pkg.metadata.version:

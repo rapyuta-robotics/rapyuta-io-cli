@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
 from queue import Queue
 
 import click
-import functools
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
@@ -96,6 +96,13 @@ def delete_package(
 
         with spinner.hidden():
             tabulate_data(data, headers=['Name', 'Status'])
+
+        # When no package is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete package(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
 
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
