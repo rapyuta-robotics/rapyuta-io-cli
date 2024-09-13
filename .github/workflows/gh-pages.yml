@@ -8,7 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Pipenv
         run: pip3 install pipenv
@@ -17,11 +17,13 @@ jobs:
         run: pipenv install --dev
 
       - name: Build Documentation
-        run: pipenv run python3 -m sphinx -M html docs/source docs/output
+        run: |
+          pipenv run python3 -m sphinx -M html docs/source docs/output
+          cp scripts/install.sh docs/output/html/install.sh
 
       - name: Deploy gh-pages
         if: github.repository == 'rapyuta-robotics/rapyuta-io-cli' && github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/output/html
