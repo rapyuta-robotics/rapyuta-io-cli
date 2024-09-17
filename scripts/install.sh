@@ -34,6 +34,15 @@ fi
 ### Set the repository base URL (hardcoded)
 BASE_URL="https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases"
 
+### Print the rapyuta.io banner ascii art
+echo -n 'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBfICAgICAgICAgIF8gICAgIC
+AgDQogXyBfXyBfXyBfIF8gX18gIF8gICBfIF8gICBffCB8XyBfXyBfICAoXykgX19fIC
+ANCnwgJ19fLyBfYCB8ICdfIFx8IHwgfCB8IHwgfCB8IF9fLyBfYCB8IHwgfC8gXyBcIA
+0KfCB8IHwgKF98IHwgfF8pIHwgfF98IHwgfF98IHwgfHwgKF98IHxffCB8IChfKSB8DQ
+p8X3wgIFxfXyxffCAuX18vIFxfXywgfFxfXyxffFxfX1xfXyxfKF8pX3xcX19fLyANCi
+AgICAgICAgICB8X3wgICAgfF9fXy8gICAgICAgICAgICAgICAgICAgICAgICAgIA==' | base64 -d
+echo -ne '\n\n'
+
 ### Get the tag or assume the latest release if no tag is provided
 if [ "$#" -eq 0 ]; then
   # Download the latest release if no tag is specified
