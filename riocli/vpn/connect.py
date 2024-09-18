@@ -14,6 +14,7 @@
 
 
 from datetime import timedelta
+
 import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
@@ -29,11 +30,12 @@ from riocli.vpn.util import (
     priviledged_command,
     stop_tailscale,
     install_vpn_tools,
-    is_vpn_enabled_in_project
+    is_vpn_enabled_in_project,
+    update_hosts_file
 )
 
 _TAILSCALE_CMD_FORMAT = 'tailscale up --auth-key={} --login-server={} --reset --force-reauth ' \
-'--accept-routes --accept-dns --advertise-tags={} --timeout=30s'
+                        '--accept-routes --accept-dns --advertise-tags={} --timeout=30s'
 
 
 @click.command(
@@ -42,9 +44,13 @@ _TAILSCALE_CMD_FORMAT = 'tailscale up --auth-key={} --login-server={} --reset --
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
+@click.option('--update-hosts', 'update_hosts', is_flag=True,
+              default=False, help='Update hosts file with VPN peers to allow '
+                                  'access to them by hostname. Run with `sudo` '
+                                  'when you enable this flag.')
 @click.pass_context
 @with_spinner(text="Connecting...")
-def connect(ctx: click.Context, spinner: Yaspin):
+def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
     """
     Connect to the current project's VPN network
     """
@@ -91,7 +97,15 @@ def connect(ctx: click.Context, spinner: Yaspin):
                 Symbols.ERROR), fg=Colors.RED)
             raise SystemExit(1)
 
-        spinner.green.text = 'You are now connected to the project\'s VPN'
+        if update_hosts and is_tailscale_up():
+            spinner.text = 'Updating hosts file...'
+            try:
+                update_hosts_file()
+                spinner.write(click.style(f'{Symbols.SUCCESS} Hosts file updated', fg=Colors.CYAN))
+            except Exception as e:
+                spinner.write(click.style(f'Failed to update hosts: {str(e)}', fg=Colors.RED))
+
+        spinner.text = click.style('You are now connected to the project\'s VPN', fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except click.exceptions.Abort as e:
         spinner.red.text = 'Aborted!'
@@ -120,5 +134,3 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
         return False
 
     return True
-
-

@@ -20,6 +20,7 @@ from riocli.auth.util import select_project
 from riocli.constants import Colors
 from riocli.project.util import name_to_organization_guid
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
@@ -71,5 +72,10 @@ def select_organization(
             "Please set your project with `rio project select PROJECT_NAME`".format(organization_name),
             fg=Colors.GREEN)
 
-
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
