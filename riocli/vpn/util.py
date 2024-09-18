@@ -11,26 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime, timedelta
 import getpass
 import json
 import os
 import socket
 import tempfile
+import time
+from datetime import datetime, timedelta
 from os.path import exists, join
 from shutil import move, which
 from sys import platform
-import time
+from tempfile import NamedTemporaryFile
 from typing import Optional
 
 import click
 from munch import Munch
+from python_hosts import Hosts, HostsEntry
 
-from riocli.config import get_config_from_context
+from riocli.config import get_config_from_context, new_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 from riocli.v2client import Client as v2Client
 
+HOSTS_FILE_COMMENT = 'riovpn'
 
 def get_host_ip() -> str:
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -45,8 +48,10 @@ def get_host_name() -> str:
 def is_linux() -> bool:
     return platform.lower() == 'linux'
 
+
 def is_windows() -> bool:
     return platform.lower() == 'win32'
+
 
 def is_curl_installed() -> bool:
     return which('curl') is not None
@@ -190,6 +195,7 @@ def get_key_expiry_time(delta: Optional[timedelta]) -> Optional[str]:
     expiry = datetime.utcnow() + delta
     return expiry.isoformat('T') + 'Z'
 
+
 def get_binding_labels() -> dict:
     return {
         'creator': 'riocli',
@@ -198,3 +204,98 @@ def get_binding_labels() -> dict:
         'username': getpass.getuser(),
         'rapyuta.io/internal': 'true',
     }
+
+
+def update_hosts_file():
+    """Update the hosts file with the VPN peers to allow access to them by hostname.
+
+    This is a helper method that fetches the local tailscale status and the list of
+    online devices in the project. It then filters the online devices based on the
+    status of the VPN daemon running on it.
+
+    It then matches the hostname of the tailscale peers with the hostname of the devices
+    and creates an entry in the system's hosts file.
+    """
+    v1_client = new_client(with_project=True)
+
+    device_host_to_name = {}
+    for device in v1_client.get_all_devices(online_device=True):
+        vpn = device.get('daemons_status').get('vpn')
+        if vpn and vpn.get('enable') and vpn.get('status') == 'running':
+            d = v1_client.get_device(device.uuid)
+            device_host_to_name[d.get('host')] = d.name
+
+    status = get_tailscale_status()
+    peers = status.get('Peer', {})
+
+    hosts = Hosts()
+
+    # Cleanup previous entries, if any.
+    hosts.remove_all_matching(comment=HOSTS_FILE_COMMENT)
+
+    entries = []
+    for _, node in peers.items():
+        if not node.get('Online'):
+            continue
+
+        if node.get('HostName') in device_host_to_name:
+            entries.append(HostsEntry(
+                entry_type='ipv4',
+                address=node.get('TailscaleIPs')[0],
+                names=[device_host_to_name[node.get('HostName')]],
+                comment=HOSTS_FILE_COMMENT,
+            ))
+
+    # Nothing to add if there are no
+    # devices with VPN enabled.
+    if len(entries) == 0:
+        return
+
+    hosts.add(entries)
+    write_hosts_file(hosts)
+
+
+def cleanup_hosts_file():
+    """Cleanup any entries from the hosts file created during connect.
+
+    We add a pre-defined comment to the entries that we add to the hosts file
+    during the connect operation. This method removes all entries that have
+    the comment 'riovpn' from the hosts file.
+    """
+    hosts = Hosts()
+    before = list(hosts.entries)
+    hosts.remove_all_matching(comment=HOSTS_FILE_COMMENT)
+    after = list(hosts.entries)
+
+    # Skip if nothing to remove.
+    if len(before) == len(after):
+        return
+
+    write_hosts_file(hosts)
+
+
+def write_hosts_file(hosts: Hosts) -> None:
+    """Write the hosts file to the system.
+
+    Since writing to the host file requires privileged access,
+    this helper function does that by taking the platform into
+    account and performing the set of steps required to write
+    the hosts file.
+
+    The assumption here is that users will run the vpn command
+    as administrators on Windows machines and hence, we don't
+    need to explicitly elevate privileges.
+    """
+    if is_windows():
+        hosts.write()
+        return
+
+    temp = NamedTemporaryFile(delete=False)
+    hosts.write(path=temp.name)
+    temp.close()
+
+    run_bash(priviledged_command(f'cp {hosts.path} {hosts.path}.bak'))
+    _, code = run_bash_with_return_code(priviledged_command(f'mv {temp.name} {hosts.path}'))
+
+    if code != 0:
+        raise Exception('failed to write hosts file')

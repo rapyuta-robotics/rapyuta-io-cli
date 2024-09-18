@@ -17,6 +17,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
@@ -41,6 +42,12 @@ def select_project(
     ctx.obj.data['project_id'] = project_guid
     ctx.obj.data['project_name'] = project_name
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
 
     click.secho('{} Project {} ({}) is selected!'.format(
         Symbols.SUCCESS,

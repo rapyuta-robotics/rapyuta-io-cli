@@ -22,6 +22,7 @@ from riocli.auth.util import (
 )
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 LOGIN_SUCCESS = click.style('{} Logged in successfully!'.format(Symbols.SUCCESS), fg=Colors.GREEN)
 
@@ -124,5 +125,11 @@ def login(
     select_project(ctx.obj, project=project, organization=organization)
 
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
 
     click.echo(LOGIN_SUCCESS)

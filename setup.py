@@ -72,6 +72,7 @@ setup(
         "etcd3gw>=2.4.0",
         "graphviz>=0.20.3",
         "python-magic>=0.4.27",
+        "python-hosts>=1.0.7",
     ],
     setup_requires=["flake8"],
 )
