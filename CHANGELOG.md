@@ -1,3 +1,10 @@
+## [9.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.0...v9.0.1) (2024-09-25)
+
+
+### Bug Fixes
+
+* **usergroup:** remove emailID validation ([88569d9](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/88569d9da9f686bbd0d34fc1e535b0887f8fe638))
+
 # [9.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v8.1.0...v9.0.0) (2024-09-25)
 
 
