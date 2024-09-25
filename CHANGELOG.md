@@ -1,3 +1,71 @@
+# [9.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v8.1.0...v9.0.0) (2024-09-25)
+
+
+### Bug Fixes
+
+* **apply:** prints resource name when apply or delete fails ([1952929](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1952929dc02149f4c0123eceaf0626b91935ce62))
+* **configtree:** corrects typo in error message ([2b0edde](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2b0eddeab3157922142ebbe6674a7ba657e95568))
+* **configtree:** returns error when no files are provided in import ([843b793](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/843b7936095b149b1f01c30e418c9083f5ad7bd3))
+* corrects error message for batch delete ops ([48447d4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/48447d439e12536b7518a7c9a079be69e4c8bcf2))
+* **delete:** prints appropriate message when deletionPolicy = retain ([7c76d84](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7c76d84a2e59373cefa4610b34341f2b4a1165d0))
+* **deployment:** add phase filter for list_deployments ([a545c1e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a545c1ef1c8ff9dcab9a58ba7de79b5880af6dbe))
+* **deployment:** fix deployment commands ([6f2aec2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6f2aec2a8f11a1f0568c8337ea8670fc78aeb580))
+* **deployment:** inspect deployment with guid ([#349](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/349)) ([a34bd0a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a34bd0ac050c44a35ce4f1450a29e68048a91a52))
+* **deployment:** replace aggregateStatus with status ([9ae1cee](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9ae1ceee927d9b91e3c7fd0b63e9af30556f4a73))
+* **deployments:** adds stopped at time for deployment list ([7891a5c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7891a5c5b863fb74746a0a84e5dfbc871c07d017))
+* **deployment:** set replica=0 as default in deployment logs command ([e9f4668](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e9f4668c19b285ba7c8bc6de2b58fd73aeab285a))
+* **deployments:** fix deployment status and wait command ([0e3ea14](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0e3ea146751c586598943e72f8aeb3ae69f2d8bc))
+* **deployments:** fix deployment wait command ([e0ef5ed](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e0ef5edab026c636c30f3b88cfc14f4b17b31d82))
+* **deployments:** implements waiting mechanism for disk and network deployments to reach running state ([7e2f0d4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7e2f0d43cde69b0b501d9c21f073df3badcbe4cf))
+* **device:** updates client in list device deployments command ([18b4c50](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/18b4c508e03392facaad31a597f2f913182da106))
+* **disk:** fix disk commands ([2060d7c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2060d7c9c9809fbd6bea57b45e8113ac74041690))
+* **disk:** prints a better message when no disks are deleted ([dbe83e4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dbe83e4dfa9d377134b2d1e7b921961eddd5cd6f))
+* fixes resolver and resource models to work with apply ([8279b77](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8279b77de3aa1c37bb39ddc8655ca64ddb81efdd))
+* **jsonschema:** accepts null value in deployment features ([1791b29](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1791b29c8d600e9b0d081d7937657cd1eb8e2ba5))
+* **jsonschema:** corrects resource GUID regex ([8252a71](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8252a71fa2e455b47cb12f059fbd33586c7d1384))
+* **jsonschema:** remove interface from deployment rosNetworks ([f8c2a9a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f8c2a9ac7bdd13587d7591feafcd9128359b472e))
+* **manifests:** fix manifests of resources ([4f5e9bb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4f5e9bbd993c1c44d2870ac55cda8bdd6d56ca9a))
+* **network:** fix network commands ([7f06c67](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7f06c67b3dedd68ba28374489732451df0e3fc86))
+* **networks:** delete in use network ([a9d2c49](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a9d2c499bb90bcfd4baaebb55f8e3e6cf066c5d0))
+* **networks:** fix device network schema ([7ebabf0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7ebabf03c4e96195588ffa4ca3f79c02b0825f62))
+* **networks:** fix network type flag ([64bc9e3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/64bc9e3449f22f3544ef7d067eb41cb9ee3c6cb7))
+* **package:** allow executable command to be string, array or null ([c97b186](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c97b186ebc071e386c80f3176b072b0019dc2645))
+* **packages:** fix package commands ([48a92c9](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/48a92c941895b673689ab2c9efd567b3c887aad3))
+* **project:** fixes raised exception in find_organization_guid helper ([6ab3838](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6ab38380dad039921a6c174a0cb0011d80572e40))
+* **rosbag:** update default statuses for list functions ([54fd266](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/54fd26627294102e8f341d693714269b2d0402f8))
+* **template:** validate manifests against jsonschema ([b9f9fc4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b9f9fc4c22d4a548e10b445315f61517ffd5b7bc))
+* **v2client:** corrects status check in poll_disk ([c6e7a8b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6e7a8bac1722d901348d4c354b714b3789a8b38))
+* **v2client:** fix retry exceeded error code description and action ([938ed4c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/938ed4c2077eef8cf37d5eb8f4820f2ad0b93f95))
+* **v2client:** fix v2 client org header ([313c660](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/313c6600d8b69370bf717a742cf904e53eb9dda5))
+
+
+### Features
+
+* adds filter by label option in list commands ([0c2cfe8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0c2cfe8aed49704c374253a5f5ae26f84f3087fe))
+* **apply:** init Jinja environment with filters and rio namespace ([7dc030d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7dc030dddbf98c10cde23a9cae137427eeea372f))
+* **config:** store org short id in the cli config ([9c9a6fa](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9c9a6fa8c292e36fbac3dc5860c03438e6fbd6d8))
+* **context:** add command to view cli config ([763e712](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/763e712e067edc2b89fa091412ea5cf879204b55))
+* **deployment:** execute commands on device deployments ([#345](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/345)) ([558215b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/558215b47c7d673774d588299a4ef4ff36b62f0e))
+* **deployment:** implement restart alias for rio deployment update ([a25a85b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a25a85b0c398b4182b89de9e679f2f142ad23d88))
+* **deployment:** uses v2 deployments APIs ([bc33295](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bc332954d2376badf4495276cac5ddee950e9626))
+* **deployment:** wait until all dependecies are running ([71d4f0a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/71d4f0acfaa6cd43b1fdc869368f58fab9c1ef20))
+* **disks:** use v2 APIs for Disk operations ([3ddb694](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3ddb694fc7c50e4c4b03da6a8e72482c0d2ed839))
+* **networks:** uses v2 networks APIs ([d967d18](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d967d18611ad4bc80e394437928ecd9b840b7dc0))
+* **packages:** uses v2 packages APIs ([1048ff5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1048ff53dc96504676e1d2a91f4e32565880ad50))
+* **scripts:** adds install script for appimages ([#354](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/354)) ([3677bc6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3677bc6074beee62aebf1ec6cb2d10c08d7c59c6))
+* **v2client:** adds poll methods and stream deployment logs method ([af90e83](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/af90e834d5a194ae9da847c556ee3e3cb2290daa))
+* **v2client:** inject X-Request-ID in headers if REQUEST_ID in env ([5ce15f1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5ce15f17b3aed9d34542506c4d109c23ecc9c76c))
+
+
+### Performance Improvements
+
+* **delete:** implements multi-threaded delete operation ([a50fec0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a50fec084f0d08ce4a95c7f04fd035032371dd6e))
+
+
+### BREAKING CHANGES
+
+* **deployment:** The rio deployment execute command no longer supports cloud deployments.
+
 # [8.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v8.0.0...v8.1.0) (2024-08-08)
 
 
