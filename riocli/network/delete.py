@@ -11,14 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
+from queue import Queue
+
 import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.network.util import name_to_guid
+from riocli.network.model import Network
+from riocli.network.util import fetch_networks, print_networks_for_confirmation
+from riocli.utils import tabulate_data
+from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
 
 @click.command(
@@ -29,45 +36,94 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option('--force', '-f', is_flag=True, default=False,
               help='Skip confirmation', type=bool)
-@click.option('--network', 'network_type', help='Type of Network',
-              default=None,
-              type=click.Choice(['routed', 'native']))
-@click.argument('network-name', type=str)
-@name_to_guid
+@click.option('--workers', '-w',
+              help="Number of parallel workers while running deleting networks. Defaults to 10",
+              type=int, default=10)
+@click.argument('network-name-or-regex', type=str)
 @with_spinner(text='Deleting network...')
 def delete_network(
         force: bool,
-        network_name: str,
-        network_guid: str,
-        network_type: str,
+        network_name_or_regex: str,
+        delete_all: bool = False,
+        workers: int = 10,
         spinner: Yaspin = None
 ) -> None:
     """
     Deletes a network
     """
-    if not force:
-        with spinner.hidden():
-            click.confirm(
-                'Deleting {} network {} ({})'.
-                format(network_type, network_name, network_guid),
-                abort=True)
+    client = new_v2_client()
+
+    if not (network_name_or_regex or delete_all):
+        spinner.text = "Nothing to delete"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     try:
-        client = new_client()
-
-        if network_type == 'routed':
-            client.delete_routed_network(network_guid)
-        elif network_type == 'native':
-            client.delete_native_network(network_guid)
-        else:
-            raise Exception('invalid network type')
-
-        spinner.text = click.style(
-            '{} network deleted successfully!'.format(network_type.capitalize()),
-            fg=Colors.GREEN)
-        spinner.green.ok(Symbols.SUCCESS)
+        networks = fetch_networks(client, network_name_or_regex, "", delete_all)
     except Exception as e:
-        spinner.text = click.style('Failed to delete network: {}'.format(e),
-                                   fg=Colors.RED)
+        spinner.text = click.style(
+            'Failed to find network(s): {}'.format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+    if not networks:
+        spinner.text = click.style("Network(s) not found", Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
+
+    with spinner.hidden():
+        print_networks_for_confirmation(networks)
+
+    spinner.write('')
+
+    if not force:
+        with spinner.hidden():
+            click.confirm('Do you want to delete the above network(s)?', default=True, abort=True)
+
+    try:
+        f = functools.partial(_apply_delete, client)
+        result = apply_func_with_result(
+            f=f, items=networks,
+            workers=workers, key=lambda x: x[0]
+        )
+        data, statuses = [], []
+        for name, status, msg in result:
+            fg = Colors.GREEN if status else Colors.RED
+            icon = Symbols.SUCCESS if status else Symbols.ERROR
+
+            statuses.append(status)
+            data.append([
+                click.style(name, fg),
+                click.style('{}  {}'.format(icon, msg), fg)
+            ])
+
+        with spinner.hidden():
+            tabulate_data(data, headers=['Name', 'Status'])
+
+        # When no network is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete network(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
+
+        icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
+        fg = Colors.GREEN if all(statuses) else Colors.YELLOW
+        text = "successfully" if all(statuses) else "partially"
+
+        spinner.text = click.style(
+            'Networks(s) deleted {}.'.format(text), fg)
+        spinner.ok(click.style(icon, fg))
+    except Exception as e:
+        spinner.text = click.style(
+            'Failed to delete network(s): {}'.format(e), Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1) from e
+
+
+def _apply_delete(client: Client, result: Queue, network: Network) -> None:
+    try:
+        client.delete_network(network_name=network.metadata.name)
+        result.put((network.metadata.name, True, 'Network Deleted Successfully'))
+    except Exception as e:
+        result.put((network.metadata.name, False, str(e)))

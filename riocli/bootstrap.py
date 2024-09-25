@@ -16,7 +16,6 @@
 __version__ = "8.1.0"
 
 import os
-import pretty_traceback
 
 import click
 import rapyuta_io.version
@@ -30,6 +29,7 @@ from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.config import Configuration
+from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
 from riocli.deployment import deployment
@@ -154,3 +154,4 @@ cli.add_command(vpn)
 cli.add_command(usergroup)
 cli.add_command(config_trees)
 cli.add_command(hwildevice)
+cli.add_command(cli_context)

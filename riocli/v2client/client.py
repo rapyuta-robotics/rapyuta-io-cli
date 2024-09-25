@@ -13,38 +13,21 @@
 # limitations under the License.
 from __future__ import annotations
 
-import http
 import json
 import os
+import time
 from hashlib import md5
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
+import click
 import magic
-import requests
-from munch import munchify, Munch
+from munch import Munch, munchify
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
-
-def handle_server_errors(response: requests.Response):
-    status_code = response.status_code
-    # 500 Internal Server Error
-    if status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
-        raise Exception('internal server error')
-    # 501 Not Implemented
-    if status_code == http.HTTPStatus.NOT_IMPLEMENTED:
-        raise Exception('not implemented')
-    # 502 Bad Gateway
-    if status_code == http.HTTPStatus.BAD_GATEWAY:
-        raise Exception('bad gateway')
-    # 503 Service Unavailable
-    if status_code == http.HTTPStatus.SERVICE_UNAVAILABLE:
-        raise Exception('service unavailable')
-    # 504 Gateway Timeout
-    if status_code == http.HTTPStatus.GATEWAY_TIMEOUT:
-        raise Exception('gateway timeout')
-    # Anything else that is not known
-    if status_code > 504:
-        raise Exception('unknown server error')
+from riocli.constants import Colors
+from riocli.v2client.enums import DeploymentPhaseConstants, DiskStatusConstants
+from riocli.v2client.error import DeploymentNotRunning, ImagePullError, RetriesExhausted
+from riocli.v2client.util import handle_server_errors, process_errors
 
 
 class Client(object):
@@ -67,6 +50,10 @@ class Client(object):
         if with_project and self._project is not None:
             headers['project'] = self._project
 
+        custom_client_request_id = os.getenv('REQUEST_ID')
+        if custom_client_request_id:
+            headers['X-Request-ID'] = custom_client_request_id
+
         return headers
 
     # Project APIs
@@ -74,7 +61,7 @@ class Client(object):
     def list_projects(
             self,
             organization_guid: str = None,
-            query: dict = None
+            query: dict = None,
     ) -> Munch:
         """
         List all projects in an organization
@@ -689,8 +676,10 @@ class Client(object):
 
         return munchify(data)
 
-    def _walk_pages(self, c: RestClient, params: dict = {}, limit: Optional[int] = None) -> Munch:
+    def _walk_pages(self, c: RestClient, params: dict = None, limit: Optional[int] = None) -> Munch:
         offset, result = 0, []
+
+        params = params or {}
 
         if limit is not None:
             params["limit"] = limit
@@ -699,7 +688,7 @@ class Client(object):
             params["continue"] = offset
 
             response = c.query_param(params).execute()
-            data = json.loads(response.text)
+            data = response.json()
             if not response.ok:
                 err_msg = data.get('error')
                 raise Exception("listing: {}".format(err_msg))
@@ -712,3 +701,438 @@ class Client(object):
             result.extend(items)
 
         return munchify(result)
+
+    def list_packages(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all packages in a project
+        """
+        url = "{}/v2/packages/".format(self._host)
+        headers = self._get_auth_header()
+
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
+
+    def create_package(self, payload: dict) -> Munch:
+        """
+        Create a new package
+        """
+        url = "{}/v2/packages/".format(self._host)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=payload)
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_package(
+            self,
+            name: str,
+            query: dict = None,
+    ) -> Munch:
+        """
+        List all packages in a project
+        """
+        url = "{}/v2/packages/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.GET).query_param(
+            params).headers(headers).execute()
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_package(self, package_name: str,
+                       query: dict = None) -> Munch:
+        """
+        Delete a secret
+        """
+        url = "{}/v2/packages/{}/".format(self._host, package_name)
+        headers = self._get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.DELETE).query_param(
+            params).headers(headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("package: {}".format(err_msg))
+
+        return munchify(data)
+
+    def list_networks(
+            self,
+            query: dict = None,
+    ) -> Munch:
+        """
+        List all networks in a project
+        """
+        url = "{}/v2/networks/".format(self._host)
+        headers = self._get_auth_header()
+
+        params = {}
+        params.update(query or {})
+        offset, result = 0, []
+        while True:
+            params.update({
+                "continue": offset,
+            })
+            response = RestClient(url).method(HttpMethod.GET).query_param(
+                params).headers(headers).execute()
+            data = json.loads(response.text)
+            if not response.ok:
+                err_msg = data.get('error')
+                raise Exception("networks: {}".format(err_msg))
+            networks = data.get('items', [])
+            if not networks:
+                break
+            offset = data['metadata']['continue']
+            result.extend(networks)
+
+        return munchify(result)
+
+    def create_network(self, payload: dict) -> Munch:
+        """
+        Create a new network
+        """
+        url = "{}/v2/networks/".format(self._host)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=payload)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("network: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_network(
+            self,
+            name: str,
+            query: dict = None,
+    ) -> Munch:
+        """
+        get a network in a project
+        """
+        url = "{}/v2/networks/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.GET).query_param(
+            params).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("network: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_network(
+            self,
+            network_name: str,
+            query: dict = None,
+    ) -> Munch:
+        """
+        Delete a secret
+        """
+        url = "{}/v2/networks/{}/".format(self._host, network_name)
+        headers = self._get_auth_header()
+
+        params = {}
+        params.update(query or {})
+
+        response = RestClient(url).method(HttpMethod.DELETE).query_param(
+            params).headers(headers).execute()
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("network: {}".format(err_msg))
+
+        return munchify(data)
+
+    def poll_network(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+            ready_phases: List[str] = None,
+    ) -> Munch:
+        if ready_phases is None:
+            ready_phases = []
+
+        network = self.get_network(name)
+
+        status = network.status
+
+        for _ in range(retry_count):
+            if status.phase in ready_phases:
+                return network
+
+            if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
+                errors = status.get('error_codes', [])
+                if 'DEP_E153' in errors:  # DEP_E153 (image-pull error) will persist across retries
+                    raise ImagePullError('Network not running. Phase: Provisioning Status: {}'.format(status.phase))
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
+                return network
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
+                raise DeploymentNotRunning('Network not running. Phase: Stopped  Status: {}'.format(status.phase))
+
+            time.sleep(sleep_interval)
+            network = self.get_network(name)
+            status = network.status
+
+        msg = 'Retries exhausted: Tried {} times with {}s interval. Network: phase={} status={} \n{}'.format(
+            retry_count, sleep_interval, status.phase, status.status, process_errors(status.get('error_codes', [])))
+
+        raise RetriesExhausted(msg)
+
+    def list_deployments(
+            self,
+            query: dict = None
+    ) -> Munch:
+        """
+        List all deployments in a project
+        """
+        url = "{}/v2/deployments/".format(self._host)
+        headers = self._get_auth_header()
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
+
+    def create_deployment(self, deployment: dict) -> Munch:
+        """
+        Create a new deployment
+        """
+        url = "{}/v2/deployments/".format(self._host)
+        headers = self._get_auth_header()
+
+        deployment["metadata"]["projectGUID"] = headers["project"]
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=deployment)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+
+    def get_deployment(self, name: str):
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+
+    def update_deployment(self, name: str, dep: dict) -> Munch:
+        """
+        Update a deployment
+        """
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.PATCH).headers(
+            headers).execute(payload=dep)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_deployment(self, name: str, query: dict = None) -> Munch:
+        """
+        Delete a deployment
+        """
+        url = "{}/v2/deployments/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+        params = {}
+        params.update(query or {})
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("deployment: {}".format(err_msg))
+
+        return munchify(data)
+
+    def poll_deployment(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+            ready_phases: List[str] = None,
+    ) -> Munch:
+        if ready_phases is None:
+            ready_phases = []
+
+        deployment = self.get_deployment(name)
+
+        status = deployment.status
+
+        for _ in range(retry_count):
+            if status.phase in ready_phases:
+                return deployment
+
+            if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
+                errors = status.get('error_codes', [])
+                if 'DEP_E153' in errors:  # DEP_E153 (image-pull error) will persist across retries
+                    raise ImagePullError('Deployment not running. Phase: Provisioning Status: {}'.format(status.phase))
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
+                return deployment
+            elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
+                raise DeploymentNotRunning('Deployment not running. Phase: Stopped  Status: {}'.format(status.phase))
+
+            time.sleep(sleep_interval)
+            deployment = self.get_deployment(name)
+            status = deployment.status
+
+        msg = 'Retries exhausted: Tried {} times with {}s interval. Deployment: phase={} status={} \n{}'.format(
+            retry_count, sleep_interval, status.phase, status.status, process_errors(status.get('error_codes', [])))
+
+        raise RetriesExhausted(msg)
+
+    def stream_deployment_logs(
+            self,
+            name: str,
+            executable: str,
+            replica: int = 0,
+    ):
+        url = "{}/v2/deployments/{}/logs/?replica={}&executable={}".format(self._host, name, replica, executable)
+        headers = self._get_auth_header()
+
+        curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(
+            headers['project'], headers['Authorization'], url)
+
+        os.system(curl)
+
+    def list_disks(
+            self,
+            query: dict = None,
+    ) -> Munch:
+        """
+        List all disks in a project
+        """
+        url = "{}/v2/disks/".format(self._host)
+        headers = self._get_auth_header()
+
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
+
+    def get_disk(self, name: str) -> Munch:
+        """
+        Get a Disk by its name
+        """
+        url = "{}/v2/disks/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_disk(self, disk: dict) -> Munch:
+        """
+        Create a new disk
+        """
+        url = "{}/v2/disks/".format(self._host)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(
+            headers).execute(payload=disk)
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_disk(self, name: str) -> Munch:
+        """
+        Delete a disk by its name
+        """
+        url = "{}/v2/disks/{}/".format(self._host, name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(
+            HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get('error')
+            raise Exception("disks: {}".format(err_msg))
+
+        return munchify(data)
+
+    def poll_disk(
+            self,
+            name: str,
+            retry_count: int = 50,
+            sleep_interval: int = 6,
+    ) -> Munch:
+        disk = self.get_disk(name)
+
+        status = disk.status
+
+        for _ in range(retry_count):
+            if status.status in [DiskStatusConstants.DiskStatusAvailable.value,
+                                 DiskStatusConstants.DiskStatusReleased.value]:
+                return disk
+            elif status.status == DiskStatusConstants.DiskStatusFailed.value:
+                raise DeploymentNotRunning('Disk not running. Status: {}'.format(status.status))
+
+            time.sleep(sleep_interval)
+            disk = self.get_disk(name)
+            status = disk.status
+
+        raise RetriesExhausted('Retries exhausted: Tried {} times with {}s interval. Disk: status={}'.format(
+            retry_count, sleep_interval, status.status))

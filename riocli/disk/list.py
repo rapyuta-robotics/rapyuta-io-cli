@@ -14,42 +14,29 @@
 import typing
 
 import click
-from rapyuta_io.utils.rest_client import HttpMethod
+from click_help_colors import HelpColorsCommand
 
+from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.disk.util import _api_call
-from riocli.utils import tabulate_data
+from riocli.disk.util import display_disk_list
 
 
-@click.command('list')
-def list_disks() -> None:
+@click.command(
+    'list',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
+def list_disks(labels: typing.List[str]) -> None:
     """
     List the disks in the selected project
     """
     try:
-        disks = _api_call(HttpMethod.GET)
-        disks = sorted(disks, key=lambda d: d['name'].lower())
-        _display_disk_list(disks, show_header=True)
+        client = new_v2_client(with_project=True)
+        disks = client.list_disks(query={'labelSelector': labels})
+        display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
-
-
-def _display_disk_list(disks: typing.Any, show_header: bool = True):
-    headers = []
-    if show_header:
-        headers = (
-            'Disk ID', 'Name', 'Status', 'Capacity',
-            'Used', 'Available', 'Used By',
-        )
-
-    data = [[d['guid'],
-             d['name'],
-             d['status'],
-             d['capacity'],
-             d.get('used', 'NA'),
-             d.get('available', 'NA'),
-             d['usedBy']]
-            for d in disks]
-
-    tabulate_data(data, headers)
+        raise SystemExit(1) from e

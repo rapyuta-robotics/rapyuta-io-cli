@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
 from queue import Queue
 
 import click
-from rapyuta_io.clients.package import Package
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
+from riocli.package.model import Package
 from riocli.package.util import fetch_packages, print_packages_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
 
 @click.command('delete')
@@ -46,7 +48,7 @@ def delete_package(
     """
     Delete the package from the Platform
     """
-    client = new_client()
+    client = new_v2_client()
 
     if not (package_name_or_regex or delete_all):
         spinner.text = "Nothing to delete"
@@ -54,7 +56,7 @@ def delete_package(
         return
 
     try:
-        packages = fetch_packages(client, package_name_or_regex, delete_all, package_version)
+        packages = fetch_packages(client, package_name_or_regex, package_version, delete_all)
     except Exception as e:
         spinner.text = click.style(
             'Failed to find package(s): {}'.format(e), Colors.RED)
@@ -76,23 +78,31 @@ def delete_package(
             click.confirm('Do you want to delete the above package(s)?', default=True, abort=True)
 
     try:
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=_apply_delete, items=packages,
+            f=f, items=packages,
             workers=workers, key=lambda x: x[0]
         )
 
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
             tabulate_data(data, headers=['Name', 'Status'])
+
+        # When no package is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete package(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
 
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
@@ -108,10 +118,10 @@ def delete_package(
         raise SystemExit(1) from e
 
 
-def _apply_delete(result: Queue, package: Package) -> None:
-    name_version = "{}@{}".format(package.packageName, package.packageVersion)
+def _apply_delete(client: Client, result: Queue, package: Package) -> None:
+    name_version = "{}@{}".format(package.metadata.name, package.metadata.version)
     try:
-        package.delete()
-        result.put((name_version, True))
-    except Exception:
-        result.put((name_version, False))
+        client.delete_package(package_name=package.metadata.name, query={"version": package.metadata.version})
+        result.put((name_version, True, 'Package deleted successfully'))
+    except Exception as e:
+        result.put((name_version, False, str(e)))

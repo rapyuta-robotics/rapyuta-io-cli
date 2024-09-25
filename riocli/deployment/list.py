@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,26 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.deployment import Deployment, DeploymentPhaseConstants
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.deployment.util import process_deployment_errors
+from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
+from riocli.v2client.util import process_errors
 
 ALL_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
-    DeploymentPhaseConstants.PARTIALLY_DEPROVISIONED,
-    DeploymentPhaseConstants.DEPLOYMENT_STOPPED,
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
+    'Stopped',
 ]
 
 DEFAULT_PHASES = [
-    DeploymentPhaseConstants.INPROGRESS,
-    DeploymentPhaseConstants.PROVISIONING,
-    DeploymentPhaseConstants.SUCCEEDED,
-    DeploymentPhaseConstants.FAILED_TO_START,
+    'InProgress',
+    'Provisioning',
+    'Succeeded',
+    'FailedToStart',
 ]
 
 
@@ -46,25 +45,33 @@ DEFAULT_PHASES = [
     help_options_color=Colors.GREEN,
 )
 @click.option('--device', prompt_required=False, default='', type=str,
-              help='Filter the Deployment list by Device ID')
+              help='Filter the Deployment list by Device name')
 @click.option('--phase', prompt_required=False, multiple=True,
               type=click.Choice(ALL_PHASES),
               default=DEFAULT_PHASES,
               help='Filter the Deployment list by Phases')
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
 @click.option('--wide', '-w', is_flag=True, default=False,
               help='Print more details', type=bool)
 def list_deployments(
         device: str,
         phase: typing.List[str],
+        labels: typing.List[str],
         wide: bool = False,
 ) -> None:
     """
     List the deployments in the selected project
     """
+    query = {
+        'phases': phase,
+        'labelSelector': labels,
+    }
+
     try:
-        client = new_client()
-        deployments = client.get_all_deployments(device_id=device, phases=phase)
-        deployments = sorted(deployments, key=lambda d: d.name.lower())
+        client = new_v2_client(with_project=True)
+        deployments = client.list_deployments(query=query)
+        deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True, wide=wide)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -78,22 +85,28 @@ def display_deployment_list(
 ):
     headers = []
     if show_header:
-        headers = ('Name', 'Status', 'Phase', 'Errors')
-        if wide:
-            headers += ('Package', 'Deployment ID',)
+        headers = ['Name', 'Package', 'Creation Time (UTC)', 'Phase', 'Status']
+
+    if show_header and wide:
+        headers.extend(['Deployment ID', 'Stopped Time (UTC)'])
 
     data = []
-    for deployment in deployments:
-        package_name_version = "{} ({})".format(deployment.packageName, deployment.packageVersion)
-        row = [
-            deployment.name,
-            deployment.status,
-            deployment.phase,
-            process_deployment_errors(deployment.get('errorCode', []), no_action=True)
-        ]
+    for d in deployments:
+        package_name_version = f'{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})'
+        phase = d.get('status', {}).get('phase', '')
+
+        status = ''
+
+        if d.status:
+            if d.status.get('error_codes'):
+                status = click.style(process_errors(d.status.error_codes, no_action=True), fg=Colors.RED)
+            else:
+                status = d.status.status
+
+        row = [d.metadata.name, package_name_version, d.metadata.createdAt, phase, status]
 
         if wide:
-            row += [package_name_version, deployment.deploymentId]
+            row.extend([d.metadata.guid, d.metadata.get('deletedAt')])
 
         data.append(row)
 

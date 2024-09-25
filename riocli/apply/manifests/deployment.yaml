@@ -7,15 +7,15 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-cloud"
     version: "v1.0.0"
-  project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   runtime: cloud # Options: [device, cloud]
   depends:
     - kind: deployment
       nameOrGUID: "dep-guid"
+      wait: false # Options: [true, false] Wait until dependency is ready
   envArgs:
     - name: TEST_KEY
       value: test_value
@@ -38,8 +38,6 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-routed-cloud"
-      topics:
-        - "/telemetry"
   managedServices:
     - depends:
         kind: managedservice
@@ -52,7 +50,6 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
   rosBagJobs:
     - name: "testbag1" # Required
       recordOptions: # Required
@@ -107,15 +104,15 @@ metadata:
     kind: package
     nameOrGUID: "package-nonros-cloud"
     version: "v1.0.0"
-  project: "project-guid"
+  region: jp
   labels:
     app: test
-    #rapyuta.io/region: us
 spec:
   runtime: cloud # Options: [device, cloud]
   depends:
     - kind: deployment
       nameOrGUID: "deployment-ros-cloud"
+      wait: true # Options: [true, false] Wait until dependency is ready
   envArgs:
     - name: TEST_KEY
       value: test_value
@@ -143,7 +140,6 @@ spec:
       trees:
         - config01
         - config02
-      disableSync: false
 ---
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
@@ -153,7 +149,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-no-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -170,17 +165,16 @@ spec:
     - execName: exec-docker
       mountPath: "/tmp" # Path on container
       subPath: "/tmp" # Path on device
+      uid: 1000 # Optional userid for subpath
+      gid: 1000 # Optional groupid for subpath
+      perm: 755 # Optional permissions for subpath
   rosNetworks:
     - depends:
         kind: network
         nameOrGUID: "network-native-device"
-      interface: eth0
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      topics:
-        - "/telemetry"
-      interface: eth0
 ---
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Deployment
@@ -190,7 +184,6 @@ metadata:
     kind: package
     nameOrGUID: "package-ros-device-rosbag"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -207,17 +200,16 @@ spec:
     - execName: exec-docker
       mountPath: "/tmp" # Path on container
       subPath: "/tmp" # Path on device
+      uid: 1000 # Optional userid for subpath
+      gid: 1000 # Optional groupid for subpath
+      perm: 755 # Optional permissions for subpath
   rosNetworks:
     - depends:
         kind: network
         nameOrGUID: "network-native-device"
-      interface: eth0
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
-      topics:
-        - "/telemetry"
-      interface: eth0
   rosBagJobs:
     - name: "testbag1" # Required
       recordOptions: # Required
@@ -286,7 +278,6 @@ metadata:
     kind: package
     nameOrGUID: "package-nonros-device"
     version: "v1.0.0"
-  project: "project-guid"
   labels:
     app: test
 spec:
@@ -303,3 +294,6 @@ spec:
     - execName: exec-docker
       mountPath: "/tmp" # Path on container
       subPath: "/tmp" # Path on device
+      uid: 1000 # Optional userid for subpath
+      gid: 1000 # Optional groupid for subpath
+      perm: 755 # Optional permissions for subpath

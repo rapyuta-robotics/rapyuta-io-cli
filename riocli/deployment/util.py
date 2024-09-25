@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,32 +11,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 import functools
 import re
 import typing
-from typing import List
 
 import click
-from rapyuta_io import Client, DeploymentPhaseConstants
-from rapyuta_io.clients import Device
+from rapyuta_io import DeploymentPhaseConstants
 from rapyuta_io.clients.deployment import Deployment
-from rapyuta_io.clients.package import ExecutableMount
-from rapyuta_io.utils import InvalidParameterException, OperationNotAllowedError
-from rapyuta_io.utils.constants import DEVICE_ID
 
-from riocli.config import new_client
+from riocli.config import new_client, new_v2_client
 from riocli.constants import Colors
-from riocli.deployment.errors import ERRORS
+from riocli.deployment.list import DEFAULT_PHASES
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
+from riocli.v2client import Client
+from riocli.v2client.enums import DeploymentPhaseConstants
+
+ALL_PHASES = [
+    DeploymentPhaseConstants.DeploymentPhaseInProgress,
+    DeploymentPhaseConstants.DeploymentPhaseProvisioning,
+    DeploymentPhaseConstants.DeploymentPhaseSucceeded,
+    DeploymentPhaseConstants.DeploymentPhaseStopped,
+]
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any) -> None:
         try:
-            client = new_client()
+            client = new_v2_client()
         except Exception as e:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1) from e
@@ -53,7 +56,8 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
                 name = get_deployment_name(client, guid)
 
             if guid is None:
-                guid = find_deployment_guid(client, name)
+                guid = get_deployment_guid(client, name)
+
         except Exception as e:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1) from e
@@ -65,163 +69,42 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
+def get_deployment_guid(client: Client, name: str) -> str:
+    deployment = client.get_deployment(name)
+    return deployment.metadata.guid
+
+
 def get_deployment_name(client: Client, guid: str) -> str:
-    deployment = client.get_deployment(guid)
-    return deployment.name
+    deployments = client.list_deployments(query={'guids': [guid]})
+    if len(deployments) == 0:
+        raise DeploymentNotFound
 
-
-def find_deployment_guid(client: Client, name: str) -> str:
-    find_func = functools.partial(client.get_all_deployments,
-                                  phases=[DeploymentPhaseConstants.SUCCEEDED,
-                                          DeploymentPhaseConstants.PROVISIONING])
-    deployments = find_func()
-    for deployment in deployments:
-        if deployment.name == name:
-            return deployment.deploymentId
-
-    raise DeploymentNotFound()
-
-
-def select_details(deployment_guid, component_name=None, exec_name=None) -> (str, str, str):
-    client = new_client()
-    deployment = client.get_deployment(deployment_guid)
-    if deployment.phase != DeploymentPhaseConstants.SUCCEEDED.value:
-        raise Exception('Deployment is not in succeeded phase')
-
-    if component_name is None:
-        components = [c.name for c in deployment.componentInfo]
-        component_name = show_selection(components, 'Choose the component')
-
-    for component in deployment.componentInfo:
-        if component.name == component_name:
-            selected_component = component
-
-    if exec_name is None:
-        executables = [e.name for e in selected_component.executableMetaData]
-        exec_name = show_selection(executables, 'Choose the executable')
-
-    for executable in selected_component.executableMetaData:
-        if executable.name == exec_name:
-            exec_meta = executable
-
-    for executable in selected_component.executablesStatusInfo:
-        if executable.id == exec_meta.id:
-            exec_status = executable
-
-    if len(exec_status.metadata) == 1:  # If there is a single pod
-        pod_name = exec_status.metadata[0].podName
-    else:
-        pods = [p.podName for p in exec_status.metadata[0]]
-        pod_name = show_selection(pods, 'Choose the pod')
-
-    return selected_component.componentID, exec_meta.id, pod_name
-
-
-class DeploymentNotFound(Exception):
-    def __init__(self, message='deployment not found!'):
-        self.message = message
-        super().__init__(self.message)
-
-
-def add_mount_volume_provision_config(provision_config, component_name, device, executable_mounts):
-    if not isinstance(device, Device):
-        raise InvalidParameterException('device must be of type Device')
-
-    component_id = provision_config.plan.get_component_id(component_name)
-    if not isinstance(executable_mounts, list) or not all(
-            isinstance(mount, ExecutableMount) for mount in executable_mounts):
-        raise InvalidParameterException(
-            'executable_mounts must be a list of rapyuta_io.clients.package.ExecutableMount')
-    if device.get_runtime() != Device.DOCKER_COMPOSE and not device.is_docker_enabled():
-        raise OperationNotAllowedError('Device must be a {} device'.format(Device.DOCKER_COMPOSE))
-    component_params = provision_config.parameters.get(component_id)
-    if component_params.get(DEVICE_ID) != device.deviceId:
-        raise OperationNotAllowedError('Device must be added to the component')
-    # self._add_disk_mount_info(device.deviceId, component_id, executable_mounts)
-
-    dep_info = dict()
-    dep_info['diskResourceId'] = device.deviceId
-    dep_info['applicableComponentId'] = component_id
-    dep_info['config'] = dict()
-
-    for mount in executable_mounts:
-        exec_mount = {
-            'mountPath': mount.mount_path
-        }
-        if mount.uid is not None:
-            exec_mount['uid'] = mount.uid
-        if mount.gid is not None:
-            exec_mount['gid'] = mount.gid
-        if mount.perm is not None:
-            exec_mount['perm'] = mount.perm
-        if mount.sub_path:
-            exec_mount['subPath'] = mount.sub_path
-        else:
-            exec_mount['subPath'] = '/'
-
-        tmp_info = copy.deepcopy(dep_info)
-        tmp_info['config']['mountPaths'] = {
-            mount.exec_name: exec_mount,
-        }
-        provision_config.context['diskMountInfo'].append(tmp_info)
-
-    return provision_config
-
+    return deployments[0].metadata.name
 
 def fetch_deployments(
         client: Client,
         deployment_name_or_regex: str,
         include_all: bool,
-) -> List[Deployment]:
-    deployments = client.get_all_deployments(
-        phases=[DeploymentPhaseConstants.SUCCEEDED,
-                DeploymentPhaseConstants.PROVISIONING])
+) -> typing.List[Deployment]:
+    deployments = client.list_deployments(query={'phases': DEFAULT_PHASES})
     result = []
     for deployment in deployments:
-        if (include_all or deployment_name_or_regex == deployment.name or
-                deployment_name_or_regex == deployment.deploymentId or
-                (deployment_name_or_regex not in deployment.name and
-                 re.search(r'^{}$'.format(deployment_name_or_regex), deployment.name))):
+        if (include_all or deployment_name_or_regex == deployment.metadata.name or
+                deployment_name_or_regex == deployment.metadata.guid or
+                (deployment_name_or_regex not in deployment.metadata.name and
+                 re.search(r'^{}$'.format(deployment_name_or_regex), deployment.metadata.name))):
             result.append(deployment)
 
     return result
 
 
-def print_deployments_for_confirmation(deployments: List[Deployment]):
+def print_deployments_for_confirmation(deployments: typing.List[Deployment]):
     headers = ['Name', 'GUID', 'Phase', 'Status']
-    data = [[d.name, d.deploymentId, d.phase, d.status] for d in deployments]
+
+    data = []
+    for deployment in deployments:
+        data.append(
+            [deployment.metadata.name, deployment.metadata.guid, deployment.status.phase,
+             deployment.status.status])
 
     tabulate_data(data, headers)
-
-
-def process_deployment_errors(errors: List, no_action: bool = False) -> str:
-    err_fmt = '[{}] {}\nAction: {}'
-    support_action = ('Report the issue together with the relevant'
-                      ' details to the support team')
-
-    action, description = '', ''
-    msgs = []
-    for code in errors:
-        if code in ERRORS:
-            description = ERRORS[code]['description']
-            action = ERRORS[code]['action']
-        elif code.startswith('DEP_E2'):
-            description = 'Internal rapyuta.io error in the components deployed on cloud'
-            action = support_action
-        elif code.startswith('DEP_E3'):
-            description = 'Internal rapyuta.io error in the components deployed on a device'
-            action = support_action
-        elif code.startswith('DEP_E4'):
-            description = 'Internal rapyuta.io error'
-            action = support_action
-
-        code = click.style(code, fg=Colors.YELLOW)
-        description = click.style(description, fg=Colors.RED)
-        action = click.style(action, fg=Colors.GREEN)
-
-        if no_action:
-            msgs.append('{}: {}'.format(code, description, ''))
-        else:
-            msgs.append(err_fmt.format(code, description, action))
-
-    return '\n'.join(msgs)

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import Client
-from rapyuta_io.clients.deployment import Deployment
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Symbols, Colors
+from riocli.deployment.model import Deployment
 from riocli.deployment.util import fetch_deployments
 from riocli.deployment.util import print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
 
 @click.command(
@@ -35,6 +35,7 @@ from riocli.utils.spinner import with_spinner
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
+    deprecated=True,
 )
 @click.option('--force', '-f', '--silent', is_flag=True, default=False,
               help='Skip confirmation')
@@ -52,10 +53,59 @@ def update_deployment(
         update_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
+    """Updates one or more deployments"""
+    _update(force, workers, deployment_name_or_regex, update_all, spinner)
+
+
+@click.command(
+    'restart',
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option('--force', '-f', '--silent', is_flag=True, default=False,
+              help='Skip confirmation')
+@click.option('-a', '--all', 'update_all', is_flag=True, default=False,
+              help='Deletes all deployments in the project')
+@click.option('--workers', '-w',
+              help="number of parallel workers while running update deployment "
+                   "command. defaults to 10.", type=int, default=10)
+@click.argument('deployment-name-or-regex', type=str, default="")
+@with_spinner(text="Updating...")
+def restart_deployment(
+        force: bool,
+        workers: int,
+        deployment_name_or_regex: str,
+        update_all: bool = False,
+        spinner: Yaspin = None,
+) -> None:
+    """Restarts one or more deployments by name or regex.
+
+    Examples:
+
+    Restart a specific deployment
+
+    >> rio deployment restart amr01
+
+    Restart all deployments in the project
+
+    >> rio deployment restart --all
+
+    Restart deployments matching a regex.
+
+    >> rio deployment restart amr.*
     """
-    Updates one more deployments
-    """
-    client = new_client()
+    _update(force, workers, deployment_name_or_regex, update_all, spinner)
+
+
+def _update(
+        force: bool,
+        workers: int,
+        deployment_name_or_regex: str,
+        update_all: bool = False,
+        spinner: Yaspin = None,
+) -> None:
+    client = new_v2_client()
     if not (deployment_name_or_regex or update_all):
         spinner.text = "Nothing to update"
         spinner.green.ok(Symbols.SUCCESS)
@@ -93,13 +143,13 @@ def update_deployment(
         )
 
         data, fg, statuses = [], Colors.GREEN, []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
@@ -120,54 +170,13 @@ def update_deployment(
         raise SystemExit(1) from e
 
 
-def get_component_context(component_info) -> dict:
-    result = {}
-
-    for component in component_info:
-        comp = {}
-        executables = []
-        exec_metadata = component.get("executableMetaData", []) or []
-
-        for e in exec_metadata:
-            # Component will be considered only if any of its executables is
-            # docker
-            if not (e.get("docker")):
-                continue
-
-            executable = {}
-
-            if e.get("docker"):
-                executable["docker"] = e["docker"]
-
-            executable["id"] = e.get("id", "")
-            executable["name"] = e.get("name", "")
-            executables.append(executable)
-
-        if len(executables) > 0:
-            result[component["componentID"]] = comp
-            comp["component"] = {"executables": executables}
-            comp["update_deployment"] = True
-
-    return result
-
-
 def _apply_update(
         client: Client,
         result: Queue,
         deployment: Deployment,
 ) -> None:
     try:
-        dep = client.get_deployment(deployment['deploymentId'])
-        component_context = get_component_context(dep.get("componentInfo", {}))
-        payload = {
-            "service_id": dep["packageId"],
-            "plan_id": dep["planId"],
-            "deployment_id": dep["deploymentId"],
-            "context": {
-                "component_context": component_context
-            }
-        }
-        client.update_deployment(payload)
-        result.put((deployment["name"], True))
-    except Exception:
-        result.put((deployment["name"], False))
+        client.update_deployment(deployment.metadata.name, deployment)
+        result.put((deployment.metadata.name, True, 'Restarted'))
+    except Exception as e:
+        result.put((deployment.metadata.name, False, str(e)))

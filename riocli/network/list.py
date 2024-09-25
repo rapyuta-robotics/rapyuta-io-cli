@@ -15,11 +15,9 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import DeploymentPhaseConstants
-from rapyuta_io.clients.native_network import NativeNetwork
-from rapyuta_io.clients.routed_network import RoutedNetwork
+from munch import Munch
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
@@ -32,22 +30,21 @@ from riocli.utils import tabulate_data
 )
 @click.option('--network', help='Type of Network',
               type=click.Choice(['routed', 'native', 'both']), default='both')
-def list_networks(network: str) -> None:
+@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
+              default=(), help='Filter the deployment list by labels')
+def list_networks(network: str, labels: typing.List[str]) -> None:
     """
     List the networks in the selected project
     """
     try:
-        client = new_client()
+        client = new_v2_client(with_project=True)
 
-        networks = []
-        if network in ['routed', 'both']:
-            networks += client.get_all_routed_networks()
+        query = {'labelSelector': labels}
+        if network not in ("both", ""):
+            query.update({"networkType": network})
 
-        if network in ['native', 'both']:
-            networks += client.list_native_networks()
-
-        networks = sorted(networks, key=lambda n: n.name.lower())
-
+        networks = client.list_networks(query=query)
+        networks = sorted(networks, key=lambda n: n.metadata.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg='red')
@@ -55,27 +52,19 @@ def list_networks(network: str) -> None:
 
 
 def _display_network_list(
-        networks: typing.List[typing.Union[RoutedNetwork, NativeNetwork]],
+        networks: typing.List[Munch],
         show_header: bool = True,
 ) -> None:
     headers = []
     if show_header:
-        headers = ('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase')
-
+        headers = ('Network ID', 'Network Name', 'Runtime', 'Type', 'Phase', 'Status')
     data = []
     for network in networks:
-        phase = None
-        network_type = None
-        if isinstance(network, RoutedNetwork):
-            network_type = 'routed'
-            phase = network.phase
-        elif isinstance(network, NativeNetwork):
-            network_type = 'native'
-            phase = network.internal_deployment_status.phase
+        phase = network.status.phase if network.status else ""
+        status = network.status.status if network.status else ""
+        network_type = network.spec.type
 
-        if phase and phase == DeploymentPhaseConstants.DEPLOYMENT_STOPPED.value:
-            continue
         data.append(
-            [network.guid, network.name, network.runtime, network_type, phase])
+            [network.metadata.guid, network.metadata.name, network.spec.runtime, network_type, phase, status])
 
     tabulate_data(data, headers)

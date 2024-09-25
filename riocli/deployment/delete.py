@@ -11,19 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
 from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.deployment import Deployment
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
+from riocli.deployment.model import Deployment
 from riocli.deployment.util import fetch_deployments
 from riocli.deployment.util import print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client
 
 
 @click.command(
@@ -51,8 +53,7 @@ def delete_deployment(
     """
     Deletes one or more deployments given a name or a pattern
     """
-    client = new_client()
-
+    client = new_v2_client()
     if not (deployment_name_or_regex or delete_all):
         spinner.text = "Nothing to delete"
         spinner.green.ok(Symbols.SUCCESS)
@@ -83,23 +84,31 @@ def delete_deployment(
         spinner.write('')
 
     try:
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=_apply_delete, items=deployments,
+            f=f, items=deployments,
             workers=workers, key=lambda x: x[0]
         )
 
         data, statuses = [], []
-        for name, status in result:
+        for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
             data.append([
                 click.style(name, fg),
-                click.style(icon, fg)
+                click.style('{}  {}'.format(icon, msg), fg)
             ])
 
         with spinner.hidden():
             tabulate_data(data, headers=['Name', 'Status'])
+
+        # When no deployment is deleted, raise an exception.
+        if not any(statuses):
+            spinner.write('')
+            spinner.text = click.style('Failed to delete deployment(s).', Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
 
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
@@ -116,9 +125,9 @@ def delete_deployment(
         raise SystemExit(1) from e
 
 
-def _apply_delete(result: Queue, deployment: Deployment) -> None:
+def _apply_delete(client: Client, result: Queue, deployment: Deployment) -> None:
     try:
-        deployment.deprovision()
-        result.put((deployment.name, True))
-    except Exception:
-        result.put((deployment.name, False))
+        client.delete_deployment(name=deployment.metadata.name)
+        result.put((deployment.metadata.name, True, 'Deployment Deleted Successfully'))
+    except Exception as e:
+        result.put((deployment.metadata.name, False, str(e)))

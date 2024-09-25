@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 from munch import unmunchify
-from rapyuta_io import Client
-from waiting import wait, TimeoutExpired
+from waiting import wait
 
-from riocli.config import new_v2_client, Configuration
-from riocli.jsonschema.validate import load_schema
+from riocli.config import Configuration, new_v2_client
+from riocli.constants import ApplyResult
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
+from riocli.project.util import ProjectNotFound, find_project_guid
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 PROJECT_READY_TIMEOUT = 150
 
@@ -30,65 +31,36 @@ class Project(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def find_object(self, client: Client) -> bool:
-        guid, obj = self.rc.find_depends(
-            {"kind": "project", "nameOrGUID": self.metadata.name})
-        if not guid:
-            return False
-
-        return obj
-
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
 
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
         project = unmunchify(self)
-        project.pop("rc", None)
 
         # set organizationGUID irrespective of it being present in the manifest
-        project['metadata']['organizationGUID'] = Configuration().data[
-            'organization_id']
-
-        r = client.create_project(project)
+        project['metadata']['organizationGUID'] = Configuration().organization_guid
 
         try:
+            r = client.create_project(project)
             wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT,
                  sleep_seconds=(1, 30, 2))
-        except TimeoutExpired as e:
+            return ApplyResult.CREATED
+        except HttpAlreadyExistsError:
+            guid = find_project_guid(client, self.metadata.name, Configuration().organization_guid)
+            client.update_project(guid, project)
+            return ApplyResult.UPDATED
+        except Exception as e:
             raise e
 
-        return unmunchify(r)
-
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
+    def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
 
-        project = unmunchify(self)
-        project.pop("rc", None)
-
-        # set organizationGUID irrespective of it being present in the manifest
-        project['metadata']['organizationGUID'] = Configuration().data[
-            'organization_id']
-
-        client.update_project(obj.metadata.guid, project)
-
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        client = new_v2_client()
-        client.delete_project(obj.metadata.guid)
+        try:
+            guid = find_project_guid(client, self.metadata.name, Configuration().data['organization_id'])
+            client.delete_project(guid)
+        except (HttpNotFoundError, ProjectNotFound):
+            raise ResourceNotFound
 
     def is_ready(self) -> bool:
         client = new_v2_client()
         projects = client.list_projects(query={"name": self.metadata.name})
         return projects[0].status.status == 'Success'
-
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
-
-    @staticmethod
-    def validate(data):
-        """
-        Validates if project data is matching with its corresponding schema
-        """
-        schema = load_schema('project')
-        schema.validate(data)

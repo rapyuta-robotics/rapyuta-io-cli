@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,62 +11,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 from munch import unmunchify
 
-from rapyuta_io import Client
-
-from riocli.config import new_v2_client
-from riocli.jsonschema.validate import load_schema
+from riocli.config import Configuration, new_v2_client
+from riocli.constants import ApplyResult
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class StaticRoute(Model):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def find_object(self, client: Client) -> bool:
-        _, static_route = self.rc.find_depends({
-            'kind': 'staticroute',
-            'nameOrGUID': self.metadata.name
-        })
-        if not static_route:
-            return False
-
-        return static_route
-
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
-
-        # convert to a dict and remove the ResolverCache
-        # field since it's not JSON serializable
-        self.pop("rc", None)
-        static_route = unmunchify(self)
-        r = client.create_static_route(static_route)
-        return unmunchify(r)
-
-    def update_object(self, client: Client, obj: typing.Any) -> None:
-        client = new_v2_client()
-
-        self.pop("rc", None)
 
         static_route = unmunchify(self)
-        r = client.update_static_route(obj.metadata.name, static_route)
 
-        return unmunchify(r)
+        try:
+            client.create_static_route(static_route)
+            return ApplyResult.CREATED
+        except HttpAlreadyExistsError:
+            client.update_static_route(self.metadata.name, static_route)
+            return ApplyResult.UPDATED
 
-    def delete_object(self, client: Client, obj: typing.Any):
+    def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
-        client.delete_static_route(obj.metadata.name)
 
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
+        short_id = Configuration().organization_short_id
 
-    @staticmethod
-    def validate(data):
-        """
-        Validates if static route data is matching with its corresponding schema
-        """
-        schema = load_schema('static_route')
-        schema.validate(data)
+        try:
+            client.delete_static_route(f'{self.metadata.name}-{short_id}')
+        except HttpNotFoundError:
+            raise ResourceNotFound

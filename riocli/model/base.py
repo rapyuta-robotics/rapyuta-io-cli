@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,179 +13,63 @@
 # limitations under the License.
 import typing
 from abc import ABC, abstractmethod
-from datetime import datetime
-from shutil import get_terminal_size
 
-import click
-from munch import Munch, munchify
-from rapyuta_io import Client
-from yaspin.api import Yaspin
+from munch import Munch
 
-from riocli.constants import Colors, Symbols
-from riocli.project.util import find_project_guid
-
-prompt = ">> {}{}{} [{}]"  # >> left_msg  spacer  right_msg time
+from riocli.constants import ApplyResult
+from riocli.jsonschema.validate import load_schema
 
 DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
 
-def message_with_prompt(
-        msg,
-        right_msg='',
-        fg=Colors.WHITE,
-        with_time=True,
-        spinner: Yaspin = None,
-) -> None:
-    columns, _ = get_terminal_size()
-    t = datetime.now().isoformat('T')
-    spacer = ' ' * (int(columns) - len(msg + right_msg + t) - 12)
-    msg = prompt.format(msg, spacer, right_msg, t)
-    msg = click.style(msg, fg=fg)
-    if spinner:
-        spinner.write(msg)
-    else:
-        click.echo(msg)
-
-
 class Model(ABC, Munch):
+    """Base class for all models.
 
-    def apply(self, client: Client, *args, **kwargs) -> typing.Any:
-        spinner = kwargs.get('spinner')
-        try:
-            self._set_project_in_client(client)
-            obj = self.find_object(client)
-            dryrun = kwargs.get("dryrun", False)
-            if not obj:
-                message_with_prompt("{} Create {}:{}".format(
-                    Symbols.WAITING,
-                    self.kind.lower(),
-                    self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
-                if not dryrun:
-                    result = self.create_object(client, **kwargs)
-                    message_with_prompt("{} Created {}:{}".format(
-                        Symbols.SUCCESS,
-                        self.kind.lower(),
-                        self.metadata.name), fg=Colors.GREEN, spinner=spinner)
-                    return result
-            else:
-                message_with_prompt('{} {}:{} exists. will be updated'.format(
-                    Symbols.INFO,
-                    self.kind.lower(),
-                    self.metadata.name), spinner=spinner)
-                message_with_prompt("{} Update {}:{}".format(
-                    Symbols.WAITING,
-                    self.kind.lower(),
-                    self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
-                if not dryrun:
-                    result = self.update_object(client, obj)
-                    message_with_prompt("{} Updated {}:{}".format(
-                        Symbols.SUCCESS,
-                        self.kind.lower(),
-                        self.metadata.name), fg=Colors.GREEN, spinner=spinner)
-                    return result
-        except Exception as e:
-            message_with_prompt("{} {}:{}. {} ‼".format(
-                Symbols.ERROR,
-                self.kind.lower(),
-                self.metadata.name,
-                str(e)), fg=Colors.RED, spinner=spinner)
-            raise e
+    This class provides the basic structure for all models. It
+    also provides the basic methods that should be implemented by
+    all models. The methods are:
 
-    def delete(self, client: Client, obj: typing.Any, *args, **kwargs):
-        spinner = kwargs.get('spinner')
-        dryrun = kwargs.get("dryrun", False)
-        try:
-            self._set_project_in_client(client)
-            obj = self.find_object(client)
-
-            if not obj:
-                message_with_prompt(
-                    '⁉ {}:{} does not exist'.format(
-                        self.kind.lower(), self.metadata.name),
-                    spinner=spinner)
-                return
-
-            message_with_prompt("{} Delete {}:{}".format(
-                Symbols.WAITING,
-                self.kind.lower(),
-                self.metadata.name), fg=Colors.YELLOW, spinner=spinner)
-
-            if not dryrun:
-                labels = self.metadata.get('labels', {})
-                if (DELETE_POLICY_LABEL in labels and
-                        labels.get(DELETE_POLICY_LABEL) and
-                        labels.get(DELETE_POLICY_LABEL).lower() == "retain"):
-                    click.secho(
-                        ">> {} Delete protection enabled on {}:{}. "
-                        "Resource will be retained ".format(
-                            Symbols.WARNING,
-                            self.kind.lower(),
-                            self.metadata.name), fg=Colors.YELLOW)
-                    return
-
-                self.delete_object(client, obj)
-                message_with_prompt("{} Deleted {}:{}".format(
-                    Symbols.SUCCESS,
-                    self.kind.lower(),
-                    self.metadata.name), fg=Colors.GREEN, spinner=spinner)
-        except Exception as e:
-            message_with_prompt("{} {}:{}. {} ‼".format(
-                Symbols.ERROR,
-                self.kind.lower(),
-                self.metadata.name,
-                str(e)), fg=Colors.RED, spinner=spinner)
-            raise e
-
-    @abstractmethod
-    def find_object(self, client: Client) -> typing.Any:
+    # Create or update the object
+    def apply(self, *args, **kwargs):
         pass
 
-    @abstractmethod
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
+    # Delete the object
+    def delete(self, *args, **kwargs):
         pass
 
+    The validate method is a class method that need not be implemented
+    by the subclasses. It validates the model against the corresponding
+    schema that are defined in the schema files.
+    """
     @abstractmethod
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
+    def apply(self, *args, **kwargs) -> ApplyResult:
+        """Create or update the object.
 
-    @staticmethod
+        This method should be implemented by the subclasses. It should
+        create or update the object based on the values in the model.
+        """
+        raise NotImplementedError
+
     @abstractmethod
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
+    def delete(self, *args, **kwargs) -> None:
+        """Delete the object.
+
+        This method should be implemented by the subclasses. It should
+        delete the object based on the values in the model.
+        """
+        raise NotImplementedError
 
     @classmethod
-    @abstractmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
+    def validate(cls, d: typing.Dict) -> None:
+        """Validate the model against the corresponding schema."""
+        kind = d.get('kind')
+        if not kind:
+            raise ValueError('kind is required')
 
-    @staticmethod
-    @abstractmethod
-    def validate(d):
-        pass
+        # StaticRoute's schema file is named
+        # static_route-schema.yaml.
+        if kind == 'StaticRoute':
+            kind = 'static_route'
 
-    @classmethod
-    def from_dict(cls, client: Client, d: typing.Dict):
-        cls.pre_process(client, d)
-        cls.validate(d)
-        return cls(munchify(d))
-
-    def _set_project_in_client(self, client: Client) -> Client:
-        # If the Type is Project itself then no need to configure Client.
-        if self.kind == 'Project':
-            return client
-
-        # If Project is not specified then no need to configure the Client. It
-        # will use the pre-configured Project by default.
-        #
-        # TODO(ankit): Move this to the pre-processing step, once implemented.
-        project = self.metadata.get('project', None)
-        if not project:
-            return client
-
-        # This should work unless someone has a Project Name starting with
-        # 'project-' prefix
-        if not project.startswith('project-'):
-            project = find_project_guid(client, project)
-
-        client.set_project(project_guid=project)
-        return client
+        schema = load_schema(kind.lower())
+        schema.validate(d)

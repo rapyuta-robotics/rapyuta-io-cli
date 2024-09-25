@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,55 +11,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
-from munch import munchify, unmunchify
-from rapyuta_io import Client
+from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.jsonschema.validate import load_schema
+from riocli.constants import ApplyResult
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class ManagedService(Model):
-    def find_object(self, client: Client) -> typing.Any:
-        name = self.metadata.name
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update(*args, **kwargs)
+
+    def apply(self, *args, **kwargs) -> ApplyResult:
         client = new_v2_client()
 
         try:
-            instance = client.get_instance(name)
-            return munchify(instance)
-        except Exception:
-            return False
+            client.create_instance(unmunchify(self))
+            return ApplyResult.CREATED
+        except HttpAlreadyExistsError:
+            return ApplyResult.EXISTS
 
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
+    def delete(self, *args, **kwargs) -> None:
         client = new_v2_client()
 
-        ms = unmunchify(self)
-        ms.pop('rc', None)
-        result = client.create_instance(ms)
-        return munchify(result)
-
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
-
-    def delete_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        client = new_v2_client()
-        client.delete_instance(obj.metadata.name)
-
-    @staticmethod
-    def list_instances():
-        client = new_v2_client()
-        return client.list_instances()
-
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
-
-    @staticmethod
-    def validate(data):
-        """
-        Validates if managedservice data is matching with its corresponding schema
-        """
-        schema = load_schema('managedservice')
-        schema.validate(data)
+        try:
+            client.delete_instance(self.metadata.name)
+        except HttpNotFoundError:
+            raise ResourceNotFound

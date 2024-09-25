@@ -2,8 +2,7 @@ apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "StaticRoute"
 metadata:
   name: "staticroute"
-  project: "project-guid"
-  # region: us
+  region: jp
   labels:
     app: test
 spec:

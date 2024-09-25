@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from riocli.constants.colors import Colors
+from riocli.constants.regions import Regions
+from riocli.constants.status import Status, ApplyResult
 from riocli.constants.symbols import Symbols
 
-__all__ = [Colors, Symbols]
+__all__ = [Colors, Symbols, Regions, Status, ApplyResult]

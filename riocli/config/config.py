@@ -165,6 +165,17 @@ class Configuration(object):
         return guid
 
     @property
+    def organization_short_id(self: Configuration) -> str:
+        if 'auth_token' not in self.data:
+            raise LoggedOut
+
+        short_id = self.data.get('organization_short_id')
+        if short_id is None:
+            raise NoOrganizationSelected
+
+        return short_id
+
+    @property
     def piping_server(self: Configuration):
         return self.data.get('piping_server', self.PIPING_SERVER)
 

@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from rapyuta_io.clients.rosbag import ROSBagOptions, ROSBagJob, ROSBagCompressio
     ROSBagOnDemandUploadOptions, ROSBagTimeRange
 
 from riocli.config import new_client
-from riocli.deployment.util import name_to_guid as deployment_name_to_guid
+# from riocli.deployment.util import name_to_guid as deployment_name_to_guid
 from riocli.rosbag.util import ROSBagJobNotFound
 from riocli.utils import inspect_with_format
 from riocli.utils import tabulate_data
@@ -103,7 +103,7 @@ def job_inspect(job_guid: str, format_type: str) -> None:
 @click.argument('deployment-name')
 @click.option('--component-instance-ids', help='Filter by component instance ids ', multiple=True)
 @click.option('--guids', help='Filter by job guids', multiple=True)
-@deployment_name_to_guid
+# @deployment_name_to_guid
 def job_stop(deployment_guid: str, deployment_name: str, component_instance_ids: typing.List[str],
              guids: typing.List[str]) -> None:
     """
@@ -124,9 +124,10 @@ def job_stop(deployment_guid: str, deployment_name: str, component_instance_ids:
 @click.argument('deployment-name')
 @click.option('--component-instance-ids', help='Filter by component instance ids ', multiple=True)
 @click.option('--guids', help='Filter by job guids ', multiple=True)
-@click.option('--statuses', help='Filter by rosbag job statuses ', multiple=True, default=['Starting', 'Running'],
+@click.option('--statuses', help='Filter by rosbag job statuses ', multiple=True,
+              default=['Starting', 'Running', 'Stopped', 'Stopping', 'Error'],
               type=click.Choice(['Starting', 'Running', 'Error', 'Stopping', 'Stopped'], case_sensitive=True))
-@deployment_name_to_guid
+# @deployment_name_to_guid
 def job_list(deployment_guid: str, deployment_name: str,
              component_instance_ids: typing.List[str], guids: typing.List[str], statuses: typing.List[str]) -> None:
     """
@@ -153,7 +154,7 @@ def job_list(deployment_guid: str, deployment_name: str,
                                     'format (1985-04-12T23:20:50.52Z)', required=True)
 @click.option('--upload-to', help='Rosbags recorded before or at this time are uploaded. Specify time in RFC 3339 '
                                   'format (1985-04-12T23:20:50.52Z)', required=True)
-@deployment_name_to_guid
+# @deployment_name_to_guid
 def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str,
                        upload_from: str, upload_to: str) -> None:
     """
@@ -224,7 +225,7 @@ def job_trigger_upload(deployment_guid: str, deployment_name: str, job_guid: str
 @click.argument('job-guid')
 @click.option('--upload-mode', help='Change upload mode',
               type=click.Choice([t for t in ROSBagUploadTypes]), required=True)
-@deployment_name_to_guid
+# @deployment_name_to_guid
 def update_job(deployment_guid: str, deployment_name: str, job_guid: str, upload_mode: str) -> None:
     """
     Update the Rosbag Job

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,86 +11,47 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-from time import sleep
 
-import click
-from munch import munchify
-from rapyuta_io import Client
-from rapyuta_io.utils.rest_client import HttpMethod
+from munch import unmunchify
 
-from riocli.constants import Colors, Symbols
-from riocli.disk.util import _api_call
-from riocli.jsonschema.validate import load_schema
+from riocli.config import new_v2_client
+from riocli.constants import ApplyResult
+from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
+from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Disk(Model):
-    def find_object(self, client: Client) -> typing.Any:
-        _, disk = self.rc.find_depends({
-            'kind': 'disk',
-            'nameOrGUID': self.metadata.name
-        })
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update(*args, **kwargs)
 
-        if not disk:
-            return False
+    def apply(self, *args, **kwargs) -> ApplyResult:
+        client = new_v2_client()
 
-        return disk
-
-    def create_object(self, client: Client, **kwargs) -> typing.Any:
-        labels = self.metadata.get('labels', None)
-        payload = {
-            "labels": labels,
-            "name": self.metadata.name,
-            "diskType": "ssd",
-            "runtime": self.spec.runtime,
-            "capacity": self.spec.capacity,
-        }
-
-        result = _api_call(HttpMethod.POST, payload=payload)
-        result = munchify(result)
-        disk_dep_guid, disk = self.rc.find_depends({
-            'kind': self.kind.lower(),
-            'nameOrGUID': self.metadata.name
-        })
-
-        volume_instance = client.get_volume_instance(disk_dep_guid)
+        self.metadata.createdAt = None
+        self.metadata.updatedAt = None
 
         retry_count = int(kwargs.get('retry_count'))
         retry_interval = int(kwargs.get('retry_interval'))
+
         try:
-            volume_instance.poll_deployment_till_ready(
+            r = client.create_disk(unmunchify(self))
+            client.poll_disk(
+                r.metadata.name,
                 retry_count=retry_count,
-                sleep_interval=retry_interval
+                sleep_interval=retry_interval,
             )
+            return ApplyResult.CREATED
+        except HttpAlreadyExistsError:
+            return ApplyResult.EXISTS
         except Exception as e:
-            click.secho(">> {}: Error polling for disk ({}:{})".format(
-                Symbols.WARNING,
-                self.kind.lower(),
-                self.metadata.name), fg=Colors.YELLOW)
+            raise e
 
-        return result
+    def delete(self, *args, **kwargs) -> None:
+        client = new_v2_client()
 
-    def update_object(self, client: Client, obj: typing.Any) -> typing.Any:
-        pass
-
-    def delete_object(self, client: Client, obj: typing.Any, sleep_interval=10, retries=12) -> typing.Any:
-        volume_instance = client.get_volume_instance(obj.internalDeploymentGUID)
-        for attempt in range(retries):
-            sleep(sleep_interval)
-            try:
-                volume_instance.destroy_volume_instance()
-            except Exception as e:
-                if attempt == retries - 1:
-                    raise e
-            else:
-                return
-
-    @classmethod
-    def pre_process(cls, client: Client, d: typing.Dict) -> None:
-        pass
-
-    @staticmethod
-    def validate(data):
-        schema = load_schema('disk')
-        schema.validate(data)
+        try:
+            client.delete_disk(self.metadata.name)
+        except HttpNotFoundError:
+            raise ResourceNotFound

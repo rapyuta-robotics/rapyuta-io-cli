@@ -32,7 +32,12 @@ from riocli.utils import inspect_with_format
               type=click.Choice(['json', 'yaml'], case_sensitive=False))
 @click.argument('organization-name', type=str)
 @name_to_organization_guid
-def inspect_organization(format_type: str, organization_name: str, organization_guid: str) -> None:
+def inspect_organization(
+        format_type: str,
+        organization_name: str,
+        organization_guid: str,
+        organization_short_id: str,
+) -> None:
     """
     Inspect an organization
     """

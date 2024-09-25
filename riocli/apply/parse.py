@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,40 +18,39 @@ import typing
 from graphlib import TopologicalSorter
 
 import click
-import jinja2
 import yaml
+from munch import munchify
 
-from riocli.apply.resolver import ResolverCache
+from riocli.apply.util import (get_model, init_jinja_environment, message_with_prompt, print_resolved_objects)
 from riocli.config import Configuration
-from riocli.constants import Colors, Symbols
-from riocli.utils import dump_all_yaml, run_bash
+from riocli.constants import Colors, Symbols, ApplyResult
+from riocli.exceptions import ResourceNotFound
+from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
 
 
 class Applier(object):
     DEFAULT_MAX_WORKERS = 6
+    DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
     def __init__(self, files: typing.List, values, secrets):
-        self.environment = None
-        self.input_file_paths = files
-        self.config = Configuration()
-        self.client = self.config.new_client()
-        self.dependencies = {}
+        self.files = {}
+        self.values = {}
+        self.secrets = {}
         self.objects = {}
         self.resolved_objects = {}
-        self.files = {}
+        self.input_file_paths = files
+        self.config = Configuration()
         self.graph = TopologicalSorter()
-        self.rc = ResolverCache(self.client)
-        self.secrets = {}
-        self.values = {}
+        self.environment = init_jinja_environment()
         self.diagram = Graphviz(direction='LR', format='svg')
-        if values or secrets:
-            self.environment = jinja2.Environment()
 
         if values:
             self.values = self._load_file_content(
                 values, is_value=True, is_secret=False)[0]
+
+        self.values = self._inject_rio_namespace(self.values)
 
         if secrets:
             self.secrets = self._load_file_content(
@@ -59,67 +58,35 @@ class Applier(object):
 
         self._process_file_list(files)
 
-    # Public Functions
-    def order(self):
-        return self.graph.static_order()
+    def print_resolved_manifests(self):
+        """Validates and prints the resolved manifests"""
+        manifests = []
+        for _, o in self.objects.items():
+            kls = get_model(o)
+            kls.validate(o)
+            manifests.append(o)
+
+        dump_all_yaml(manifests)
 
     @with_spinner(text='Applying...', timer=True)
     def apply(self, *args, **kwargs):
+        """Apply the resources defined in the manifest files"""
         spinner = kwargs.get('spinner')
         kwargs['workers'] = int(kwargs.get('workers')
                                 or self.DEFAULT_MAX_WORKERS)
+
         apply_func = self.apply_async
         if kwargs['workers'] == 1:
             apply_func = self.apply_sync
 
         try:
             apply_func(*args, **kwargs)
-            spinner.text = 'Apply successful.'
+            spinner.text = click.style('Apply successful.', fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = 'Apply failed. Error: {}'.format(e)
+            spinner.text = click.style('Apply failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
-
-    def apply_async(self, *args, **kwargs):
-        workers = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
-        task_queue = queue.Queue()
-        done_queue = queue.Queue()
-
-        def worker():
-            while True:
-                o = task_queue.get()
-                if o in self.resolved_objects and 'manifest' in \
-                        self.resolved_objects[o]:
-                    try:
-                        self._apply_manifest(o, *args, **kwargs)
-                    except Exception as ex:
-                        click.secho(
-                            '[Err] Object "{}" apply failed. Apply will not progress further.'.format(
-                                o, str(ex)))
-                        done_queue.put(ex)
-                        continue
-
-                task_queue.task_done()
-                done_queue.put(o)
-
-        worker_list = []
-        for worker_id in range(workers):
-            worker_list.append(threading.Thread(target=worker, daemon=True))
-            worker_list[worker_id].start()
-
-        self.graph.prepare()
-        while self.graph.is_active():
-            for obj in self.graph.get_ready():
-                task_queue.put(obj)
-
-            done_obj = done_queue.get()
-            if not isinstance(done_obj, Exception):
-                self.graph.done(done_obj)
-            else:
-                raise Exception(done_obj)
-
-        task_queue.join()
 
     def apply_sync(self, *args, **kwargs):
         self.graph.prepare()
@@ -130,71 +97,234 @@ class Applier(object):
                     self._apply_manifest(obj, *args, **kwargs)
                 self.graph.done(obj)
 
+    def apply_async(self, *args, **kwargs):
+        task_queue = queue.Queue()
+        done_queue = queue.Queue()
+
+        self._start_apply_workers(
+            self._apply_manifest,
+            task_queue,
+            done_queue,
+            *args, **kwargs
+        )
+
+        self.graph.prepare()
+        while self.graph.is_active():
+            for obj in self.graph.get_ready():
+                task_queue.put(obj)
+
+            done_obj = done_queue.get()
+            if isinstance(done_obj, Exception):
+                raise Exception(done_obj)
+
+            self.graph.done(done_obj)
+
+        # Block until the task_queue is empty.
+        task_queue.join()
+
     @with_spinner(text='Deleting...', timer=True)
     def delete(self, *args, **kwargs):
+        """Delete resources defined in manifests."""
         spinner = kwargs.get('spinner')
-        delete_order = list(self.graph.static_order())
-        delete_order.reverse()
+        kwargs['workers'] = int(kwargs.get('workers')
+                                or self.DEFAULT_MAX_WORKERS)
+
+        delete_func = self.delete_async
+        if kwargs['workers'] == 1:
+            delete_func = self.delete_sync
+
         try:
-            for obj in delete_order:
-                if (obj in self.resolved_objects and
-                        'manifest' in self.resolved_objects[obj]):
-                    self._delete_manifest(obj, *args, **kwargs)
-            spinner.text = 'Delete successful.'
+            delete_func(*args, **kwargs)
+            spinner.text = click.style('Delete successful.', fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = 'Delete failed. Error: {}'.format(e)
+            spinner.text = click.style('Delete failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1) from e
 
-    def print_resolved_manifests(self):
-        manifests = [o for _, o in self.objects.items()]
-        dump_all_yaml(manifests)
+    def delete_sync(self, *args, **kwargs) -> None:
+        delete_order = list(self.graph.static_order())
+        delete_order.reverse()
+        for o in delete_order:
+            if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
+                self._delete_manifest(o, *args, **kwargs)
 
-    def parse_dependencies(
+    def delete_async(self, *args, **kwargs) -> None:
+        task_queue = queue.Queue()
+        done_queue = queue.Queue()
+
+        self._start_apply_workers(
+            self._delete_manifest,
+            task_queue,
+            done_queue,
+            *args, **kwargs
+        )
+
+        for nodes in self._get_async_delete_order():
+            for node in nodes:
+                task_queue.put(node)
+
+            done_obj = done_queue.get()
+            if isinstance(done_obj, Exception):
+                raise Exception(done_obj)
+
+            task_queue.join()
+
+    def _start_apply_workers(
             self,
-            check_missing=True,
-            delete=False,
-            template=False
-    ):
-        number_of_objects = 0
-        for f, data in self.files.items():
+            func: typing.Callable,
+            tasks: queue.Queue,
+            done: queue.Queue,
+            *args, **kwargs,
+    ) -> None:
+        """A helper method to start workers for apply/delete operations
+
+        The `func` should have the following signature:
+            func(obj_key: str, *args, **kwargs) -> None
+
+        The `tasks` queue is used to pass objects to the workers for processing.
+        The `done` queue is used to pass the processed objects back to the main.
+        """
+        def _worker():
+            while True:
+                o = tasks.get()
+                if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
+                    try:
+                        func(o, *args, **kwargs)
+                    except Exception as ex:
+                        tasks.task_done()
+                        done.put(ex)
+                        continue
+
+                tasks.task_done()
+                done.put(o)
+
+        # Start the workers that will accept tasks from the task_queue
+        # and process them. Upon completion, they will put the object
+        # in the done_queue. The main thread will wait for the task_queue
+        # to be empty before exiting. The daemon threads will die with the
+        # main process.
+        n = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
+        for i in range(n):
+            threading.Thread(
+                target=_worker,
+                daemon=True,
+                name=f'worker-{i}'
+            ).start()
+
+    def _get_async_delete_order(self):
+        """Returns the delete order for async delete operation
+
+        This method returns the delete order in a way that the
+        resources that are dependent on other resources are deleted
+        first while also ensuring that they can be processed concurrently.
+        """
+        stack = []
+        self.graph.prepare()
+        while self.graph.is_active():
+            nodes = self.graph.get_ready()
+            stack.append(nodes)
+            self.graph.done(*nodes)
+
+        while stack:
+            yield stack.pop()
+
+    def parse_dependencies(self):
+        for _, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
                 self._add_graph_node(key)
-                number_of_objects = number_of_objects + 1
 
-        if check_missing:
-            missing_resources = []
-            for key, item in self.resolved_objects.items():
-                if 'src' in item and item['src'] == 'missing':
-                    missing_resources.append(key)
+        print_centered_text("Parsed Resources")
+        print_resolved_objects(self.resolved_objects)
 
-            if missing_resources:
-                click.secho(
-                    "Missing resources found in yaml. Please ensure the "
-                    "following are either available in your YAML or created"
-                    " on the server. {}".format(
-                        set(missing_resources)), fg=Colors.RED)
+    def show_dependency_graph(self):
+        """Lauches mermaid.live dependency graph"""
+        self.diagram.visualize()
 
-                raise SystemExit(1)
+    def _apply_manifest(self, obj_key: str, *args, **kwargs) -> None:
+        """Instantiate and apply the object manifest"""
+        spinner = kwargs.get('spinner')
+        dryrun = kwargs.get("dryrun", False)
 
-    # Manifest Operations via base.py
-    def _apply_manifest(self, obj_key, *args, **kwargs):
         obj = self.objects[obj_key]
-        cls = ResolverCache.get_model(obj)
-        ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', ResolverCache(self.client))
-        ist.apply(self.client, *args, **kwargs)
+        kls = get_model(obj)
 
-    def _delete_manifest(self, obj_key, *args, **kwargs):
+        try:
+            kls.validate(obj)
+        except Exception as ex:
+            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+
+        ist = kls(munchify(obj))
+
+        obj_key = click.style(obj_key, bold=True)
+
+        message_with_prompt("{} Applying {}...".format(
+            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+
+        try:
+            result = ApplyResult.CREATED
+            if not dryrun:
+                result = ist.apply(*args, **kwargs)
+
+            if result == ApplyResult.EXISTS:
+                message_with_prompt("{} {} already exists".format(
+                    Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+                return
+
+            message_with_prompt("{} {} {}".format(
+                Symbols.SUCCESS, result, obj_key),
+                fg=Colors.GREEN, spinner=spinner)
+        except Exception as ex:
+            message_with_prompt("{} Failed to apply {}. Error: {}".format(
+                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
+            raise Exception(f'{obj_key}: {str(ex)}')
+
+    def _delete_manifest(self, obj_key: str, *args, **kwargs) -> None:
+        """Instantiate and delete the object manifest"""
+        spinner = kwargs.get('spinner')
+        dryrun = kwargs.get("dryrun", False)
+
         obj = self.objects[obj_key]
-        cls = ResolverCache.get_model(obj)
-        ist = cls.from_dict(self.client, obj)
-        setattr(ist, 'rc', ResolverCache(self.client))
-        ist.delete(self.client, obj, *args, **kwargs)
+        kls = get_model(obj)
 
-    # File Loading Operations
+        try:
+            kls.validate(obj)
+        except Exception as ex:
+            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+
+        ist = kls(munchify(obj))
+
+        obj_key = click.style(obj_key, bold=True)
+
+        message_with_prompt("{} Deleting {}...".format(
+            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+
+        # If a resource has a label with DELETE_POLICY_LABEL set
+        # to 'retain', it should not be deleted.
+        labels = obj.get('metadata', {}).get('labels', {})
+        can_delete = labels.get(self.DELETE_POLICY_LABEL) != 'retain'
+
+        if not can_delete:
+            message_with_prompt("{} {} cannot be deleted since deletion policy is set to 'retain'".format(
+                Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+            return
+
+        try:
+            if not dryrun and can_delete:
+                ist.delete(*args, **kwargs)
+
+            message_with_prompt("{} Deleted {}".format(
+                Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
+        except ResourceNotFound:
+            message_with_prompt("{} {} not found".format(
+                Symbols.WARNING, obj_key), fg=Colors.YELLOW, spinner=spinner)
+            return
+        except Exception as ex:
+            message_with_prompt("{} Failed to delete {}. Error: {}".format(
+                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
+            raise Exception(f'{obj_key}: {str(ex)}')
 
     def _process_file_list(self, files):
         for f in files:
@@ -269,8 +399,6 @@ class Applier(object):
 
         return loaded_data
 
-    # Graph Operations
-
     def _add_graph_node(self, key):
         self.graph.add(key)
         self.diagram.node(key)
@@ -279,8 +407,12 @@ class Applier(object):
         self.graph.add(dependent_key, key)
         self.diagram.edge(key, dependent_key)
 
-    # Dependency Resolution
     def _parse_dependency(self, dependent_key, model):
+        # TODO(pallab): let resources determine their own dependencies and return them
+        # kls = get_model(model)
+        # for dependency in kls.parse_dependencies(model):
+        #     self._resolve_dependency(dependent_key, dependency)
+
         for key, value in model.items():
             if key == "depends":
                 if 'kind' in value and value.get('kind'):
@@ -306,85 +438,7 @@ class Applier(object):
         name_or_guid = dependency.get('nameOrGUID')
         key = '{}:{}'.format(kind, name_or_guid)
 
-        self._initialize_kind_dependency(kind)
-        guid = ResolverCache._maybe_guid(kind, name_or_guid)
-
-        obj_list = self.rc.list_objects(kind)
-        for obj in obj_list:
-            obj_guid = self._get_attr(obj, ResolverCache.GUID_KEYS)
-            obj_name = self._get_attr(obj, ResolverCache.NAME_KEYS)
-
-            if kind == 'package':
-                if guid and obj_guid == guid:
-                    self._add_remote_object_to_resolve_tree(
-                        dependent_key, obj_guid, dependency, obj)
-
-                if (name_or_guid == obj_name) and (
-                        'version' in dependency and obj['packageVersion'] == dependency.get('version')):
-                    self._add_remote_object_to_resolve_tree(
-                        dependent_key, obj_guid, dependency, obj)
-
-            # Special handling for Static route since it doesn't have a name field.
-            # StaticRoute sends a URLPrefix field with name being the prefix along with short org guid.
-            elif kind == 'staticroute' and name_or_guid in obj_name:
-                self._add_remote_object_to_resolve_tree(
-                    dependent_key, obj_guid, dependency, obj)
-
-            elif (guid and obj_guid == guid) or (name_or_guid == obj_name):
-                self._add_remote_object_to_resolve_tree(
-                    dependent_key, obj_guid, dependency, obj)
-
-        self.dependencies[kind][name_or_guid] = {'local': True}
         self._add_graph_edge(dependent_key, key)
-
-        if key not in self.resolved_objects:
-            self.resolved_objects[key] = {'src': 'missing'}
-
-    def _add_remote_object_to_resolve_tree(self, dependent_key, guid,
-                                           dependency, obj):
-        kind = dependency.get('kind')
-        name_or_guid = dependency.get('nameOrGUID')
-        key = '{}:{}'.format(kind, name_or_guid)
-        self.dependencies[kind][name_or_guid] = {
-            'guid': guid, 'raw': obj, 'local': False}
-        if key not in self.resolved_objects:
-            self.resolved_objects[key] = {}
-        self.resolved_objects[key]['guid'] = guid
-        self.resolved_objects[key]['raw'] = obj
-        self.resolved_objects[key]['src'] = 'remote'
-
-        self._add_graph_edge(dependent_key, key)
-
-        dependency['guid'] = guid
-        if kind.lower() == "disk":
-            dependency['depGuid'] = obj['internalDeploymentGUID']
-
-        if kind.lower() == "deployment":
-            dependency['guid'] = obj['deploymentId']
-
-    def _initialize_kind_dependency(self, kind):
-        if not self.dependencies.get(kind):
-            self.dependencies[kind] = {}
-
-    def show_dependency_graph(self):
-        """Lauches mermaid.live dependency graph"""
-        self.diagram.visualize()
-
-    # Utils
-    @staticmethod
-    def _get_attr(obj, accept_keys):
-        metadata = None
-
-        if hasattr(obj, 'metadata'):
-            metadata = getattr(obj, 'metadata')
-
-        for key in accept_keys:
-            if hasattr(obj, key):
-                return getattr(obj, key)
-            if metadata is not None and hasattr(metadata, key):
-                return getattr(metadata, key)
-
-        raise Exception('guid resolve failed')
 
     @staticmethod
     def _get_object_key(obj: dict) -> str:
@@ -395,3 +449,21 @@ class Applier(object):
             raise ValueError('[kind:{}] name is required.'.format(kind))
 
         return '{}:{}'.format(kind, name_or_guid)
+
+    def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
+        values = values or {}
+
+        values['rio'] = {
+            'project': {
+                'name': self.config.data.get('project_name'),
+                'guid': self.config.project_guid,
+            },
+            'organization': {
+                'name': self.config.data.get('organization_name'),
+                'guid': self.config.organization_guid,
+                'short_id': self.config.organization_short_id,
+            },
+            'email_id': self.config.data.get('email_id'),
+        }
+
+        return values

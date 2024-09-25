@@ -287,7 +287,7 @@ def fetch_tree_keys(is_org: bool, tree_name: str,
                                   filter_content_types=['kv'])
 
     if not tree.get('head'):
-        raise Exception('Config tree {} doesn ot have keys in the revision'.format(tree))
+        raise Exception('Config tree {} does not have keys in the revision'.format(tree))
 
     keys = tree.get('keys')
     if not isinstance(keys, dict):
