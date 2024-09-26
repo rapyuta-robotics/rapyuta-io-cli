@@ -51,6 +51,6 @@ def token(email: str, password: str, level: int = 0):
     if not config.exists or not email or not password:
         raise LoggedOut
 
-    new_token = get_token(email, password)
+    new_token = get_token(email, password, level=level)
 
     click.echo(new_token)
