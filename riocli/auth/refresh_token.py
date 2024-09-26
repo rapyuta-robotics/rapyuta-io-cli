@@ -14,7 +14,8 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import get_token
+from riocli.auth.util import get_token, api_refresh_token
+from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
 
@@ -29,18 +30,20 @@ from riocli.exceptions import LoggedOut
 @click.option(
     '--password',
     type=str,
-    prompt=True,
-    hide_input=True,
     help='Password for the rapyuta.io account',
 )
-def refresh_token(ctx: click.Context, password: str):
+@click.option('--interactive/--no-interactive', '--interactive/--silent',
+              is_flag=True, type=bool, default=True,
+              help='Make login interactive')
+def refresh_token(ctx: click.Context, password: str, interactive: bool):
     """
     Refreshes the authentication token after it expires
     """
-    email = ctx.obj.data.get('email_id', None)
+    config = get_config_from_context(ctx)
+    email = config.data.get('email_id', None)
 
     try:
-        if not ctx.obj.exists or not email or not password:
+        if not config.exists or email is None:
             raise LoggedOut
     except LoggedOut as e:
         click.secho(str(e), fg=Colors.RED)
@@ -48,8 +51,17 @@ def refresh_token(ctx: click.Context, password: str):
 
     click.secho(f'Refreshing token for {email}...', fg=Colors.YELLOW)
 
-    ctx.obj.data['auth_token'] = get_token(email, password)
+    existing_token = config.data.get('auth_token')
+    refreshed = api_refresh_token(existing_token)
+    if not refreshed:
+        if not interactive and password is None:
+            click.secho('existing token expired, re-run rio auth refresh-token in interactive mode or pass the password using the flag')
+            raise SystemExit(1)
 
+        password = password or click.prompt('Password', hide_input=True)
+        refreshed = get_token(email, password)
+
+    ctx.obj.data['auth_token'] = refreshed
     ctx.obj.save()
 
     click.secho('{} Token refreshed successfully!'.format(Symbols.SUCCESS),

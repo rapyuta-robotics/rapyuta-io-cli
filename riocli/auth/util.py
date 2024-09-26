@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import json
 
 import click
 from rapyuta_io import Client
 from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
+from rapyuta_io.utils.rest_client import HttpMethod, RestClient
+
+from munch import munchify
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.project.util import find_project_guid, find_organization_guid, get_organization_name
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
+from riocli.v2client.util import handle_server_errors
 
 TOKEN_LEVELS = {
     0: AuthTokenLevel.LOW,
@@ -163,6 +168,29 @@ def get_token(
         click.style(str(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+
+def api_refresh_token(
+        token: str,
+) -> str:
+    """
+    Refreshes the existing token using the Refresh Token API.
+    """
+    config = Configuration()
+    client = config.new_client(with_project=False)
+    rip_host = client._get_api_endpoints('rip_host')
+    url = '{}/refreshtoken'.format(rip_host)
+
+    response = RestClient(url).method(HttpMethod.POST).execute(payload={'token': token})
+    handle_server_errors(response)
+
+    data = json.loads(response.text)
+    if not response.ok:
+        return ''
+
+    data = munchify(data)
+
+    return data.data.Token
 
 
 @with_spinner(text='Validating token...')
