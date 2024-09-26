@@ -68,7 +68,7 @@ class Package(Model):
     def _sanitize_command(self):
         for e in self.spec.executables:
             # Skip if command is not set.
-            if not e.get('command'):
+            if e.get('command') is None:
                 continue
 
             c = []
