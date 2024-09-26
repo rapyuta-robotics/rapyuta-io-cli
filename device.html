@@ -1,0 +1,1383 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Disk" href="disk.html" /><link rel="prev" title="Deployment" href="deployment.html" />
+
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 5.1.1 and Furo 2023.03.27 -->
+        <title>Device - rapyuta.io CLI documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="_static/css/rio-sphinx.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">rapyuta.io CLI  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo-light-mode.png" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo-dark-mode.png" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">rapyuta.io CLI  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="apply.html">Apply</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Authentication</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="chart.html">Chart</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="completion.html">Completion</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="config_tree.html">ConfigTree</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="deployment.html">Deployment</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Device</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="disk.html">Disk</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hwil.html">Hardware-in-Loop</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="managedservice.html">ManagedService</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="network.html">Network</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="organization.html">Organization</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="package.html">Package</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="parameter.html">Parameter</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="project.html">Project</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rosbag.html">Rosbag</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="secret.html">Secret</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="static_route.html">Static Route</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="usergroup.html">User Group</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="vpn.html">VPN</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="device">
+<h1>Device<a class="headerlink" href="#device" title="Permalink to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="rio-device">
+<h2>rio device<a class="headerlink" href="#rio-device" title="Permalink to this heading">#</a></h2>
+<p>Devices on Rapyuta.io</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-config">
+<h3>config<a class="headerlink" href="#rio-device-config" title="Permalink to this heading">#</a></h3>
+<p>Device Configuration Variables</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>config<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-config-create">
+<h4>create<a class="headerlink" href="#rio-device-config-create" title="Permalink to this heading">#</a></h4>
+<p>Create a new config variable on the device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>config<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY<span class="w"> </span>VALUE
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-create-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-config-create-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-create-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-create-arg-KEY">
+<span id="cmdoption-rio-device-config-create-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-create-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-create-arg-VALUE">
+<span id="cmdoption-rio-device-config-create-arg-value"></span><span class="sig-name descname"><span class="pre">VALUE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-create-arg-VALUE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-config-delete">
+<h4>delete<a class="headerlink" href="#rio-device-config-delete" title="Permalink to this heading">#</a></h4>
+<p>Delete the config variable on the device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>config<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-delete-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-config-delete-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-delete-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-delete-arg-KEY">
+<span id="cmdoption-rio-device-config-delete-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-delete-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-config-list">
+<h4>list<a class="headerlink" href="#rio-device-config-list" title="Permalink to this heading">#</a></h4>
+<p>List all the config variables on the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>config<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-list-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-config-list-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-list-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-config-update">
+<h4>update<a class="headerlink" href="#rio-device-config-update" title="Permalink to this heading">#</a></h4>
+<p>Update the config variable on the device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>config<span class="w"> </span>update<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY<span class="w"> </span>VALUE
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-update-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-config-update-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-update-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-update-arg-KEY">
+<span id="cmdoption-rio-device-config-update-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-update-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-config-update-arg-VALUE">
+<span id="cmdoption-rio-device-config-update-arg-value"></span><span class="sig-name descname"><span class="pre">VALUE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-config-update-arg-VALUE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-delete">
+<h3>delete<a class="headerlink" href="#rio-device-delete" title="Permalink to this heading">#</a></h3>
+<p>Deletes one more devices</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>DEVICE_NAME_OR_REGEX<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-delete-f">
+<span id="cmdoption-rio-device-delete-force"></span><span id="cmdoption-rio-device-delete-silent"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--silent</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-delete-f" title="Permalink to this definition">#</a></dt>
+<dd><p>Skip confirmation</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-delete-a">
+<span id="cmdoption-rio-device-delete-all"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--all</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-delete-a" title="Permalink to this definition">#</a></dt>
+<dd><p>Delete all devices</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-delete-w">
+<span id="cmdoption-rio-device-delete-workers"></span><span class="sig-name descname"><span class="pre">-w</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--workers</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;workers&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-delete-w" title="Permalink to this definition">#</a></dt>
+<dd><p>Number of parallel workers for deleting devices. Defaults to 10.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-delete-arg-DEVICE_NAME_OR_REGEX">
+<span id="cmdoption-rio-device-delete-arg-device-name-or-regex"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME_OR_REGEX</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-delete-arg-DEVICE_NAME_OR_REGEX" title="Permalink to this definition">#</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-deployments">
+<h3>deployments<a class="headerlink" href="#rio-device-deployments" title="Permalink to this heading">#</a></h3>
+<p>Lists all the deployments running on the device.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>deployments<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-deployments-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-deployments-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-deployments-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-execute">
+<h3>execute<a class="headerlink" href="#rio-device-execute" title="Permalink to this heading">#</a></h3>
+<p>Execute commands on the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>execute<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span><span class="o">[</span>COMMAND<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-execute-user">
+<span class="sig-name descname"><span class="pre">--user</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;user&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-execute-user" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-execute-shell">
+<span class="sig-name descname"><span class="pre">--shell</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;shell&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-execute-shell" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-execute-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-execute-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-execute-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-execute-arg-COMMAND">
+<span id="cmdoption-rio-device-execute-arg-command"></span><span class="sig-name descname"><span class="pre">COMMAND</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-execute-arg-COMMAND" title="Permalink to this definition">#</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-inspect">
+<h3>inspect<a class="headerlink" href="#rio-device-inspect" title="Permalink to this heading">#</a></h3>
+<p>Inspect the device resource</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>inspect<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-inspect-f">
+<span id="cmdoption-rio-device-inspect-format"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;format_type&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-inspect-f" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json | yaml</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-inspect-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-inspect-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-inspect-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-labels">
+<h3>labels<a class="headerlink" href="#rio-device-labels" title="Permalink to this heading">#</a></h3>
+<p>Device Labels</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>labels<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-labels-create">
+<h4>create<a class="headerlink" href="#rio-device-labels-create" title="Permalink to this heading">#</a></h4>
+<p>Create a label for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>labels<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY<span class="w"> </span>VALUE
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-create-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-labels-create-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-create-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-create-arg-KEY">
+<span id="cmdoption-rio-device-labels-create-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-create-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-create-arg-VALUE">
+<span id="cmdoption-rio-device-labels-create-arg-value"></span><span class="sig-name descname"><span class="pre">VALUE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-create-arg-VALUE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-labels-delete">
+<h4>delete<a class="headerlink" href="#rio-device-labels-delete" title="Permalink to this heading">#</a></h4>
+<p>Delete the label for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>labels<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-delete-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-labels-delete-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-delete-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-delete-arg-KEY">
+<span id="cmdoption-rio-device-labels-delete-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-delete-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-labels-list">
+<h4>list<a class="headerlink" href="#rio-device-labels-list" title="Permalink to this heading">#</a></h4>
+<p>List all the labels for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>labels<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-list-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-labels-list-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-list-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-labels-update">
+<h4>update<a class="headerlink" href="#rio-device-labels-update" title="Permalink to this heading">#</a></h4>
+<p>Update the label for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>labels<span class="w"> </span>update<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>KEY<span class="w"> </span>VALUE
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-update-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-labels-update-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-update-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-update-arg-KEY">
+<span id="cmdoption-rio-device-labels-update-arg-key"></span><span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-update-arg-KEY" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-labels-update-arg-VALUE">
+<span id="cmdoption-rio-device-labels-update-arg-value"></span><span class="sig-name descname"><span class="pre">VALUE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-labels-update-arg-VALUE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-list">
+<h3>list<a class="headerlink" href="#rio-device-list" title="Permalink to this heading">#</a></h3>
+<p>List all the devices in the selected Project</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="rio-device-metrics">
+<h3>metrics<a class="headerlink" href="#rio-device-metrics" title="Permalink to this heading">#</a></h3>
+<p>Device Metrics</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>metrics<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-metrics-list">
+<h4>list<a class="headerlink" href="#rio-device-metrics-list" title="Permalink to this heading">#</a></h4>
+<p>Lists all the available metrics for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>metrics<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-metrics-list-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-metrics-list-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-metrics-list-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-metrics-subscribe">
+<h4>subscribe<a class="headerlink" href="#rio-device-metrics-subscribe" title="Permalink to this heading">#</a></h4>
+<p>Subscribes the metrics to start collecting it</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>metrics<span class="w"> </span>subscribe<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+<span class="w">                             </span><span class="o">{</span>cpu<span class="p">|</span>memory<span class="p">|</span>disk<span class="p">|</span>diskio<span class="p">|</span>network<span class="p">|</span>wireless<span class="o">}</span>
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-metrics-subscribe-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-metrics-subscribe-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-metrics-subscribe-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-metrics-subscribe-arg-METRIC">
+<span id="cmdoption-rio-device-metrics-subscribe-arg-metric"></span><span class="sig-name descname"><span class="pre">METRIC</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-metrics-subscribe-arg-METRIC" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-metrics-unsubscribe">
+<h4>unsubscribe<a class="headerlink" href="#rio-device-metrics-unsubscribe" title="Permalink to this heading">#</a></h4>
+<p>Un-subscribes the metrics to stop collecting it</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>metrics<span class="w"> </span>unsubscribe<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+<span class="w">                               </span><span class="o">{</span>cpu<span class="p">|</span>memory<span class="p">|</span>disk<span class="p">|</span>diskio<span class="p">|</span>network<span class="p">|</span>wireless<span class="o">}</span>
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-metrics-unsubscribe-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-metrics-unsubscribe-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-metrics-unsubscribe-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-metrics-unsubscribe-arg-METRIC">
+<span id="cmdoption-rio-device-metrics-unsubscribe-arg-metric"></span><span class="sig-name descname"><span class="pre">METRIC</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-metrics-unsubscribe-arg-METRIC" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-migrate">
+<h3>migrate<a class="headerlink" href="#rio-device-migrate" title="Permalink to this heading">#</a></h3>
+<p>Migrate the device from current project to the target project.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>migrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>PROJECT_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-migrate-enable-vpn">
+<span class="sig-name descname"><span class="pre">--enable-vpn</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-migrate-enable-vpn" title="Permalink to this definition">#</a></dt>
+<dd><p>Enable VPN after migrating to the destination project.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-migrate-advertise-routes">
+<span class="sig-name descname"><span class="pre">--advertise-routes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-migrate-advertise-routes" title="Permalink to this definition">#</a></dt>
+<dd><p>Advertise subnets configured in project to VPN peers</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-migrate-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-migrate-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-migrate-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-migrate-arg-PROJECT_NAME">
+<span id="cmdoption-rio-device-migrate-arg-project-name"></span><span class="sig-name descname"><span class="pre">PROJECT_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-migrate-arg-PROJECT_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-onboard">
+<h3>onboard<a class="headerlink" href="#rio-device-onboard" title="Permalink to this heading">#</a></h3>
+<p>Generates the on-boarding script for the Device</p>
+<p>To onboard the current device, run the following</p>
+<blockquote>
+<div><p>exec $(rio device onboard {device-name})</p>
+</div></blockquote>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>onboard<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-onboard-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-onboard-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-onboard-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools">
+<h3>tools<a class="headerlink" href="#rio-device-tools" title="Permalink to this heading">#</a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-tools-init">
+<h4>init<a class="headerlink" href="#rio-device-tools-init" title="Permalink to this heading">#</a></h4>
+<p>Initialize device for use with device tools. This is required to be executed first before all tools sub-commands.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>init<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-init-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-init-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-init-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-port-forward">
+<h4>port-forward<a class="headerlink" href="#rio-device-tools-port-forward" title="Permalink to this heading">#</a></h4>
+<p>Forwards the port on the Device to local machine</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>port-forward<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>REMOTE_PORT<span class="w"> </span><span class="o">[</span>LOCAL_PORT<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-port-forward-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-port-forward-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-port-forward-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-port-forward-arg-REMOTE_PORT">
+<span id="cmdoption-rio-device-tools-port-forward-arg-remote-port"></span><span class="sig-name descname"><span class="pre">REMOTE_PORT</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-port-forward-arg-REMOTE_PORT" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-port-forward-arg-LOCAL_PORT">
+<span id="cmdoption-rio-device-tools-port-forward-arg-local-port"></span><span class="sig-name descname"><span class="pre">LOCAL_PORT</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-port-forward-arg-LOCAL_PORT" title="Permalink to this definition">#</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-scp">
+<h4>scp<a class="headerlink" href="#rio-device-tools-scp" title="Permalink to this heading">#</a></h4>
+<p>An scp like interface to copy files to and from the device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>scp<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SOURCE<span class="w"> </span>DESTINATION
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-scp-arg-SOURCE">
+<span id="cmdoption-rio-device-tools-scp-arg-source"></span><span class="sig-name descname"><span class="pre">SOURCE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-scp-arg-SOURCE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-scp-arg-DESTINATION">
+<span id="cmdoption-rio-device-tools-scp-arg-destination"></span><span class="sig-name descname"><span class="pre">DESTINATION</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-scp-arg-DESTINATION" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service">
+<h4>service<a class="headerlink" href="#rio-device-tools-service" title="Permalink to this heading">#</a></h4>
+<p>System manager commands</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-tools-service-force-reload">
+<h5>force-reload<a class="headerlink" href="#rio-device-tools-service-force-reload" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>force-reload<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-force-reload-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-force-reload-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-force-reload-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-force-reload-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-force-reload-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-force-reload-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-reload">
+<h5>reload<a class="headerlink" href="#rio-device-tools-service-reload" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>reload<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-reload-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-reload-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-reload-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-reload-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-reload-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-reload-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-restart">
+<h5>restart<a class="headerlink" href="#rio-device-tools-service-restart" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>restart<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-restart-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-restart-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-restart-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-restart-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-restart-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-restart-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-start">
+<h5>start<a class="headerlink" href="#rio-device-tools-service-start" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>start<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-start-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-start-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-start-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-start-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-start-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-start-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-status">
+<h5>status<a class="headerlink" href="#rio-device-tools-service-status" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>status<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-status-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-status-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-status-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-status-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-status-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-status-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-status-all">
+<h5>status-all<a class="headerlink" href="#rio-device-tools-service-status-all" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>status-all<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-status-all-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-status-all-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-status-all-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-service-stop">
+<h5>stop<a class="headerlink" href="#rio-device-tools-service-stop" title="Permalink to this heading">#</a></h5>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>service<span class="w"> </span>stop<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>SERVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-stop-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-stop-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-stop-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-service-stop-arg-SERVICE_NAME">
+<span id="cmdoption-rio-device-tools-service-stop-arg-service-name"></span><span class="sig-name descname"><span class="pre">SERVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-service-stop-arg-SERVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-tools-ssh">
+<h4>ssh<a class="headerlink" href="#rio-device-tools-ssh" title="Permalink to this heading">#</a></h4>
+<p>SSH to the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>ssh<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-u">
+<span id="cmdoption-rio-device-tools-ssh-user"></span><span class="sig-name descname"><span class="pre">-u</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--user</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;user&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-u" title="Permalink to this definition">#</a></dt>
+<dd><p>Username for the SSH</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-L">
+<span id="cmdoption-rio-device-tools-ssh-l"></span><span id="cmdoption-rio-device-tools-ssh-local-port"></span><span class="sig-name descname"><span class="pre">-L</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--local-port</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;local_port&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-L" title="Permalink to this definition">#</a></dt>
+<dd><p>Port number on the local machine for forwarding SSH</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-R">
+<span id="cmdoption-rio-device-tools-ssh-r"></span><span id="cmdoption-rio-device-tools-ssh-remote-port"></span><span class="sig-name descname"><span class="pre">-R</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--remote-port</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;remote_port&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-R" title="Permalink to this definition">#</a></dt>
+<dd><p>Port number on the Device on which SSH Server is listening</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-X">
+<span id="cmdoption-rio-device-tools-ssh-x"></span><span id="cmdoption-rio-device-tools-ssh-x-forward"></span><span id="cmdoption-rio-device-tools-ssh-no-x-forward"></span><span class="sig-name descname"><span class="pre">-X</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--x-forward</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-x-forward</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-X" title="Permalink to this definition">#</a></dt>
+<dd><p>Flag to enable X Forwarding over SSH</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-ssh-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-tools-ssh-authorize">
+<h4>ssh-authorize<a class="headerlink" href="#rio-device-tools-ssh-authorize" title="Permalink to this heading">#</a></h4>
+<p>Authorize Public SSH Key</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>tools<span class="w"> </span>ssh-authorize<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span><span class="o">[</span>PUBLIC_KEY_FILE<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-authorize-u">
+<span id="cmdoption-rio-device-tools-ssh-authorize-user"></span><span class="sig-name descname"><span class="pre">-u</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--user</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;user&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-authorize-u" title="Permalink to this definition">#</a></dt>
+<dd><p>User for which SSH keys are added</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-authorize-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-tools-ssh-authorize-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-authorize-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-tools-ssh-authorize-arg-PUBLIC_KEY_FILE">
+<span id="cmdoption-rio-device-tools-ssh-authorize-arg-public-key-file"></span><span class="sig-name descname"><span class="pre">PUBLIC_KEY_FILE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-tools-ssh-authorize-arg-PUBLIC_KEY_FILE" title="Permalink to this definition">#</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-topics">
+<h3>topics<a class="headerlink" href="#rio-device-topics" title="Permalink to this heading">#</a></h3>
+<p>ROS Topics on the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>topics<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-topics-list">
+<h4>list<a class="headerlink" href="#rio-device-topics-list" title="Permalink to this heading">#</a></h4>
+<p>Lists all the available topics for the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>topics<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-list-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-topics-list-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-list-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-topics-subscribe">
+<h4>subscribe<a class="headerlink" href="#rio-device-topics-subscribe" title="Permalink to this heading">#</a></h4>
+<p>Subscribes the topics to start collecting it</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>topics<span class="w"> </span>subscribe<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>TOPIC<span class="w"> </span><span class="o">{</span>metric<span class="p">|</span>log<span class="o">}</span>
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-subscribe-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-topics-subscribe-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-subscribe-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-subscribe-arg-TOPIC">
+<span id="cmdoption-rio-device-topics-subscribe-arg-topic"></span><span class="sig-name descname"><span class="pre">TOPIC</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-subscribe-arg-TOPIC" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-subscribe-arg-KIND">
+<span id="cmdoption-rio-device-topics-subscribe-arg-kind"></span><span class="sig-name descname"><span class="pre">KIND</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-subscribe-arg-KIND" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-topics-unsubscribe">
+<h4>unsubscribe<a class="headerlink" href="#rio-device-topics-unsubscribe" title="Permalink to this heading">#</a></h4>
+<p>Un-subscribes the topics to stop collecting it</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>topics<span class="w"> </span>unsubscribe<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>TOPIC<span class="w"> </span><span class="o">{</span>metric<span class="p">|</span>log<span class="o">}</span>
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-unsubscribe-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-topics-unsubscribe-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-unsubscribe-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-unsubscribe-arg-TOPIC">
+<span id="cmdoption-rio-device-topics-unsubscribe-arg-topic"></span><span class="sig-name descname"><span class="pre">TOPIC</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-unsubscribe-arg-TOPIC" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-topics-unsubscribe-arg-KIND">
+<span id="cmdoption-rio-device-topics-unsubscribe-arg-kind"></span><span class="sig-name descname"><span class="pre">KIND</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-topics-unsubscribe-arg-KIND" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-uploads">
+<h3>uploads<a class="headerlink" href="#rio-device-uploads" title="Permalink to this heading">#</a></h3>
+<p>Uploaded files from the Device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-device-uploads-cancel">
+<h4>cancel<a class="headerlink" href="#rio-device-uploads-cancel" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>cancel<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>FILE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-cancel-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-cancel-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-cancel-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-cancel-arg-FILE_NAME">
+<span id="cmdoption-rio-device-uploads-cancel-arg-file-name"></span><span class="sig-name descname"><span class="pre">FILE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-cancel-arg-FILE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-create">
+<h4>create<a class="headerlink" href="#rio-device-uploads-create" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>UPLOAD_NAME<span class="w"> </span>FILE_PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-max-upload-rate">
+<span class="sig-name descname"><span class="pre">--max-upload-rate</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;max_upload_rate&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-max-upload-rate" title="Permalink to this definition">#</a></dt>
+<dd><p>Network bandwidth limit to be used for upload (Bytes per second)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-override">
+<span class="sig-name descname"><span class="pre">--override</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-override" title="Permalink to this definition">#</a></dt>
+<dd><p>Flag to override destination file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-purge">
+<span class="sig-name descname"><span class="pre">--purge</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-purge" title="Permalink to this definition">#</a></dt>
+<dd><p>Flag to enable purging the file, after it is uploaded</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-create-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-arg-UPLOAD_NAME">
+<span id="cmdoption-rio-device-uploads-create-arg-upload-name"></span><span class="sig-name descname"><span class="pre">UPLOAD_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-arg-UPLOAD_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-create-arg-FILE_PATH">
+<span id="cmdoption-rio-device-uploads-create-arg-file-path"></span><span class="sig-name descname"><span class="pre">FILE_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-create-arg-FILE_PATH" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-delete">
+<h4>delete<a class="headerlink" href="#rio-device-uploads-delete" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>FILE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-delete-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-delete-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-delete-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-delete-arg-FILE_NAME">
+<span id="cmdoption-rio-device-uploads-delete-arg-file-name"></span><span class="sig-name descname"><span class="pre">FILE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-delete-arg-FILE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-download">
+<h4>download<a class="headerlink" href="#rio-device-uploads-download" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>download<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>FILE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-download-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-download-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-download-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-download-arg-FILE_NAME">
+<span id="cmdoption-rio-device-uploads-download-arg-file-name"></span><span class="sig-name descname"><span class="pre">FILE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-download-arg-FILE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-list">
+<h4>list<a class="headerlink" href="#rio-device-uploads-list" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-list-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-list-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-list-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-share">
+<h4>share<a class="headerlink" href="#rio-device-uploads-share" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>share<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>FILE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-share-expiry">
+<span class="sig-name descname"><span class="pre">--expiry</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expiry&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-uploads-share-expiry" title="Permalink to this definition">#</a></dt>
+<dd><p>Flag to set the expiry date for the Shared URL [default: 7 days]</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-share-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-share-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-share-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-share-arg-FILE_NAME">
+<span id="cmdoption-rio-device-uploads-share-arg-file-name"></span><span class="sig-name descname"><span class="pre">FILE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-share-arg-FILE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-device-uploads-status">
+<h4>status<a class="headerlink" href="#rio-device-uploads-status" title="Permalink to this heading">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>uploads<span class="w"> </span>status<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEVICE_NAME<span class="w"> </span>FILE_NAME
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-status-arg-DEVICE_NAME">
+<span id="cmdoption-rio-device-uploads-status-arg-device-name"></span><span class="sig-name descname"><span class="pre">DEVICE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-status-arg-DEVICE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-uploads-status-arg-FILE_NAME">
+<span id="cmdoption-rio-device-uploads-status-arg-file-name"></span><span class="sig-name descname"><span class="pre">FILE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-uploads-status-arg-FILE_NAME" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-device-vpn">
+<h3>vpn<a class="headerlink" href="#rio-device-vpn" title="Permalink to this heading">#</a></h3>
+<p>Enable or disable VPN client on the device</p>
+<p>Examples:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p>Enable VPN on specific devices</p>
+<blockquote>
+<div><p>rio device vpn true –devices=amr01 –devices=edge01</p>
+</div></blockquote>
+</li>
+<li><p>Enable VPN on all devices in the project</p>
+<blockquote>
+<div><p>rio device vpn true</p>
+</div></blockquote>
+</li>
+<li><p>Disable VPN</p>
+<blockquote>
+<div><p>rio device vpn false</p>
+</div></blockquote>
+</li>
+<li><p>Skip confirmation</p>
+<blockquote>
+<div><p>rio device vpn false –silent true</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>device<span class="w"> </span>vpn<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>ENABLE
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-vpn-devices">
+<span class="sig-name descname"><span class="pre">--devices</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;devices&gt;</span></span><a class="headerlink" href="#cmdoption-rio-device-vpn-devices" title="Permalink to this definition">#</a></dt>
+<dd><p>Device names to toggle VPN client</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-vpn-f">
+<span id="cmdoption-rio-device-vpn-force"></span><span id="cmdoption-rio-device-vpn-silent"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--silent</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-vpn-f" title="Permalink to this definition">#</a></dt>
+<dd><p>Skip confirmation</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-vpn-advertise-routes">
+<span class="sig-name descname"><span class="pre">--advertise-routes</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-vpn-advertise-routes" title="Permalink to this definition">#</a></dt>
+<dd><p>Advertise subnets configured in project to VPN peers</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-device-vpn-arg-ENABLE">
+<span id="cmdoption-rio-device-vpn-arg-enable"></span><span class="sig-name descname"><span class="pre">ENABLE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-device-vpn-arg-ENABLE" title="Permalink to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="disk.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Disk</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="deployment.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Deployment</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Rapyuta Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Device</a><ul>
+<li><a class="reference internal" href="#rio-device">rio device</a><ul>
+<li><a class="reference internal" href="#rio-device-config">config</a><ul>
+<li><a class="reference internal" href="#rio-device-config-create">create</a></li>
+<li><a class="reference internal" href="#rio-device-config-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-device-config-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-config-update">update</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-device-deployments">deployments</a></li>
+<li><a class="reference internal" href="#rio-device-execute">execute</a></li>
+<li><a class="reference internal" href="#rio-device-inspect">inspect</a></li>
+<li><a class="reference internal" href="#rio-device-labels">labels</a><ul>
+<li><a class="reference internal" href="#rio-device-labels-create">create</a></li>
+<li><a class="reference internal" href="#rio-device-labels-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-device-labels-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-labels-update">update</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-metrics">metrics</a><ul>
+<li><a class="reference internal" href="#rio-device-metrics-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-metrics-subscribe">subscribe</a></li>
+<li><a class="reference internal" href="#rio-device-metrics-unsubscribe">unsubscribe</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-migrate">migrate</a></li>
+<li><a class="reference internal" href="#rio-device-onboard">onboard</a></li>
+<li><a class="reference internal" href="#rio-device-tools">tools</a><ul>
+<li><a class="reference internal" href="#rio-device-tools-init">init</a></li>
+<li><a class="reference internal" href="#rio-device-tools-port-forward">port-forward</a></li>
+<li><a class="reference internal" href="#rio-device-tools-scp">scp</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service">service</a><ul>
+<li><a class="reference internal" href="#rio-device-tools-service-force-reload">force-reload</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-reload">reload</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-restart">restart</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-start">start</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-status">status</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-status-all">status-all</a></li>
+<li><a class="reference internal" href="#rio-device-tools-service-stop">stop</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-tools-ssh">ssh</a></li>
+<li><a class="reference internal" href="#rio-device-tools-ssh-authorize">ssh-authorize</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-topics">topics</a><ul>
+<li><a class="reference internal" href="#rio-device-topics-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-topics-subscribe">subscribe</a></li>
+<li><a class="reference internal" href="#rio-device-topics-unsubscribe">unsubscribe</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-uploads">uploads</a><ul>
+<li><a class="reference internal" href="#rio-device-uploads-cancel">cancel</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-create">create</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-download">download</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-list">list</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-share">share</a></li>
+<li><a class="reference internal" href="#rio-device-uploads-status">status</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-device-vpn">vpn</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/js/rio-sphinx.js"></script>
+    </body>
+</html>
