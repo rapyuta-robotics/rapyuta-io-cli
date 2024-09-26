@@ -1,3 +1,10 @@
+## [9.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.2...v9.0.3) (2024-09-26)
+
+
+### Bug Fixes
+
+* **auth:** use existing token to refresh if valid ([ea0524f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ea0524f8d76fbd05997b2e28ebd8d8eb1c584f36))
+
 ## [9.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.1...v9.0.2) (2024-09-26)
 
 
