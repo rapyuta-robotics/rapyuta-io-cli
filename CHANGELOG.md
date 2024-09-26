@@ -1,3 +1,10 @@
+## [9.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.1...v9.0.2) (2024-09-26)
+
+
+### Bug Fixes
+
+* **package:** handle empty command string ([370d529](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/370d529a339112a192a63c802b4d88d7afe1f9ef))
+
 ## [9.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.0...v9.0.1) (2024-09-25)
 
 
