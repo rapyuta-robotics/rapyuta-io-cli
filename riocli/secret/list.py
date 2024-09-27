@@ -14,8 +14,8 @@
 import typing
 
 import click
+import munch
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import Secret
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -45,7 +45,7 @@ def list_secrets(labels: typing.List[str]) -> None:
 
 
 def _display_secret_list(
-        secrets: typing.List[Secret],
+        secrets: typing.List[munch.Munch],
         show_header: bool = True,
 ) -> None:
     headers = []
