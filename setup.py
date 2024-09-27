@@ -55,7 +55,7 @@ setup(
         "python-dateutil>=2.8.2",
         "pytz",
         "pyyaml>=5.4.1",
-        "rapyuta-io>=1.17.1",
+        "rapyuta-io>=2.0.0",
         "requests>=2.20.0",
         "setuptools",
         "six>=1.13.0",

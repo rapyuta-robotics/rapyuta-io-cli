@@ -15,8 +15,8 @@ import typing
 from typing import List
 
 import click
+import munch
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -52,7 +52,7 @@ def list_static_routes(labels: typing.List[str]) -> None:
         raise SystemExit(1) from e
 
 
-def _display_routes_list(routes: List[StaticRoute]) -> None:
+def _display_routes_list(routes: List[munch.Munch]) -> None:
     headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']
 
     data = []
