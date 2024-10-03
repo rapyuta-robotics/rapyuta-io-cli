@@ -22,14 +22,15 @@ from riocli.config import new_client
 
 
 def run_on_device(
-    device_guid: str = None,
-    command: typing.List[str] = None,
-    user: str = "root",
-    shell: str = "/bin/bash",
-    background: bool = False,
-    deployment: str = None,
-    exec_name: str = None,
-    device_name: str = None,
+        device_guid: str = None,
+        command: typing.List[str] = None,
+        user: str = 'root',
+        shell: str = '/bin/bash',
+        background: bool = False,
+        deployment: str = None,
+        exec_name: str = None,
+        device_name: str = None,
+        timeout: int = 300
 ) -> str:
     client = new_client()
 
@@ -58,7 +59,7 @@ def run_on_device(
     if deployment:
         cmd = 'script -q -c "dectl exec {} -- {}"'.format(exec_name, cmd)
 
-    return device.execute_command(Command(cmd, shell=shell, bg=background, runas=user))
+    return device.execute_command(Command(cmd, shell=shell, bg=background, runas=user, timeout=timeout))
 
 
 def apply_func(
