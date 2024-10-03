@@ -28,6 +28,7 @@ from riocli.utils.execute import run_on_device
     help_options_color=Colors.GREEN,
 )
 @click.option('--user', default='root')
+@click.option('--timeout', default=300)
 @click.option('--shell', default='/bin/bash')
 @click.argument('device-name', type=str)
 @click.argument('command', nargs=-1)
@@ -36,6 +37,7 @@ def execute_command(
         device_name: str,
         device_guid: str,
         user: str,
+        timeout: int,
         shell: str,
         command: typing.List[str]
 ) -> None:
@@ -48,7 +50,8 @@ def execute_command(
             user=user,
             shell=shell,
             command=command,
-            background=False,
+            background=True,
+            timeout=timeout,
         )
 
         click.secho(response)
