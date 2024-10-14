@@ -30,10 +30,10 @@ from riocli.constants import Colors
               help='Dry run the yaml files without applying any change')
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False, help="Skip confirmation")
-@click.option('--values', '-v',
+@click.option('--values', '-v', multiple=True, default=(),
               help=("Path to values yaml file. key/values specified in the"
                     "values file can be used as variables in template yamls"))
-@click.option('--secrets', '-s',
+@click.option('--secrets', '-s', multiple=True, default=(),
               help=("Secret files are sops encoded value files. rio-cli "
                     "expects sops to be authorized for decoding files on "
                     "this computer"))
@@ -49,9 +49,10 @@ def delete_chart(
     The delete command is based on the `rio delete` command
     and is used to delete a chart that you have installed
     using the `rio chart apply` command. The manifest files
-    are pulled from the rapyuta-charts repository. The command
-    accepts custom values and secrets files that you may have
-    used while installing the chart.
+    are pulled from the rapyuta-charts repository.
+
+    You can provide value files with the ``--values`` option and
+    sops encrypted secret files with ``--secret`` option.
 
     You can skip confirmation by using the `--silent` or `--force`
     or the `-f` flag.

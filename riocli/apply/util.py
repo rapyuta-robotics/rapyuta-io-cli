@@ -17,6 +17,7 @@ import os
 import typing
 from datetime import datetime
 from shutil import get_terminal_size
+from typing import Iterable
 
 import click
 import jinja2
@@ -84,7 +85,11 @@ def parse_variadic_path_args(path_item):
     return glob.glob(abs_path, recursive=True)
 
 
-def process_files_values_secrets(files, values, secrets):
+def process_files_values_secrets(
+        files: Iterable[str],
+        values: Iterable[str],
+        secrets: Iterable[str],
+):
     glob_files = []
 
     for path_item in files:
@@ -93,17 +98,21 @@ def process_files_values_secrets(files, values, secrets):
             f for f in path_glob if os.path.isfile(f)
         ])
 
+    # Remove value files from template files list.
     abs_values = values
-    if values and values != "":
-        abs_values = os.path.abspath(values)
-        if abs_values in glob_files:
-            glob_files.remove(abs_values)
+    if values:
+        for v in values:
+            abs_v = os.path.abspath(v)
+            if abs_v in glob_files:
+                glob_files.remove(abs_v)
 
+    # Remove secret files from template files list.
     abs_secret = secrets
-    if secrets and secrets != "":
-        abs_secrets = os.path.abspath(secrets)
-        if abs_secrets in glob_files:
-            glob_files.remove(abs_secrets)
+    if secrets:
+        for s in secrets:
+            abs_s = os.path.abspath(s)
+            if abs_s in glob_files:
+                glob_files.remove(abs_s)
 
     glob_files = sorted(list(set(glob_files)))
     return glob_files, abs_values, abs_secret
