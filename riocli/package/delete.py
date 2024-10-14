@@ -28,8 +28,10 @@ from riocli.v2client import Client
 
 
 @click.command('delete')
-@click.option('--force', '-f', is_flag=True, default=False, help='Skip confirmation')
-@click.option('-a', '--all', 'delete_all', is_flag=True, default=False, help='Deletes all packages in the project')
+@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
+              type=click.BOOL, default=False, help="Skip confirmation")
+@click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
+              help='Deletes all packages in the project')
 @click.option('--version', 'package_version', type=str,
               help='Semantic version of the Package, only used when name is used instead of GUID')
 @click.option('--workers', '-w',
@@ -40,7 +42,7 @@ from riocli.v2client import Client
 def delete_package(
         package_name_or_regex: str,
         package_version: str,
-        force: bool = False,
+        silent: bool = False,
         delete_all: bool = False,
         workers: int = 10,
         spinner: Yaspin = None,
@@ -73,7 +75,7 @@ def delete_package(
 
     spinner.write('')
 
-    if not force:
+    if not silent:
         with spinner.hidden():
             click.confirm('Do you want to delete the above package(s)?', default=True, abort=True)
 
