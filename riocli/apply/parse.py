@@ -453,7 +453,7 @@ class Applier(object):
     def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
         values = values or {}
 
-        values['rio'] = {
+        rio = {
             'project': {
                 'name': self.config.data.get('project_name'),
                 'guid': self.config.project_guid,
@@ -465,5 +465,10 @@ class Applier(object):
             },
             'email_id': self.config.data.get('email_id'),
         }
+
+        if 'rio' in values:
+            values['rio'].update(rio)
+        else:
+            values['rio'] = rio
 
         return values
