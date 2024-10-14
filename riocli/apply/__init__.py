@@ -35,11 +35,11 @@ from riocli.utils import print_centered_text
               help='Dry run the yaml files without applying any change')
 @click.option('--show-graph', '-g', is_flag=True, default=False,
               help='Opens a mermaid.live dependency graph')
-@click.option('--values', '-v',
+@click.option('--values', '-v', multiple=True, default=(),
               help="Path to values yaml file. Key/values "
                    "specified in the values file can be "
                    "used as variables in template YAMLs")
-@click.option('--secrets', '-s',
+@click.option('--secrets', '-s', multiple=True, default=(),
               help="Secret files are sops encoded value files. "
                    "rio-cli expects sops to be authorized for "
                    "decoding files on this computer")
@@ -55,8 +55,8 @@ from riocli.utils import print_centered_text
               help="Interval between retries defaults to 6")
 @click.argument('files', nargs=-1)
 def apply(
-        values: str,
-        secrets: str,
+        values: Iterable[str],
+        secrets: Iterable[str],
         files: Iterable[str],
         retry_count: int = 50,
         retry_interval: int = 6,
@@ -74,9 +74,8 @@ def apply(
     create or update resources. It also supports Jinja templating
     and secret management with sops.
 
-    You can provide a values file with the ``--values`` option and a
-    sops encrypted secret file with ``--secret`` option. Currently, the
-    command supports only one values and secret file.
+    You can provide value files with the ``--values`` option and
+    sops encrypted secret files with ``--secret`` option.
 
     You can use the ``--show-graph`` option to visualize the
     dependency graph of the resources defined in the manifests.
@@ -105,6 +104,10 @@ def apply(
         Apply manifests from a directory without confirmation prompt.
 
             $ rio apply -f templates/
+
+        Apply manifests with multiple value files.
+
+            $ rio apply -v values1.yaml -v values2.yaml templates/**
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)
@@ -144,10 +147,10 @@ def apply(
 )
 @click.option('--dryrun', '-d', is_flag=True, default=False,
               help='Dry run the yaml files without applying any change')
-@click.option('--values', '-v',
+@click.option('--values', '-v', multiple=True, default=(),
               help="Path to values yaml file. key/values specified in the"
                    " values file can be used as variables in template YAMLs")
-@click.option('--secrets', '-s',
+@click.option('--secrets', '-s', multiple=True, default=(),
               help="Secret files are sops encoded value files. riocli expects "
                    "sops to be authorized for decoding files on this computer")
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
@@ -177,10 +180,10 @@ def delete(
     rapyuta.io defined in YAML manifests making the process declarative
     and repeatable. The command can take multiple files, paths or globs
     as arguments and parse the manifests to remove resources. It also
-    supports Jinja templating and secret management with sops. You can
-    provide a values file with the --values option and a sops encrypted
-    secret file with ``--secret`` option. Currently, the command supports
-    only one values and secret file.
+    supports Jinja templating and secret management with sops.
+
+    You can provide value files with the ``--values`` option and
+    sops encrypted secret files with ``--secret`` option.
 
     The ``--dryrun`` option can be used to execute the manifests without
     actually deleting the resources. This is useful to validate the
@@ -206,6 +209,10 @@ def delete(
         Delete manifests from a directory without confirmation prompt.
 
             $ rio delete -f templates/
+
+        Delete manifests with multiple value files.
+
+            $ rio delete -v values1.yaml -v values2.yaml templates/**
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)

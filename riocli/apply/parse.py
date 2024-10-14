@@ -34,10 +34,8 @@ class Applier(object):
     DEFAULT_MAX_WORKERS = 6
     DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
 
-    def __init__(self, files: typing.List, values, secrets):
+    def __init__(self, files: typing.List, values: typing.List, secrets: typing.List):
         self.files = {}
-        self.values = {}
-        self.secrets = {}
         self.objects = {}
         self.resolved_objects = {}
         self.input_file_paths = files
@@ -45,17 +43,7 @@ class Applier(object):
         self.graph = TopologicalSorter()
         self.environment = init_jinja_environment()
         self.diagram = Graphviz(direction='LR', format='svg')
-
-        if values:
-            self.values = self._load_file_content(
-                values, is_value=True, is_secret=False)[0]
-
-        self.values = self._inject_rio_namespace(self.values)
-
-        if secrets:
-            self.secrets = self._load_file_content(
-                secrets, is_value=True, is_secret=True)[0]
-
+        self._process_values_and_secrets(values, secrets)
         self._process_file_list(files)
 
     def print_resolved_manifests(self):
@@ -472,3 +460,18 @@ class Applier(object):
             values['rio'] = rio
 
         return values
+
+    def _process_values_and_secrets(self, values: typing.List, secrets: typing.List) -> None:
+        """Process the values and secrets files and inject them into the manifest files"""
+        self.values, self.secrets = {}, {}
+
+        values = values or []
+        secrets = secrets or []
+
+        for v in values:
+            self.values.update(self._load_file_content(v, is_value=True)[0])
+
+        self.values = self._inject_rio_namespace(self.values)
+
+        for s in secrets:
+            self.secrets.update(self._load_file_content(s, is_secret=True)[0])

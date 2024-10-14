@@ -32,10 +32,10 @@ from riocli.constants import Colors
 @click.option('-f', '--force', '--silent', 'silent', is_flag=True,
               type=click.BOOL, default=False,
               help="Skip confirmation")
-@click.option('--values', '-v',
+@click.option('--values', '-v', multiple=True, default=(),
               help="Path to values yaml file. key/values specified in the "
                    "values file can be used as variables in template yamls")
-@click.option('--secrets', '-s',
+@click.option('--secrets', '-s', multiple=True, default=(),
               help="Secret files are sops encoded value files. rio-cli "
                    "expects sops to be authorized for decoding files on "
                    "this computer")
@@ -63,8 +63,8 @@ def apply_chart(
     GitHub. A rapyuta chart is collection of manifest files with
     default values.
 
-    The chart can be customized by providing custom values and
-    secrets files using the ``--values`` and ``--secrets`` flags respectively.
+    You can provide value files with the ``--values`` option and
+    sops encrypted secret files with ``--secret`` option.
 
     The ``--workers`` flag can be used to specify the number of parallel
     workers while running the apply command. The default value is 6.
