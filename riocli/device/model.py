@@ -17,13 +17,14 @@ from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 from riocli.config import new_client
 from riocli.constants import ApplyResult
 from riocli.device.util import (DeviceNotFound, create_hwil_device, delete_hwil_device, execute_onboard_command,
-                                find_device_by_name, make_device_labels_from_hwil_device)
+                                find_device_by_name, make_device_labels_from_hwil_device, wait_until_online)
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 
 
 class Device(Model):
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
     def apply(self, *args, **kwargs) -> ApplyResult:
@@ -36,8 +37,10 @@ class Device(Model):
         except DeviceNotFound:
             pass
 
+        virtual = self.spec.get('virtual', {})
+
         # If the device is not virtual, create it and return.
-        if not self.spec.get('virtual', {}).get('enabled', False):
+        if not virtual.get('enabled', False):
             if device is None:
                 client.create_device(self.to_v1())
                 return ApplyResult.CREATED
@@ -78,6 +81,9 @@ class Device(Model):
         onboard_script = device.onboard_script()
         onboard_command = onboard_script.full_command()
         execute_onboard_command(hwil_response.id, onboard_command)
+
+        if virtual.get('wait', False):
+            wait_until_online(device)
 
         return result
 
