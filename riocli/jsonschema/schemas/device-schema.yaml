@@ -67,6 +67,9 @@ definitions:
               enabled:
                 enum:
                   - True
+              wait:
+                type: boolean
+                default: False
               product:
                 type: string
                 enum:

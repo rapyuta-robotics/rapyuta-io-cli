@@ -14,6 +14,7 @@
 import functools
 import json
 import re
+import time
 import typing
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from munch import Munch
 from rapyuta_io import Client
 from rapyuta_io.clients import LogUploads
 from rapyuta_io.clients.device import Device
+from rapyuta_io.clients.device import DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
 
@@ -84,6 +86,7 @@ def find_device_guid(client: Client, name: str) -> str:
             return device.uuid
 
     raise DeviceNotFound()
+
 
 def find_device_by_name(client: Client, name: str) -> Device:
     devices = client.get_all_devices(device_name=name)
@@ -290,3 +293,23 @@ def sanitize_hwil_device_name(name):
             r = r + c
 
     return r
+
+
+def wait_until_online(device: Device, timeout: int = 600) -> None:
+    """Wait until the device is online.
+
+    This is a helper method that waits until the device is online.
+    Or, until the timeout is reached. The default timeout is 600 seconds.
+    """
+    counter, interval = 0, 20
+    failed_states = (DeviceStatus.FAILED, DeviceStatus.REJECTED)
+
+    device.refresh()
+
+    while not device.is_online() and device.status not in failed_states and counter < timeout:
+        counter += interval
+        time.sleep(interval)
+        device.refresh()
+
+    if not device.is_online() and counter >= timeout:
+        raise Exception('timeout reached while waiting for the device to be online')
