@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,8 +35,10 @@ from riocli.utils import inspect_with_format
 @click.pass_context
 @name_to_guid
 def inspect_usergroup(ctx: click.Context, format_type: str, group_name: str, group_guid: str, spinner=None) -> None:
-    """
-    Inspect the usergroup resource
+    """Print the details of a usergroup
+
+    You choose the format of the output using the ``--format`` flag.
+    The supported formats are ``json`` and ``yaml``. Default is ``yaml``.
     """
     try:
         client = new_client()

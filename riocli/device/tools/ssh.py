@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
-from riocli.device.tools.util import (
-    run_tunnel_on_device,
-    run_tunnel_on_local,
-    copy_to_device,
-)
+from riocli.device.tools.util import (copy_to_device, run_tunnel_on_device, run_tunnel_on_local)
 from riocli.device.util import name_to_guid
 from riocli.utils import random_string
 from riocli.utils.execute import run_on_device
@@ -52,12 +48,27 @@ def device_ssh(
         remote_port: int,
         x_forward: bool,
 ) -> None:
-    """
-    SSH to the Device
+    """SSH into a device.
+
+    Note: Make sure that you have executed the `rio device tools init`
+    command before trying to SSH.
+
+    You can select the user to SSH into the device with the `--user` flag.
+    The default user is `root`.
+
+    You can also specify the local port to forward the SSH connection to
+    using the `--local-port` flag. If not specified, a random port will be
+    selected.
+
+    You can also specify the remote port on the device on which the SSH server
+    is listening using the `--remote-port` flag. The default port is 22.
+
+    You can enable X Forwarding over SSH using the `--x-forward` flag.
     """
     extra_args = ""
     if not x_forward:
         extra_args = extra_args + " -X "
+
     try:
         path = random_string(8, 5)
         if not local_port:
@@ -88,8 +99,23 @@ def device_ssh(
 @name_to_guid
 def ssh_authorize_key(device_name: str, device_guid: str, user: str,
                       public_key_file: click.Path, spinner=None) -> None:
-    """
-    Authorize Public SSH Key
+    """Authorize your local machine's public SSH key
+
+    This command will add the public SSH key of your local machine to the
+    authorized keys of the specified device. This will allow you to SSH into
+    the device without a password.
+
+    You can specify the user for which the SSH keys are added using the `--user`
+    flag. The default user is `root`.
+
+    You can also specify the path to the public key file using the `public-key-file`
+    argument. The default path is `~/.ssh/id_rsa.pub`.
+
+    Usage Examples:
+
+        Authorize the default public key for the root user
+
+        $ rio device tools ssh-authorize DEVICE_NAME
     """
     try:
         temp_path = "/tmp/{}".format(random_string(8, 5))

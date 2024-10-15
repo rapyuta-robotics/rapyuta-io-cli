@@ -42,7 +42,13 @@ def update_owner(
     Update the owner of the project.
 
     The command will show an interactive list of users in the project if
-    you do not specify --user-email. You can select the new owner from the list.
+    you do not specify ``--user-email.`` You can select the new owner from the list.
+
+    Usage Examples:
+
+        Update the owner of the project to a specific user
+
+            $ rio project update-owner PROJECT --user-email user@email.com
     """
     config = get_config_from_context(ctx)
     client = config.new_v2_client(with_project=False)

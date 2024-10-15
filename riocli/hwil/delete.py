@@ -37,8 +37,26 @@ def delete_device(
         force: bool,
         spinner: Yaspin = None,
 ) -> None:
-    """Delete one or more devices"""
+    """Delete one or more devices.
 
+    You can specify the device names to delete using the
+    device names as arguments. If you want to delete multiple
+    devices, you can specify multiple device names separated
+    by spaces.
+
+    You can skip confirmation by using the ``--force`` or ``-f``
+    or the ``--silent`` flag.
+
+    Usage Examples:
+
+        Delete a single device by name
+
+            $ rio hwil delete my-device
+
+        Delete multiple devices by name
+
+            $ rio hwil delete my-device1 my-device2 my-device3
+    """
     if not devices:
         spinner.text = click.style('No device names provided', fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)

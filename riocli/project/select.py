@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
@@ -33,14 +34,22 @@ def select_project(
         project_name: str,
         project_guid: str,
 ) -> None:
-    """
-    Sets the given project in the CLI context. All other resources use this project to act upon.
+    """Switch to a different project in the current organization.
+
+    The project will be set in the CLI's context and will be used
+    for all the subsequent commands.
     """
     ctx = get_root_context(ctx)
 
     ctx.obj.data['project_id'] = project_guid
     ctx.obj.data['project_name'] = project_name
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
 
     click.secho('{} Project {} ({}) is selected!'.format(
         Symbols.SUCCESS,

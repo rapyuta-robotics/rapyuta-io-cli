@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,10 +42,25 @@ from riocli.utils import tabulate_data
 @click.option('--advertise-routes', is_flag=True,
               type=click.BOOL, default=False,
               help="Advertise subnets configured in project to VPN peers")
-def toggle_vpn(devices: typing.List, enable: bool,
-               silent: bool = False, advertise_routes: bool = False) -> None:
-    """
-    Enable or disable VPN client on the device
+def toggle_vpn(
+        devices: typing.List,
+        enable: bool,
+        silent: bool = False,
+        advertise_routes: bool = False,
+) -> None:
+    """Enable or disable VPN client on the device.
+
+    Optionally, you can configure the device to advertise a subnet
+    if the project is configured with a subnet range. Please note
+    that --advertise-routes is only a flag and does not provide you
+    an option to specify the subnet range.
+
+    You can specify the devices using their names or UUIDs using the
+    --devices flag. If you do not specify any devices, the state will
+    be applied to all online devices in the project.
+
+    If you want to skip the confirmation prompt, use the --silent or
+    --force or -f flag.
 
     Examples:
 

@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data
-from riocli.vpn.util import (
-    install_vpn_tools,
-    is_tailscale_up,
-    get_tailscale_status,
-    is_vpn_enabled_in_project,
-)
+from riocli.vpn.util import (get_tailscale_status, install_vpn_tools, is_tailscale_up, is_vpn_enabled_in_project)
 
 
 @click.command(
@@ -36,8 +31,11 @@ from riocli.vpn.util import (
               help='Print more details', type=bool)
 @click.pass_context
 def status(ctx: click.Context, wide: bool = False):
-    """
-    Check VPN status
+    """Check VPN network status.
+
+    You can view all the connected peers in the VPN network.
+
+    User the ``--wide`` flag to view more details about the peers.
     """
     try:
         install_vpn_tools()

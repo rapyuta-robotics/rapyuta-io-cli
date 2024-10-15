@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+
 from riocli.config import new_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
@@ -29,10 +30,7 @@ from riocli.utils import tabulate_data
 )
 @click.pass_context
 def list_usergroup(ctx: click.Context) -> None:
-    """
-    List all user groups in selected organization
-    """
-
+    """List all user groups in current organization."""
     try:
         client = new_client()
         org_guid = ctx.obj.data.get('organization_id')

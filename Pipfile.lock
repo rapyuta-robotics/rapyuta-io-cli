@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bcee71eb2ef979baf56c3a04de4a41fcf066c80e83823bad0eebb1c7d811c82e"
+            "sha256": "718747a2323b0bee239d6cb164d2757d3f170ef597cdfc563b2b607596750216"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -442,6 +442,14 @@
             ],
             "version": "==0.14.1"
         },
+        "python-hosts": {
+            "hashes": [
+                "sha256:4c56991e22f6bffc28096833de787f92350e85b7cdd6086706725c55c4f04ab9",
+                "sha256:7fb9c42e2f75d6e2c2ef7e11ffd7aa6a7d59a1fb54bcc5d0f0bba021aa8d5175"
+            ],
+            "index": "pypi",
+            "version": "==1.0.7"
+        },
         "python-magic": {
             "hashes": [
                 "sha256:c1ba14b08e4a5f5c31a302b7721239695b2f0f058d125bd5ce1ee36b9d9d3c3b",
@@ -528,16 +536,16 @@
         },
         "rapyuta-io": {
             "hashes": [
-                "sha256:351cb4b09ecb42159243b75e2953f45bbfab58384a612c235a122262efd3af47",
-                "sha256:d123bf35241b4acb34cc6628bcebd06670aab5c37d6ad613e8e9e1123fb9fba5"
+                "sha256:b50ff90b4e1fb6f925f2ab30d5af8ea1c533fb148b8c3a743fcd8c37fd9ea391",
+                "sha256:fadc7f50f9a8f1b3cd9cbac0b9ba4253bf8374d26da26ebfadc52c42851fcc93"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.17.1"
+            "version": "==2.0.0"
         },
         "rapyuta-io-cli": {
             "markers": "python_version >= '3.8'",
-            "version": "==9.0.3"
+            "version": "==9.0.4"
         },
         "referencing": {
             "hashes": [

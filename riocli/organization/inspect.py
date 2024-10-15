@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,8 +38,11 @@ def inspect_organization(
         organization_guid: str,
         organization_short_id: str,
 ) -> None:
-    """
-    Inspect an organization
+    """Inspect an organization.
+
+    Provides an overview of the organization. The output
+    is not the exact ouptut of the API, but a more human-readable
+    version of the organization details.
     """
     try:
         organization = get_organization_details(organization_guid)

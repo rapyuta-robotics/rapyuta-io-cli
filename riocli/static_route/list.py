@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@ import typing
 from typing import List
 
 import click
+import munch
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients.static_route import StaticRoute
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -32,8 +32,16 @@ from riocli.utils import tabulate_data
 @click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
               default=(), help='Filter the deployment list by labels')
 def list_static_routes(labels: typing.List[str]) -> None:
-    """
-    List the static routes in the selected project
+    """List the static routes in the current project.
+
+    You can filter the list by providing labels using
+    the ``--label`` or ``-l`` flag.
+
+    Usage Examples:
+
+        List static routes with label 'app=web'
+
+            $ rio static-route list --label app=web
     """
     try:
         client = new_v2_client(with_project=True)
@@ -44,7 +52,7 @@ def list_static_routes(labels: typing.List[str]) -> None:
         raise SystemExit(1) from e
 
 
-def _display_routes_list(routes: List[StaticRoute]) -> None:
+def _display_routes_list(routes: List[munch.Munch]) -> None:
     headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']
 
     data = []

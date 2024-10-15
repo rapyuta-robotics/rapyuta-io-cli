@@ -22,6 +22,7 @@ from riocli.auth.util import (
 )
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 LOGIN_SUCCESS = click.style('{} Logged in successfully!'.format(Symbols.SUCCESS), fg=Colors.GREEN)
 
@@ -56,12 +57,51 @@ def login(
         interactive: bool,
         auth_token: str,
 ) -> None:
-    """
-    Log into your rapyuta.io account using the CLI. This is required to
-    use most commands of the CLI.
+    """Log into your rapyuta.io account.
+
+    This is the first step to start using the CLI.
     
-    You can log in with your email and password or just with and auth token
-    if you already have one.
+    You can log in with your email and password or
+    just with and auth token if you already have one.
+    The command works in an interactive mode by default
+    and will prompt you to enter your credentials and
+    select the organization and project you want to work
+    with.
+
+    You can also use the command in non-interactive mode
+    by providing the email and password as arguments and
+    setting the --no-interactive or --silent flag. In this
+    mode, you can also set the organization and project
+    using the --organization and --project flags. If you
+    do not provide the organization and project, you will
+    have to set them later using the `rio organization select`
+    and `rio project select` commands.
+
+    Note: If you have special characters in your password, then
+    consider putting them in quotes to avoid the terminal from
+    interpreting them otherwise.
+
+    Usage Examples:
+
+        Login interactively
+
+        $ rio auth login
+
+        Login interactively with email and password
+
+        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD
+
+        Login non-interactively with email and password
+
+        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD --no-interactive
+
+        Login non-interactively with email, password, organization and project
+
+        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD --organization YOUR_ORG --project YOUR_PROJECT --silent
+
+        Login with auth token
+
+        $ rio auth login --auth-token YOUR_AUTH_TOKEN
     """
     ctx = get_root_context(ctx)
 
@@ -124,5 +164,11 @@ def login(
     select_project(ctx.obj, project=project, organization=organization)
 
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
 
     click.echo(LOGIN_SUCCESS)

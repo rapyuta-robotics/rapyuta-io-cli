@@ -36,8 +36,22 @@ from riocli.constants import Colors
                    'expects sops to be authorized for decoding files on this computer')
 @click.argument('files', nargs=-1)
 def template(values: str, secrets: str, files: Iterable[str]) -> None:
-    """
-    Print manifests with filled values
+    """Print manifests with values and secrets applied
+
+    The template command can be used to preview the manifests
+    with values and secrets applied. This is particularly useful
+    to check if the values and secrets are correctly substituted
+    in the manifests before applying them.
+
+    Just like the apply command, the template command also accepts
+    a list of files as arguments. You can specify one or more files,
+    directories or glob pattern.
+
+    However, it will only accept on values and secrets file as input.
+
+    Usage Examples:
+
+    rio template manifests/*.yaml -v values.yaml -s secrets.yaml
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets)

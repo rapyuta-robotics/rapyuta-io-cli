@@ -22,7 +22,7 @@ from rapyuta_io.clients.device import Device
 from yaspin.api import Yaspin
 
 from riocli.config import new_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.device.util import fetch_devices
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
@@ -50,8 +50,34 @@ def delete_device(
         delete_all: bool = False,
         spinner: Yaspin = None,
 ) -> None:
-    """
-    Deletes one more devices
+    """Delete one or more devices with a name or a regex pattern.
+
+    You can specify a name or a regex pattern to delete one
+    or more devices.
+
+    If you want to delete all the device, then
+    simply use the --all flag.
+
+    If you want to delete devices without confirmation, then
+    use the --force or --silent or -f
+
+    Usage Examples:
+
+      Delete a device by name
+
+      $ rio device delete DEVICE_NAME
+
+      Delete a device without confirmation
+
+      $ rio device delete DEVICE_NAME --force
+
+      Delete all device in the project
+
+      $ rio device delete --all
+
+      Delete devices using regex pattern
+
+      $ rio device delete "DEVICE.*"
     """
     client = new_client()
     if not (device_name_or_regex or delete_all):

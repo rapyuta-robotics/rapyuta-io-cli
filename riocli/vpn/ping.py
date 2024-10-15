@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@ from yaspin.api import Yaspin
 
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
-from riocli.vpn.util import (
-    install_vpn_tools,
-    is_tailscale_up,
-    get_tailscale_status,
-    tailscale_ping
-)
+from riocli.vpn.util import (get_tailscale_status, install_vpn_tools, is_tailscale_up, tailscale_ping)
 
 
 @click.command(
@@ -35,8 +30,12 @@ from riocli.vpn.util import (
 @click.pass_context
 @with_spinner(text="Pinging all peers...")
 def ping_all(ctx: click.Context, spinner: Yaspin = None):
-    """
-    Ping all the peers in the network
+    """Ping all the peers in the network.
+
+    This command will ping all the peers in the network. It is
+    convenient to check the connectivity of all the peers in the
+    network. Also, it helps establish a direct connection with
+    the peers.
     """
     try:
         with spinner.hidden():

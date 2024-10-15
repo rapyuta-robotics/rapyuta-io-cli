@@ -14,9 +14,9 @@
 import typing
 
 import click
+import munch
 from click_help_colors import HelpColorsCommand
 from munch import unmunchify
-from rapyuta_io import Project
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -46,8 +46,22 @@ def list_projects(
         labels: typing.List[str] = (),
         wide: bool = False,
 ) -> None:
-    """
-    List all the projects you are part of
+    """List all the projects you are a part of in current organization.
+
+    You can also filter the list by specifying labels using the ``--label``
+    or the ``-l`` flag.
+
+    For more details, you can use the ``--wide`` or the ``-w`` flag.
+
+    Usage Examples:
+
+        List all projects with label "release=3.0"
+
+            $ rio project list --label release=3.0
+
+        List projects with the wide option
+
+            $ rio project list --wide
     """
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get('organization_id')
@@ -70,7 +84,7 @@ def list_projects(
         raise SystemExit(1)
 
 
-def _display_project_list(projects: typing.List[Project], current: str = None,
+def _display_project_list(projects: typing.List[munch.Munch], current: str = None,
                           show_header: bool = True,
                           wide: bool = False) -> None:
     headers = []

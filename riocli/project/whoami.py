@@ -32,8 +32,10 @@ ADMIN_ROLE = 'admin'
 @name_to_guid
 @click.pass_context
 def whoami(ctx: click.Context, project_name: str, project_guid: str) -> None:
-    """
-    Find the role of the current user in a project.
+    """Find your role in a project.
+
+    If you do not specify the project name, the command will use the project
+    set in the CLI context.
     """
     if not ctx.obj.data.get('email_id'):
         raise LoggedOut

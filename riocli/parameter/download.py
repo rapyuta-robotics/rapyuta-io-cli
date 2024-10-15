@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 
@@ -50,8 +50,14 @@ def download_configurations(
         delete_existing: bool = False,
         spinner=None
 ) -> None:
-    """
-    Download configuration parameter trees from rapyuta.io
+    """Download configuration parameter trees from rapyuta.io.
+
+    You can specify the tree names to download using the ``--tree-names`` flag.
+
+    If you do not specify any tree names, all the trees will be downloaded.
+
+    You can also specify the ``--overwrite`` or ``--delete-existing`` flag to
+    overwrite the existing parameter tree on the local machine.
     """
     if path is None:
         # Not using the Context Manager because

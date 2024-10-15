@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ from riocli.managedservice.list_providers import list_providers
     cls=HelpColorsGroup,
     help_headers_color='yellow',
     help_options_color='green',
+    hidden=True,
 )
 def managedservice() -> None:
     """

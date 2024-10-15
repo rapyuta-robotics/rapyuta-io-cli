@@ -20,6 +20,7 @@ from riocli.auth.util import select_project
 from riocli.constants import Colors
 from riocli.project.util import name_to_organization_guid
 from riocli.utils.context import get_root_context
+from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
@@ -41,14 +42,27 @@ def select_organization(
         organization_short_id: str,
         interactive: bool,
 ) -> None:
-    """
-    Sets the current organization to the one provided
-    in the argument and prompts you to select a new project
-    in the changed organization
+    """Set the current organization.
 
-    Example:
+    You can set the current organization using the name
+    or the guid of the organization. You will be prompted
+    to select a project if you are running the command in
+    an interactive mode.
 
-        rio organization select other-org
+    To simply set the organization without selecting a project,
+    use the `--no-interactive` or `--silent` flag.
+
+    If your organization name has spaces, use quotes around the name.
+
+    Usage Examples:
+
+        Set the current organization to 'Platform JP Staging'
+
+        $ rio organization select 'Platform JP Staging'
+
+        Set the current organization to 'Platform JP Staging' without selecting a project
+
+        $ rio organization select 'Platform JP Staging' --silent
     """
     ctx = get_root_context(ctx)
 
@@ -71,5 +85,10 @@ def select_organization(
             "Please set your project with `rio project select PROJECT_NAME`".format(organization_name),
             fg=Colors.GREEN)
 
-
     ctx.obj.save()
+
+    try:
+        cleanup_hosts_file()
+    except Exception as e:
+        click.secho(f'{Symbols.WARNING} Failed to '
+                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)

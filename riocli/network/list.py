@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,8 +33,16 @@ from riocli.utils import tabulate_data
 @click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
               default=(), help='Filter the deployment list by labels')
 def list_networks(network: str, labels: typing.List[str]) -> None:
-    """
-    List the networks in the selected project
+    """List the networks in the current project.
+
+    You can also filter the list by specifying labels using
+    the ``--label`` or the ``-l`` flag.
+
+    Usage Examples:
+
+        List all networks with label "app=nginx"
+
+            $ rio network list --label app=nginx
     """
     try:
         client = new_v2_client(with_project=True)

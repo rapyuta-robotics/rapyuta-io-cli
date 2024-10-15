@@ -45,7 +45,15 @@ def login(
         password: str,
         interactive: bool = True,
 ) -> None:
-    """Log in to HWIL."""
+    """Authenticate with HWIL API.
+
+    This is mandatory to use the HWIL commands and also
+    to create virtual devices with the device manifest.
+
+    You can choose to login non-interactively by providing
+    --username and --password flags or interactively by
+    not providing any flags.
+    """
     ctx = get_root_context(ctx)
 
     if interactive:

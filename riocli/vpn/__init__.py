@@ -28,8 +28,13 @@ from riocli.vpn.status import status
     help_options_color='green',
 )
 def vpn() -> None:
-    """
-    Connect your machine to the current project's VPN network
+    """Connect to the rapyuta.io VPN
+
+    You can connect to the rapyuta.io VPN from your system
+    and access the machines in the VPN. You can view other
+    machines in the VPN, ping them, and check the status of
+    the VPN connection. You can also register a new machine
+    that may not be able to run the CLI.
     """
     pass
 

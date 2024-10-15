@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ from riocli.utils.ssh_tunnel import get_free_tcp_port
 @click.argument('local-port', type=int, default=0, required=False)
 @name_to_guid
 def port_forward(device_name: str, device_guid: str, remote_port: int, local_port: int) -> None:
-    """
-    Forwards the port on the Device to local machine
-    """
+    """Forwards a port on the device to local machine."""
     try:
         path = random_string(8, 5)
         if local_port == 0:

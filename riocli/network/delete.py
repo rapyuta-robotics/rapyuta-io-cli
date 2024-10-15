@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,8 +48,34 @@ def delete_network(
         workers: int = 10,
         spinner: Yaspin = None
 ) -> None:
-    """
-    Deletes a network
+    """Delete one or more networks with a name or a regex pattern.
+
+    You can specify a name or a regex pattern to delete one
+    or more networks.
+
+    If you want to delete all the networks, then
+    simply use the ``--all`` flag.
+
+    If you want to delete networks without confirmation, then use the
+    ``--force`` or ``--silent`` or ``-f``.
+
+    Usage Examples:
+
+        Delete a network by name
+
+            $ rio network delete NETWORK_NAME
+
+        Delete a network without confirmation
+
+            $ rio network delete NETWORK_NAME --force
+
+        Delete all networks in the project
+
+            $ rio network delete --all
+
+        Delete networks using regex pattern
+
+            $ rio network delete "NETWORK.*"
     """
     client = new_v2_client()
 
