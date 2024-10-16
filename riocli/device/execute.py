@@ -45,10 +45,13 @@ def execute_command(
 ) -> None:
     """Execute commands on a device.
 
-    You can specify the user and shell to run the command in.
-    To specify the user, use the --user flag. The default is
-    root. To specify the shell, use the --shell flag. The default
-    shell is /bin/bash.
+    You can specify the user, shell, run-async, and timeout options to customize
+    the command execution. To specify the user, use the --user flag.
+    The default is 'root'. To specify the shell, use the --shell flag.
+    The default shell is '/bin/bash'. To run the command synchronously,
+    set the --run-async flag to false. The default value is true. To
+    specify the timeout, use the --timeout flag, providing the duration
+    in seconds. The default value is 300.
 
     Make sure you put your command in quotes to avoid any issues.
 
