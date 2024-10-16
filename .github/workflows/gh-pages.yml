@@ -6,19 +6,19 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Pipenv
-        run: pip3 install pipenv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
       - name: Install Dependencies
-        run: pipenv install --dev
+        run: uv sync --dev
 
       - name: Build Documentation
         run: |
-          pipenv run python3 -m sphinx -M html docs/source docs/output
+          uv run python -m sphinx -M html docs/source docs/output
           cp scripts/install.sh docs/output/html/install.sh
 
       - name: Deploy gh-pages

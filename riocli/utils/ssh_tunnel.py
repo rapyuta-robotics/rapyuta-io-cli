@@ -20,26 +20,6 @@ import click
 from riocli.utils import random_string, run_bash
 
 
-def establish_ssh_tunnel(exec_remote_command: typing.Callable) -> None:
-    input_path, output_path = random_string(8, 5), random_string(8, 5)
-    free_port = get_free_tcp_port()
-
-    remote_command = ["socat",
-                      "'EXEC:curl -NsS https\://ppng.io/{}!!EXEC:curl -NsST - https\://ppng.io/{}'".format(input_path,
-                                                                                                           output_path),
-                      "TCP:127.0.0.1:22"]
-    click.secho('$ {}'.format(' '.join(remote_command)))
-    exec_remote_command(remote_command)
-
-    local_command = ["socat",
-                     "TCP-LISTEN:{}".format(free_port),
-                     "'EXEC:curl -NsS https\://ppng.io/{}!!EXEC:curl -NsST - https\://ppng.io/{}'".format(output_path,
-                                                                                                          input_path)]
-    run_bash('pkill -9 socat')
-    run_bash(' '.join(local_command), bg=True)
-    os.system('ssh -p {} {}@localhost'.format(free_port, 'root'))
-
-
 def get_free_tcp_port():
     tcp = socket(AF_INET, SOCK_STREAM)
     tcp.bind(('', 0))
