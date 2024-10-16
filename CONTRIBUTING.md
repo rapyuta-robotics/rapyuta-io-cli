@@ -1,45 +1,38 @@
 # Contribution Guidelines
 ## Setup your development environment
 
-The project uses [pipenv](https://pipenv.pypa.io/en/latest/) for
-development. It needs to be installed to setup the development environment.
+The project uses [uv](https://docs.astral.sh/uv/) for development. 
+It needs to be installed to set up the development environment.
 
 ``` bash
-pip install pipenv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Once Pipenv is installed, a Python virtual environment can be quickly
+Once `uv` is installed, a Python virtual environment can be quickly
 bootstrapped by running the following commands in the root of the repository.
 
 ``` bash
-pipenv install --dev
+uv venv
+source .venv/bin/activate
 ```
 
-This will create a virtual environment in the pipenv's preconfigured location
-(if one doesn't already exist). It will also install all the dependencies and
-`riocli` package in the location.
+This will create a virtual environment in `.venv` directory and activate it.
 
-To run the CLI (or any command) under the context of Pipenv's virtual
-environment, prepend the commands with `pipenv run`
+Next, install all dependencies using the following command
+```bash
+uv sync
+```
+
+To run the CLI (or any command) under the context of the virtual
+environment, prepend the commands with `uv run`
  
 ```bash
-pipenv run rio
+uv run rio --help
 ```
 
-To run the RIO CLI from the source directly, you can use `riocli` module
-directly.
+New dependencies can be installed directly using `uv`. This modifies the
+`pyproject.toml` and `uv.lock`.
 
 ``` bash
-pipenv run python -m riocli
+uv add <package-name>
 ```
-
-New dependencies can be installed directly using `pipenv`. This modifies the
-`Pipfile` and `Pipfile.lock`.
-
-``` bash
-pipenv install {dependency}
-```
-
-But using the `pipenv` directly doesn't sync the dependencies in the
-`setup.py` file. Please make sure you update the `setup.py` file with
-the new dependencies in the `install_requires` section.
