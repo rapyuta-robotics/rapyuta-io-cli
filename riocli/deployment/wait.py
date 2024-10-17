@@ -21,16 +21,16 @@ from riocli.v2client.error import DeploymentNotRunning, ImagePullError, RetriesE
 
 
 @click.command(
-    'wait',
+    "wait",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('deployment-name', type=str)
+@click.argument("deployment-name", type=str)
 @with_spinner(text="Waiting for deployment...", timer=True)
 def wait_for_deployment(
-        deployment_name: str,
-        spinner=None,
+    deployment_name: str,
+    spinner=None,
 ) -> None:
     """Wait until the deployment succeeds/fails
 
@@ -40,11 +40,14 @@ def wait_for_deployment(
     try:
         client = new_v2_client()
         deployment = client.poll_deployment(deployment_name)
-        spinner.text = click.style('Phase: Succeeded Status: {}'.format(deployment.status.status), fg=Colors.GREEN)
+        spinner.text = click.style(
+            "Phase: Succeeded Status: {}".format(deployment.status.status),
+            fg=Colors.GREEN,
+        )
         spinner.green.ok(Symbols.SUCCESS)
     except RetriesExhausted as e:
         spinner.write(click.style(str(e), fg=Colors.RED))
-        spinner.text = click.style('Try again', Colors.RED)
+        spinner.text = click.style("Try again", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
     except DeploymentNotRunning as e:
         spinner.text = click.style(str(e), fg=Colors.RED)

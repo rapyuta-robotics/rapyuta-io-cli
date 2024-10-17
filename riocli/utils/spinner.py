@@ -26,7 +26,7 @@ class DummySpinner:
     """
 
     def __init__(self, *args, **kwargs):
-        self.text = ''
+        self.text = ""
 
     def write(self, text):
         click.echo(text)
@@ -34,11 +34,11 @@ class DummySpinner:
     def hidden(self):
         return self
 
-    def fail(self, text='FAIL'):
-        click.echo('{} {}'.format(text, self.text))
+    def fail(self, text="FAIL"):
+        click.echo("{} {}".format(text, self.text))
 
-    def ok(self, text='OK'):
-        click.echo('{} {}'.format(text, self.text))
+    def ok(self, text="OK"):
+        click.echo("{} {}".format(text, self.text))
 
     def __getattr__(self, name):
         return self
@@ -83,7 +83,7 @@ def with_spinner(**spin_kwargs):
                 spinner_class = DummySpinner
 
             with spinner_class(**spin_kwargs) as spinner:
-                kwargs['spinner'] = spinner
+                kwargs["spinner"] = spinner
                 return func(*args, **kwargs)
 
         return wrapper

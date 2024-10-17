@@ -39,28 +39,28 @@ from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
 
 KIND_TO_CLASS = {
-    'project': Project,
-    'secret': Secret,
-    'device': Device,
-    'network': Network,
-    'staticroute': StaticRoute,
-    'package': Package,
-    'disk': Disk,
-    'deployment': Deployment,
+    "project": Project,
+    "secret": Secret,
+    "device": Device,
+    "network": Network,
+    "staticroute": StaticRoute,
+    "package": Package,
+    "disk": Disk,
+    "deployment": Deployment,
     "managedservice": ManagedService,
-    'usergroup': UserGroup,
+    "usergroup": UserGroup,
 }
 
 
 def get_model(data: dict) -> Model:
     """Get the model class based on the kind"""
-    kind = data.get('kind', None)
+    kind = data.get("kind", None)
     if kind is None:
-        raise Exception('kind is missing')
+        raise Exception("kind is missing")
 
     klass = KIND_TO_CLASS.get(str(kind).lower(), None)
     if klass is None:
-        raise Exception('invalid kind {}'.format(kind))
+        raise Exception("invalid kind {}".format(kind))
 
     return klass
 
@@ -86,17 +86,15 @@ def parse_variadic_path_args(path_item):
 
 
 def process_files_values_secrets(
-        files: Iterable[str],
-        values: Iterable[str],
-        secrets: Iterable[str],
+    files: Iterable[str],
+    values: Iterable[str],
+    secrets: Iterable[str],
 ):
     glob_files = []
 
     for path_item in files:
         path_glob = parse_variadic_path_args(path_item)
-        glob_files.extend([
-            f for f in path_glob if os.path.isfile(f)
-        ])
+        glob_files.extend([f for f in path_glob if os.path.isfile(f)])
 
     # Remove value files from template files list.
     abs_values = values
@@ -119,18 +117,18 @@ def process_files_values_secrets(
 
 
 def message_with_prompt(
-        left_msg: str,
-        right_msg: str = '',
-        fg: str = Colors.WHITE,
-        spinner: Yaspin = None,
+    left_msg: str,
+    right_msg: str = "",
+    fg: str = Colors.WHITE,
+    spinner: Yaspin = None,
 ) -> None:
     """Prints a message with a prompt and a timestamp.
 
     >> left_msg spacer right_msg time
     """
     columns, _ = get_terminal_size()
-    t = datetime.now().isoformat('T')
-    spacer = ' ' * (int(columns) - len(left_msg + right_msg + t) - 12)
+    t = datetime.now().isoformat("T")
+    spacer = " " * (int(columns) - len(left_msg + right_msg + t) - 12)
     text = click.style(f">> {left_msg}{spacer}{right_msg} [{t}]", fg=fg)
     printer = spinner.write if spinner else click.echo
     printer(text)
@@ -139,10 +137,10 @@ def message_with_prompt(
 def print_resolved_objects(objects: typing.Dict) -> None:
     data = []
     for o in objects:
-        kind, name = o.split(':')
+        kind, name = o.split(":")
         data.append([kind.title(), name])
 
-    tabulate_data(data, headers=['Kind', 'Name'])
+    tabulate_data(data, headers=["Kind", "Name"])
 
 
 def init_jinja_environment():

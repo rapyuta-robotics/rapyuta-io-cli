@@ -30,34 +30,35 @@ def handle_server_errors(response: requests.Response):
 
     # 409 Conflict
     if status_code == http.HTTPStatus.CONFLICT:
-        raise ConflictError('already exists')
+        raise ConflictError("already exists")
     # 401 Unauthorized
     if status_code == http.HTTPStatus.UNAUTHORIZED:
-        raise UnauthorizedError('unauthorized access')
+        raise UnauthorizedError("unauthorized access")
     # 500 Internal Server Error
     if status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
-        raise Exception('internal server error')
+        raise Exception("internal server error")
     # 501 Not Implemented
     if status_code == http.HTTPStatus.NOT_IMPLEMENTED:
-        raise Exception('not implemented')
+        raise Exception("not implemented")
     # 502 Bad Gateway
     if status_code == http.HTTPStatus.BAD_GATEWAY:
-        raise Exception('bad gateway')
+        raise Exception("bad gateway")
     # 503 Service Unavailable
     if status_code == http.HTTPStatus.SERVICE_UNAVAILABLE:
-        raise Exception('service unavailable')
+        raise Exception("service unavailable")
     # 504 Gateway Timeout
     if status_code == http.HTTPStatus.GATEWAY_TIMEOUT:
-        raise Exception('gateway timeout')
+        raise Exception("gateway timeout")
     # Anything else that is not known
     if status_code > 504:
-        raise Exception('unknown server error')
+        raise Exception("unknown server error")
 
 
 class Client(object):
     """
     HWILv3 API Client
     """
+
     HWIL_URL = "https://hwilv3.rapyuta.io"
     ARCH_OS_DICT = {
         "amd64": {
@@ -68,13 +69,9 @@ class Client(object):
             }
         },
         "arm64": {
-            "ubuntu": {
-                "focal": "ubuntu-focal-ros-noetic-py3"
-            },
-            "debian": {
-                "bullseye": "debian-bullseye-docker"
-            }
-        }
+            "ubuntu": {"focal": "ubuntu-focal-ros-noetic-py3"},
+            "debian": {"bullseye": "debian-bullseye-docker"},
+        },
     }
 
     def __init__(self, auth_token: str):
@@ -82,12 +79,12 @@ class Client(object):
         self._host = self.HWIL_URL
 
     def create_device(
-            self: Client,
-            name: str,
-            arch: str,
-            os: str,
-            codename: str,
-            labels: dict = None,
+        self: Client,
+        name: str,
+        arch: str,
+        os: str,
+        codename: str,
+        labels: dict = None,
     ) -> Munch:
         """Create a HWIL device."""
         url = f"{self._host}/device/"
@@ -109,11 +106,15 @@ class Client(object):
             "name": name,
             "architecture": arch,
             "labels": sanitized_labels,
-            "flavor": self.ARCH_OS_DICT.get(arch).get(os).get(codename)
+            "flavor": self.ARCH_OS_DICT.get(arch).get(os).get(codename),
         }
 
-        response = RestClient(url).method(HttpMethod.POST).headers(
-            headers).execute(payload=payload)
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(headers)
+            .execute(payload=payload)
+        )
 
         handle_server_errors(response)
 
@@ -156,8 +157,12 @@ class Client(object):
             "uuid": generate_short_guid(),
         }
 
-        response = RestClient(url).method(HttpMethod.POST).headers(
-            headers).execute(payload=payload)
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(headers)
+            .execute(payload=payload)
+        )
 
         handle_server_errors(response)
 
@@ -180,7 +185,9 @@ class Client(object):
 
         return munchify(data)
 
-    def poll_till_device_ready(self: Client, device_id: int, sleep_interval: int, retry_limit: int) -> None:
+    def poll_till_device_ready(
+        self: Client, device_id: int, sleep_interval: int, retry_limit: int
+    ) -> None:
         """Poll until HWIL device is ready"""
         url = f"{self._host}/device/{device_id}"
         headers = self._get_auth_header()
@@ -195,13 +202,13 @@ class Client(object):
                 raise Exception("hwil: {}".format(response.text))
 
             device = munchify(data)
-            if device.status != 'IDLE':
+            if device.status != "IDLE":
                 time.sleep(sleep_interval)
                 continue
 
             return
 
-        msg = f'Retries exhausted: Tried {retry_limit} times with {sleep_interval}s interval.'
+        msg = f"Retries exhausted: Tried {retry_limit} times with {sleep_interval}s interval."
         raise RetriesExhausted(msg)
 
     def list_devices(self: Client):

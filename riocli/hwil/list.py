@@ -22,7 +22,7 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -41,8 +41,10 @@ def list_devices() -> None:
 def _display_device_list(devices: typing.List[dict], show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ('ID', 'Name', 'Status', 'Static IP', 'Dynamic IP', 'Flavor')
+        headers = ("ID", "Name", "Status", "Static IP", "Dynamic IP", "Flavor")
 
-    data = [[d.id, d.name, d.status, d.static_ip, d.ip_address, d.flavor] for d in devices]
+    data = [
+        [d.id, d.name, d.status, d.static_ip, d.ip_address, d.flavor] for d in devices
+    ]
 
     tabulate_data(data, headers)

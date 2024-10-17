@@ -22,22 +22,18 @@ from riocli.utils.execute import run_on_device
 
 
 @click.command(
-    'execute',
+    "execute",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--user', default='root')
-@click.option('--shell', default='/bin/bash')
-@click.argument('device-name', type=str)
-@click.argument('command', nargs=-1)
+@click.option("--user", default="root")
+@click.option("--shell", default="/bin/bash")
+@click.argument("device-name", type=str)
+@click.argument("command", nargs=-1)
 @name_to_guid
 def execute_command(
-        device_name: str,
-        device_guid: str,
-        user: str,
-        shell: str,
-        command: typing.List[str]
+    device_name: str, device_guid: str, user: str, shell: str, command: typing.List[str]
 ) -> None:
     """Execute commands on a device.
 

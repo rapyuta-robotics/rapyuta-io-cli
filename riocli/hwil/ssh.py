@@ -22,12 +22,12 @@ from riocli.hwil.util import name_to_id
 
 
 @click.command(
-    'ssh',
+    "ssh",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('device-name', required=True, type=str)
+@click.argument("device-name", required=True, type=str)
 @name_to_id
 def ssh(device_name: str, device_id: str, spinner=None) -> None:
     """SSH into a hardware-in-the-loop device.
@@ -41,11 +41,17 @@ def ssh(device_name: str, device_id: str, spinner=None) -> None:
     try:
         device = new_hwil_client().get_device(device_id)
 
-        if not device.get('static_ip'):
-            click.secho(f'{Symbols.ERROR} Device does not have a static IP address', fg=Colors.RED)
+        if not device.get("static_ip"):
+            click.secho(
+                f"{Symbols.ERROR} Device does not have a static IP address",
+                fg=Colors.RED,
+            )
             raise SystemExit(1)
 
-        click.secho(f'{Symbols.INFO} Enter this password when prompted: {device.password}', fg=Colors.BRIGHT_CYAN)
+        click.secho(
+            f"{Symbols.INFO} Enter this password when prompted: {device.password}",
+            fg=Colors.BRIGHT_CYAN,
+        )
         os.system(f'ssh {device.username}@{device["static_ip"]}')
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

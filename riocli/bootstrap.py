@@ -24,7 +24,9 @@ from click_help_colors import HelpColorsGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
-from riocli.apply import apply, delete, explain, list_examples, template
+from riocli.apply import apply, delete
+from riocli.apply.explain import list_examples, explain
+from riocli.apply.template import template
 from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
@@ -47,11 +49,16 @@ from riocli.secret import secret
 from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
-from riocli.utils import (check_for_updates, is_pip_installation, pip_install_cli, update_appimage)
+from riocli.utils import (
+    check_for_updates,
+    is_pip_installation,
+    pip_install_cli,
+    update_appimage,
+)
 from riocli.vpn import vpn
 
 
-@with_plugins(iter_entry_points('riocli.plugins'))
+@with_plugins(iter_entry_points("riocli.plugins"))
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
@@ -85,13 +92,20 @@ def cli_help(ctx):
 @cli.command()
 def version():
     """View installed CLI and SDK versions."""
-    click.echo(f'rio {__version__} / SDK {rapyuta_io.__version__}')
+    click.echo(f"rio {__version__} / SDK {rapyuta_io.__version__}")
 
 
-@cli.command('update')
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
-              type=click.BOOL, default=False,
-              help="Skip confirmation")
+@cli.command("update")
+@click.option(
+    "-f",
+    "--force",
+    "--silent",
+    "silent",
+    is_flag=True,
+    type=click.BOOL,
+    default=False,
+    help="Skip confirmation",
+)
 def update(silent: bool) -> None:
     """Update the CLI to the latest version.
 
@@ -105,14 +119,13 @@ def update(silent: bool) -> None:
     """
     available, latest = check_for_updates(__version__)
     if not available:
-        click.secho('🎉 You are using the latest version', fg=Colors.GREEN)
+        click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
         return
 
-    click.secho('🎉 A newer version ({}) is available.'.format(latest),
-                fg=Colors.GREEN)
+    click.secho("🎉 A newer version ({}) is available.".format(latest), fg=Colors.GREEN)
 
     if not silent:
-        click.confirm('Do you want to update?', abort=True, default=False)
+        click.confirm("Do you want to update?", abort=True, default=False)
 
     try:
         if is_pip_installation():
@@ -120,11 +133,10 @@ def update(silent: bool) -> None:
         else:
             update_appimage(version=latest)
     except Exception as e:
-        click.secho('{} Failed to update: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho("{} Failed to update: {}".format(Symbols.ERROR, e), fg=Colors.RED)
         raise SystemExit(1) from e
 
-    click.secho('{} Update successful!'.format(Symbols.SUCCESS),
-                fg=Colors.GREEN)
+    click.secho("{} Update successful!".format(Symbols.SUCCESS), fg=Colors.GREEN)
 
 
 cli.add_command(apply)

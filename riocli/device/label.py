@@ -25,10 +25,10 @@ from riocli.utils import tabulate_data
 
 
 @click.group(
-    'labels',
+    "labels",
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
+    help_headers_color="yellow",
     help_options_color=Colors.GREEN,
 )
 def device_labels() -> None:
@@ -39,8 +39,8 @@ def device_labels() -> None:
     pass
 
 
-@device_labels.command('list')
-@click.argument('device-name', type=str)
+@device_labels.command("list")
+@click.argument("device-name", type=str)
 @name_to_guid
 def list_labels(device_name: str, device_guid: str) -> None:
     """List all the labels for a device."""
@@ -51,13 +51,13 @@ def list_labels(device_name: str, device_guid: str) -> None:
         _display_label_list(labels, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 
-@device_labels.command('create')
-@click.argument('device-name', type=str)
-@click.argument('key', type=str)
-@click.argument('value', type=str)
+@device_labels.command("create")
+@click.argument("device-name", type=str)
+@click.argument("key", type=str)
+@click.argument("value", type=str)
 @name_to_guid
 def create_label(device_name: str, device_guid: str, key: str, value: str) -> None:
     """Create a new label on a device"""
@@ -66,38 +66,38 @@ def create_label(device_name: str, device_guid: str, key: str, value: str) -> No
             client = new_client()
             device = client.get_device(device_id=device_guid)
             device.add_label(key, value)
-        click.secho('Label added successfully!', fg=Colors.GREEN)
+        click.secho("Label added successfully!", fg=Colors.GREEN)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
-@device_labels.command('update')
-@click.argument('device-name', type=str)
-@click.argument('key', type=str)
-@click.argument('value', type=str)
+@device_labels.command("update")
+@click.argument("device-name", type=str)
+@click.argument("key", type=str)
+@click.argument("value", type=str)
 @name_to_guid
 def update_label(device_name: str, device_guid: str, key: str, value: str) -> None:
     """Update a label on a device"""
     try:
         with spinner():
             _update_label(device_guid, key, value)
-        click.secho('Label updated successfully!', fg=Colors.GREEN)
+        click.secho("Label updated successfully!", fg=Colors.GREEN)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
 
 
-@device_labels.command('delete')
-@click.argument('device-name', type=str)
-@click.argument('key', type=str)
+@device_labels.command("delete")
+@click.argument("device-name", type=str)
+@click.argument("key", type=str)
 @name_to_guid
 def delete_label(device_name: str, device_guid: str, key: str) -> None:
     """Delete a label on a device."""
     try:
         with spinner():
             _delete_label(device_guid, key)
-        click.secho('Label deleted successfully!', fg=Colors.GREEN)
+        click.secho("Label deleted successfully!", fg=Colors.GREEN)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -106,7 +106,7 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
 def _display_label_list(labels: typing.List[Label], show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ('Key', 'Value')
+        headers = ("Key", "Value")
 
     data = [[l.key, l.value] for l in labels]
 
@@ -133,4 +133,4 @@ def _find_label(labels: typing.List[Label], key: str) -> Label:
         if label.key == key:
             return label
 
-    raise Exception('Label not found')
+    raise Exception("Label not found")

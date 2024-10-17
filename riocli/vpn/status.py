@@ -18,17 +18,23 @@ from click_help_colors import HelpColorsCommand
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import tabulate_data
-from riocli.vpn.util import (get_tailscale_status, install_vpn_tools, is_tailscale_up, is_vpn_enabled_in_project)
+from riocli.vpn.util import (
+    get_tailscale_status,
+    install_vpn_tools,
+    is_tailscale_up,
+    is_vpn_enabled_in_project,
+)
 
 
 @click.command(
-    'status',
+    "status",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--wide', '-w', is_flag=True, default=False,
-              help='Print more details', type=bool)
+@click.option(
+    "--wide", "-w", is_flag=True, default=False, help="Print more details", type=bool
+)
 @click.pass_context
 def status(ctx: click.Context, wide: bool = False):
     """Check VPN network status.
@@ -42,30 +48,35 @@ def status(ctx: click.Context, wide: bool = False):
 
         client = new_v2_client()
 
-        if not is_vpn_enabled_in_project(
-                client, ctx.obj.data.get('project_id')):
-            click.secho('{} VPN is not enabled in the project. '
-                        'Please ask the organization or project '
-                        'creator to enable VPN'.format(Symbols.WARNING),
-                        fg=Colors.YELLOW)
+        if not is_vpn_enabled_in_project(client, ctx.obj.data.get("project_id")):
+            click.secho(
+                "{} VPN is not enabled in the project. "
+                "Please ask the organization or project "
+                "creator to enable VPN".format(Symbols.WARNING),
+                fg=Colors.YELLOW,
+            )
             raise SystemExit(1)
 
         click.secho(
-            '{} VPN is enabled in the project ({})'.format(
-                Symbols.INFO, ctx.obj.data.get('project_name')),
-            fg=Colors.CYAN)
+            "{} VPN is enabled in the project ({})".format(
+                Symbols.INFO, ctx.obj.data.get("project_name")
+            ),
+            fg=Colors.CYAN,
+        )
         click.echo()
 
         if not is_tailscale_up():
             click.secho(
-                '{} You are not connected to the VPN'.format(Symbols.WARNING),
-                fg=Colors.YELLOW)
+                "{} You are not connected to the VPN".format(Symbols.WARNING),
+                fg=Colors.YELLOW,
+            )
             return
 
         display_vpn_status(wide)
 
-        click.secho('{} You are connected to the VPN.'.format(Symbols.INFO),
-                    fg=Colors.GREEN)
+        click.secho(
+            "{} You are connected to the VPN.".format(Symbols.INFO), fg=Colors.GREEN
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
@@ -74,38 +85,40 @@ def status(ctx: click.Context, wide: bool = False):
 def display_vpn_status(wide: bool = False):
     s = get_tailscale_status()
 
-    nodes = s.get('Peer', {})
-    nodes.update({"me": s.get('Self')})
+    nodes = s.get("Peer", {})
+    nodes.update({"me": s.get("Self")})
 
-    headers = ['IP', 'DNS Name', 'OS', 'Online', 'Active']
+    headers = ["IP", "DNS Name", "OS", "Online", "Active"]
 
     if wide:
-        headers.extend(['Relay', 'Joined', 'Last Active'])
+        headers.extend(["Relay", "Joined", "Last Active"])
 
     data = []
     for k, v in nodes.items():
         row = [
-            ",".join(v.get('TailscaleIPs')),
+            ",".join(v.get("TailscaleIPs")),
             # removesuffix() is available starting Python 3.9
-            v.get('DNSName', '').replace('.' + s.get('MagicDNSSuffix'), ''),
-            v.get('OS'),
-            v.get('Online'),
-            v.get('Active'),
+            v.get("DNSName", "").replace("." + s.get("MagicDNSSuffix"), ""),
+            v.get("OS"),
+            v.get("Online"),
+            v.get("Active"),
         ]
 
         if wide:
-            row.extend([
-                v.get('Relay'),
-                v.get('Created'),
-                v.get('LastSeen'),
-            ])
+            row.extend(
+                [
+                    v.get("Relay"),
+                    v.get("Created"),
+                    v.get("LastSeen"),
+                ]
+            )
 
-        if k == 'me':
+        if k == "me":
             row = [click.style(i, fg=Colors.BRIGHT_BLUE) for i in row]
 
         data.append(row)
 
     tabulate_data(data, headers)
     click.echo()
-    click.secho('DNS Suffix: {}'.format(s.get('MagicDNSSuffix')))
+    click.secho("DNS Suffix: {}".format(s.get("MagicDNSSuffix")))
     click.echo()

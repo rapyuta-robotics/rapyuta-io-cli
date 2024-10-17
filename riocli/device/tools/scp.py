@@ -23,14 +23,14 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'scp',
+    "scp",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('source', nargs=1)
-@click.argument('destination', nargs=1)
-@with_spinner(text='Copying files...')
+@click.argument("source", nargs=1)
+@click.argument("destination", nargs=1)
+@with_spinner(text="Copying files...")
 def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
     """SCP like interface to copy files to and from a device.
 
@@ -51,8 +51,10 @@ def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
         dest_device_guid, dest = is_remote_path(destination, devices=devices)
 
         if src_device_guid is None and dest_device_guid is None:
-            raise Exception('One of source or destination paths should be a remote '
-                            'path of the format <device-id|device-name>:path')
+            raise Exception(
+                "One of source or destination paths should be a remote "
+                "path of the format <device-id|device-name>:path"
+            )
 
         if src_device_guid is not None:
             with spinner.hidden():
@@ -62,9 +64,9 @@ def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
             with spinner.hidden():
                 copy_to_device(dest_device_guid, src, dest)
 
-        spinner.text = click.style('Files copied successfully', fg=Colors.GREEN)
+        spinner.text = click.style("Files copied successfully", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style('Failed to copy files: {}'.format(e), fg=Colors.RED)
+        spinner.text = click.style("Failed to copy files: {}".format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

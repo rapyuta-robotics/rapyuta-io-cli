@@ -27,17 +27,17 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(**kwargs: typing.Any):
         ctx = click.get_current_context()
-        name = kwargs.pop('project_name')
+        name = kwargs.pop("project_name")
         guid = None
 
         if name is None:
-            guid = ctx.obj.data.get('project_id')
-            name = ctx.obj.data.get('project_name')
+            guid = ctx.obj.data.get("project_id")
+            name = ctx.obj.data.get("project_name")
 
         if not name:
             raise LoggedOut
 
-        if name.startswith('project-'):
+        if name.startswith("project-"):
             guid = name
             name = None
 
@@ -48,21 +48,20 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
 
         if guid is None:
             try:
-                organization = ctx.obj.data.get('organization_id')
+                organization = ctx.obj.data.get("organization_id")
                 guid = find_project_guid(client, name, organization)
             except Exception as e:
-                click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+                click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
                 raise SystemExit(1)
 
-        kwargs['project_name'] = name
-        kwargs['project_guid'] = guid
+        kwargs["project_name"] = name
+        kwargs["project_guid"] = guid
         f(**kwargs)
 
     return decorated
 
 
-def find_project_guid(client: v2Client, name: str,
-                      organization: str = None) -> str:
+def find_project_guid(client: v2Client, name: str, organization: str = None) -> str:
     projects = client.list_projects(query={"name": name}, organization_guid=organization)
 
     if projects and projects[0].metadata.name == name:
@@ -83,8 +82,7 @@ def find_organization_guid(client: Client, name: str) -> typing.Tuple[str, str]:
         if organization.name == name:
             return organization.guid, organization.short_guid
 
-    raise OrganizationNotFound(
-        "User is not part of organization: {}".format(name))
+    raise OrganizationNotFound("User is not part of organization: {}".format(name))
 
 
 def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
@@ -93,21 +91,20 @@ def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
         if organization.guid == guid:
             return organization.name, organization.short_guid
 
-    raise OrganizationNotFound(
-        "User is not part of organization: {}".format(guid))
+    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
 
 
 def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(*args: typing.Any, **kwargs: typing.Any):
         client = new_client(with_project=False)
-        name = kwargs.get('organization_name')
+        name = kwargs.get("organization_name")
         guid = None
         short_id = None
 
         if name:
             try:
-                if name.startswith('org-'):
+                if name.startswith("org-"):
                     guid = name
                     name, short_id = get_organization_name(client, guid)
                 else:
@@ -116,9 +113,9 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
                 click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
 
-        kwargs['organization_name'] = name
-        kwargs['organization_guid'] = guid
-        kwargs['organization_short_id'] = short_id
+        kwargs["organization_name"] = name
+        kwargs["organization_guid"] = guid
+        kwargs["organization_short_id"] = short_id
 
         f(*args, **kwargs)
 
@@ -126,12 +123,12 @@ def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
 
 
 class ProjectNotFound(Exception):
-    def __init__(self, message='project not found'):
+    def __init__(self, message="project not found"):
         self.message = message
         super().__init__(self.message)
 
 
 class OrganizationNotFound(Exception):
-    def __init__(self, message='organization not found'):
+    def __init__(self, message="organization not found"):
         self.message = message
         super().__init__(self.message)

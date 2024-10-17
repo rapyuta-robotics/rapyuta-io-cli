@@ -22,17 +22,21 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('project-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("project-name", type=str)
 @name_to_guid
-def inspect_project(format_type: str, project_name: str,
-                    project_guid: str) -> None:
+def inspect_project(format_type: str, project_name: str, project_guid: str) -> None:
     """Print the project details.
 
     You can specify the format of the output using the ``--format`` flag.

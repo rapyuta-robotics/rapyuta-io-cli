@@ -23,42 +23,59 @@ from riocli.utils import tabulate_data
 from riocli.v2client.util import process_errors
 
 ALL_PHASES = [
-    'InProgress',
-    'Provisioning',
-    'Succeeded',
-    'FailedToStart',
-    'Stopped',
+    "InProgress",
+    "Provisioning",
+    "Succeeded",
+    "FailedToStart",
+    "Stopped",
 ]
 
 DEFAULT_PHASES = [
-    'InProgress',
-    'Provisioning',
-    'Succeeded',
-    'FailedToStart',
+    "InProgress",
+    "Provisioning",
+    "Succeeded",
+    "FailedToStart",
 ]
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--device', prompt_required=False, default='', type=str,
-              help='Filter the Deployment list by Device name')
-@click.option('--phase', prompt_required=False, multiple=True,
-              type=click.Choice(ALL_PHASES),
-              default=DEFAULT_PHASES,
-              help='Filter the Deployment list by Phases')
-@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
-              default=(), help='Filter the deployment list by labels')
-@click.option('--wide', '-w', is_flag=True, default=False,
-              help='Print more details', type=bool)
+@click.option(
+    "--device",
+    prompt_required=False,
+    default="",
+    type=str,
+    help="Filter the Deployment list by Device name",
+)
+@click.option(
+    "--phase",
+    prompt_required=False,
+    multiple=True,
+    type=click.Choice(ALL_PHASES),
+    default=DEFAULT_PHASES,
+    help="Filter the Deployment list by Phases",
+)
+@click.option(
+    "--label",
+    "-l",
+    "labels",
+    multiple=True,
+    type=click.STRING,
+    default=(),
+    help="Filter the deployment list by labels",
+)
+@click.option(
+    "--wide", "-w", is_flag=True, default=False, help="Print more details", type=bool
+)
 def list_deployments(
-        device: str,
-        phase: typing.List[str],
-        labels: typing.List[str],
-        wide: bool = False,
+    device: str,
+    phase: typing.List[str],
+    labels: typing.List[str],
+    wide: bool = False,
 ) -> None:
     """List the deployments in the current project
 
@@ -77,8 +94,8 @@ def list_deployments(
       $ rio deployment list --label key1=value1 --label key2=value2
     """
     query = {
-        'phases': phase,
-        'labelSelector': labels,
+        "phases": phase,
+        "labelSelector": labels,
     }
 
     try:
@@ -92,34 +109,44 @@ def list_deployments(
 
 
 def display_deployment_list(
-        deployments: typing.List[Deployment],
-        show_header: bool = True,
-        wide: bool = False,
+    deployments: typing.List[Deployment],
+    show_header: bool = True,
+    wide: bool = False,
 ):
     headers = []
     if show_header:
-        headers = ['Name', 'Package', 'Creation Time (UTC)', 'Phase', 'Status']
+        headers = ["Name", "Package", "Creation Time (UTC)", "Phase", "Status"]
 
     if show_header and wide:
-        headers.extend(['Deployment ID', 'Stopped Time (UTC)'])
+        headers.extend(["Deployment ID", "Stopped Time (UTC)"])
 
     data = []
     for d in deployments:
-        package_name_version = f'{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})'
-        phase = d.get('status', {}).get('phase', '')
+        package_name_version = (
+            f"{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})"
+        )
+        phase = d.get("status", {}).get("phase", "")
 
-        status = ''
+        status = ""
 
         if d.status:
-            if d.status.get('error_codes'):
-                status = click.style(process_errors(d.status.error_codes, no_action=True), fg=Colors.RED)
+            if d.status.get("error_codes"):
+                status = click.style(
+                    process_errors(d.status.error_codes, no_action=True), fg=Colors.RED
+                )
             else:
                 status = d.status.status
 
-        row = [d.metadata.name, package_name_version, d.metadata.createdAt, phase, status]
+        row = [
+            d.metadata.name,
+            package_name_version,
+            d.metadata.createdAt,
+            phase,
+            status,
+        ]
 
         if wide:
-            row.extend([d.metadata.guid, d.metadata.get('deletedAt')])
+            row.extend([d.metadata.guid, d.metadata.get("deletedAt")])
 
         data.append(row)
 

@@ -20,22 +20,23 @@ class Colors(str, Enum):
     Colors is a str enum based on the colors supported by click.
     https://github.com/pallets/click/blob/main/examples/colors/colors.py
     """
+
     def __str__(self):
         return str(self.value).lower()
 
-    BLACK = 'black'
-    RED = 'red'
-    GREEN = 'green'
-    YELLOW = 'yellow'
-    BLUE = 'blue'
-    MAGENTA = 'magenta'
-    CYAN = 'cyan'
-    WHITE = 'white'
-    BRIGHT_BLACK = 'bright_black'
-    BRIGHT_RED = 'bright_red'
-    BRIGHT_GREEN = 'bright_green'
-    BRIGHT_YELLOW = 'bright_yellow'
-    BRIGHT_BLUE = 'bright_blue'
-    BRIGHT_MAGENTA = 'bright_magenta'
-    BRIGHT_CYAN = 'bright_cyan'
-    BRIGHT_WHITE = 'bright_white'
+    BLACK = "black"
+    RED = "red"
+    GREEN = "green"
+    YELLOW = "yellow"
+    BLUE = "blue"
+    MAGENTA = "magenta"
+    CYAN = "cyan"
+    WHITE = "white"
+    BRIGHT_BLACK = "bright_black"
+    BRIGHT_RED = "bright_red"
+    BRIGHT_GREEN = "bright_green"
+    BRIGHT_YELLOW = "bright_yellow"
+    BRIGHT_BLUE = "bright_blue"
+    BRIGHT_MAGENTA = "bright_magenta"
+    BRIGHT_CYAN = "bright_cyan"
+    BRIGHT_WHITE = "bright_white"

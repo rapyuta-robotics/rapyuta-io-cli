@@ -19,7 +19,7 @@ from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 
 
-@click.command('providers')
+@click.command("providers")
 def list_providers():
     """
     List available managedservice providers
@@ -29,16 +29,16 @@ def list_providers():
         providers = client.list_providers()
         _display_providers(providers)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
 def _display_providers(providers: typing.Any):
-    headers = ['Provider Name']
+    headers = ["Provider Name"]
 
     data = []
     for provider in providers:
-        if provider.name == 'dummy':
+        if provider.name == "dummy":
             continue
         data.append([provider.name])
 

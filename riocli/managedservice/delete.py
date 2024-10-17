@@ -17,8 +17,8 @@ import click
 from riocli.config import new_v2_client
 
 
-@click.command('delete')
-@click.argument('instance-name', required=True)
+@click.command("delete")
+@click.argument("instance-name", required=True)
 def delete_instance(instance_name: str):
     """
     Delete a managedservice instance
@@ -26,8 +26,8 @@ def delete_instance(instance_name: str):
     try:
         client = new_v2_client()
         r = client.delete_instance(instance_name)
-        if r.get('success', None):
-            click.secho("✅ Deleted instance '{}'".format(instance_name), fg='green')
+        if r.get("success", None):
+            click.secho("✅ Deleted instance '{}'".format(instance_name), fg="green")
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)

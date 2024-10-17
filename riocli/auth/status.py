@@ -18,7 +18,7 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'status',
+    "status",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -27,8 +27,8 @@ from riocli.constants import Colors
 def status(ctx: click.Context):
     """Shows the current login status."""
     if not ctx.obj.exists:
-        click.secho('🔒You are logged out', fg=Colors.YELLOW)
+        click.secho("🔒You are logged out", fg=Colors.YELLOW)
         raise SystemExit(1)
 
-    if 'auth_token' in ctx.obj.data:
-        click.secho('🎉 You are logged in', fg=Colors.GREEN)
+    if "auth_token" in ctx.obj.data:
+        click.secho("🎉 You are logged in", fg=Colors.GREEN)

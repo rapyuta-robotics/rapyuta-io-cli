@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class RetriesExhausted(Exception):
     def __init__(self, msg=None):
         Exception.__init__(self, msg)
@@ -28,13 +29,12 @@ class ImagePullError(Exception):
 
 
 class HttpAlreadyExistsError(Exception):
-    def __init__(self, message='resource already exists'):
+    def __init__(self, message="resource already exists"):
         self.message = message
         super().__init__(self.message)
 
 
 class HttpNotFoundError(Exception):
-    def __init__(self, message='resource not found'):
+    def __init__(self, message="resource not found"):
         self.message = message
         super().__init__(self.message)
-

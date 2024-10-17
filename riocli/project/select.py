@@ -21,18 +21,18 @@ from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
-    'select',
+    "select",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('project-name', type=str)
+@click.argument("project-name", type=str)
 @name_to_guid
 @click.pass_context
 def select_project(
-        ctx: click.Context,
-        project_name: str,
-        project_guid: str,
+    ctx: click.Context,
+    project_name: str,
+    project_guid: str,
 ) -> None:
     """Switch to a different project in the current organization.
 
@@ -41,18 +41,21 @@ def select_project(
     """
     ctx = get_root_context(ctx)
 
-    ctx.obj.data['project_id'] = project_guid
-    ctx.obj.data['project_name'] = project_name
+    ctx.obj.data["project_id"] = project_guid
+    ctx.obj.data["project_name"] = project_name
     ctx.obj.save()
 
     try:
         cleanup_hosts_file()
     except Exception as e:
-        click.secho(f'{Symbols.WARNING} Failed to '
-                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
+        click.secho(
+            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            fg=Colors.YELLOW,
+        )
 
-    click.secho('{} Project {} ({}) is selected!'.format(
-        Symbols.SUCCESS,
-        project_name,
-        project_guid),
-        fg=Colors.GREEN)
+    click.secho(
+        "{} Project {} ({}) is selected!".format(
+            Symbols.SUCCESS, project_name, project_guid
+        ),
+        fg=Colors.GREEN,
+    )

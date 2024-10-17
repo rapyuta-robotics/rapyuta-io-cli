@@ -23,27 +23,41 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'migrate',
+    "migrate",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
-    help_options_color=Colors.GREEN
+    help_options_color=Colors.GREEN,
 )
-@click.argument('device-name', type=str)
-@click.argument('project-name', type=str)
-@click.option('--enable-vpn', is_flag=True,
-              type=click.BOOL, default=False,
-              help="Enable VPN after migrating to the destination project.")
-@click.option('--advertise-routes', is_flag=True,
-              type=click.BOOL, default=False,
-              help="Advertise subnets configured in project to VPN peers")
+@click.argument("device-name", type=str)
+@click.argument("project-name", type=str)
+@click.option(
+    "--enable-vpn",
+    is_flag=True,
+    type=click.BOOL,
+    default=False,
+    help="Enable VPN after migrating to the destination project.",
+)
+@click.option(
+    "--advertise-routes",
+    is_flag=True,
+    type=click.BOOL,
+    default=False,
+    help="Advertise subnets configured in project to VPN peers",
+)
 @name_to_guid
 @project_name_to_guid
 @click.pass_context
 @with_spinner(text="Migrating device...")
-def migrate_project(ctx: click.Context, device_name: str, device_guid: str,
-                    project_name: str, project_guid: str,
-                    enable_vpn: bool, advertise_routes: bool,
-                    spinner: Yaspin) -> None:
+def migrate_project(
+    ctx: click.Context,
+    device_name: str,
+    device_guid: str,
+    project_name: str,
+    project_guid: str,
+    enable_vpn: bool,
+    advertise_routes: bool,
+    spinner: Yaspin,
+) -> None:
     """Migrate a device from current project to the target project.
 
     This process may take some time since it involves multiple steps.
@@ -58,21 +72,30 @@ def migrate_project(ctx: click.Context, device_name: str, device_guid: str,
     try:
         migrate_device_to_project(ctx, device_guid, project_guid)
         spinner.write(
-            click.style('{} Device {} migrated successfully.'.format(Symbols.SUCCESS, device_name),
-                        fg=Colors.GREEN))
+            click.style(
+                "{} Device {} migrated successfully.".format(
+                    Symbols.SUCCESS, device_name
+                ),
+                fg=Colors.GREEN,
+            )
+        )
 
         if enable_vpn:
-            spinner.text = 'Enabling VPN on device...'
+            spinner.text = "Enabling VPN on device..."
             client = new_client()
             client.set_project(project_guid)
             client.toggle_features(
                 device_id=device_guid,
-                features=[('vpn', True)],
-                config={'vpn': {'advertise_routes': advertise_routes}},
+                features=[("vpn", True)],
+                config={"vpn": {"advertise_routes": advertise_routes}},
             )
-            spinner.write(click.style('{} Enabled VPN on the device.'.format(Symbols.SUCCESS), fg=Colors.GREEN))
+            spinner.write(
+                click.style(
+                    "{} Enabled VPN on the device.".format(Symbols.SUCCESS),
+                    fg=Colors.GREEN,
+                )
+            )
     except Exception as e:
-        spinner.text = click.style(
-            'Failed to migrate device: {}'.format(e), Colors.RED)
+        spinner.text = click.style("Failed to migrate device: {}".format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
