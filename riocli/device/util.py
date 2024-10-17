@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import functools
 import json
 import re
@@ -21,9 +22,8 @@ from pathlib import Path
 import click
 from munch import Munch
 from rapyuta_io import Client
-from rapyuta_io.clients import LogUploads
-from rapyuta_io.clients.device import Device
-from rapyuta_io.clients.device import DeviceStatus
+from rapyuta_io.clients import LogUploads, SharedURL
+from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
 
@@ -33,6 +33,7 @@ from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
 from riocli.hwil.util import execute_command, find_device_id
 from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
+from riocli.v2client.util import handle_server_errors
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -72,6 +73,44 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         f(**kwargs)
 
     return decorated
+
+
+def upload_debug_logs(device_guid: str) -> dict:
+    config = Configuration()
+    coreapi_host = config.data.get(
+        "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
+    )
+
+    url = "{}/api/device-manager/v0/error_handler/upload_debug_logs/{}".format(
+        coreapi_host, device_guid
+    )
+
+    headers = config.get_auth_header()
+    response = (
+        RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload={})
+    )
+
+    result = handle_server_errors(response)
+
+    if result:
+        return result
+
+    return response.json()
+
+
+def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=None):
+    try:
+        client = new_client()
+        device = client.get_device(device_id=device_guid)
+        expiry_time = datetime.now() + datetime.timedelta(days=expiry)
+
+        # Create the shared URL
+        public_url = device.create_shared_url(
+            SharedURL(request_id, expiry_time=expiry_time)
+        )
+        return public_url
+    except Exception as e:
+        raise Exception(f"Failed to create shared URL: {e}")
 
 
 def get_device_name(client: Client, guid: str) -> str:

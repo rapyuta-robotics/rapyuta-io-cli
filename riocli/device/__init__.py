@@ -25,6 +25,7 @@ from riocli.device.label import device_labels
 from riocli.device.list import list_devices
 from riocli.device.migrate import migrate_project
 from riocli.device.onboard import device_onboard
+from riocli.device.report import report_device
 from riocli.device.tools import tools
 from riocli.device.topic import device_topics
 from riocli.device.vpn import toggle_vpn
@@ -54,6 +55,7 @@ device.add_command(device_uploads)
 device.add_command(inspect_device)
 device.add_command(list_deployments)
 device.add_command(list_devices)
+device.add_command(report_device)
 device.add_command(tools)
 device.add_command(toggle_vpn)
 device.add_command(migrate_project)
