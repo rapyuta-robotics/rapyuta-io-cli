@@ -74,6 +74,30 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
+def report_device_api_call(device_guid: str) -> typing.Dict:
+    config = Configuration()
+    coreapi_host = config.data.get(
+        'core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io'
+    )
+
+    url = '{}/api/device-manager/v0/error_handler/upload_debug_logs/{}'.format(
+        coreapi_host, device_guid
+    )
+
+    headers = config.get_auth_header()
+    response = (
+        RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload={})
+    )
+
+    data = response.json()
+
+    if not response.ok:
+        err_msg = data.get('error')
+        raise Exception(err_msg)
+
+    return data
+
+
 def get_device_name(client: Client, guid: str) -> str:
     device = client.get_device(device_id=guid)
     return device.name

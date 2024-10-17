@@ -11,7 +11,7 @@ riocli/jsonschema/schemas/json/
 *.class
 
 # Compiled Python bytecode
-venv/
+venv*/
 build/
 *.egg-info/
 *.py[cod]
@@ -57,4 +57,3 @@ Thumbs.db
 .vscode/
 
 .egg-info/
-dist/
