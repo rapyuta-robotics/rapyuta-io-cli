@@ -23,27 +23,42 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'create',
+    "create",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--arch', 'arch', help='Device architecture',
-              type=click.Choice(['amd64', 'arm64']), default='amd64')
-@click.option('--os', 'os', help='Type of the OS',
-              type=click.Choice(['debian', 'ubuntu']), default='ubuntu')
-@click.option('--codename', 'codename', help='Code name of the OS',
-              type=click.Choice(['bionic', 'focal', 'jammy', 'bullseye']), default='focal')
-@click.argument('device-name', type=str)
-@with_spinner(text='Creating device...')
+@click.option(
+    "--arch",
+    "arch",
+    help="Device architecture",
+    type=click.Choice(["amd64", "arm64"]),
+    default="amd64",
+)
+@click.option(
+    "--os",
+    "os",
+    help="Type of the OS",
+    type=click.Choice(["debian", "ubuntu"]),
+    default="ubuntu",
+)
+@click.option(
+    "--codename",
+    "codename",
+    help="Code name of the OS",
+    type=click.Choice(["bionic", "focal", "jammy", "bullseye"]),
+    default="focal",
+)
+@click.argument("device-name", type=str)
+@with_spinner(text="Creating device...")
 @click.pass_context
 def create_device(
-        ctx: click.Context,
-        device_name: str,
-        arch: str,
-        os: str,
-        codename: str,
-        spinner: Yaspin = None,
+    ctx: click.Context,
+    device_name: str,
+    arch: str,
+    os: str,
+    codename: str,
+    spinner: Yaspin = None,
 ) -> None:
     """Create a new hardware-in-the-loop device.
 
@@ -74,29 +89,34 @@ def create_device(
     Note: All combinations of the --arch, --os and --codename flags may not always
     work. Please contact io-support for more information.
     """
-    info = click.style(f'{Symbols.INFO} Device configuration = {os}:{codename}:{arch}',
-                       fg=Colors.CYAN, bold=True)
+    info = click.style(
+        f"{Symbols.INFO} Device configuration = {os}:{codename}:{arch}",
+        fg=Colors.CYAN,
+        bold=True,
+    )
     spinner.write(info)
     client = new_hwil_client()
     labels = prepare_device_labels_from_context(ctx)
 
     try:
         client.create_device(device_name, arch, os, codename, labels)
-        spinner.text = click.style(f'Device {device_name} created successfully.', fg=Colors.GREEN)
+        spinner.text = click.style(
+            f"Device {device_name} created successfully.", fg=Colors.GREEN
+        )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(f'Failed to create device: {str(e)}', fg=Colors.RED)
+        spinner.text = click.style(f"Failed to create device: {str(e)}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
 
 
 def prepare_device_labels_from_context(ctx: click.Context) -> typing.Dict:
-    user_email = ctx.obj.data.get('email_id', '')
+    user_email = ctx.obj.data.get("email_id", "")
     if user_email:
-        user_email = user_email.split('@')[0]
+        user_email = user_email.split("@")[0]
 
     return {
         "user": user_email,
-        "organization": ctx.obj.data.get('organization_id', ''),
-        "project": ctx.obj.data.get('project_id', ''),
+        "organization": ctx.obj.data.get("organization_id", ""),
+        "project": ctx.obj.data.get("project_id", ""),
     }

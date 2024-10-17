@@ -24,11 +24,11 @@ from riocli.utils import tabulate_data
 
 
 @click.group(
-    'blob',
+    "blob",
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def rosbag_blob() -> None:
     """
@@ -37,8 +37,8 @@ def rosbag_blob() -> None:
     pass
 
 
-@rosbag_blob.command('delete')
-@click.argument('guid')
+@rosbag_blob.command("delete")
+@click.argument("guid")
 def blob_delete(guid: str) -> None:
     """
     Delete a ROSbag blob
@@ -47,16 +47,16 @@ def blob_delete(guid: str) -> None:
         client = new_client()
         with spinner():
             client.delete_rosbag_blob(guid)
-        click.secho('Rosbag Blob deleted successfully', fg='green')
+        click.secho("Rosbag Blob deleted successfully", fg="green")
     except ResourceNotFoundError as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-@rosbag_blob.command('download')
-@click.argument('guid')
-@click.option('--filename', help='Name of the file')
-@click.option('--download-dir', help='Directory to download the file into')
+@rosbag_blob.command("download")
+@click.argument("guid")
+@click.option("--filename", help="Name of the file")
+@click.option("--download-dir", help="Directory to download the file into")
 def blob_download(guid: str, filename: str, download_dir: str) -> None:
     """
     Download a ROSbag blob
@@ -64,24 +64,40 @@ def blob_download(guid: str, filename: str, download_dir: str) -> None:
     try:
         client = new_client()
         with spinner():
-            client.download_rosbag_blob(guid=guid, filename=filename, download_dir=download_dir)
-        click.secho('Rosbag Blob downloaded successfully', fg='green')
+            client.download_rosbag_blob(
+                guid=guid, filename=filename, download_dir=download_dir
+            )
+        click.secho("Rosbag Blob downloaded successfully", fg="green")
     except ResourceNotFoundError as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-@rosbag_blob.command('list')
-@click.option('--guids', help='Filter by blob guids ', multiple=True)
-@click.option('--deployment-ids', help='Filter by deployment ids ', multiple=True)
-@click.option('--component-instance-ids', help='Filter by component instance ids ', multiple=True)
-@click.option('--job-ids', help='Filter by job ids ', multiple=True)
-@click.option('--device-ids', help='Filter by device ids ', multiple=True)
-@click.option('--statuses', help='Filter by rosbag blob statuses ',
-              type=click.Choice(['Starting', 'Uploading', 'Uploaded', 'Error'], case_sensitive=True),
-              multiple=True, default=['Uploaded', 'Uploading', 'Starting'])
-def blob_list(guids: typing.List[str], deployment_ids: typing.List[str], component_instance_ids: typing.List[str],
-              job_ids: typing.List[str], device_ids: typing.List[str], statuses: typing.List[str]) -> None:
+@rosbag_blob.command("list")
+@click.option("--guids", help="Filter by blob guids ", multiple=True)
+@click.option("--deployment-ids", help="Filter by deployment ids ", multiple=True)
+@click.option(
+    "--component-instance-ids", help="Filter by component instance ids ", multiple=True
+)
+@click.option("--job-ids", help="Filter by job ids ", multiple=True)
+@click.option("--device-ids", help="Filter by device ids ", multiple=True)
+@click.option(
+    "--statuses",
+    help="Filter by rosbag blob statuses ",
+    type=click.Choice(
+        ["Starting", "Uploading", "Uploaded", "Error"], case_sensitive=True
+    ),
+    multiple=True,
+    default=["Uploaded", "Uploading", "Starting"],
+)
+def blob_list(
+    guids: typing.List[str],
+    deployment_ids: typing.List[str],
+    component_instance_ids: typing.List[str],
+    job_ids: typing.List[str],
+    device_ids: typing.List[str],
+    statuses: typing.List[str],
+) -> None:
     """
     List the Rosbag blobs in the selected project
     """
@@ -90,30 +106,45 @@ def blob_list(guids: typing.List[str], deployment_ids: typing.List[str], compone
         status_list.append(ROSBagBlobStatus(status))
     try:
         client = new_client()
-        rosbag_blobs = client.list_rosbag_blobs(guids=list(guids), deployment_ids=list(deployment_ids),
-                                                component_instance_ids=list(component_instance_ids),
-                                                job_ids=list(job_ids),
-                                                device_ids=list(device_ids), statuses=status_list)
+        rosbag_blobs = client.list_rosbag_blobs(
+            guids=list(guids),
+            deployment_ids=list(deployment_ids),
+            component_instance_ids=list(component_instance_ids),
+            job_ids=list(job_ids),
+            device_ids=list(device_ids),
+            statuses=status_list,
+        )
         _display_rosbag_blob_list(rosbag_blobs, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-def _display_rosbag_blob_list(blobs: typing.List[ROSBagBlob], show_header: bool = True) -> None:
+def _display_rosbag_blob_list(
+    blobs: typing.List[ROSBagBlob], show_header: bool = True
+) -> None:
     headers = []
     if show_header:
-        header = ('GUID', 'Job ID', 'Blob Ref ID', 'Status', 'Component Type', 'Device ID')
+        headers = (
+            "GUID",
+            "Job ID",
+            "Blob Ref ID",
+            "Status",
+            "Component Type",
+            "Device ID",
+        )
 
     data = []
     for blob in blobs:
-        data.append([
-            blob.guid,
-            blob.job_id,
-            blob.blob_ref_id,
-            blob.status,
-            blob.component_type.name,
-            'None' if blob.device_id is None else blob.device_id
-        ])
+        data.append(
+            [
+                blob.guid,
+                blob.job_id,
+                blob.blob_ref_id,
+                blob.status,
+                blob.component_type.name,
+                "None" if blob.device_id is None else blob.device_id,
+            ]
+        )
 
     tabulate_data(data, headers)

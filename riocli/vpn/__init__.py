@@ -24,8 +24,8 @@ from riocli.vpn.status import status
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def vpn() -> None:
     """Connect to the rapyuta.io VPN

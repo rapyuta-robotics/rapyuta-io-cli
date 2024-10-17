@@ -19,10 +19,15 @@ from riocli.config import new_v2_client
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('instance-name', required=True)
+@click.command("inspect")
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("instance-name", required=True)
 def inspect_instance(format_type: str, instance_name: str):
     """
     Inspect a managedservice instance
@@ -32,5 +37,5 @@ def inspect_instance(format_type: str, instance_name: str):
         instance = client.get_instance(instance_name)
         inspect_with_format(unmunchify(instance), format_type)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)

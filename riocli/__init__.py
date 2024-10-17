@@ -23,6 +23,7 @@ except ImportError:
 # on windows.
 from sys import platform
 
-if platform.lower() == 'win32':
+if platform.lower() == "win32":
     import signal
+
     signal.SIGKILL = signal.SIGTERM

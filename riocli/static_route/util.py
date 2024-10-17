@@ -24,7 +24,7 @@ from riocli.v2client.client import Client
 
 class StaticRouteNotFound(Exception):
     def __init__(self):
-        super().__init__('static route not found')
+        super().__init__("static route not found")
 
 
 def find_static_route_guid(client: Client, name: str) -> str:
@@ -36,17 +36,22 @@ def find_static_route_guid(client: Client, name: str) -> str:
 
 
 def fetch_static_routes(
-        client: Client,
-        route_name_or_regex: str,
-        include_all: bool,
+    client: Client,
+    route_name_or_regex: str,
+    include_all: bool,
 ) -> List[Munch]:
     routes = client.list_static_routes()
     result = []
     for route in routes:
-        if (include_all or route_name_or_regex == route.metadata.name or
-                route_name_or_regex == route.metadata.guid or
-                (route_name_or_regex not in route.metadata.name and
-                 re.search(r'^{}$'.format(route_name_or_regex), route.metadata.name))):
+        if (
+            include_all
+            or route_name_or_regex == route.metadata.name
+            or route_name_or_regex == route.metadata.guid
+            or (
+                route_name_or_regex not in route.metadata.name
+                and re.search(r"^{}$".format(route_name_or_regex), route.metadata.name)
+            )
+        ):
             result.append(route)
 
     return result
@@ -55,10 +60,12 @@ def fetch_static_routes(
 def print_routes_for_confirmation(routes: List[Munch]):
     data = []
     for route in routes:
-        data.append([
-            route.metadata.name,
-            route.metadata.creatorGUID,
-            route.metadata.createdAt,
-        ])
+        data.append(
+            [
+                route.metadata.name,
+                route.metadata.creatorGUID,
+                route.metadata.createdAt,
+            ]
+        )
 
-    tabulate_data(data, ['Name', 'Creator', 'CreatedAt'])
+    tabulate_data(data, ["Name", "Creator", "CreatedAt"])

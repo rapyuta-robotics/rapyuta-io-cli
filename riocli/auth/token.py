@@ -21,16 +21,19 @@ from riocli.exceptions import LoggedOut
 
 
 @click.command(
-    'token',
+    "token",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.option("--email", default=None, help="Email of the Rapyuta.io account")
-@click.option("--password", default=None, hide_input=True,
-              help="Password for the Rapyuta.io account")
-@click.option("--level", default=0,
-              help="Level of the token. 0 = low, 1 = med, 2 = high")
+@click.option(
+    "--password",
+    default=None,
+    hide_input=True,
+    help="Password for the Rapyuta.io account",
+)
+@click.option("--level", default=0, help="Level of the token. 0 = low, 1 = med, 2 = high")
 def token(email: str, password: str, level: int = 0):
     """Generates a new rapyuta.io auth token.
 
@@ -48,14 +51,15 @@ def token(email: str, password: str, level: int = 0):
 
     if level not in TOKEN_LEVELS:
         click.secho(
-            'Invalid token level. Valid levels are {0}'.format(
-                list(TOKEN_LEVELS.keys())), fg=Colors.RED)
+            "Invalid token level. Valid levels are {0}".format(list(TOKEN_LEVELS.keys())),
+            fg=Colors.RED,
+        )
         raise SystemExit(1)
 
     if not email:
         email = config.data.get("email_id", None)
 
-    password = password or click.prompt('Password', hide_input=True)
+    password = password or click.prompt("Password", hide_input=True)
 
     if not config.exists or not email or not password:
         raise LoggedOut

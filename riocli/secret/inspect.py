@@ -21,14 +21,19 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('secret-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("secret-name", type=str)
 def inspect_secret(format_type: str, secret_name: str) -> None:
     """
     Inspect a secret

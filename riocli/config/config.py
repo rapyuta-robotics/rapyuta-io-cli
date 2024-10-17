@@ -23,7 +23,12 @@ from typing import Optional
 from click import get_app_dir
 from rapyuta_io import Client
 
-from riocli.exceptions import LoggedOut, NoOrganizationSelected, NoProjectSelected, HwilLoggedOut
+from riocli.exceptions import (
+    LoggedOut,
+    NoOrganizationSelected,
+    NoProjectSelected,
+    HwilLoggedOut,
+)
 from riocli.hwilclient import Client as HwilClient
 from riocli.v2client import Client as v2Client
 
@@ -42,10 +47,13 @@ class Configuration(object):
             "project_id": "<project-guid>"
         }
     """
-    APP_NAME = 'rio-cli'
-    PIPING_SERVER = 'https://piping-server-v0-rapyuta-infra.apps.okd4v2.okd4beta.rapyuta.io'
-    DIFF_TOOL = 'diff'
-    MERGE_TOOL = 'vimdiff'
+
+    APP_NAME = "rio-cli"
+    PIPING_SERVER = (
+        "https://piping-server-v0-rapyuta-infra.apps.okd4v2.okd4beta.rapyuta.io"
+    )
+    DIFF_TOOL = "diff"
+    MERGE_TOOL = "vimdiff"
 
     def __init__(self, filepath: Optional[str] = None):
         self._filepath = filepath
@@ -57,7 +65,7 @@ class Configuration(object):
             self.data = dict()
             return
 
-        with open(self.filepath, 'r') as config_file:
+        with open(self.filepath, "r") as config_file:
             self.data = json.load(config_file)
 
     def save(self: Configuration):
@@ -68,23 +76,23 @@ class Configuration(object):
                 if exc.errno != errno.EEXIST:
                     raise
 
-        with open(self.filepath, 'w') as config_file:
+        with open(self.filepath, "w") as config_file:
             json.dump(self.data, config_file)
 
     # We are using lru_cache to cache the calls to new_v2_client
     # with project and without project. This is to avoid creating a
     # new client object every time we call new_v2_client.
     # https://docs.python.org/3.8/library/functools.html#functools.lru_cache
-    @lru_cache(maxsize=2)
+    @lru_cache(maxsize=2)  # noqa: B019
     def new_client(self: Configuration, with_project: bool = True) -> Client:
-        if 'auth_token' not in self.data:
+        if "auth_token" not in self.data:
             raise LoggedOut
 
-        if 'environment' in self.data:
-            os.environ['RIO_CONFIG'] = self.filepath
+        if "environment" in self.data:
+            os.environ["RIO_CONFIG"] = self.filepath
 
-        token = self.data.get('auth_token', None)
-        project = self.data.get('project_id', None)
+        token = self.data.get("auth_token", None)
+        project = self.data.get("project_id", None)
         if with_project and project is None:
             raise NoProjectSelected
 
@@ -93,16 +101,16 @@ class Configuration(object):
 
         return Client(auth_token=token, project=project)
 
-    @lru_cache(maxsize=2)
+    @lru_cache(maxsize=2)  # noqa: B019
     def new_v2_client(self: Configuration, with_project: bool = True) -> v2Client:
-        if 'auth_token' not in self.data:
+        if "auth_token" not in self.data:
             raise LoggedOut
 
-        if 'environment' in self.data:
-            os.environ['RIO_CONFIG'] = self.filepath
+        if "environment" in self.data:
+            os.environ["RIO_CONFIG"] = self.filepath
 
-        token = self.data.get('auth_token', None)
-        project = self.data.get('project_id', None)
+        token = self.data.get("auth_token", None)
+        project = self.data.get("project_id", None)
         if with_project and project is None:
             raise NoProjectSelected
 
@@ -112,23 +120,23 @@ class Configuration(object):
         return v2Client(self, auth_token=token, project=project)
 
     def new_hwil_client(self: Configuration) -> HwilClient:
-        if 'hwil_auth_token' not in self.data:
+        if "hwil_auth_token" not in self.data:
             raise HwilLoggedOut
 
-        if 'environment' in self.data:
-            os.environ['RIO_CONFIG'] = self.filepath
+        if "environment" in self.data:
+            os.environ["RIO_CONFIG"] = self.filepath
 
-        token = self.data.get('hwil_auth_token', None)
+        token = self.data.get("hwil_auth_token", None)
 
         return HwilClient(auth_token=token)
 
     def get_auth_header(self: Configuration) -> dict:
-        if not ('auth_token' in self.data and 'project_id' in self.data):
+        if not ("auth_token" in self.data and "project_id" in self.data):
             raise LoggedOut
 
-        token, project = self.data['auth_token'], self.data['project_id']
-        if not token.startswith('Bearer'):
-            token = 'Bearer {}'.format(token)
+        token, project = self.data["auth_token"], self.data["project_id"]
+        if not token.startswith("Bearer"):
+            token = "Bearer {}".format(token)
 
         return dict(Authorization=token, project=project)
 
@@ -141,13 +149,13 @@ class Configuration(object):
 
     @property
     def project_guid(self: Configuration) -> str:
-        if 'auth_token' not in self.data:
+        if "auth_token" not in self.data:
             raise LoggedOut
 
-        if 'organization_id' not in self.data:
+        if "organization_id" not in self.data:
             raise NoOrganizationSelected
 
-        guid = self.data.get('project_id')
+        guid = self.data.get("project_id")
         if guid is None:
             raise NoProjectSelected
 
@@ -155,10 +163,10 @@ class Configuration(object):
 
     @property
     def organization_guid(self: Configuration) -> str:
-        if 'auth_token' not in self.data:
+        if "auth_token" not in self.data:
             raise LoggedOut
 
-        guid = self.data.get('organization_id')
+        guid = self.data.get("organization_id")
         if guid is None:
             raise NoOrganizationSelected
 
@@ -166,10 +174,10 @@ class Configuration(object):
 
     @property
     def organization_short_id(self: Configuration) -> str:
-        if 'auth_token' not in self.data:
+        if "auth_token" not in self.data:
             raise LoggedOut
 
-        short_id = self.data.get('organization_short_id')
+        short_id = self.data.get("organization_short_id")
         if short_id is None:
             raise NoOrganizationSelected
 
@@ -177,20 +185,20 @@ class Configuration(object):
 
     @property
     def piping_server(self: Configuration):
-        return self.data.get('piping_server', self.PIPING_SERVER)
+        return self.data.get("piping_server", self.PIPING_SERVER)
 
     @property
     def diff_tool(self: Configuration):
-        return self.data.get('diff_tool', self.DIFF_TOOL)
+        return self.data.get("diff_tool", self.DIFF_TOOL)
 
     @property
     def merge_tool(self: Configuration):
-        return self.data.get('merge_tool', self.MERGE_TOOL)
+        return self.data.get("merge_tool", self.MERGE_TOOL)
 
     @property
     def machine_id(self: Configuration):
-        if 'machine_id' not in self.data:
-            self.data['machine_id'] = str(uuid.uuid4())
+        if "machine_id" not in self.data:
+            self.data["machine_id"] = str(uuid.uuid4())
             self.save()
 
-        return self.data.get('machine_id')
+        return self.data.get("machine_id")

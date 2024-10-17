@@ -21,24 +21,27 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'create',
+    "create",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('project-name', type=str)
-@click.option('--organization', 'organization_name',
-              help='Pass organization name for which project needs to be created. Default will be current organization')
+@click.argument("project-name", type=str)
+@click.option(
+    "--organization",
+    "organization_name",
+    help="Pass organization name for which project needs to be created. Default will be current organization",
+)
 @click.pass_context
 @name_to_organization_guid
 @with_spinner(text="Creating project...")
 def create_project(
-        ctx: click.Context,
-        project_name: str,
-        organization_guid: str,
-        organization_name: str,
-        organization_short_id: str,
-        spinner=None,
+    ctx: click.Context,
+    project_name: str,
+    organization_guid: str,
+    organization_name: str,
+    organization_short_id: str,
+    spinner=None,
 ) -> None:
     """Create a new project.
 
@@ -46,27 +49,23 @@ def create_project(
     be created in the current organization.
     """
     if not organization_guid:
-        organization_guid = ctx.obj.data.get('organization_id')
+        organization_guid = ctx.obj.data.get("organization_id")
 
     payload = {
         "metadata": {
             "name": project_name,
             "organizationGUID": organization_guid,
-            "labels": {
-                "createdBy": "rio-cli"
-            }
+            "labels": {"createdBy": "rio-cli"},
         },
-        "spec": {}
+        "spec": {},
     }
 
     try:
         client = new_v2_client(with_project=False)
         client.create_project(payload)
-        spinner.text = click.style(
-            'Project created successfully.', fg=Colors.GREEN)
+        spinner.text = click.style("Project created successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            'Failed to create project: {}'.format(e), Colors.RED)
+        spinner.text = click.style("Failed to create project: {}".format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

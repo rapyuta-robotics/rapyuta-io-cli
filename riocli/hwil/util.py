@@ -33,7 +33,7 @@ def name_to_id(f: typing.Callable) -> typing.Callable:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
-        name = kwargs.pop('device_name')
+        name = kwargs.pop("device_name")
 
         # device_name is not specified
         if name is None:
@@ -48,8 +48,8 @@ def name_to_id(f: typing.Callable) -> typing.Callable:
                 click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
 
-        kwargs['device_name'] = name
-        kwargs['device_id'] = guid
+        kwargs["device_name"] = name
+        kwargs["device_id"] = guid
         f(**kwargs)
 
     return decorated
@@ -73,7 +73,9 @@ def find_device_id(client: Client, name: str) -> str:
     raise DeviceNotFound(message="HWIL device not found")
 
 
-def execute_command(client: Client, device_id: int, command: str) -> typing.Tuple[int, str, str]:
+def execute_command(
+    client: Client, device_id: int, command: str
+) -> typing.Tuple[int, str, str]:
     """Executes a command and waits for it to complete."""
     try:
         response = client.execute_command(device_id, command)
@@ -81,7 +83,7 @@ def execute_command(client: Client, device_id: int, command: str) -> typing.Tupl
         raise e
 
     try:
-        while response.status == 'PENDING':
+        while response.status == "PENDING":
             response = client.get_command(response.uuid)
             time.sleep(1)
     except Exception as e:
@@ -89,4 +91,4 @@ def execute_command(client: Client, device_id: int, command: str) -> typing.Tupl
 
     o = response.result.output.pop()
 
-    return o.get('rc'), o.get('stdout'), o.get('stderr')
+    return o.get("rc"), o.get("stdout"), o.get("stderr")

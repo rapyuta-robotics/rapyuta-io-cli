@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import json
+import os
 
 from munch import Munch, munchify
 
 
 class StateFile(object):
-    _MARKERS = ['.git', '.project']
-    _STATE_FILE = '.rio'
+    _MARKERS = [".git", ".project"]
+    _STATE_FILE = ".rio"
 
     def __init__(self, dir_name: str = os.getcwd()):
         self._dir_name = dir_name
@@ -29,7 +29,7 @@ class StateFile(object):
         file_path = self._search_state_file()
         data = json.dumps(self.state)
 
-        with open(file_path, 'w') as state_file:
+        with open(file_path, "w") as state_file:
             state_file.write(data)
 
     def _load_state_file(self) -> Munch:
@@ -43,7 +43,6 @@ class StateFile(object):
             state = json.loads(data)
             return munchify(state)
 
-
     def _search_state_file(self) -> str:
         cur_dir = self._dir_name
         cur_file = self._get_state_file_path(cur_dir)
@@ -52,7 +51,7 @@ class StateFile(object):
             if os.path.exists(cur_file):
                 return cur_file
 
-            if cur_dir == '/':
+            if cur_dir == "/":
                 return self._get_state_file_path(self._dir_name)
 
             if self._is_top_dir(cur_dir):
@@ -65,11 +64,9 @@ class StateFile(object):
             cur_dir = os.path.dirname(cur_dir)
             cur_file = self._get_state_file_path(cur_dir)
 
-
     def _is_top_dir(self, dir_name: str) -> bool:
-        if dir == '/':
+        if dir == "/":
             return True
-
 
         for m in self._MARKERS:
             m_path = os.path.join(dir_name, m)
@@ -77,7 +74,6 @@ class StateFile(object):
                 return True
 
         return False
-
 
     def _get_state_file_path(self, dir_name: str) -> str:
         return os.path.join(dir_name, self._STATE_FILE)

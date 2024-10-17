@@ -21,21 +21,26 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import inspect_with_format
 
-DEPLOYMENT_GUID_PATTERN = r'(^dep-[a-z0-9]+$|^inst-[a-z0-9]+$)'
+DEPLOYMENT_GUID_PATTERN = r"(^dep-[a-z0-9]+$|^inst-[a-z0-9]+$)"
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('deployment-name')
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("deployment-name")
 def inspect_deployment(
-        format_type: str,
-        deployment_name: str,
+    format_type: str,
+    deployment_name: str,
 ) -> None:
     """Inspect the deployment resource
 
@@ -47,14 +52,14 @@ def inspect_deployment(
         deployment_obj = None
 
         if re.fullmatch(DEPLOYMENT_GUID_PATTERN, deployment_name):
-            deployments = client.list_deployments(query={'guids': [deployment_name]})
+            deployments = client.list_deployments(query={"guids": [deployment_name]})
             if deployments:
                 deployment_obj = deployments[0]
         else:
             deployment_obj = client.get_deployment(deployment_name)
 
         if not deployment_obj:
-            click.secho("deployment not found", fg='red')
+            click.secho("deployment not found", fg="red")
             raise SystemExit(1)
 
         inspect_with_format(unmunchify(deployment_obj), format_type)

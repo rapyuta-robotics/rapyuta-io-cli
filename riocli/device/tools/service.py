@@ -17,88 +17,86 @@ from riocli.device.util import name_to_guid
 from riocli.utils.execute import run_on_device
 
 
-@click.command('status-all')
-@click.argument('device-name', type=str)
+@click.command("status-all")
+@click.argument("device-name", type=str)
 @name_to_guid
 def status_all(device_name: str, device_guid: str) -> None:
     """Get the status of all services on the device."""
     try:
-        remote_service_cmd_list = ['service', '--status-all']
+        remote_service_cmd_list = ["service", "--status-all"]
         response = run_on_device(device_guid=device_guid, command=remote_service_cmd_list)
         click.secho(response)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
 def run_service_cmd(device_guid, service_name, service_cmd=""):
     """Run a service command on the device."""
     try:
-        remote_service_cmd_list = ['service', service_name, service_cmd]
+        remote_service_cmd_list = ["service", service_name, service_cmd]
         response = run_on_device(device_guid=device_guid, command=remote_service_cmd_list)
         click.secho(response)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-@click.command('status')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("status")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def status(device_name: str, device_guid: str, service_name) -> None:
     """Get the status of a service on the device."""
-    run_service_cmd(device_guid, service_name, 'status')
+    run_service_cmd(device_guid, service_name, "status")
 
 
-@click.command('start')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("start")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def start(device_name: str, device_guid: str, service_name) -> None:
     """Start a service on the device."""
-    run_service_cmd(device_guid, service_name, 'start')
+    run_service_cmd(device_guid, service_name, "start")
 
 
-@click.command('stop')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("stop")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def stop(device_name: str, device_guid: str, service_name) -> None:
     """Stop a service on the device."""
-    run_service_cmd(device_guid, service_name, 'stop')
+    run_service_cmd(device_guid, service_name, "stop")
 
 
-@click.command('reload')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("reload")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def reload(device_name: str, device_guid: str, service_name) -> None:
     """Reload a service on the device."""
-    run_service_cmd(device_guid, service_name, 'reload')
+    run_service_cmd(device_guid, service_name, "reload")
 
 
-@click.command('force-reload')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("force-reload")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def force_reload(device_name: str, device_guid: str, service_name) -> None:
     """Force reload a service on the device."""
-    run_service_cmd(device_guid, service_name, 'force_reload')
+    run_service_cmd(device_guid, service_name, "force_reload")
 
 
-@click.command('restart')
-@click.argument('device-name', type=str)
-@click.argument('service-name', nargs=1)
+@click.command("restart")
+@click.argument("device-name", type=str)
+@click.argument("service-name", nargs=1)
 @name_to_guid
 def restart(device_name: str, device_guid: str, service_name) -> None:
     """Restart a service on the device."""
-    run_service_cmd(device_guid, service_name, 'restart')
+    run_service_cmd(device_guid, service_name, "restart")
 
 
-@click.group(
-    hidden=True
-)
+@click.group(hidden=True)
 def service():
     """System management commands for services on the device.
 

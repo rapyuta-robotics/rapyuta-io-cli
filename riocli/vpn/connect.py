@@ -31,23 +31,30 @@ from riocli.vpn.util import (
     stop_tailscale,
     install_vpn_tools,
     is_vpn_enabled_in_project,
-    update_hosts_file
+    update_hosts_file,
 )
 
-_TAILSCALE_CMD_FORMAT = 'tailscale up --auth-key={} --login-server={} --reset --force-reauth ' \
-                        '--accept-routes --accept-dns --advertise-tags={} --timeout=30s'
+_TAILSCALE_CMD_FORMAT = (
+    "tailscale up --auth-key={} --login-server={} --reset --force-reauth "
+    "--accept-routes --accept-dns --advertise-tags={} --timeout=30s"
+)
 
 
 @click.command(
-    'connect',
+    "connect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--update-hosts', 'update_hosts', is_flag=True,
-              default=False, help='Update hosts file with VPN peers to allow '
-                                  'access to them by hostname. Run with `sudo` '
-                                  'when you enable this flag.')
+@click.option(
+    "--update-hosts",
+    "update_hosts",
+    is_flag=True,
+    default=False,
+    help="Update hosts file with VPN peers to allow "
+    "access to them by hostname. Run with `sudo` "
+    "when you enable this flag.",
+)
 @click.pass_context
 @with_spinner(text="Connecting...")
 def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
@@ -76,51 +83,68 @@ def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
 
         if not is_vpn_enabled_in_project(client, config.project_guid):
             spinner.write(
-                click.style('{} VPN is not enabled in the project. '
-                            'Please ask the organization or project '
-                            'creator to enable VPN'.format(Symbols.WAITING),
-                            fg=Colors.YELLOW))
+                click.style(
+                    "{} VPN is not enabled in the project. "
+                    "Please ask the organization or project "
+                    "creator to enable VPN".format(Symbols.WAITING),
+                    fg=Colors.YELLOW,
+                )
+            )
             raise SystemExit(1)
 
         with spinner.hidden():
             if is_tailscale_up():
                 click.confirm(
-                    '{} The VPN client is already running. '
-                    'Do you want to stop it and connect to the VPN of '
-                    'the current project?'.format(Symbols.WARNING),
-                    default=False, abort=True)
+                    "{} The VPN client is already running. "
+                    "Do you want to stop it and connect to the VPN of "
+                    "the current project?".format(Symbols.WARNING),
+                    default=False,
+                    abort=True,
+                )
                 success = stop_tailscale()
                 if not success:
                     msg = (
-                        '{} Failed to stop tailscale. Please run the '
-                        'following commands manually\n sudo tailscale down\n '
-                        'sudo tailscale logout'.format(Symbols.ERROR))
+                        "{} Failed to stop tailscale. Please run the "
+                        "following commands manually\n sudo tailscale down\n "
+                        "sudo tailscale logout".format(Symbols.ERROR)
+                    )
                     click.secho(msg, fg=Colors.YELLOW)
                     raise SystemExit(1)
 
         spinner.write(
             click.style(
-                '{} VPN is enabled in the project ({})'.format(
-                    Symbols.INFO, ctx.obj.data.get('project_name')),
-                fg=Colors.CYAN))
+                "{} VPN is enabled in the project ({})".format(
+                    Symbols.INFO, ctx.obj.data.get("project_name")
+                ),
+                fg=Colors.CYAN,
+            )
+        )
 
         if not start_tailscale(ctx, spinner):
-            click.secho('{} Failed to connect to the project VPN'.format(
-                Symbols.ERROR), fg=Colors.RED)
+            click.secho(
+                "{} Failed to connect to the project VPN".format(Symbols.ERROR),
+                fg=Colors.RED,
+            )
             raise SystemExit(1)
 
         if update_hosts and is_tailscale_up():
-            spinner.text = 'Updating hosts file...'
+            spinner.text = "Updating hosts file..."
             try:
                 update_hosts_file()
-                spinner.write(click.style(f'{Symbols.SUCCESS} Hosts file updated', fg=Colors.CYAN))
+                spinner.write(
+                    click.style(f"{Symbols.SUCCESS} Hosts file updated", fg=Colors.CYAN)
+                )
             except Exception as e:
-                spinner.write(click.style(f'Failed to update hosts: {str(e)}', fg=Colors.RED))
+                spinner.write(
+                    click.style(f"Failed to update hosts: {str(e)}", fg=Colors.RED)
+                )
 
-        spinner.text = click.style('You are now connected to the project\'s VPN', fg=Colors.GREEN)
+        spinner.text = click.style(
+            "You are now connected to the project's VPN", fg=Colors.GREEN
+        )
         spinner.green.ok(Symbols.SUCCESS)
     except click.exceptions.Abort as e:
-        spinner.red.text = 'Aborted!'
+        spinner.red.text = "Aborted!"
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
     except Exception as e:
@@ -130,10 +154,14 @@ def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
 
 
 def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
-    spinner.text = 'Generating a token to join the network...'
+    spinner.text = "Generating a token to join the network..."
 
-    binding = create_binding(ctx, delta=timedelta(minutes=10), labels=get_binding_labels())
-    cmd = _TAILSCALE_CMD_FORMAT.format(binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG)
+    binding = create_binding(
+        ctx, delta=timedelta(minutes=10), labels=get_binding_labels()
+    )
+    cmd = _TAILSCALE_CMD_FORMAT.format(
+        binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG
+    )
     cmd = priviledged_command(cmd)
 
     with spinner.hidden():
@@ -141,8 +169,10 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
 
     if code != 0:
         spinner.write(
-            click.style('{} Failed to start vpn client'.format(Symbols.ERROR),
-                        fg=Colors.RED))
+            click.style(
+                "{} Failed to start vpn client".format(Symbols.ERROR), fg=Colors.RED
+            )
+        )
         return False
 
     return True

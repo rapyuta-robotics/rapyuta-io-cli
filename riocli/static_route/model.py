@@ -43,6 +43,6 @@ class StaticRoute(Model):
         short_id = Configuration().organization_short_id
 
         try:
-            client.delete_static_route(f'{self.metadata.name}-{short_id}')
+            client.delete_static_route(f"{self.metadata.name}-{short_id}")
         except HttpNotFoundError:
             raise ResourceNotFound

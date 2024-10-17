@@ -20,7 +20,7 @@ from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
+@click.command("list")
 def list_instances():
     """
     List all the managedservice instances
@@ -30,7 +30,7 @@ def list_instances():
         instances = client.list_instances()
         _display_instances(instances)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 

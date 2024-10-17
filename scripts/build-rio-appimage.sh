@@ -14,9 +14,7 @@ chmod +x mc
 chmod +x scripts/*.AppImage
 
 # Creating rio-cli wheel
-pip install --upgrade pip
-pip install wheel
-python setup.py bdist_wheel
+uv build
 cp dist/rapyuta_io_cli-*.whl scripts/
 
 # Enabling FUSE

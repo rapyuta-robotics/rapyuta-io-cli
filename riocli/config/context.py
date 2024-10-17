@@ -25,7 +25,7 @@ from riocli.utils import inspect_with_format
 
 
 @click.group(
-    name='context',
+    name="context",
     invoke_without_command=False,
     cls=HelpColorsGroup,
     help_headers_color=Colors.YELLOW,
@@ -42,13 +42,18 @@ def cli_context() -> None:
 
 
 @cli_context.command(
-    name='view',
+    name="view",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
 def view_cli_context(format_type: Optional[str]) -> None:
     """View the current CLI context.
 
@@ -61,27 +66,32 @@ def view_cli_context(format_type: Optional[str]) -> None:
 
 @cli_context.command(
     hidden=True,
-    name='set',
+    name="set",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('file', type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path))
+@click.argument(
+    "file",
+    type=click.Path(
+        exists=True, file_okay=True, dir_okay=False, resolve_path=True, path_type=Path
+    ),
+)
 def set_cli_context(file: Path) -> None:
     """Set the CLI context.
 
     This command sets the CLI context to the values in the specified file.
     The supported file formats are JSON and YAML only.
     """
-    with file.open(mode='r') as fp:
-        if file.suffix == '.json':
+    with file.open(mode="r") as fp:
+        if file.suffix == ".json":
             data = json.load(fp)
-        elif file.suffix == '.yaml':
+        elif file.suffix == ".yaml":
             data = yaml.safe_load(fp)
         else:
-            raise Exception('unsupported file format')
+            raise Exception("unsupported file format")
 
         Configuration().data = data
         Configuration().save()
 
-    click.secho(f'{Symbols.SUCCESS} Context has been updated.', fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} Context has been updated.", fg=Colors.GREEN)

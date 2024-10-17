@@ -17,8 +17,8 @@ from riocli.config import new_client
 from riocli.device.util import name_to_guid
 
 
-@click.command('onboard')
-@click.argument('device-name', type=str)
+@click.command("onboard")
+@click.argument("device-name", type=str)
 @name_to_guid
 def device_onboard(device_name: str, device_guid: str) -> None:
     """Generates the on-boarding script for a device.
@@ -33,5 +33,5 @@ def device_onboard(device_name: str, device_guid: str) -> None:
         script = device.onboard_script()
         click.secho(script.full_command())
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)

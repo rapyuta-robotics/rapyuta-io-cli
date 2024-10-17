@@ -22,13 +22,13 @@ from riocli.hwil.util import name_to_id, execute_command
 
 
 @click.command(
-    'execute',
+    "execute",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('device-name', required=True, type=str)
-@click.argument('command', required=True, type=str)
+@click.argument("device-name", required=True, type=str)
+@click.argument("command", required=True, type=str)
 @name_to_id
 def execute(device_name: str, device_id: str, command: str) -> None:
     """Execute a command on a hardware-in-the-loop device.

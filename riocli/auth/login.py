@@ -24,43 +24,54 @@ from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
 
-LOGIN_SUCCESS = click.style('{} Logged in successfully!'.format(Symbols.SUCCESS), fg=Colors.GREEN)
+LOGIN_SUCCESS = click.style(
+    "{} Logged in successfully!".format(Symbols.SUCCESS), fg=Colors.GREEN
+)
 
 
 @click.command(
-    'login',
+    "login",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--email', type=str,
-              help='Email of the rapyuta.io account')
-@click.option('--password', type=str,
-              help='Password for the rapyuta.io account')
-@click.option('--organization', type=str, default=None,
-              help=('Context will be set to the organization after '
-                    'authentication'))
-@click.option('--project', type=str, default=None,
-              help='Context will be set to the project after authentication')
-@click.option('--interactive/--no-interactive', '--interactive/--silent',
-              is_flag=True, type=bool, default=True,
-              help='Make login interactive')
-@click.option('--auth-token', type=str, default=None,
-              help="Login with auth token only")
+@click.option("--email", type=str, help="Email of the rapyuta.io account")
+@click.option("--password", type=str, help="Password for the rapyuta.io account")
+@click.option(
+    "--organization",
+    type=str,
+    default=None,
+    help=("Context will be set to the organization after " "authentication"),
+)
+@click.option(
+    "--project",
+    type=str,
+    default=None,
+    help="Context will be set to the project after authentication",
+)
+@click.option(
+    "--interactive/--no-interactive",
+    "--interactive/--silent",
+    is_flag=True,
+    type=bool,
+    default=True,
+    help="Make login interactive",
+)
+@click.option("--auth-token", type=str, default=None, help="Login with auth token only")
 @click.pass_context
 def login(
-        ctx: click.Context,
-        email: str,
-        password: str,
-        organization: str,
-        project: str,
-        interactive: bool,
-        auth_token: str,
+    ctx: click.Context,
+    email: str,
+    password: str,
+    organization: str,
+    project: str,
+    interactive: bool,
+    auth_token: str,
 ) -> None:
     """Log into your rapyuta.io account.
 
     This is the first step to start using the CLI.
-    
+
     You can log in with your email and password or
     just with and auth token if you already have one.
     The command works in an interactive mode by default
@@ -110,28 +121,29 @@ def login(
             raise SystemExit(1)
     else:
         if interactive:
-            email = email or click.prompt('Email')
-            password = password or click.prompt('Password', hide_input=True)
+            email = email or click.prompt("Email")
+            password = password or click.prompt("Password", hide_input=True)
 
         if not email:
-            click.secho('email not specified')
+            click.secho("email not specified")
             raise SystemExit(1)
 
         if not password:
-            click.secho('password not specified')
+            click.secho("password not specified")
             raise SystemExit(1)
 
-        ctx.obj.data['email_id'] = email
-        ctx.obj.data['auth_token'] = get_token(email, password)
+        ctx.obj.data["email_id"] = email
+        ctx.obj.data["auth_token"] = get_token(email, password)
 
     # Save if the file does not already exist
     if not ctx.obj.exists or not interactive:
         ctx.obj.save()
     else:
         click.confirm(
-            '{} Config already exists. Do you want to override'
-            ' the existing config?'.format(Symbols.WARNING),
-            abort=True)
+            "{} Config already exists. Do you want to override"
+            " the existing config?".format(Symbols.WARNING),
+            abort=True,
+        )
 
     if not interactive:
         # When just the email and password are provided
@@ -145,8 +157,9 @@ def login(
         # needs to be explicitly provided in this case.
         if project and not organization:
             click.secho(
-                'Please specify an organization. See `rio auth login --help`',
-                fg=Colors.YELLOW)
+                "Please specify an organization. See `rio auth login --help`",
+                fg=Colors.YELLOW,
+            )
             raise SystemExit(1)
 
         # When just the organization is provided, we save the
@@ -154,8 +167,12 @@ def login(
         # successful.
         if organization and not project:
             select_organization(ctx.obj, organization=organization)
-            click.secho("Your organization is set to '{}'".format(
-                ctx.obj.data['organization_name']), fg=Colors.CYAN)
+            click.secho(
+                "Your organization is set to '{}'".format(
+                    ctx.obj.data["organization_name"]
+                ),
+                fg=Colors.CYAN,
+            )
             ctx.obj.save()
             click.echo(LOGIN_SUCCESS)
             return
@@ -168,7 +185,9 @@ def login(
     try:
         cleanup_hosts_file()
     except Exception as e:
-        click.secho(f'{Symbols.WARNING} Failed to '
-                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
+        click.secho(
+            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            fg=Colors.YELLOW,
+        )
 
     click.echo(LOGIN_SUCCESS)

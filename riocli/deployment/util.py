@@ -30,29 +30,41 @@ ALL_PHASES = [
 
 
 def fetch_deployments(
-        client: Client,
-        deployment_name_or_regex: str,
-        include_all: bool,
+    client: Client,
+    deployment_name_or_regex: str,
+    include_all: bool,
 ) -> typing.List[munch.Munch]:
-    deployments = client.list_deployments(query={'phases': DEFAULT_PHASES})
+    deployments = client.list_deployments(query={"phases": DEFAULT_PHASES})
     result = []
     for deployment in deployments:
-        if (include_all or deployment_name_or_regex == deployment.metadata.name or
-                deployment_name_or_regex == deployment.metadata.guid or
-                (deployment_name_or_regex not in deployment.metadata.name and
-                 re.search(r'^{}$'.format(deployment_name_or_regex), deployment.metadata.name))):
+        if (
+            include_all
+            or deployment_name_or_regex == deployment.metadata.name
+            or deployment_name_or_regex == deployment.metadata.guid
+            or (
+                deployment_name_or_regex not in deployment.metadata.name
+                and re.search(
+                    r"^{}$".format(deployment_name_or_regex), deployment.metadata.name
+                )
+            )
+        ):
             result.append(deployment)
 
     return result
 
 
 def print_deployments_for_confirmation(deployments: typing.List[munch.Munch]):
-    headers = ['Name', 'GUID', 'Phase', 'Status']
+    headers = ["Name", "GUID", "Phase", "Status"]
 
     data = []
     for deployment in deployments:
         data.append(
-            [deployment.metadata.name, deployment.metadata.guid, deployment.status.phase,
-             deployment.status.status])
+            [
+                deployment.metadata.name,
+                deployment.metadata.guid,
+                deployment.status.phase,
+                deployment.status.status,
+            ]
+        )
 
     tabulate_data(data, headers)

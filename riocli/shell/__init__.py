@@ -39,11 +39,11 @@ def shell(ctx: click.Context):
 
 
 @click.command(
-    'repl',
+    "repl",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    hidden=True
+    hidden=True,
 )
 @click.pass_context
 def deprecated_repl(ctx: click.Context):
@@ -59,7 +59,7 @@ def start_shell(ctx: click.Context):
         try:
             repl(click.get_current_context(), prompt_kwargs=prompt_config)
         except Exception as e:
-            click.secho(str(e), fg='red')
+            click.secho(str(e), fg="red")
         else:
             break
 
@@ -67,11 +67,11 @@ def start_shell(ctx: click.Context):
 def _parse_config(config: Configuration) -> dict:
     history_path = os.path.join(click.get_app_dir(config.APP_NAME), "history")
     default_prompt_kwargs = {
-        'history': ThreadedHistory(FileHistory(history_path)),
-        'message': prompt_callback,
-        'enable_suspend': True
+        "history": ThreadedHistory(FileHistory(history_path)),
+        "message": prompt_callback,
+        "enable_suspend": True,
     }
 
-    shell_config = config.data.get('shell', {})
+    shell_config = config.data.get("shell", {})
 
     return {**default_prompt_kwargs, **shell_config}

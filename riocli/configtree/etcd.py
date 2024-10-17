@@ -20,17 +20,17 @@ from etcd3gw import Etcd3Client
 
 
 def import_in_etcd(
-        data: dict,
-        endpoint: str,
-        port: Optional[int] = 2379,
-        prefix: Optional[str] = None,
+    data: dict,
+    endpoint: str,
+    port: Optional[int] = 2379,
+    prefix: Optional[str] = None,
 ) -> None:
     cli = Etcd3Client(host=endpoint, port=port)
 
     try:
         cli.status()
-    except Exception as e:
-        raise ConnectionError(f'cannot connect to etcd server at {endpoint}:{port}')
+    except Exception:
+        raise ConnectionError(f"cannot connect to etcd server at {endpoint}:{port}")
 
     if prefix:
         cli.delete_prefix(prefix)
@@ -39,52 +39,53 @@ def import_in_etcd(
 
     compares, failures = [], []
 
-    prefix = prefix or ''
+    prefix = prefix or ""
 
     for key, val in data.items():
-        key = '{}/{}'.format(prefix, key)
+        key = "{}/{}".format(prefix, key)
 
-        enc_key = b64encode(str(key).encode('utf-8')).decode()
-        enc_val = b64encode(str(val).encode('utf-8')).decode()
-        compares.append({
-            'key': enc_key,
-            'result': 'EQUAL',
-            'target': 'VALUE',
-            'value': enc_val,
-        })
-        failures.append({
-            'request_put': {
-                'key': enc_key,
-                'value': enc_val
+        enc_key = b64encode(str(key).encode("utf-8")).decode()
+        enc_val = b64encode(str(val).encode("utf-8")).decode()
+        compares.append(
+            {
+                "key": enc_key,
+                "result": "EQUAL",
+                "target": "VALUE",
+                "value": enc_val,
             }
-        })
+        )
+        failures.append({"request_put": {"key": enc_key, "value": enc_val}})
 
-    sentinel_key = b64encode('/sentinel_key'.encode('utf-8')).decode()
-    sentinel_val = b64encode(f'{time.time_ns()}|riocli-import'.encode('utf-8')).decode()
+    sentinel_key = b64encode("/sentinel_key".encode("utf-8")).decode()
+    sentinel_val = b64encode(f"{time.time_ns()}|riocli-import".encode("utf-8")).decode()
 
-    compares.append({
-        'key': sentinel_key,
-        'result': 'EQUAL',
-        'target': 'VALUE',
-        'value': sentinel_val,
-    })
-    failures.append({
-        'request_put': {
-            'key': sentinel_key,
-            'value': sentinel_val,
+    compares.append(
+        {
+            "key": sentinel_key,
+            "result": "EQUAL",
+            "target": "VALUE",
+            "value": sentinel_val,
         }
-    })
+    )
+    failures.append(
+        {
+            "request_put": {
+                "key": sentinel_key,
+                "value": sentinel_val,
+            }
+        }
+    )
 
     txn = {
-        'compare': compares,
-        'failure': failures,
+        "compare": compares,
+        "failure": failures,
     }
 
     cli.transaction(txn)
 
 
 def _delete_all_keys(client: Etcd3Client) -> None:
-    null_char = '\x00'
-    enc_null = b64encode(null_char.encode('utf-8')).decode()
+    null_char = "\x00"
+    enc_null = b64encode(null_char.encode("utf-8")).decode()
 
-    client.delete('\x00', range_end=enc_null)
+    client.delete("\x00", range_end=enc_null)

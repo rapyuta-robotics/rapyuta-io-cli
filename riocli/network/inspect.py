@@ -19,10 +19,15 @@ from riocli.constants import Colors
 from riocli.utils import inspect_with_format
 
 
-@click.command('inspect')
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('network-name')
+@click.command("inspect")
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("network-name")
 def inspect_network(format_type: str, network_name: str) -> None:
     """Print the details of a network.
 
@@ -34,7 +39,7 @@ def inspect_network(format_type: str, network_name: str) -> None:
         network_obj = client.get_network(network_name)
 
         if not network_obj:
-            click.secho("network not found", fg='red')
+            click.secho("network not found", fg="red")
             raise SystemExit(1)
 
         inspect_with_format(unmunchify(network_obj), format_type)

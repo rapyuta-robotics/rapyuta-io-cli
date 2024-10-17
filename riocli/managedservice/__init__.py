@@ -23,8 +23,8 @@ from riocli.managedservice.list_providers import list_providers
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
     hidden=True,
 )
 def managedservice() -> None:

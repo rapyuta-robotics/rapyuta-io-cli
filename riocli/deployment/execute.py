@@ -29,23 +29,24 @@ from riocli.utils.selector import show_selection
 
 
 @click.command(
-    'execute',
+    "execute",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--user', default='root')
-@click.option('--shell', default='/bin/bash')
-@click.option('--exec', 'exec_name', default=None,
-              help='Name of a executable in the component')
-@click.argument('deployment-name', type=str)
-@click.argument('command', nargs=-1)
+@click.option("--user", default="root")
+@click.option("--shell", default="/bin/bash")
+@click.option(
+    "--exec", "exec_name", default=None, help="Name of a executable in the component"
+)
+@click.argument("deployment-name", type=str)
+@click.argument("command", nargs=-1)
 def execute_command(
-        user: str,
-        shell: str,
-        exec_name: str,
-        deployment_name: str,
-        command: typing.List[str]
+    user: str,
+    shell: str,
+    exec_name: str,
+    deployment_name: str,
+    command: typing.List[str],
 ) -> None:
     """Execute a command on a device deployment
 
@@ -78,27 +79,35 @@ def execute_command(
 
         deployment = client.get_deployment(deployment_name)
         if not deployment:
-            click.secho(f'{Symbols.ERROR} Deployment `{deployment_name}` not found', fg=Colors.RED)
+            click.secho(
+                f"{Symbols.ERROR} Deployment `{deployment_name}` not found",
+                fg=Colors.RED,
+            )
             raise SystemExit(1)
 
         if deployment.status.status != Status.RUNNING:
-            click.secho(f'{Symbols.ERROR} Deployment `{deployment_name}` is not running', fg=Colors.RED)
+            click.secho(
+                f"{Symbols.ERROR} Deployment `{deployment_name}` is not running",
+                fg=Colors.RED,
+            )
             raise SystemExit(1)
 
-        if deployment.spec.runtime != 'device':
-            click.secho(f'Only device runtime is supported.', fg=Colors.RED)
+        if deployment.spec.runtime != "device":
+            click.secho("Only device runtime is supported.", fg=Colors.RED)
             raise SystemExit(1)
 
         if exec_name is None:
-            package = client.get_package(deployment.metadata.depends.nameOrGUID,
-                                         query={"version": deployment.metadata.depends.version})
+            package = client.get_package(
+                deployment.metadata.depends.nameOrGUID,
+                query={"version": deployment.metadata.depends.version},
+            )
             executables = [e.name for e in package.spec.executables]
             if len(executables) == 1:
                 exec_name = executables[0]
             else:
-                exec_name = show_selection(executables, '\nSelect executable')
+                exec_name = show_selection(executables, "\nSelect executable")
 
-        with Spinner(text='Executing command `{}`...'.format(command)):
+        with Spinner(text="Executing command `{}`...".format(command)):
             response = run_on_device(
                 user=user,
                 shell=shell,
@@ -106,7 +115,7 @@ def execute_command(
                 background=False,
                 deployment=deployment,
                 exec_name=exec_name,
-                device_name=deployment.spec.device.depends.nameOrGUID
+                device_name=deployment.spec.device.depends.nameOrGUID,
             )
         click.echo(response)
     except Exception as e:

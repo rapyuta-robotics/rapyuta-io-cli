@@ -17,30 +17,35 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project
-from riocli.constants import Colors
+from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_organization_guid
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
 
 
 @click.command(
-    'select',
+    "select",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('organization-name', type=str)
-@click.option('--interactive/--no-interactive', '--interactive/--silent',
-              is_flag=True, type=bool, default=True,
-              help='Make the selection interactive')
+@click.argument("organization-name", type=str)
+@click.option(
+    "--interactive/--no-interactive",
+    "--interactive/--silent",
+    is_flag=True,
+    type=bool,
+    default=True,
+    help="Make the selection interactive",
+)
 @click.pass_context
 @name_to_organization_guid
 def select_organization(
-        ctx: click.Context,
-        organization_name: str,
-        organization_guid: str,
-        organization_short_id: str,
-        interactive: bool,
+    ctx: click.Context,
+    organization_name: str,
+    organization_guid: str,
+    organization_short_id: str,
+    interactive: bool,
 ) -> None:
     """Set the current organization.
 
@@ -66,29 +71,36 @@ def select_organization(
     """
     ctx = get_root_context(ctx)
 
-    if ctx.obj.data.get('organization_id') == organization_guid:
-        click.secho("You are already in the '{}' organization".format(
-            organization_name), fg=Colors.GREEN)
+    if ctx.obj.data.get("organization_id") == organization_guid:
+        click.secho(
+            "You are already in the '{}' organization".format(organization_name),
+            fg=Colors.GREEN,
+        )
         return
 
-    ctx.obj.data['organization_id'] = organization_guid
-    ctx.obj.data['organization_name'] = organization_name
-    ctx.obj.data['organization_short_id'] = organization_short_id
+    ctx.obj.data["organization_id"] = organization_guid
+    ctx.obj.data["organization_name"] = organization_name
+    ctx.obj.data["organization_short_id"] = organization_short_id
 
     if sys.stdout.isatty() and interactive:
         select_project(ctx.obj, organization=organization_guid)
     else:
-        ctx.obj.data['project_id'] = ""
-        ctx.obj.data['project_name'] = ""
+        ctx.obj.data["project_id"] = ""
+        ctx.obj.data["project_name"] = ""
         click.secho(
             "Your organization has been set to '{}'\n"
-            "Please set your project with `rio project select PROJECT_NAME`".format(organization_name),
-            fg=Colors.GREEN)
+            "Please set your project with `rio project select PROJECT_NAME`".format(
+                organization_name
+            ),
+            fg=Colors.GREEN,
+        )
 
     ctx.obj.save()
 
     try:
         cleanup_hosts_file()
     except Exception as e:
-        click.secho(f'{Symbols.WARNING} Failed to '
-                    f'clean up hosts file: {str(e)}', fg=Colors.YELLOW)
+        click.secho(
+            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            fg=Colors.YELLOW,
+        )

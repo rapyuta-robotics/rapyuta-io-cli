@@ -1,0 +1,14 @@
+name: ✅ Quality Checks
+on: [ push ]
+
+jobs:
+  code-quality-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run checks
+        uses: astral-sh/ruff-action@v1
+        with:
+          args: "check"

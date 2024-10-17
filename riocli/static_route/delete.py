@@ -28,26 +28,38 @@ from riocli.v2client.client import Client
 
 
 @click.command(
-    'delete',
+    "delete",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--force', '-f', '--silent', is_flag=True, default=False,
-              help='Skip confirmation')
-@click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
-              help='Deletes all static routes in the project')
-@click.option('--workers', '-w',
-              help="Number of parallel workers while running delete static route "
-                   "command. Defaults to 10.", type=int, default=10)
-@click.argument('route-name-or-regex', type=str, default="")
+@click.option(
+    "--force", "-f", "--silent", is_flag=True, default=False, help="Skip confirmation"
+)
+@click.option(
+    "-a",
+    "--all",
+    "delete_all",
+    is_flag=True,
+    default=False,
+    help="Deletes all static routes in the project",
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="Number of parallel workers while running delete static route "
+    "command. Defaults to 10.",
+    type=int,
+    default=10,
+)
+@click.argument("route-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting static route...")
 def delete_static_route(
-        route_name_or_regex: str,
-        force: bool,
-        delete_all: bool = False,
-        workers: int = 10,
-        spinner=None,
+    route_name_or_regex: str,
+    force: bool,
+    delete_all: bool = False,
+    workers: int = 10,
+    spinner=None,
 ) -> None:
     """Delete one or more static routes with a name or a regex pattern.
 
@@ -88,7 +100,8 @@ def delete_static_route(
         routes = fetch_static_routes(client, route_name_or_regex, delete_all)
     except Exception as e:
         spinner.text = click.style(
-            'Failed to delete static route(s): {}'.format(e), Colors.RED)
+            "Failed to delete static route(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -100,34 +113,35 @@ def delete_static_route(
     with spinner.hidden():
         print_routes_for_confirmation(routes)
 
-    spinner.write('')
+    spinner.write("")
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to delete the above static route(s)?', abort=True)
-        spinner.write('')
+            click.confirm("Do you want to delete the above static route(s)?", abort=True)
+        spinner.write("")
 
     try:
         f = functools.partial(_apply_delete, client)
-        result = apply_func_with_result(f=f, items=routes, workers=workers, key=lambda x: x[0])
+        result = apply_func_with_result(
+            f=f, items=routes, workers=workers, key=lambda x: x[0]
+        )
 
         data, statuses = [], []
         for name, status, msg in result:
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append([
-                click.style(name, fg),
-                click.style('{}  {}'.format(icon, msg), fg)
-            ])
+            data.append(
+                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
+            )
 
         with spinner.hidden():
-            tabulate_data(data, headers=['Name', 'Status'])
+            tabulate_data(data, headers=["Name", "Status"])
 
         # When no route is deleted, raise an exception.
         if not any(statuses):
-            spinner.write('')
-            spinner.text = click.style('Failed to delete static route(s).', Colors.RED)
+            spinner.write("")
+            spinner.text = click.style("Failed to delete static route(s).", Colors.RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1)
 
@@ -135,13 +149,13 @@ def delete_static_route(
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.write('')
-        spinner.text = click.style(
-            'Static route(s) deleted {}.'.format(text), fg)
+        spinner.write("")
+        spinner.text = click.style("Static route(s) deleted {}.".format(text), fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
         spinner.text = click.style(
-            'Failed to delete static route(s): {}'.format(e), Colors.RED)
+            "Failed to delete static route(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -149,6 +163,6 @@ def delete_static_route(
 def _apply_delete(client: Client, result: Queue, route: typing.Any) -> None:
     try:
         client.delete_static_route(name=route.metadata.name)
-        result.put((route.metadata.name, True, 'Static route deleted successfully'))
+        result.put((route.metadata.name, True, "Static route deleted successfully"))
     except Exception as e:
         result.put((route.metadata.name, False, str(e)))

@@ -22,12 +22,12 @@ from riocli.utils.context import get_root_context
 
 
 @click.command(
-    'invite-user',
+    "invite-user",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('user-email', type=str)
+@click.argument("user-email", type=str)
 @click.pass_context
 def invite_user(ctx: click.Context, user_email: str) -> None:
     """Invite a new user to the current organization.
@@ -48,12 +48,19 @@ def invite_user(ctx: click.Context, user_email: str) -> None:
     try:
         validate_email(user_email)
     except EmailNotValidError as e:
-        click.secho('{} {} is not a valid email address'.format(Symbols.ERROR, user_email), fg=Colors.RED)
+        click.secho(
+            "{} {} is not a valid email address".format(Symbols.ERROR, user_email),
+            fg=Colors.RED,
+        )
         raise SystemExit(1) from e
 
     try:
-        invite_user_to_org(ctx.obj.data['organization_id'], user_email)
-        click.secho('{} User invited successfully.'.format(Symbols.SUCCESS), fg=Colors.GREEN)
+        invite_user_to_org(ctx.obj.data["organization_id"], user_email)
+        click.secho(
+            "{} User invited successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN
+        )
     except Exception as e:
-        click.secho('{} Failed to invite user: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(
+            "{} Failed to invite user: {}".format(Symbols.ERROR, e), fg=Colors.RED
+        )
         raise SystemExit(1) from e

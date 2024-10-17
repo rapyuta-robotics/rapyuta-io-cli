@@ -31,13 +31,13 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
-        group_name = kwargs.pop('group_name')
+        group_name = kwargs.pop("group_name")
         group_guid = None
 
         ctx = args[0]
-        org_guid = ctx.obj.data.get('organization_id')
+        org_guid = ctx.obj.data.get("organization_id")
 
-        if group_name.startswith('group-'):
+        if group_name.startswith("group-"):
             group_guid = group_name
             group_name = None
 
@@ -51,8 +51,8 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
                 click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
 
-        kwargs['group_name'] = group_name
-        kwargs['group_guid'] = group_guid
+        kwargs["group_name"] = group_name
+        kwargs["group_guid"] = group_guid
         f(*args, **kwargs)
 
     return decorated
@@ -79,6 +79,6 @@ def find_usergroup_guid(client: Client, org_guid, group_name: str) -> str:
 
 
 class UserGroupNotFound(Exception):
-    def __init__(self, message='usergroup not found!'):
+    def __init__(self, message="usergroup not found!"):
         self.message = message
         super().__init__(self.message)

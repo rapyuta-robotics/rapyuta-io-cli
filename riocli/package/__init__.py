@@ -23,8 +23,8 @@ from riocli.package.list import list_packages
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def package() -> None:
     """

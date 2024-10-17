@@ -32,12 +32,14 @@ class Network(Model):
         self.metadata.createdAt = None
         self.metadata.updatedAt = None
 
-        retry_count = int(kwargs.get('retry_count'))
-        retry_interval = int(kwargs.get('retry_interval'))
+        retry_count = int(kwargs.get("retry_count"))
+        retry_interval = int(kwargs.get("retry_interval"))
 
         try:
             r = client.create_network(unmunchify(self))
-            client.poll_network(r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval)
+            client.poll_network(
+                r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval
+            )
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:
             return ApplyResult.EXISTS
