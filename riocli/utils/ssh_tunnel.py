@@ -11,18 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-import typing
 from socket import socket, AF_INET, SOCK_STREAM
-
-import click
-
-from riocli.utils import random_string, run_bash
 
 
 def get_free_tcp_port():
     tcp = socket(AF_INET, SOCK_STREAM)
-    tcp.bind(('', 0))
+    tcp.bind(("", 0))
     _, port = tcp.getsockname()
     tcp.close()
     return port

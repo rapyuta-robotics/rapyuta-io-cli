@@ -28,26 +28,38 @@ from riocli.v2client import Client
 
 
 @click.command(
-    'delete',
+    "delete",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--force', '-f', '--silent', is_flag=True, default=False,
-              help='Skip confirmation')
-@click.option('-a', '--all', 'delete_all', is_flag=True, default=False,
-              help='Deletes all deployments in the project')
-@click.option('--workers', '-w',
-              help="Number of parallel workers while running delete deployment "
-                   "command. Defaults to 10.", type=int, default=10)
-@click.argument('deployment-name-or-regex', type=str, default="")
+@click.option(
+    "--force", "-f", "--silent", is_flag=True, default=False, help="Skip confirmation"
+)
+@click.option(
+    "-a",
+    "--all",
+    "delete_all",
+    is_flag=True,
+    default=False,
+    help="Deletes all deployments in the project",
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="Number of parallel workers while running delete deployment "
+    "command. Defaults to 10.",
+    type=int,
+    default=10,
+)
+@click.argument("deployment-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting deployment...")
 def delete_deployment(
-        force: bool,
-        deployment_name_or_regex: str,
-        delete_all: bool = False,
-        workers: int = 10,
-        spinner=None,
+    force: bool,
+    deployment_name_or_regex: str,
+    delete_all: bool = False,
+    workers: int = 10,
+    spinner=None,
 ) -> None:
     """Delete one or more deployments with a name or a regex pattern.
 
@@ -85,11 +97,11 @@ def delete_deployment(
         return
 
     try:
-        deployments = fetch_deployments(
-            client, deployment_name_or_regex, delete_all)
+        deployments = fetch_deployments(client, deployment_name_or_regex, delete_all)
     except Exception as e:
         spinner.text = click.style(
-            'Failed to delete deployment(s): {}'.format(e), Colors.RED)
+            "Failed to delete deployment(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -101,18 +113,17 @@ def delete_deployment(
     with spinner.hidden():
         print_deployments_for_confirmation(deployments)
 
-    spinner.write('')
+    spinner.write("")
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to delete the above deployment(s)?', abort=True)
-        spinner.write('')
+            click.confirm("Do you want to delete the above deployment(s)?", abort=True)
+        spinner.write("")
 
     try:
         f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=f, items=deployments,
-            workers=workers, key=lambda x: x[0]
+            f=f, items=deployments, workers=workers, key=lambda x: x[0]
         )
 
         data, statuses = [], []
@@ -120,18 +131,17 @@ def delete_deployment(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append([
-                click.style(name, fg),
-                click.style('{}  {}'.format(icon, msg), fg)
-            ])
+            data.append(
+                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
+            )
 
         with spinner.hidden():
-            tabulate_data(data, headers=['Name', 'Status'])
+            tabulate_data(data, headers=["Name", "Status"])
 
         # When no deployment is deleted, raise an exception.
         if not any(statuses):
-            spinner.write('')
-            spinner.text = click.style('Failed to delete deployment(s).', Colors.RED)
+            spinner.write("")
+            spinner.text = click.style("Failed to delete deployment(s).", Colors.RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1)
 
@@ -139,13 +149,13 @@ def delete_deployment(
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.write('')
-        spinner.text = click.style(
-            'Deployment(s) deleted {}.'.format(text), fg)
+        spinner.write("")
+        spinner.text = click.style("Deployment(s) deleted {}.".format(text), fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
         spinner.text = click.style(
-            'Failed to delete deployment(s): {}'.format(e), Colors.RED)
+            "Failed to delete deployment(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -153,6 +163,6 @@ def delete_deployment(
 def _apply_delete(client: Client, result: Queue, deployment: Deployment) -> None:
     try:
         client.delete_deployment(name=deployment.metadata.name)
-        result.put((deployment.metadata.name, True, 'Deployment Deleted Successfully'))
+        result.put((deployment.metadata.name, True, "Deployment Deleted Successfully"))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))

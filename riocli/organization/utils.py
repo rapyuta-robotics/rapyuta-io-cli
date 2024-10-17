@@ -20,24 +20,22 @@ from riocli.config import Configuration
 
 
 def _api_call(
-        method: str,
-        path: typing.Union[str, None] = None,
-        payload: typing.Union[typing.Dict, None] = None,
-        load_response: bool = True,
+    method: str,
+    path: typing.Union[str, None] = None,
+    payload: typing.Union[typing.Dict, None] = None,
+    load_response: bool = True,
 ) -> typing.Dict:
     config = Configuration()
     coreapi_host = config.data.get(
-        'core_api_host',
-        'https://gaapiserver.apps.okd4v2.prod.rapyuta.io'
+        "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
 
-    url = '{}/api/organization'.format(coreapi_host)
+    url = "{}/api/organization".format(coreapi_host)
     if path:
-        url = '{}/{}'.format(url, path)
+        url = "{}/{}".format(url, path)
 
     headers = config.get_auth_header()
-    response = RestClient(url).method(method).headers(headers).execute(
-        payload=payload)
+    response = RestClient(url).method(method).headers(headers).execute(payload=payload)
 
     data = None
 
@@ -45,21 +43,25 @@ def _api_call(
         data = response.json()
 
     if not response.ok:
-        err_msg = data.get('error')
+        err_msg = data.get("error")
         raise Exception(err_msg)
 
     return data
 
 
 def get_organization_details(organization_guid: str) -> typing.Dict:
-    return _api_call(HttpMethod.GET, '{}/get'.format(organization_guid))
+    return _api_call(HttpMethod.GET, "{}/get".format(organization_guid))
 
 
 def invite_user_to_org(organization_guid: str, user_email: str) -> typing.Dict:
-    payload = {'userEmail': user_email}
-    return _api_call(HttpMethod.PUT, '{}/adduser'.format(organization_guid), payload=payload)
+    payload = {"userEmail": user_email}
+    return _api_call(
+        HttpMethod.PUT, "{}/adduser".format(organization_guid), payload=payload
+    )
 
 
 def remove_user_from_org(organization_guid: str, user_email: str) -> typing.Dict:
-    payload = {'userEmail': user_email}
-    return _api_call(HttpMethod.DELETE, '{}/removeuser'.format(organization_guid), payload=payload)
+    payload = {"userEmail": user_email}
+    return _api_call(
+        HttpMethod.DELETE, "{}/removeuser".format(organization_guid), payload=payload
+    )

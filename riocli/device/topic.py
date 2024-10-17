@@ -23,11 +23,11 @@ from riocli.utils import tabulate_data
 
 
 @click.group(
-    'topics',
+    "topics",
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def device_topics():
     """
@@ -36,8 +36,8 @@ def device_topics():
     pass
 
 
-@device_topics.command('list')
-@click.argument('device-name', type=str)
+@device_topics.command("list")
+@click.argument("device-name", type=str)
 @name_to_guid
 def list_topics(device_name: str, device_guid: str) -> None:
     """
@@ -48,14 +48,14 @@ def list_topics(device_name: str, device_guid: str) -> None:
         device = client.get_device(device_id=device_guid)
         _display_topic_list(device.topic_status())
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-@device_topics.command('subscribe')
-@click.argument('device-name', type=str)
-@click.argument('topic', type=str)
-@click.argument('kind', type=click.Choice(['metric', 'log']))
+@device_topics.command("subscribe")
+@click.argument("device-name", type=str)
+@click.argument("topic", type=str)
+@click.argument("kind", type=click.Choice(["metric", "log"]))
 @name_to_guid
 def subscribe_topic(device_name: str, device_guid: str, topic: str, kind: str) -> None:
     """
@@ -67,16 +67,16 @@ def subscribe_topic(device_name: str, device_guid: str, topic: str, kind: str) -
             device = client.get_device(device_id=device_guid)
             kind = TopicKind(kind.upper())
             device.subscribe_topic(topic, qos=QoS.LOW.value, kind=kind)
-        click.secho('Topic subscribed successfully', fg='green')
+        click.secho("Topic subscribed successfully", fg="green")
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
-@device_topics.command('unsubscribe')
-@click.argument('device-name', type=str)
-@click.argument('topic', type=str)
-@click.argument('kind', type=click.Choice(['metric', 'log']))
+@device_topics.command("unsubscribe")
+@click.argument("device-name", type=str)
+@click.argument("topic", type=str)
+@click.argument("kind", type=click.Choice(["metric", "log"]))
 @name_to_guid
 def unsubscribe_topic(device_name: str, device_guid: str, topic: str, kind: str) -> None:
     """
@@ -88,30 +88,30 @@ def unsubscribe_topic(device_name: str, device_guid: str, topic: str, kind: str)
             device = client.get_device(device_id=device_guid)
             kind = TopicKind(kind.upper())
             device.unsubscribe_topic(topic, kind=kind)
-        click.secho('Topic un-subscribed successfully', fg='green')
+        click.secho("Topic un-subscribed successfully", fg="green")
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
 def _display_topic_list(status: TopicsStatus, show_header: bool = True) -> None:
     if status.master_up:
-        click.secho('ROS Master is {}'.format(click.style('Up', fg='green')))
+        click.secho("ROS Master is {}".format(click.style("Up", fg="green")))
     else:
-        click.secho('ROS Master is {}'.format(click.style('Down', fg='red')))
+        click.secho("ROS Master is {}".format(click.style("Down", fg="red")))
 
     headers = []
     if show_header:
-        headers = ('Name', 'Type', 'Status')
+        headers = ("Name", "Type", "Status")
 
     data = []
     for topic in status.Subscribed.metric:
-        data.append([topic.name, 'Metric', 'Subscribed'])
+        data.append([topic.name, "Metric", "Subscribed"])
 
     for topic in status.Subscribed.log:
-        data.append([topic.name, 'Log', 'Subscribed'])
+        data.append([topic.name, "Log", "Subscribed"])
 
     for topic in status.Unsubscribed:
-        data.append([topic, '', 'Un-Subscribed'])
+        data.append([topic, "", "Un-Subscribed"])
 
     tabulate_data(data, headers)

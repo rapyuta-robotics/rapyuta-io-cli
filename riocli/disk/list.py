@@ -22,13 +22,20 @@ from riocli.disk.util import display_disk_list
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
-              default=(), help='Filter the disk list by labels')
+@click.option(
+    "--label",
+    "-l",
+    "labels",
+    multiple=True,
+    type=click.STRING,
+    default=(),
+    help="Filter the disk list by labels",
+)
 def list_disks(labels: typing.List[str]) -> None:
     """List the disks in the current project.
 
@@ -41,7 +48,7 @@ def list_disks(labels: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        disks = client.list_disks(query={'labelSelector': labels})
+        disks = client.list_disks(query={"labelSelector": labels})
         display_disk_list(disks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

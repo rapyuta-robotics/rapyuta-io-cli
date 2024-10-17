@@ -16,8 +16,15 @@ from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
 
 from riocli.config import new_client
 from riocli.constants import ApplyResult
-from riocli.device.util import (DeviceNotFound, create_hwil_device, delete_hwil_device, execute_onboard_command,
-                                find_device_by_name, make_device_labels_from_hwil_device, wait_until_online)
+from riocli.device.util import (
+    DeviceNotFound,
+    create_hwil_device,
+    delete_hwil_device,
+    execute_onboard_command,
+    find_device_by_name,
+    make_device_labels_from_hwil_device,
+    wait_until_online,
+)
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 
@@ -37,10 +44,10 @@ class Device(Model):
         except DeviceNotFound:
             pass
 
-        virtual = self.spec.get('virtual', {})
+        virtual = self.spec.get("virtual", {})
 
         # If the device is not virtual, create it and return.
-        if not virtual.get('enabled', False):
+        if not virtual.get("enabled", False):
             if device is None:
                 client.create_device(self.to_v1())
                 return ApplyResult.CREATED
@@ -48,7 +55,7 @@ class Device(Model):
             return ApplyResult.EXISTS
 
         # Return if the device is already online or initializing.
-        if device and device['status'] in ('ONLINE', 'INITIALIZING'):
+        if device and device["status"] in ("ONLINE", "INITIALIZING"):
             return ApplyResult.EXISTS
 
         result = ApplyResult.CREATED if device is None else ApplyResult.UPDATED
@@ -61,17 +68,17 @@ class Device(Model):
         # Create the rapyuta.io device with labels if the
         # device does not exist. Else, update the labels.
         if device is None:
-            labels.update(self.metadata.get('labels', {}))
+            labels.update(self.metadata.get("labels", {}))
             self.metadata.labels = labels
             device = client.create_device(self.to_v1())
         else:
-            device_labels = device.get('labels', {})
+            device_labels = device.get("labels", {})
             # Convert list to dict for easy access.
-            device_labels = {l['key']: l for l in device_labels}
+            device_labels = {l["key"]: l for l in device_labels}
             # Add or update labels in the device.
             for k, v in labels.items():
                 if k in device_labels:
-                    device_labels[k]['value'] = v
+                    device_labels[k]["value"] = v
                     device.update_label(device_labels[k])
                     continue
 
@@ -82,7 +89,7 @@ class Device(Model):
         onboard_command = onboard_script.full_command()
         execute_onboard_command(hwil_response.id, onboard_command)
 
-        if virtual.get('wait', False):
+        if virtual.get("wait", False):
             wait_until_online(device)
 
         return result
@@ -95,7 +102,7 @@ class Device(Model):
         except DeviceNotFound:
             raise ResourceNotFound
 
-        if self.spec.get('virtual', {}).get('enabled', False):
+        if self.spec.get("virtual", {}).get("enabled", False):
             delete_hwil_device(device)
 
         device.delete()
@@ -105,21 +112,28 @@ class Device(Model):
         rosbag_mount_path = None
         ros_workspace = None
 
-        docker_enabled = self.spec.get('docker', False) and self.spec.docker.enabled
+        docker_enabled = self.spec.get("docker", False) and self.spec.docker.enabled
         if docker_enabled:
             rosbag_mount_path = self.spec.docker.rosbagMountPath
 
-        preinstalled_enabled = self.spec.get('preinstalled', False) and self.spec.preinstalled.enabled
-        if preinstalled_enabled and self.spec.preinstalled.get('catkinWorkspace'):
+        preinstalled_enabled = (
+            self.spec.get("preinstalled", False) and self.spec.preinstalled.enabled
+        )
+        if preinstalled_enabled and self.spec.preinstalled.get("catkinWorkspace"):
             ros_workspace = self.spec.preinstalled.catkinWorkspace
 
-        config_variables = self.spec.get('configVariables', {})
-        labels = self.metadata.get('labels', {})
+        config_variables = self.spec.get("configVariables", {})
+        labels = self.metadata.get("labels", {})
 
         return v1Device(
-            name=self.metadata.name, description=self.spec.get('description'),
-            runtime_docker=docker_enabled, runtime_preinstalled=preinstalled_enabled,
-            ros_distro=self.spec.rosDistro, python_version=python_version,
-            rosbag_mount_path=rosbag_mount_path, ros_workspace=ros_workspace,
-            config_variables=config_variables, labels=labels,
+            name=self.metadata.name,
+            description=self.spec.get("description"),
+            runtime_docker=docker_enabled,
+            runtime_preinstalled=preinstalled_enabled,
+            ros_distro=self.spec.rosDistro,
+            python_version=python_version,
+            rosbag_mount_path=rosbag_mount_path,
+            ros_workspace=ros_workspace,
+            config_variables=config_variables,
+            labels=labels,
         )

@@ -19,12 +19,12 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'status',
+    "status",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('deployment-name', type=str)
+@click.argument("deployment-name", type=str)
 def status(deployment_name: str) -> None:
     """Print the current status of a deployment.
 

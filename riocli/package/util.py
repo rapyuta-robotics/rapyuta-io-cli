@@ -23,57 +23,67 @@ from riocli.utils.selector import show_selection
 from riocli.v2client import Client
 
 
-def find_package(client: Client,
-                 package_name: str,
-                 package_version: str,
-                 ) -> Munch:
-
+def find_package(
+    client: Client,
+    package_name: str,
+    package_version: str,
+) -> Munch:
     package_obj = None
 
     if package_name.startswith("pkg-"):
         packages = client.list_packages(query={"guid": package_name})
         if not packages:
-            raise Exception('Package not found')
+            raise Exception("Package not found")
 
         obj = packages[0]
-        package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+        package_obj = client.get_package(
+            obj.metadata.name, query={"version": obj.metadata.version}
+        )
     elif package_name and package_version:
         package_obj = client.get_package(package_name, query={"version": package_version})
     elif package_name:
         packages = client.list_packages(query={"name": package_name})
 
         if len(packages) == 0:
-            click.secho("package not found", fg='red')
+            click.secho("package not found", fg="red")
             raise SystemExit(1)
 
         if len(packages) == 1:
             obj = packages[0]
-            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+            package_obj = client.get_package(
+                obj.metadata.name, query={"version": obj.metadata.version}
+            )
         else:
             options = {}
             package_objs = {}
             for pkg in packages:
-                options[pkg.metadata.guid] = '{} ({})'.format(pkg.metadata.name, pkg.metadata.version)
+                options[pkg.metadata.guid] = "{} ({})".format(
+                    pkg.metadata.name, pkg.metadata.version
+                )
                 package_objs[pkg.metadata.guid] = pkg
-            choice = show_selection(options, header='Following packages were found with the same name')
+            choice = show_selection(
+                options, header="Following packages were found with the same name"
+            )
             obj = package_objs[choice]
-            package_obj = client.get_package(obj.metadata.name, query={"version": obj.metadata.version})
+            package_obj = client.get_package(
+                obj.metadata.name, query={"version": obj.metadata.version}
+            )
 
     return package_obj
 
 
 def fetch_packages(
-        client: Client,
-        package_name_or_regex: str,
-        package_version: str,
-        include_all: bool,
+    client: Client,
+    package_name_or_regex: str,
+    package_version: str,
+    include_all: bool,
 ) -> List[Package]:
     packages = client.list_packages()
 
     result = []
     for pkg in packages:
         # We cannot delete public packages. Skip them instead.
-        if 'io-public' in pkg.metadata.guid:
+        if "io-public" in pkg.metadata.guid:
             continue
 
         if include_all:
@@ -90,6 +100,6 @@ def fetch_packages(
 
 
 def print_packages_for_confirmation(packages: List[Package]) -> None:
-    headers = ['Name', 'Version']
+    headers = ["Name", "Version"]
     data = [[p.metadata.name, p.metadata.version] for p in packages]
     tabulate_data(data, headers)

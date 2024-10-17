@@ -37,5 +37,5 @@ def getenv(default: str, env_var: str) -> str:
 
 
 FILTERS = {
-    'getenv': getenv,
+    "getenv": getenv,
 }

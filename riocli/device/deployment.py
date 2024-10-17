@@ -20,26 +20,28 @@ from riocli.deployment.list import display_deployment_list
 from riocli.device.util import name_to_guid
 
 DEFAULT_PHASES = [
-    'InProgress',
-    'Provisioning',
-    'Succeeded',
-    'FailedToStart',
+    "InProgress",
+    "Provisioning",
+    "Succeeded",
+    "FailedToStart",
 ]
 
 
 @click.command(
-    'deployments',
+    "deployments",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('device-name', type=str)
+@click.argument("device-name", type=str)
 @name_to_guid
 def list_deployments(device_name: str, device_guid: str) -> None:
     """Lists all the deployments running on the device."""
     try:
         client = new_v2_client()
-        deployments = client.list_deployments(query={'deviceName': device_name, 'phases': DEFAULT_PHASES})
+        deployments = client.list_deployments(
+            query={"deviceName": device_name, "phases": DEFAULT_PHASES}
+        )
         display_deployment_list(deployments, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

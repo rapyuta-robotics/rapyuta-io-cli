@@ -21,13 +21,13 @@ from riocli.utils import dump_all_yaml
 
 
 @click.command(
-    'info',
+    "info",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    help='Describe the available chart with versions',
+    help="Describe the available chart with versions",
 )
-@click.argument('chart', type=str)
+@click.argument("chart", type=str)
 def info_chart(chart: str) -> None:
     """Print a chart's details."""
     versions = find_chart(chart)

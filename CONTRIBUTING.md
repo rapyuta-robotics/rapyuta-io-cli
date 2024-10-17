@@ -36,3 +36,10 @@ New dependencies can be installed directly using `uv`. This modifies the
 ``` bash
 uv add <package-name>
 ```
+
+### Linting and formatting
+You can check and fix the code style by running the following commands.
+```bash
+uvx ruff check --fix
+uvx ruff format
+```

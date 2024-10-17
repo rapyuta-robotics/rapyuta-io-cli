@@ -28,24 +28,40 @@ from riocli.parameter.utils import filter_trees, display_trees
 
 
 @click.command(
-    'upload',
+    "upload",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--tree-names', type=click.STRING, multiple=True, default=[],
-              help='Directory names to upload')
-@click.option('--recreate', '--delete-existing', 'delete_existing',
-              is_flag=True,
-              help='Overwrite existing parameter tree')
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
-              default=False, help="Skip confirmation")
-@click.argument('path', type=click.Path(exists=True))
+@click.option(
+    "--tree-names",
+    type=click.STRING,
+    multiple=True,
+    default=[],
+    help="Directory names to upload",
+)
+@click.option(
+    "--recreate",
+    "--delete-existing",
+    "delete_existing",
+    is_flag=True,
+    help="Overwrite existing parameter tree",
+)
+@click.option(
+    "-f",
+    "--force",
+    "--silent",
+    "silent",
+    is_flag=True,
+    default=False,
+    help="Skip confirmation",
+)
+@click.argument("path", type=click.Path(exists=True))
 def upload_configurations(
-        path: str,
-        tree_names: typing.Tuple[str] = None,
-        delete_existing: bool = False,
-        silent: bool = False
+    path: str,
+    tree_names: typing.Tuple[str] = None,
+    delete_existing: bool = False,
+    silent: bool = False,
 ) -> None:
     """Upload directories as configuration parameter trees.
 
@@ -79,19 +95,22 @@ def upload_configurations(
     try:
         trees = filter_trees(path, tree_names)
     except Exception as e:
-        click.secho('{} {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
         raise SystemExit(1)
 
     if not trees:
-        click.secho('{} No configuration trees to upload.'.format(Symbols.INFO), fg=Colors.BRIGHT_CYAN)
+        click.secho(
+            "{} No configuration trees to upload.".format(Symbols.INFO),
+            fg=Colors.BRIGHT_CYAN,
+        )
         return
 
-    click.secho('Following configuration trees will be uploaded')
+    click.secho("Following configuration trees will be uploaded")
     click.secho()
     display_trees(path, trees)
 
     if not silent:
-        click.confirm('Do you want to proceed?', default=True, abort=True)
+        click.confirm("Do you want to proceed?", default=True, abort=True)
 
     client = new_client()
 
@@ -101,12 +120,12 @@ def upload_configurations(
                 rootdir=path,
                 tree_names=trees,
                 delete_existing_trees=delete_existing,
-                as_folder=True
+                as_folder=True,
             )
 
             spinner.text = click.style(
-                'Configuration parameters uploaded successfully',
-                fg=Colors.GREEN)
+                "Configuration parameters uploaded successfully", fg=Colors.GREEN
+            )
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
             spinner.text = click.style(e, fg=Colors.RED)

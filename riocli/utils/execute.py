@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-import json
 import typing
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
@@ -21,15 +20,16 @@ from rapyuta_io import Command
 
 from riocli.config import new_client
 
+
 def run_on_device(
-        device_guid: str = None,
-        command: typing.List[str] = None,
-        user: str = 'root',
-        shell: str = '/bin/bash',
-        background: bool = False,
-        deployment: str = None,
-        exec_name: str = None,
-        device_name: str = None
+    device_guid: str = None,
+    command: typing.List[str] = None,
+    user: str = "root",
+    shell: str = "/bin/bash",
+    background: bool = False,
+    deployment: str = None,
+    exec_name: str = None,
+    device_name: str = None,
 ) -> str:
     client = new_client()
 
@@ -41,27 +41,28 @@ def run_on_device(
         if devices:
             device = devices[0]
     else:
-        raise ValueError('Either `device_guid` or `device_name` must be specified')
+        raise ValueError("Either `device_guid` or `device_name` must be specified")
 
     if not device:
-        raise ValueError('Device not found or is not online')
+        raise ValueError("Device not found or is not online")
 
     if deployment and exec_name is None:
-        raise ValueError('The `exec_name` argument is required when `deployment` is specified')
-    
-    if not command:
-        raise ValueError('The `command` argument is required')
+        raise ValueError(
+            "The `exec_name` argument is required when `deployment` is specified"
+        )
 
-    cmd = ' '.join(command)
+    if not command:
+        raise ValueError("The `command` argument is required")
+
+    cmd = " ".join(command)
     if deployment:
         cmd = 'script -q -c "dectl exec {} -- {}"'.format(exec_name, cmd)
 
     return device.execute_command(Command(cmd, shell=shell, bg=background, runas=user))
 
+
 def apply_func(
-        f: typing.Callable,
-        items: typing.List[typing.Any],
-        workers: int = 5
+    f: typing.Callable, items: typing.List[typing.Any], workers: int = 5
 ) -> None:
     """Apply a function to a list of items in parallel
 
@@ -74,18 +75,15 @@ def apply_func(
     workers : int
         The number of workers to use
     """
-    with ThreadPoolExecutor(
-            max_workers=workers,
-            thread_name_prefix='exec'
-    ) as e:
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="exec") as e:
         e.map(f, items)
 
 
 def apply_func_with_result(
-        f: typing.Callable,
-        items: typing.List[typing.Any],
-        workers: int = 5,
-        key: typing.Callable = None
+    f: typing.Callable,
+    items: typing.List[typing.Any],
+    workers: int = 5,
+    key: typing.Callable = None,
 ) -> typing.List[typing.Any]:
     """Apply a function to a list of items in parallel and return the result
 

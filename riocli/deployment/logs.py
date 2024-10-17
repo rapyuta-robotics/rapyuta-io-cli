@@ -20,20 +20,22 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'logs',
+    "logs",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--replica', 'replica', default=0,
-              help='Replica identifier of the deployment')
-@click.option('--exec', 'exec_name', default=None,
-              help='Name of a executable in the component')
-@click.argument('deployment-name', type=str)
+@click.option(
+    "--replica", "replica", default=0, help="Replica identifier of the deployment"
+)
+@click.option(
+    "--exec", "exec_name", default=None, help="Name of a executable in the component"
+)
+@click.argument("deployment-name", type=str)
 def deployment_logs(
-        replica: int,
-        exec_name: str,
-        deployment_name: str,
+    replica: int,
+    exec_name: str,
+    deployment_name: str,
 ) -> None:
     """Stream live logs from cloud deployments.
 

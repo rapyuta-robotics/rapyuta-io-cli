@@ -24,13 +24,20 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
-              default=(), help='Filter the deployment list by labels')
+@click.option(
+    "--label",
+    "-l",
+    "labels",
+    multiple=True,
+    type=click.STRING,
+    default=(),
+    help="Filter the deployment list by labels",
+)
 def list_static_routes(labels: typing.List[str]) -> None:
     """List the static routes in the current project.
 
@@ -45,7 +52,7 @@ def list_static_routes(labels: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        routes = client.list_static_routes(query={'labelSelector': labels})
+        routes = client.list_static_routes(query={"labelSelector": labels})
         _display_routes_list(routes)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -53,16 +60,18 @@ def list_static_routes(labels: typing.List[str]) -> None:
 
 
 def _display_routes_list(routes: List[munch.Munch]) -> None:
-    headers = ['Route ID', 'Name', 'URL', 'Creator', 'CreatedAt']
+    headers = ["Route ID", "Name", "URL", "Creator", "CreatedAt"]
 
     data = []
     for route in routes:
-        data.append([
-            route.metadata.guid,
-            route.metadata.name,
-            route.spec.url,
-            route.metadata.creatorGUID,
-            route.metadata.createdAt,
-        ])
+        data.append(
+            [
+                route.metadata.guid,
+                route.metadata.name,
+                route.spec.url,
+                route.metadata.creatorGUID,
+                route.metadata.createdAt,
+            ]
+        )
 
     tabulate_data(data, headers)

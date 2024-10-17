@@ -22,17 +22,22 @@ from riocli.v2client.client import Client
 
 
 def fetch_secrets(
-        client: Client,
-        secret_name_or_regex: str,
-        include_all: bool,
+    client: Client,
+    secret_name_or_regex: str,
+    include_all: bool,
 ) -> List[Munch]:
     secrets = client.list_secrets()
     result = []
     for secret in secrets:
-        if (include_all or secret_name_or_regex == secret.metadata.name or
-                secret_name_or_regex == secret.metadata.guid or
-                (secret_name_or_regex not in secret.metadata.name and
-                 re.search(r'^{}$'.format(secret_name_or_regex), secret.metadata.name))):
+        if (
+            include_all
+            or secret_name_or_regex == secret.metadata.name
+            or secret_name_or_regex == secret.metadata.guid
+            or (
+                secret_name_or_regex not in secret.metadata.name
+                and re.search(r"^{}$".format(secret_name_or_regex), secret.metadata.name)
+            )
+        ):
             result.append(secret)
 
     return result
@@ -41,10 +46,12 @@ def fetch_secrets(
 def print_secrets_for_confirmation(secrets: List[Munch]):
     data = []
     for secret in secrets:
-        data.append([
-            secret.metadata.name,
-            secret.metadata.creatorGUID,
-            secret.metadata.createdAt,
-        ])
+        data.append(
+            [
+                secret.metadata.name,
+                secret.metadata.creatorGUID,
+                secret.metadata.createdAt,
+            ]
+        )
 
-    tabulate_data(data, ['Name', 'Creator', 'CreatedAt'])
+    tabulate_data(data, ["Name", "Creator", "CreatedAt"])

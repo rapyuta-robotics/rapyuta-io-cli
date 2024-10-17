@@ -20,7 +20,7 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -30,7 +30,7 @@ def list_configuration_trees() -> None:
     try:
         data = list_trees()
         trees = [[tree] for tree in data]
-        tabulate_data(trees, headers=['Tree Name'])
+        tabulate_data(trees, headers=["Tree Name"])
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

@@ -26,7 +26,6 @@ PROJECT_READY_TIMEOUT = 150
 
 
 class Project(Model):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
@@ -37,15 +36,20 @@ class Project(Model):
         project = unmunchify(self)
 
         # set organizationGUID irrespective of it being present in the manifest
-        project['metadata']['organizationGUID'] = Configuration().organization_guid
+        project["metadata"]["organizationGUID"] = Configuration().organization_guid
 
         try:
-            r = client.create_project(project)
-            wait(self.is_ready, timeout_seconds=PROJECT_READY_TIMEOUT,
-                 sleep_seconds=(1, 30, 2))
+            client.create_project(project)
+            wait(
+                self.is_ready,
+                timeout_seconds=PROJECT_READY_TIMEOUT,
+                sleep_seconds=(1, 30, 2),
+            )
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            guid = find_project_guid(client, self.metadata.name, Configuration().organization_guid)
+            guid = find_project_guid(
+                client, self.metadata.name, Configuration().organization_guid
+            )
             client.update_project(guid, project)
             return ApplyResult.UPDATED
         except Exception as e:
@@ -55,7 +59,9 @@ class Project(Model):
         client = new_v2_client()
 
         try:
-            guid = find_project_guid(client, self.metadata.name, Configuration().data['organization_id'])
+            guid = find_project_guid(
+                client, self.metadata.name, Configuration().data["organization_id"]
+            )
             client.delete_project(guid)
         except (HttpNotFoundError, ProjectNotFound):
             raise ResourceNotFound
@@ -63,4 +69,4 @@ class Project(Model):
     def is_ready(self) -> bool:
         client = new_v2_client()
         projects = client.list_projects(query={"name": self.metadata.name})
-        return projects[0].status.status == 'Success'
+        return projects[0].status.status == "Success"

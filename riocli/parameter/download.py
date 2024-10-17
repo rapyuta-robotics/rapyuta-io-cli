@@ -32,23 +32,32 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'download',
+    "download",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--tree-names', type=click.STRING, multiple=True, default=None,
-              help='Tree names to fetch')
-@click.option('--overwrite', '--delete-existing', 'delete_existing',
-              is_flag=True,
-              help='Overwrite existing parameter tree')
-@click.argument('path', type=click.Path(exists=True), required=False)
-@with_spinner(text='Download configurations...', timer=True)
+@click.option(
+    "--tree-names",
+    type=click.STRING,
+    multiple=True,
+    default=None,
+    help="Tree names to fetch",
+)
+@click.option(
+    "--overwrite",
+    "--delete-existing",
+    "delete_existing",
+    is_flag=True,
+    help="Overwrite existing parameter tree",
+)
+@click.argument("path", type=click.Path(exists=True), required=False)
+@with_spinner(text="Download configurations...", timer=True)
 def download_configurations(
-        path: str,
-        tree_names: typing.Tuple[str] = None,
-        delete_existing: bool = False,
-        spinner=None
+    path: str,
+    tree_names: typing.Tuple[str] = None,
+    delete_existing: bool = False,
+    spinner=None,
 ) -> None:
     """Download configuration parameter trees from rapyuta.io.
 
@@ -65,23 +74,26 @@ def download_configurations(
         path = mkdtemp()
 
     if not tree_names:
-        msg = click.style('{} No tree names specified. Downloading all the trees...'.format(Symbols.INFO),
-                          fg=Colors.BRIGHT_CYAN)
+        msg = click.style(
+            "{} No tree names specified. Downloading all the trees...".format(
+                Symbols.INFO
+            ),
+            fg=Colors.BRIGHT_CYAN,
+        )
         spinner.write(msg)
 
-    spinner.write('Downloading at {}'.format(abspath(path)))
+    spinner.write("Downloading at {}".format(abspath(path)))
 
     try:
         client = new_client()
 
         client.download_configurations(
-            path,
-            tree_names=list(tree_names),
-            delete_existing_trees=delete_existing
+            path, tree_names=list(tree_names), delete_existing_trees=delete_existing
         )
 
-        spinner.text = click.style("Configurations downloaded successfully.",
-                                   fg=Colors.GREEN)
+        spinner.text = click.style(
+            "Configurations downloaded successfully.", fg=Colors.GREEN
+        )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(e, fg=Colors.RED)

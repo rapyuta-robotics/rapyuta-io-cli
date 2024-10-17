@@ -21,18 +21,22 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=True),
-              default='yaml')
-@click.argument('static-route', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    type=click.Choice(["json", "yaml"], case_sensitive=True),
+    default="yaml",
+)
+@click.argument("static-route", type=str)
 def inspect_static_route(
-        format_type: str,
-        static_route: str,
+    format_type: str,
+    static_route: str,
 ) -> None:
     """Print the details of a static route.
 
@@ -46,5 +50,3 @@ def inspect_static_route(
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
-
-

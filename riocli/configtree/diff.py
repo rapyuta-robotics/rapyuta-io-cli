@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 from tempfile import NamedTemporaryFile
+
 import click
 from click_help_colors import HelpColorsCommand
 
@@ -20,14 +21,15 @@ from riocli.config import get_config_from_context
 from riocli.configtree.util import fetch_ref_keys, unflatten_keys
 from riocli.constants.colors import Colors
 
+
 @click.command(
-    'diff',
+    "diff",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('ref_1', type=str)
-@click.argument('ref_2', type=str)
+@click.argument("ref_1", type=str)
+@click.argument("ref_2", type=str)
 @click.pass_context
 def diff_revisions(ctx: click.Context, ref_1: str, ref_2: str):
     """
@@ -35,7 +37,7 @@ def diff_revisions(ctx: click.Context, ref_1: str, ref_2: str):
 
     The ref is a slash ('/') separated string.
 
-    * The first part can be 'org' or 'proj' defining the scope of the reference. 
+    * The first part can be 'org' or 'proj' defining the scope of the reference.
 
     * The second part defines the name of the Tree.
 
@@ -43,7 +45,7 @@ def diff_revisions(ctx: click.Context, ref_1: str, ref_2: str):
 
     Examples:
 
-    * org/tree-name 
+    * org/tree-name
 
     * org/tree-name/rev-id
 
@@ -70,8 +72,9 @@ def display_diff(ctx: click.Context, keys_1: dict, keys_2: dict) -> None:
     keys_1 = unflatten_keys(keys_1)
     keys_2 = unflatten_keys(keys_2)
 
-    with NamedTemporaryFile(mode='w+b') as file_1, NamedTemporaryFile(mode='w+b') as file_2:
+    with NamedTemporaryFile(mode="w+b") as file_1, NamedTemporaryFile(
+        mode="w+b"
+    ) as file_2:
         keys_1.to_json(filepath=file_1.name, indent=4)
         keys_2.to_json(filepath=file_2.name, indent=4)
-        os.system('{} {} {}'.format(cfg.diff_tool, file_1.name, file_2.name))
-
+        os.system("{} {} {}".format(cfg.diff_tool, file_1.name, file_2.name))

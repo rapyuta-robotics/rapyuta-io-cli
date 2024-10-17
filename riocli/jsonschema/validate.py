@@ -32,12 +32,16 @@ def extend_with_default(validator_class):
                     i.setdefault(p, sub_schema["default"])
 
         for error in validate_properties(
-                validator, properties, instance, schema,
+            validator,
+            properties,
+            instance,
+            schema,
         ):
             yield error
 
     return validators.extend(
-        validator_class, {"properties": set_defaults},
+        validator_class,
+        {"properties": set_defaults},
     )
 
 
@@ -49,6 +53,6 @@ def load_schema(resource: str) -> DefaultValidator:
     """
     Reads JSON schema yaml and returns a validator.
     """
-    schema_dir = Path(__file__).parent.joinpath('schemas')
+    schema_dir = Path(__file__).parent.joinpath("schemas")
     with open(schema_dir.joinpath(resource + "-schema.yaml")) as f:
         return DefaultValidator(yaml.safe_load(f))
