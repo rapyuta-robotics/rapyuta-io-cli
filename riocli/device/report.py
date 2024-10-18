@@ -56,9 +56,7 @@ def report_device(
     spinner=None,
 ) -> None:
     """
-    This function facilitates the reporting of a device by uploading its debug logs.
-    It also provides an option to share the logs with Rapyuta support by generating
-    a public URL with a specified expiry time.
+    Uploads device debug logs and optionally generates a shareable URL with an expiry time.
 
     Usage Examples:
 
