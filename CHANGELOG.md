@@ -4,6 +4,7 @@
 ### Bug Fixes
 
 * pins rapyuta-io version to v1.17.1 ([2cb936c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2cb936ce2be50f772fb9b304356b7b32446a21ae))
+* **device:** add device report feature to cli.
 
 ## [9.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.2...v9.0.3) (2024-09-26)
 

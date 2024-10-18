@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import datetime
 import functools
 import json
 import re
 import time
 import typing
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import click
@@ -102,7 +102,7 @@ def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=
     try:
         client = new_client()
         device = client.get_device(device_id=device_guid)
-        expiry_time = datetime.now() + datetime.timedelta(days=expiry)
+        expiry_time = datetime.now() + timedelta(days=expiry)
 
         # Create the shared URL
         public_url = device.create_shared_url(
