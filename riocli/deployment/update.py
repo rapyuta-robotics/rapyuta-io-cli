@@ -31,79 +31,103 @@ from riocli.v2client import Client
 
 
 @click.command(
-    'update',
+    "update",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
     deprecated=True,
 )
-@click.option('--force', '-f', '--silent', is_flag=True, default=False,
-              help='Skip confirmation')
-@click.option('-a', '--all', 'update_all', is_flag=True, default=False,
-              help='Deletes all deployments in the project')
-@click.option('--workers', '-w',
-              help="number of parallel workers while running update deployment "
-                   "command. defaults to 10.", type=int, default=10)
-@click.argument('deployment-name-or-regex', type=str, default="")
+@click.option(
+    "--force", "-f", "--silent", is_flag=True, default=False, help="Skip confirmation"
+)
+@click.option(
+    "-a",
+    "--all",
+    "update_all",
+    is_flag=True,
+    default=False,
+    help="Deletes all deployments in the project",
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="number of parallel workers while running update deployment "
+    "command. defaults to 10.",
+    type=int,
+    default=10,
+)
+@click.argument("deployment-name-or-regex", type=str, default="")
 @with_spinner(text="Updating...")
 def update_deployment(
-        force: bool,
-        workers: int,
-        deployment_name_or_regex: str,
-        update_all: bool = False,
-        spinner: Yaspin = None,
+    force: bool,
+    workers: int,
+    deployment_name_or_regex: str,
+    update_all: bool = False,
+    spinner: Yaspin = None,
 ) -> None:
-    """Updates one or more deployments"""
+    """Use the restart command instead"""
     _update(force, workers, deployment_name_or_regex, update_all, spinner)
 
 
 @click.command(
-    'restart',
+    "restart",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--force', '-f', '--silent', is_flag=True, default=False,
-              help='Skip confirmation')
-@click.option('-a', '--all', 'update_all', is_flag=True, default=False,
-              help='Deletes all deployments in the project')
-@click.option('--workers', '-w',
-              help="number of parallel workers while running update deployment "
-                   "command. defaults to 10.", type=int, default=10)
-@click.argument('deployment-name-or-regex', type=str, default="")
+@click.option(
+    "--force", "-f", "--silent", is_flag=True, default=False, help="Skip confirmation"
+)
+@click.option(
+    "-a",
+    "--all",
+    "update_all",
+    is_flag=True,
+    default=False,
+    help="Deletes all deployments in the project",
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="number of parallel workers while running update deployment "
+    "command. defaults to 10.",
+    type=int,
+    default=10,
+)
+@click.argument("deployment-name-or-regex", type=str, default="")
 @with_spinner(text="Updating...")
 def restart_deployment(
-        force: bool,
-        workers: int,
-        deployment_name_or_regex: str,
-        update_all: bool = False,
-        spinner: Yaspin = None,
+    force: bool,
+    workers: int,
+    deployment_name_or_regex: str,
+    update_all: bool = False,
+    spinner: Yaspin = None,
 ) -> None:
     """Restarts one or more deployments by name or regex.
 
-    Examples:
+    Usage Examples:
 
     Restart a specific deployment
 
-    >> rio deployment restart amr01
+    $ rio deployment restart amr01
 
     Restart all deployments in the project
 
-    >> rio deployment restart --all
+    $ rio deployment restart --all
 
     Restart deployments matching a regex.
 
-    >> rio deployment restart amr.*
+    $ rio deployment restart amr.*
     """
     _update(force, workers, deployment_name_or_regex, update_all, spinner)
 
 
 def _update(
-        force: bool,
-        workers: int,
-        deployment_name_or_regex: str,
-        update_all: bool = False,
-        spinner: Yaspin = None,
+    force: bool,
+    workers: int,
+    deployment_name_or_regex: str,
+    update_all: bool = False,
+    spinner: Yaspin = None,
 ) -> None:
     client = new_v2_client()
     if not (deployment_name_or_regex or update_all):
@@ -112,11 +136,11 @@ def _update(
         return
 
     try:
-        deployments = fetch_deployments(
-            client, deployment_name_or_regex, update_all)
+        deployments = fetch_deployments(client, deployment_name_or_regex, update_all)
     except Exception as e:
         spinner.text = click.style(
-            'Failed to update deployment(s): {}'.format(e), Colors.RED)
+            "Failed to update deployment(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -128,18 +152,17 @@ def _update(
     with spinner.hidden():
         print_deployments_for_confirmation(deployments)
 
-    spinner.write('')
+    spinner.write("")
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to update above deployment(s)?', abort=True)
-        spinner.write('')
+            click.confirm("Do you want to update above deployment(s)?", abort=True)
+        spinner.write("")
 
     try:
         f = functools.partial(_apply_update, client)
         result = apply_func_with_result(
-            f=f, items=deployments,
-            workers=workers, key=lambda x: x[0]
+            f=f, items=deployments, workers=workers, key=lambda x: x[0]
         )
 
         data, fg, statuses = [], Colors.GREEN, []
@@ -147,36 +170,35 @@ def _update(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append([
-                click.style(name, fg),
-                click.style('{}  {}'.format(icon, msg), fg)
-            ])
+            data.append(
+                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
+            )
 
         with spinner.hidden():
-            tabulate_data(data, headers=['Name', 'Status'])
+            tabulate_data(data, headers=["Name", "Status"])
 
         icon = Symbols.SUCCESS if all(statuses) else Symbols.WARNING
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.write('')
-        spinner.text = click.style(
-            'Deployment(s) updated {}.'.format(text), fg)
+        spinner.write("")
+        spinner.text = click.style("Deployment(s) updated {}.".format(text), fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
         spinner.text = click.style(
-            'Failed to update deployment(s): {}'.format(e), Colors.RED)
+            "Failed to update deployment(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
 def _apply_update(
-        client: Client,
-        result: Queue,
-        deployment: Deployment,
+    client: Client,
+    result: Queue,
+    deployment: Deployment,
 ) -> None:
     try:
         client.update_deployment(deployment.metadata.name, deployment)
-        result.put((deployment.metadata.name, True, 'Restarted'))
+        result.put((deployment.metadata.name, True, "Restarted"))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))

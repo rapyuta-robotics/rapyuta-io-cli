@@ -21,11 +21,11 @@ from riocli.constants import Colors
 
 
 def show_selection(
-        ranger: Union[list, dict],
-        header: str = '',
-        prompt: str = 'Select the option',
-        show_keys: bool = True,
-        highlight_item: str = None,
+    ranger: Union[list, dict],
+    header: str = "",
+    prompt: str = "Select the option",
+    show_keys: bool = True,
+    highlight_item: str = None,
 ) -> Any:
     """
     Show a selection prompt to the user.
@@ -46,15 +46,15 @@ def show_selection(
 
 
 def _show_selection_list(
-        ranger: list,
-        header: str,
-        prompt: str,
-        highlight_item: Any = None,
+    ranger: list,
+    header: str,
+    prompt: str,
+    highlight_item: Any = None,
 ) -> Any:
     click.secho(header, fg=Colors.YELLOW)
 
     for idx, opt in enumerate(ranger):
-        fmt = '{}) {}'.format(idx + 1, opt)
+        fmt = "{}) {}".format(idx + 1, opt)
         if highlight_item is not None and opt == highlight_item:
             fmt = click.style(fmt, bold=True, italic=True)
 
@@ -67,19 +67,19 @@ def _show_selection_list(
 
 
 def _show_selection_dict(
-        ranger: dict,
-        header: str,
-        prompt: str,
-        show_keys: bool = True,
-        highlight_item: Any = None,
+    ranger: dict,
+    header: str,
+    prompt: str,
+    show_keys: bool = True,
+    highlight_item: Any = None,
 ) -> Any:
     click.secho(header, fg=Colors.YELLOW)
 
     for idx, key in enumerate(ranger):
         if show_keys:
-            fmt = '{}) {} - {}'.format(idx + 1, key, ranger[key])
+            fmt = "{}) {} - {}".format(idx + 1, key, ranger[key])
         else:
-            fmt = '{}) {}'.format(idx + 1, ranger[key])
+            fmt = "{}) {}".format(idx + 1, ranger[key])
 
         if highlight_item is not None and key == highlight_item:
             fmt = click.style(fmt, bold=True, italic=True)

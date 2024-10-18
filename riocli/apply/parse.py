@@ -15,13 +15,18 @@ import json
 import queue
 import threading
 import typing
-from graphlib import TopologicalSorter
 
 import click
 import yaml
+from graphlib import TopologicalSorter
 from munch import munchify
 
-from riocli.apply.util import (get_model, init_jinja_environment, message_with_prompt, print_resolved_objects)
+from riocli.apply.util import (
+    get_model,
+    init_jinja_environment,
+    message_with_prompt,
+    print_resolved_objects,
+)
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols, ApplyResult
 from riocli.exceptions import ResourceNotFound
@@ -32,30 +37,18 @@ from riocli.utils.spinner import with_spinner
 
 class Applier(object):
     DEFAULT_MAX_WORKERS = 6
-    DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
+    DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
-    def __init__(self, files: typing.List, values, secrets):
+    def __init__(self, files: typing.List, values: typing.List, secrets: typing.List):
         self.files = {}
-        self.values = {}
-        self.secrets = {}
         self.objects = {}
         self.resolved_objects = {}
         self.input_file_paths = files
         self.config = Configuration()
         self.graph = TopologicalSorter()
         self.environment = init_jinja_environment()
-        self.diagram = Graphviz(direction='LR', format='svg')
-
-        if values:
-            self.values = self._load_file_content(
-                values, is_value=True, is_secret=False)[0]
-
-        self.values = self._inject_rio_namespace(self.values)
-
-        if secrets:
-            self.secrets = self._load_file_content(
-                secrets, is_value=True, is_secret=True)[0]
-
+        self.diagram = Graphviz(direction="LR", format="svg")
+        self._process_values_and_secrets(values, secrets)
         self._process_file_list(files)
 
     def print_resolved_manifests(self):
@@ -68,23 +61,24 @@ class Applier(object):
 
         dump_all_yaml(manifests)
 
-    @with_spinner(text='Applying...', timer=True)
+    @with_spinner(text="Applying...", timer=True)
     def apply(self, *args, **kwargs):
         """Apply the resources defined in the manifest files"""
-        spinner = kwargs.get('spinner')
-        kwargs['workers'] = int(kwargs.get('workers')
-                                or self.DEFAULT_MAX_WORKERS)
+        spinner = kwargs.get("spinner")
+        kwargs["workers"] = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
 
         apply_func = self.apply_async
-        if kwargs['workers'] == 1:
+        if kwargs["workers"] == 1:
             apply_func = self.apply_sync
 
         try:
             apply_func(*args, **kwargs)
-            spinner.text = click.style('Apply successful.', fg=Colors.BRIGHT_GREEN)
+            spinner.text = click.style("Apply successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = click.style('Apply failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
+            spinner.text = click.style(
+                "Apply failed. Error: {}".format(e), fg=Colors.BRIGHT_RED
+            )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -92,8 +86,10 @@ class Applier(object):
         self.graph.prepare()
         while self.graph.is_active():
             for obj in self.graph.get_ready():
-                if (obj in self.resolved_objects and
-                        'manifest' in self.resolved_objects[obj]):
+                if (
+                    obj in self.resolved_objects
+                    and "manifest" in self.resolved_objects[obj]
+                ):
                     self._apply_manifest(obj, *args, **kwargs)
                 self.graph.done(obj)
 
@@ -102,10 +98,7 @@ class Applier(object):
         done_queue = queue.Queue()
 
         self._start_apply_workers(
-            self._apply_manifest,
-            task_queue,
-            done_queue,
-            *args, **kwargs
+            self._apply_manifest, task_queue, done_queue, *args, **kwargs
         )
 
         self.graph.prepare()
@@ -122,23 +115,24 @@ class Applier(object):
         # Block until the task_queue is empty.
         task_queue.join()
 
-    @with_spinner(text='Deleting...', timer=True)
+    @with_spinner(text="Deleting...", timer=True)
     def delete(self, *args, **kwargs):
         """Delete resources defined in manifests."""
-        spinner = kwargs.get('spinner')
-        kwargs['workers'] = int(kwargs.get('workers')
-                                or self.DEFAULT_MAX_WORKERS)
+        spinner = kwargs.get("spinner")
+        kwargs["workers"] = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
 
         delete_func = self.delete_async
-        if kwargs['workers'] == 1:
+        if kwargs["workers"] == 1:
             delete_func = self.delete_sync
 
         try:
             delete_func(*args, **kwargs)
-            spinner.text = click.style('Delete successful.', fg=Colors.BRIGHT_GREEN)
+            spinner.text = click.style("Delete successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = click.style('Delete failed. Error: {}'.format(e), fg=Colors.BRIGHT_RED)
+            spinner.text = click.style(
+                "Delete failed. Error: {}".format(e), fg=Colors.BRIGHT_RED
+            )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -146,7 +140,7 @@ class Applier(object):
         delete_order = list(self.graph.static_order())
         delete_order.reverse()
         for o in delete_order:
-            if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
+            if o in self.resolved_objects and "manifest" in self.resolved_objects[o]:
                 self._delete_manifest(o, *args, **kwargs)
 
     def delete_async(self, *args, **kwargs) -> None:
@@ -154,10 +148,7 @@ class Applier(object):
         done_queue = queue.Queue()
 
         self._start_apply_workers(
-            self._delete_manifest,
-            task_queue,
-            done_queue,
-            *args, **kwargs
+            self._delete_manifest, task_queue, done_queue, *args, **kwargs
         )
 
         for nodes in self._get_async_delete_order():
@@ -171,11 +162,12 @@ class Applier(object):
             task_queue.join()
 
     def _start_apply_workers(
-            self,
-            func: typing.Callable,
-            tasks: queue.Queue,
-            done: queue.Queue,
-            *args, **kwargs,
+        self,
+        func: typing.Callable,
+        tasks: queue.Queue,
+        done: queue.Queue,
+        *args,
+        **kwargs,
     ) -> None:
         """A helper method to start workers for apply/delete operations
 
@@ -185,10 +177,11 @@ class Applier(object):
         The `tasks` queue is used to pass objects to the workers for processing.
         The `done` queue is used to pass the processed objects back to the main.
         """
+
         def _worker():
             while True:
                 o = tasks.get()
-                if o in self.resolved_objects and 'manifest' in self.resolved_objects[o]:
+                if o in self.resolved_objects and "manifest" in self.resolved_objects[o]:
                     try:
                         func(o, *args, **kwargs)
                     except Exception as ex:
@@ -204,13 +197,9 @@ class Applier(object):
         # in the done_queue. The main thread will wait for the task_queue
         # to be empty before exiting. The daemon threads will die with the
         # main process.
-        n = int(kwargs.get('workers') or self.DEFAULT_MAX_WORKERS)
+        n = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
         for i in range(n):
-            threading.Thread(
-                target=_worker,
-                daemon=True,
-                name=f'worker-{i}'
-            ).start()
+            threading.Thread(target=_worker, daemon=True, name=f"worker-{i}").start()
 
     def _get_async_delete_order(self):
         """Returns the delete order for async delete operation
@@ -245,7 +234,7 @@ class Applier(object):
 
     def _apply_manifest(self, obj_key: str, *args, **kwargs) -> None:
         """Instantiate and apply the object manifest"""
-        spinner = kwargs.get('spinner')
+        spinner = kwargs.get("spinner")
         dryrun = kwargs.get("dryrun", False)
 
         obj = self.objects[obj_key]
@@ -254,14 +243,17 @@ class Applier(object):
         try:
             kls.validate(obj)
         except Exception as ex:
-            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+            raise Exception(f"invalid manifest {obj_key}: {str(ex)}")
 
         ist = kls(munchify(obj))
 
         obj_key = click.style(obj_key, bold=True)
 
-        message_with_prompt("{} Applying {}...".format(
-            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+        message_with_prompt(
+            "{} Applying {}...".format(Symbols.WAITING, obj_key),
+            fg=Colors.CYAN,
+            spinner=spinner,
+        )
 
         try:
             result = ApplyResult.CREATED
@@ -269,21 +261,31 @@ class Applier(object):
                 result = ist.apply(*args, **kwargs)
 
             if result == ApplyResult.EXISTS:
-                message_with_prompt("{} {} already exists".format(
-                    Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+                message_with_prompt(
+                    "{} {} already exists".format(Symbols.INFO, obj_key),
+                    fg=Colors.WHITE,
+                    spinner=spinner,
+                )
                 return
 
-            message_with_prompt("{} {} {}".format(
-                Symbols.SUCCESS, result, obj_key),
-                fg=Colors.GREEN, spinner=spinner)
+            message_with_prompt(
+                "{} {} {}".format(Symbols.SUCCESS, result, obj_key),
+                fg=Colors.GREEN,
+                spinner=spinner,
+            )
         except Exception as ex:
-            message_with_prompt("{} Failed to apply {}. Error: {}".format(
-                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
-            raise Exception(f'{obj_key}: {str(ex)}')
+            message_with_prompt(
+                "{} Failed to apply {}. Error: {}".format(
+                    Symbols.ERROR, obj_key, str(ex)
+                ),
+                fg=Colors.RED,
+                spinner=spinner,
+            )
+            raise Exception(f"{obj_key}: {str(ex)}")
 
     def _delete_manifest(self, obj_key: str, *args, **kwargs) -> None:
         """Instantiate and delete the object manifest"""
-        spinner = kwargs.get('spinner')
+        spinner = kwargs.get("spinner")
         dryrun = kwargs.get("dryrun", False)
 
         obj = self.objects[obj_key]
@@ -292,39 +294,58 @@ class Applier(object):
         try:
             kls.validate(obj)
         except Exception as ex:
-            raise Exception(f'invalid manifest {obj_key}: {str(ex)}')
+            raise Exception(f"invalid manifest {obj_key}: {str(ex)}")
 
         ist = kls(munchify(obj))
 
         obj_key = click.style(obj_key, bold=True)
 
-        message_with_prompt("{} Deleting {}...".format(
-            Symbols.WAITING, obj_key), fg=Colors.CYAN, spinner=spinner)
+        message_with_prompt(
+            "{} Deleting {}...".format(Symbols.WAITING, obj_key),
+            fg=Colors.CYAN,
+            spinner=spinner,
+        )
 
         # If a resource has a label with DELETE_POLICY_LABEL set
         # to 'retain', it should not be deleted.
-        labels = obj.get('metadata', {}).get('labels', {})
-        can_delete = labels.get(self.DELETE_POLICY_LABEL) != 'retain'
+        labels = obj.get("metadata", {}).get("labels", {})
+        can_delete = labels.get(self.DELETE_POLICY_LABEL) != "retain"
 
         if not can_delete:
-            message_with_prompt("{} {} cannot be deleted since deletion policy is set to 'retain'".format(
-                Symbols.INFO, obj_key), fg=Colors.WHITE, spinner=spinner)
+            message_with_prompt(
+                "{} {} cannot be deleted since deletion policy is set to 'retain'".format(
+                    Symbols.INFO, obj_key
+                ),
+                fg=Colors.WHITE,
+                spinner=spinner,
+            )
             return
 
         try:
             if not dryrun and can_delete:
                 ist.delete(*args, **kwargs)
 
-            message_with_prompt("{} Deleted {}".format(
-                Symbols.SUCCESS, obj_key), fg=Colors.GREEN, spinner=spinner)
+            message_with_prompt(
+                "{} Deleted {}".format(Symbols.SUCCESS, obj_key),
+                fg=Colors.GREEN,
+                spinner=spinner,
+            )
         except ResourceNotFound:
-            message_with_prompt("{} {} not found".format(
-                Symbols.WARNING, obj_key), fg=Colors.YELLOW, spinner=spinner)
+            message_with_prompt(
+                "{} {} not found".format(Symbols.WARNING, obj_key),
+                fg=Colors.YELLOW,
+                spinner=spinner,
+            )
             return
         except Exception as ex:
-            message_with_prompt("{} Failed to delete {}. Error: {}".format(
-                Symbols.ERROR, obj_key, str(ex)), fg=Colors.RED, spinner=spinner)
-            raise Exception(f'{obj_key}: {str(ex)}')
+            message_with_prompt(
+                "{} Failed to delete {}. Error: {}".format(
+                    Symbols.ERROR, obj_key, str(ex)
+                ),
+                fg=Colors.RED,
+                spinner=spinner,
+            )
+            raise Exception(f"{obj_key}: {str(ex)}")
 
     def _process_file_list(self, files):
         for f in files:
@@ -339,7 +360,7 @@ class Applier(object):
         try:
             key = self._get_object_key(data)
             self.objects[key] = data
-            self.resolved_objects[key] = {'src': 'local', 'manifest': data}
+            self.resolved_objects[key] = {"src": "local", "manifest": data}
         except KeyError:
             click.secho("Key error {}".format(data), fg=Colors.RED)
             return
@@ -351,51 +372,51 @@ class Applier(object):
         """
         try:
             if is_secret:
-                data = run_bash(f'sops -d {file_name}')
+                data = run_bash(f"sops -d {file_name}")
             else:
                 with open(file_name) as f:
                     data = f.read()
         except Exception as e:
-            raise Exception(f'Error loading file {file_name}: {str(e)}')
+            raise Exception(f"Error loading file {file_name}: {str(e)}")
 
         # When the file is a template, render it using
         # values or secrets.
         if not (is_value or is_secret):
-            if self.environment or file_name.endswith('.j2'):
+            if self.environment or file_name.endswith(".j2"):
                 try:
                     template = self.environment.from_string(data)
                 except Exception as e:
-                    raise Exception(f'Error loading template {file_name}: {str(e)}')
+                    raise Exception(f"Error loading template {file_name}: {str(e)}")
 
                 template_args = self.values
 
                 if self.secrets:
-                    template_args['secrets'] = self.secrets
+                    template_args["secrets"] = self.secrets
 
                 try:
                     data = template.render(**template_args)
                 except Exception as ex:
-                    raise Exception(f'Failed to parse {file_name}: {str(ex)}')
+                    raise Exception(f"Failed to parse {file_name}: {str(ex)}")
 
-                file_name = file_name.rstrip('.j2')
+                file_name = file_name.rstrip(".j2")
 
         loaded_data = []
-        if file_name.endswith('json'):
+        if file_name.endswith("json"):
             # FIXME: Handle for JSON List.
             try:
                 loaded = json.loads(data)
                 loaded_data.append(loaded)
             except json.JSONDecodeError as ex:
-                raise Exception(f'Failed to parse {file_name}: {str(ex)}')
-        elif file_name.endswith('yaml') or file_name.endswith('yml'):
+                raise Exception(f"Failed to parse {file_name}: {str(ex)}")
+        elif file_name.endswith("yaml") or file_name.endswith("yml"):
             try:
                 loaded = yaml.safe_load_all(data)
                 loaded_data = list(loaded)
             except yaml.YAMLError as e:
-                raise Exception(f'Failed to parse {file_name}: {str(e)}')
+                raise Exception(f"Failed to parse {file_name}: {str(e)}")
 
         if not loaded_data:
-            click.secho('{} file is empty'.format(file_name))
+            click.secho("{} file is empty".format(file_name))
 
         return loaded_data
 
@@ -415,11 +436,11 @@ class Applier(object):
 
         for key, value in model.items():
             if key == "depends":
-                if 'kind' in value and value.get('kind'):
+                if "kind" in value and value.get("kind"):
                     self._resolve_dependency(dependent_key, value)
                 if isinstance(value, list):
                     for each in value:
-                        if isinstance(each, dict) and each.get('kind'):
+                        if isinstance(each, dict) and each.get("kind"):
                             self._resolve_dependency(dependent_key, each)
 
                 continue
@@ -434,36 +455,58 @@ class Applier(object):
                         self._parse_dependency(dependent_key, each)
 
     def _resolve_dependency(self, dependent_key, dependency):
-        kind = dependency.get('kind')
-        name_or_guid = dependency.get('nameOrGUID')
-        key = '{}:{}'.format(kind, name_or_guid)
+        kind = dependency.get("kind")
+        name_or_guid = dependency.get("nameOrGUID")
+        key = "{}:{}".format(kind, name_or_guid)
 
         self._add_graph_edge(dependent_key, key)
 
     @staticmethod
     def _get_object_key(obj: dict) -> str:
-        kind = obj.get('kind').lower()
-        name_or_guid = obj.get('metadata', {}).get('name')
+        kind = obj.get("kind").lower()
+        name_or_guid = obj.get("metadata", {}).get("name")
 
         if not name_or_guid:
-            raise ValueError('[kind:{}] name is required.'.format(kind))
+            raise ValueError("[kind:{}] name is required.".format(kind))
 
-        return '{}:{}'.format(kind, name_or_guid)
+        return "{}:{}".format(kind, name_or_guid)
 
     def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
         values = values or {}
 
-        values['rio'] = {
-            'project': {
-                'name': self.config.data.get('project_name'),
-                'guid': self.config.project_guid,
+        rio = {
+            "project": {
+                "name": self.config.data.get("project_name"),
+                "guid": self.config.project_guid,
             },
-            'organization': {
-                'name': self.config.data.get('organization_name'),
-                'guid': self.config.organization_guid,
-                'short_id': self.config.organization_short_id,
+            "organization": {
+                "name": self.config.data.get("organization_name"),
+                "guid": self.config.organization_guid,
+                "short_id": self.config.organization_short_id,
             },
-            'email_id': self.config.data.get('email_id'),
+            "email_id": self.config.data.get("email_id"),
         }
 
+        if "rio" in values:
+            values["rio"].update(rio)
+        else:
+            values["rio"] = rio
+
         return values
+
+    def _process_values_and_secrets(
+        self, values: typing.List, secrets: typing.List
+    ) -> None:
+        """Process the values and secrets files and inject them into the manifest files"""
+        self.values, self.secrets = {}, {}
+
+        values = values or []
+        secrets = secrets or []
+
+        for v in values:
+            self.values.update(self._load_file_content(v, is_value=True)[0])
+
+        self.values = self._inject_rio_namespace(self.values)
+
+        for s in secrets:
+            self.secrets.update(self._load_file_content(s, is_secret=True)[0])

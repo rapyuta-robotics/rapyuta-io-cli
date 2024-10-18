@@ -1,7 +1,7 @@
-Welcome to Rapyuta.io CLI documentation!
+Welcome to rapyuta.io CLI documentation!
 ========================================
 
-Rapyuta CLI exposes features of Rapyuta.io platform on the command-line.
+The rapyuta.io CLI (aka riocli) exposes features of Rapyuta.io platform on the command-line.
 
 The application is written in Python 3 and it is distributed through PyPI for
 Python 3 environments.
@@ -9,22 +9,31 @@ Python 3 environments.
 Installation
 --------------
 
-It is recommended you install the latest Python SDK using pip
+Installing the ``AppImage``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install the latest ``AppImage`` on your Linux systems using the following command.
 
 .. code:: bash
 
-    pip install rapyuta-io
+    curl -fSsL https://cli.rapyuta.io/install.sh | bash
 
-Rio CLI is available on PyPI index and can be installed directly by running the
-following command.
+Installing via ``pip``
+~~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively, you can install the CLI using ``pip``.
 
 .. code:: bash
 
     pip install rapyuta-io-cli
 
+
 On Unix-like systems it places the ``rio`` executable in the user's PATH. On
 Windows it places the ``rio.exe`` in the centralized ``Scripts`` directory which
 should be in the user's PATH.
+
+Installing from source
+~~~~~~~~~~~~~~~~~~~~~~~
 
 To install the CLI from source, you can use the ``setup.py`` script directly.
 Clone the repository and from the root of the directory, run the following
@@ -32,22 +41,26 @@ command.
 
 .. code:: bash
 
+        git clone git@github.com:rapyuta-robotics/rapyuta-io-cli.git
+        cd rapyuta-io-cli
         python setup.py install
+
 
 Getting Started
 ---------------
 
-To begin using the CLI, it must be authenticated with the Platform.
+To begin using the CLI, it must be authenticated with rapyuta.io.
 
 .. code:: bash
 
         rio auth login
 
-The Email and Password can either be given through flags (for scripting
+The ``email`` and ``password`` can either be given through flags (for scripting
 purposes) or interactively through the Prompts.
 
-NOTE: Entering password as a Flag is not recommended because it leaves the
-Traces.
+.. note::
+
+    Entering ``password`` as a flag is not recommended because it leaves the traces.
 
 Commands
 --------
@@ -66,7 +79,6 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
    Device <device>
    Disk <disk>
    Hardware-in-Loop <hwil>
-   ManagedService <managedservice>
    Network <network>
    Organization <organization>
    Package <package>

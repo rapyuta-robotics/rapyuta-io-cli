@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,19 +20,17 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 def list_configuration_trees() -> None:
-    """
-    List the Configuration Parameter Trees.
-    """
+    """List the configuration parameter trees in current project."""
     try:
         data = list_trees()
         trees = [[tree] for tree in data]
-        tabulate_data(trees, headers=['Tree Name'])
+        tabulate_data(trees, headers=["Tree Name"])
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

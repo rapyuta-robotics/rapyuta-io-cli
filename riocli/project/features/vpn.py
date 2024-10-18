@@ -23,23 +23,28 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'vpn',
+    "vpn",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('project-name', type=str)
-@click.argument('enable', type=bool)
-@click.option('--subnets', type=click.STRING, multiple=True, default=(),
-              help='Subnet ranges for the project. For example: 10.81.0.0/16')
+@click.argument("project-name", type=str)
+@click.argument("enable", type=bool)
+@click.option(
+    "--subnets",
+    type=click.STRING,
+    multiple=True,
+    default=(),
+    help="Subnet ranges for the project. For example: 10.81.0.0/16",
+)
 @name_to_guid
 @with_spinner(text="Updating VPN state...")
 def vpn(
-        project_name: str,
-        project_guid: str,
-        enable: bool,
-        subnets: List[str],
-        spinner=None,
+    project_name: str,
+    project_guid: str,
+    enable: bool,
+    subnets: List[str],
+    spinner=None,
 ) -> None:
     """
     Enable or disable VPN on a project
@@ -59,22 +64,19 @@ def vpn(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    project["spec"]["features"]["vpn"] = {
-        "enabled": enable,
-        "subnets": subnets or []
-    }
+    project["spec"]["features"]["vpn"] = {"enabled": enable, "subnets": subnets or []}
 
     is_vpn_enabled = project["spec"]["features"]["vpn"].get("enabled", False)
 
-    status = 'Enabling VPN...' if enable else 'Disabling VPN...'
+    status = "Enabling VPN..." if enable else "Disabling VPN..."
     if is_vpn_enabled and subnets:
-        status = 'Updating the VPN subnet ranges for the project...'
+        status = "Updating the VPN subnet ranges for the project..."
 
     spinner.text = status
 
     try:
         client.update_project(project_guid, project)
-        spinner.text = click.style('Done', fg=Colors.GREEN)
+        spinner.text = click.style("Done", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)

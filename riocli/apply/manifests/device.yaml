@@ -69,6 +69,7 @@ spec:
     os: "ubuntu" # Options: ["ubuntu" (default), "debian" ]
     codename: "focal" # Options: ["bionic", "focal" (default), "jammy", "bullseye"]
     highperf: False # Optional [True, False (default)]
+    wait: True # Optional [True, False (default)] Wait until the device is ready.
   docker:
     enabled: True # Required
     rosbagMountPath: "/opt/rapyuta/volumes/rosbag"

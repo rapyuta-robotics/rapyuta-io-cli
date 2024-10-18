@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,24 +28,55 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'vpn',
+    "vpn",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
-    help_options_color=Colors.GREEN
+    help_options_color=Colors.GREEN,
 )
-@click.option('--devices', type=click.STRING, multiple=True, default=(),
-              help='Device names to toggle VPN client')
-@click.argument('enable', type=click.BOOL)
-@click.option('-f', '--force', '--silent', 'silent', is_flag=True,
-              type=click.BOOL, default=False,
-              help="Skip confirmation")
-@click.option('--advertise-routes', is_flag=True,
-              type=click.BOOL, default=False,
-              help="Advertise subnets configured in project to VPN peers")
-def toggle_vpn(devices: typing.List, enable: bool,
-               silent: bool = False, advertise_routes: bool = False) -> None:
-    """
-    Enable or disable VPN client on the device
+@click.option(
+    "--devices",
+    type=click.STRING,
+    multiple=True,
+    default=(),
+    help="Device names to toggle VPN client",
+)
+@click.argument("enable", type=click.BOOL)
+@click.option(
+    "-f",
+    "--force",
+    "--silent",
+    "silent",
+    is_flag=True,
+    type=click.BOOL,
+    default=False,
+    help="Skip confirmation",
+)
+@click.option(
+    "--advertise-routes",
+    is_flag=True,
+    type=click.BOOL,
+    default=False,
+    help="Advertise subnets configured in project to VPN peers",
+)
+def toggle_vpn(
+    devices: typing.List,
+    enable: bool,
+    silent: bool = False,
+    advertise_routes: bool = False,
+) -> None:
+    """Enable or disable VPN client on the device.
+
+    Optionally, you can configure the device to advertise a subnet
+    if the project is configured with a subnet range. Please note
+    that --advertise-routes is only a flag and does not provide you
+    an option to specify the subnet range.
+
+    You can specify the devices using their names or UUIDs using the
+    --devices flag. If you do not specify any devices, the state will
+    be applied to all online devices in the project.
+
+    If you want to skip the confirmation prompt, use the --silent or
+    --force or -f flag.
 
     Examples:
 
@@ -74,45 +105,54 @@ def toggle_vpn(devices: typing.List, enable: bool,
 
         click.secho(
             "\nSetting the state of VPN client = {} on "
-            "the following online devices\n".format(enable), fg='yellow')
+            "the following online devices\n".format(enable),
+            fg="yellow",
+        )
 
         print_final_devices(final)
 
         if not silent:
             if advertise_routes and len(final) > 1:
-                msg = ("\n{} More than one device in the project will advertise routes. "
-                       "You may not want to do that. Please review the devices.".format(Symbols.WARNING))
-                click.secho(msg, fg='yellow')
+                msg = (
+                    "\n{} More than one device in the project will advertise routes. "
+                    "You may not want to do that. Please review the devices.".format(
+                        Symbols.WARNING
+                    )
+                )
+                click.secho(msg, fg="yellow")
 
-            click.confirm(
-                "\nDo you want to proceed?",
-                default=True, abort=True)
+            click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
         click.echo("")  # Echo an empty line
 
         result = []
         with Spinner() as spinner:
             for device in final:
-                spinner.text = 'Updating VPN state on device {}'.format(
-                    click.style(device.name, bold=True, fg=Colors.CYAN))
-                r = client.toggle_features(
-                    device.uuid, [('vpn', enable)],
-                    config={'vpn': {'advertise_routes': advertise_routes}}
+                spinner.text = "Updating VPN state on device {}".format(
+                    click.style(device.name, bold=True, fg=Colors.CYAN)
                 )
-                result.append([device.name, r.get('status')])
+                r = client.toggle_features(
+                    device.uuid,
+                    [("vpn", enable)],
+                    config={"vpn": {"advertise_routes": advertise_routes}},
+                )
+                result.append([device.name, r.get("status")])
 
         click.echo("")  # Echo an empty line
 
         tabulate_data(result, headers=["Device", "Status"])
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1) from e
 
 
 def process_devices(online_devices, devices) -> typing.List:
     if len(devices) == 0:
-        click.secho("\n(No devices specified. State will be applied"
-                    " to all online devices in the project)", fg='cyan')
+        click.secho(
+            "\n(No devices specified. State will be applied"
+            " to all online devices in the project)",
+            fg="cyan",
+        )
         return online_devices
 
     name_map, uuid_map = {}, {}

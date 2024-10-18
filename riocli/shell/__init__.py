@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,28 +19,31 @@ from click_repl import repl
 from prompt_toolkit.history import FileHistory, ThreadedHistory
 
 from riocli.config import Configuration
+from riocli.constants import Colors
 from riocli.shell.prompt import prompt_callback
 
 
 @click.command(
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def shell(ctx: click.Context):
-    """
-    Interactive Shell for Rapyuta.io
+    """Start an interactive shell
+
+    The shell provides an interactive environment to run commands
+    and is useful for running multiple commands in a single session.
     """
     start_shell(ctx)
 
 
 @click.command(
-    'repl',
+    "repl",
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
-    hidden=True
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+    hidden=True,
 )
 @click.pass_context
 def deprecated_repl(ctx: click.Context):
@@ -56,7 +59,7 @@ def start_shell(ctx: click.Context):
         try:
             repl(click.get_current_context(), prompt_kwargs=prompt_config)
         except Exception as e:
-            click.secho(str(e), fg='red')
+            click.secho(str(e), fg="red")
         else:
             break
 
@@ -64,11 +67,11 @@ def start_shell(ctx: click.Context):
 def _parse_config(config: Configuration) -> dict:
     history_path = os.path.join(click.get_app_dir(config.APP_NAME), "history")
     default_prompt_kwargs = {
-        'history': ThreadedHistory(FileHistory(history_path)),
-        'message': prompt_callback,
-        'enable_suspend': True
+        "history": ThreadedHistory(FileHistory(history_path)),
+        "message": prompt_callback,
+        "enable_suspend": True,
     }
 
-    shell_config = config.data.get('shell', {})
+    shell_config = config.data.get("shell", {})
 
     return {**default_prompt_kwargs, **shell_config}

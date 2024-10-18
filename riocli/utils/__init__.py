@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,18 +41,17 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(
-                Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
 def inspect_with_format(obj: typing.Any, format_type: str):
-    if format_type == 'json':
+    if format_type == "json":
         click.echo_via_pager(json.dumps(obj, indent=4))
-    elif format_type == 'yaml':
+    elif format_type == "yaml":
         click.echo_via_pager(yaml.dump(obj, allow_unicode=True))
     else:
-        raise Exception('Invalid format')
+        raise Exception("Invalid format")
 
 
 def dump_all_yaml(objs: typing.List):
@@ -60,11 +59,7 @@ def dump_all_yaml(objs: typing.List):
     Dump multiple documents as YAML separated by triple dash (---)
     """
     click.echo_via_pager(
-        yaml.safe_dump_all(
-            documents=objs,
-            allow_unicode=True,
-            explicit_start=True
-        )
+        yaml.safe_dump_all(documents=objs, allow_unicode=True, explicit_start=True)
     )
 
 
@@ -77,7 +72,7 @@ def run_bash_with_return_code(cmd, bg=False) -> (str, int):
         ret_code = output.returncode
     else:
         output = subprocess.run(cmd_parts, stdout=subprocess.PIPE)
-        stdout = output.stdout.decode('utf-8')
+        stdout = output.stdout.decode("utf-8")
         ret_code = output.returncode
 
     return stdout.strip(), ret_code
@@ -92,28 +87,27 @@ def run_bash(cmd, bg=False):
         bg_output = subprocess.Popen(cmd_parts)
         output = str(bg_output.stdout).strip()
     else:
-        output = subprocess.run(cmd_parts, stdout=subprocess.PIPE,
-                                check=True).stdout.decode('utf-8')
+        output = subprocess.run(
+            cmd_parts, stdout=subprocess.PIPE, check=True
+        ).stdout.decode("utf-8")
     return output.strip()
 
 
 riocli_group_opts = {
-    'invoke_without_command': True,
-    'cls': HelpColorsGroup,
-    'help_headers_color': 'yellow',
-    'help_options_color': 'green'
+    "invoke_without_command": True,
+    "cls": HelpColorsGroup,
+    "help_headers_color": "yellow",
+    "help_options_color": "green",
 }
 
 
 def random_string(letter_count, digit_count):
-    str1 = ''.join(
-        (random.choice(string.ascii_letters) for x in range(letter_count)))
-    str1 += ''.join((random.choice(string.digits) for x in range(digit_count)))
+    str1 = "".join((random.choice(string.ascii_letters) for x in range(letter_count)))
+    str1 += "".join((random.choice(string.digits) for x in range(digit_count)))
 
     sam_list = list(str1)  # it converts the string to list.
-    random.shuffle(
-        sam_list)  # It uses a random.shuffle() function to shuffle the string.
-    final_string = ''.join(sam_list)
+    random.shuffle(sam_list)  # It uses a random.shuffle() function to shuffle the string.
+    final_string = "".join(sam_list)
     return final_string
 
 
@@ -145,14 +139,13 @@ def is_valid_uuid(uuid_to_test, version=4):
     return str(uuid_obj) == uuid_to_test
 
 
-def tabulate_data(data: typing.List[typing.List],
-                  headers: typing.List[str] = None):
+def tabulate_data(data: typing.List[typing.List], headers: typing.List[str] = None):
     """
     Prints data in tabular format
     """
     # https://github.com/astanin/python-tabulate#table-format
-    table_format = 'simple'
-    header_foreground = 'yellow'
+    table_format = "simple"
+    header_foreground = "yellow"
 
     if headers:
         headers = [click.style(h, fg=header_foreground) for h in headers]
@@ -160,7 +153,7 @@ def tabulate_data(data: typing.List[typing.List],
     click.echo(tabulate(data, headers=headers, tablefmt=table_format))
 
 
-def print_separator(color: str = 'blue'):
+def print_separator(color: str = "blue"):
     """
     Prints a separator
     """
@@ -169,19 +162,17 @@ def print_separator(color: str = 'blue'):
 
 
 def is_pip_installation() -> bool:
-    return 'python' in sys.executable
+    return "python" in sys.executable
 
 
 def check_for_updates(current_version: typing.Text) -> typing.Tuple[bool, typing.Text]:
     try:
-        package_info = requests.get(
-            'https://pypi.org/pypi/rapyuta-io-cli/json').json()
+        package_info = requests.get("https://pypi.org/pypi/rapyuta-io-cli/json").json()
     except Exception as e:
-        click.secho('Failed to fetch upstream package info: {}'.format(e),
-                    fg=Colors.RED)
+        click.secho("Failed to fetch upstream package info: {}".format(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
-    upstream_version = package_info.get('info', {}).get('version')
+    upstream_version = package_info.get("info", {}).get("version")
 
     current_version = semver.Version.parse(current_version)
     available = semver.Version.parse(upstream_version).compare(current_version)
@@ -190,26 +181,26 @@ def check_for_updates(current_version: typing.Text) -> typing.Tuple[bool, typing
 
 
 def pip_install_cli(
-        version: str,
-        force_reinstall: bool = False,
+    version: str,
+    force_reinstall: bool = False,
 ) -> subprocess.CompletedProcess:
     """
     Installs the given rapyuta-io-cli version using pip
     """
     if not version:
-        raise ValueError('version cannot by empty.')
+        raise ValueError("version cannot by empty.")
 
     try:
         semver.Version.parse(version)
     except ValueError as err:
         raise err
 
-    package_name = 'rapyuta-io-cli=={}'.format(version)
+    package_name = "rapyuta-io-cli=={}".format(version)
 
     # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
-    command = [sys.executable, '-m', 'pip', 'install', package_name]
+    command = [sys.executable, "-m", "pip", "install", package_name]
     if force_reinstall:
-        command.append('--force-reinstall')
+        command.append("--force-reinstall")
 
     return subprocess.run(command, check=True)
 
@@ -219,38 +210,36 @@ def update_appimage(version: str):
     Updates the AppImage locally
     """
     if not version:
-        raise ValueError('version cannot be empty')
+        raise ValueError("version cannot be empty")
 
     # URL to get the latest release metadata
-    url = 'https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases/latest'
+    url = "https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases/latest"
 
     try:
         response = requests.get(url)
         data = munchify(response.json())
     except Exception as e:
-        click.secho('Failed to fetch release info: {}'.format(e),
-                    fg=Colors.RED)
+        click.secho("Failed to fetch release info: {}".format(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
     asset = None
-    for a in data.get('assets', []):
-        if 'AppImage' in a.name and version in a.name:
+    for a in data.get("assets", []):
+        if "AppImage" in a.name and version in a.name:
             asset = a
             break
 
     if asset is None:
-        raise Exception(
-            'Failed to retrieve the download URL for the latest AppImage')
+        raise Exception("Failed to retrieve the download URL for the latest AppImage")
 
     # Download the AppImage
     try:
         response = requests.get(asset.browser_download_url)
     except Exception as e:
-        raise Exception('Failed to download the new version: {}'.format(e))
+        raise Exception("Failed to download the new version: {}".format(e))
 
     with TemporaryDirectory() as tmp:
         # Save the binary in a temp dir
-        save_to = Path(tmp) / 'rio'
+        save_to = Path(tmp) / "rio"
         save_to.write_bytes(response.content)
         os.chmod(save_to, 0o755)
         # Now replace the current executable with the new file
@@ -258,7 +247,10 @@ def update_appimage(version: str):
             os.remove(sys.executable)
             move(save_to, sys.executable)
         except OSError as e:
-            click.secho('{} Please consider running as a root user.'.format(Symbols.WARNING), fg=Colors.YELLOW)
+            click.secho(
+                "{} Please consider running as a root user.".format(Symbols.WARNING),
+                fg=Colors.YELLOW,
+            )
             raise e
         except Exception as e:
             raise e
@@ -279,7 +271,7 @@ def trim_prefix(name):
     if len(name) == 0 or name[len(name) - 1].isalnum():
         return name
 
-    return trim_prefix(name[:len(name) - 1])
+    return trim_prefix(name[: len(name) - 1])
 
 
 def sanitize_label(name):
@@ -290,9 +282,9 @@ def sanitize_label(name):
     name = trim_suffix(name)
     name = trim_prefix(name)
 
-    r = ''
+    r = ""
     for c in name:
-        if c.isalnum() or c in ['-', '_', '.']:
+        if c.isalnum() or c in ["-", "_", "."]:
             r = r + c
 
     return r
@@ -300,5 +292,5 @@ def sanitize_label(name):
 
 def print_centered_text(text: str, color: str = Colors.YELLOW):
     col, _ = get_terminal_size()
-    text = click.style(f' {text} '.center(col, '-'), fg=color, bold=True)
+    text = click.style(f" {text} ".center(col, "-"), fg=color, bold=True)
     click.echo(text)

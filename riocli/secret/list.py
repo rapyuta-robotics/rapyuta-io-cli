@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 import typing
 
 import click
+import munch
 from click_help_colors import HelpColorsCommand
-from rapyuta_io import Secret
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -23,20 +23,27 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--label', '-l', 'labels', multiple=True, type=click.STRING,
-              default=(), help='Filter the deployment list by labels')
+@click.option(
+    "--label",
+    "-l",
+    "labels",
+    multiple=True,
+    type=click.STRING,
+    default=(),
+    help="Filter the deployment list by labels",
+)
 def list_secrets(labels: typing.List[str]) -> None:
     """
     List the secrets in the selected project
     """
     try:
         client = new_v2_client(with_project=True)
-        secrets = client.list_secrets(query={'labelSelector': labels})
+        secrets = client.list_secrets(query={"labelSelector": labels})
         secrets = sorted(secrets, key=lambda s: s.metadata.name.lower())
         _display_secret_list(secrets, show_header=True)
     except Exception as e:
@@ -45,14 +52,21 @@ def list_secrets(labels: typing.List[str]) -> None:
 
 
 def _display_secret_list(
-        secrets: typing.List[Secret],
-        show_header: bool = True,
+    secrets: typing.List[munch.Munch],
+    show_header: bool = True,
 ) -> None:
     headers = []
     if show_header:
-        headers = ('ID', 'Name', 'Created At', 'Creator')
+        headers = ("ID", "Name", "Created At", "Creator")
 
-    data = [ [secret.metadata.guid, secret.metadata.name,
-                secret.metadata.createdAt, secret.metadata.creatorGUID] for secret in secrets ]
+    data = [
+        [
+            secret.metadata.guid,
+            secret.metadata.name,
+            secret.metadata.createdAt,
+            secret.metadata.creatorGUID,
+        ]
+        for secret in secrets
+    ]
 
     tabulate_data(data, headers)

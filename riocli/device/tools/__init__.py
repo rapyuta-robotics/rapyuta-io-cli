@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from click_help_colors import HelpColorsGroup
 from riocli.device.tools.device_init import device_init
 from riocli.device.tools.forward import port_forward
 from riocli.device.tools.rapyuta_logs import rapyuta_agent_logs
-from riocli.device.tools.ssh import ssh_authorize_key, device_ssh
+from riocli.device.tools.ssh import device_ssh, ssh_authorize_key
 from .scp import scp
 from .service import service
 
@@ -25,10 +25,17 @@ from .service import service
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
 def tools():
+    """Tools for managing devices.
+
+    A collection of commands that provide a way
+    to conveniently interact with devices and services
+    running on them. The commands also enable you to
+    script and automate tasks on devices.
+    """
     pass
 
 

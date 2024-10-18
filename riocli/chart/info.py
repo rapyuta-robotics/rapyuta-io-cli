@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ from riocli.utils import dump_all_yaml
 
 
 @click.command(
-    'info',
+    "info",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    help='Describe the available chart with versions',
+    help="Describe the available chart with versions",
 )
-@click.argument('chart', type=str)
+@click.argument("chart", type=str)
 def info_chart(chart: str) -> None:
     """Print a chart's details."""
     versions = find_chart(chart)

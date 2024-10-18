@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,20 +19,18 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'open',
+    "open",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('static-route', type=str)
+@click.argument("static-route", type=str)
 def open_static_route(static_route) -> None:
-    """
-    Opens the static route in the default browser
-    """
+    """Open a static route in the default browser."""
     try:
         client = new_v2_client()
         route = client.get_static_route(static_route)
-        click.launch(url='https://{}'.format(route.spec.url), wait=False)
+        click.launch(url="https://{}".format(route.spec.url), wait=False)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

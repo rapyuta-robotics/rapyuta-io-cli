@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,17 @@ from riocli.usergroup.list import list_usergroup
     help_options_color=Colors.GREEN,
 )
 def usergroup() -> None:
-    """
-    Manage usergroups on rapyuta.io
+    """Manage usergroups in current organization.
+
+    Usergroups are a way to organize users and projects
+    in your organization. You can create usergroups and
+    add users and projects to them. This helps in managing
+    access control and permissions in your organization.
+
+    Users can be part of multiple usergroups and projects
+    can be part of multiple usergroups. You can further
+    make some users admins of a usergroup and they will
+    have the permissions to manage the usergroup.
     """
     pass
 

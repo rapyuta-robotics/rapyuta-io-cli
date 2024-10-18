@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,13 @@ from riocli.constants import Colors
     help_options_color=Colors.GREEN,
 )
 def chart() -> None:
-    """
-    Rapyuta Charts is a way to package the complete Application for
-    Rapyuta.io Platform.
+    """Rapyuta chart is a way to package applications.
+
+    With rapyuta chart, you can create, install, and manage applications
+    that are a collection of one or more deployments and other resources.
+    A chart comprises a collection of manifest files that define the
+    resources to be created. It may also offer customization by means of
+    values or secrets.
     """
     pass
 

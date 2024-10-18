@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,18 +22,25 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False), default='yaml')
-@click.argument('device-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    default="yaml",
+)
+@click.argument("device-name", type=str)
 @name_to_guid
 def inspect_device(format_type: str, device_name: str, device_guid: str) -> None:
-    """
-    Inspect the device resource
+    """Print the details of a device.
+
+    You can specify the format of the output using the --format flag.
+    The default format is yaml. You can choose between json and yaml.
     """
     try:
         client = new_client()
@@ -47,7 +54,7 @@ def inspect_device(format_type: str, device_name: str, device_guid: str) -> None
 def make_device_inspectable(device: Device) -> dict:
     data = {}
     for key, val in device.items():
-        if key.startswith('_') or key in ['deviceId']:
+        if key.startswith("_") or key in ["deviceId"]:
             continue
         data[key] = val
 

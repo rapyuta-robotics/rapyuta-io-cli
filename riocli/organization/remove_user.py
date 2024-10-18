@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,28 +22,33 @@ from riocli.utils.context import get_root_context
 
 
 @click.command(
-    'remove-user',
+    "remove-user",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('user-email', type=str)
+@click.argument("user-email", type=str)
 @click.pass_context
 def remove_user(ctx: click.Context, user_email: str) -> None:
-    """
-    Remove a user from the current organization
-    """
+    """Remove a user from the current organization"""
     ctx = get_root_context(ctx)
 
     try:
         validate_email(user_email)
     except EmailNotValidError as e:
-        click.secho('{} {} is not a valid email address'.format(Symbols.ERROR, user_email), fg=Colors.RED)
+        click.secho(
+            "{} {} is not a valid email address".format(Symbols.ERROR, user_email),
+            fg=Colors.RED,
+        )
         raise SystemExit(1) from e
 
     try:
-        remove_user_from_org(ctx.obj.data['organization_id'], user_email)
-        click.secho('{} User removed successfully.'.format(Symbols.SUCCESS), fg=Colors.GREEN)
+        remove_user_from_org(ctx.obj.data["organization_id"], user_email)
+        click.secho(
+            "{} User removed successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN
+        )
     except Exception as e:
-        click.secho('{} Failed to remove user: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(
+            "{} Failed to remove user: {}".format(Symbols.ERROR, e), fg=Colors.RED
+        )
         raise SystemExit(1) from e

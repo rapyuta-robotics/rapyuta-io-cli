@@ -21,7 +21,11 @@ from riocli.constants import Status, ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.v2client import Client
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError, RetriesExhausted
+from riocli.v2client.error import (
+    HttpAlreadyExistsError,
+    HttpNotFoundError,
+    RetriesExhausted,
+)
 
 
 class Deployment(Model):
@@ -30,7 +34,9 @@ class Deployment(Model):
         self.update(*args, **kwargs)
 
     def apply(self, *args, **kwargs) -> ApplyResult:
-        hard_dependencies = [d.nameOrGUID for d in self.spec.get('depends', []) if d.get('wait', False)]
+        hard_dependencies = [
+            d.nameOrGUID for d in self.spec.get("depends", []) if d.get("wait", False)
+        ]
 
         client = new_v2_client()
 
@@ -57,21 +63,25 @@ class Deployment(Model):
 
 
 def wait_for_dependencies(
-        client: Client,
-        deployment_names: typing.List[str],
-        retry_count: int = 50,
-        retry_interval: int = 6,
+    client: Client,
+    deployment_names: typing.List[str],
+    retry_count: int = 50,
+    retry_interval: int = 6,
 ) -> None:
     """Waits until all deployment_names are in RUNNING state."""
     for _ in range(retry_count):
-        deployments = client.list_deployments(query={
-            'names': deployment_names,
-            'phases': ['InProgress', 'Provisioning', 'Succeeded']
-        })
+        deployments = client.list_deployments(
+            query={
+                "names": deployment_names,
+                "phases": ["InProgress", "Provisioning", "Succeeded"],
+            }
+        )
 
         if all(d.status.status == Status.RUNNING for d in deployments):
             return
 
         time.sleep(retry_interval)
 
-    raise RetriesExhausted(f'Retries exhausted waiting for dependencies: {deployment_names}')
+    raise RetriesExhausted(
+        f"Retries exhausted waiting for dependencies: {deployment_names}"
+    )

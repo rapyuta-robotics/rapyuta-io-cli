@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ from click_help_colors import HelpColorsCommand
 
 @click.command(
     cls=HelpColorsCommand,
-    help_headers_color='yellow',
-    help_options_color='green',
+    help_headers_color="yellow",
+    help_options_color="green",
 )
-@click.argument('shell-name', type=click.Choice(['zsh', 'fish', 'bash']))
+@click.argument("shell-name", type=click.Choice(["zsh", "fish", "bash"]))
 def completion(shell_name):
     """
     Output shell completion code for the specified shell
@@ -35,5 +35,5 @@ def completion(shell_name):
     For Fish:
         $ eval (command rio completion bash)
     """
-    os.environ['_RIO_COMPLETE'] = '{}_source'.format(shell_name)
-    os.system('rio')
+    os.environ["_RIO_COMPLETE"] = "{}_source".format(shell_name)
+    os.system("rio")

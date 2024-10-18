@@ -23,23 +23,22 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('device-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("device-name", type=str)
 @name_to_id
-def inspect_device(
-        format_type: str,
-        device_name: str,
-        device_id: str
-) -> None:
-    """
-    Inspect the hardware-in-the-loop device.
-    """
+def inspect_device(format_type: str, device_name: str, device_id: str) -> None:
+    """Print the details of a hardware-in-the-loop device."""
     client = new_hwil_client()
 
     try:

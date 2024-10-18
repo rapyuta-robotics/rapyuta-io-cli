@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,28 +22,45 @@ from riocli.utils.context import get_root_context
 
 
 @click.command(
-    'invite-user',
+    "invite-user",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument('user-email', type=str)
+@click.argument("user-email", type=str)
 @click.pass_context
 def invite_user(ctx: click.Context, user_email: str) -> None:
-    """
-    Invite a new user to the current organization
+    """Invite a new user to the current organization.
+
+    If the user does not have a rapyuta.io account, they will
+    receive an email with an invitation to join the organization.
+    If the user already has an account, they will be added to
+    the organization.
+
+    Usage Examples:
+
+      Add a new user to the organization
+
+      $ rio organization invite-user user@email.com
     """
     ctx = get_root_context(ctx)
 
     try:
         validate_email(user_email)
     except EmailNotValidError as e:
-        click.secho('{} {} is not a valid email address'.format(Symbols.ERROR, user_email), fg=Colors.RED)
+        click.secho(
+            "{} {} is not a valid email address".format(Symbols.ERROR, user_email),
+            fg=Colors.RED,
+        )
         raise SystemExit(1) from e
 
     try:
-        invite_user_to_org(ctx.obj.data['organization_id'], user_email)
-        click.secho('{} User invited successfully.'.format(Symbols.SUCCESS), fg=Colors.GREEN)
+        invite_user_to_org(ctx.obj.data["organization_id"], user_email)
+        click.secho(
+            "{} User invited successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN
+        )
     except Exception as e:
-        click.secho('{} Failed to invite user: {}'.format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(
+            "{} Failed to invite user: {}".format(Symbols.ERROR, e), fg=Colors.RED
+        )
         raise SystemExit(1) from e

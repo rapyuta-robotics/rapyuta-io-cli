@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,10 +28,7 @@ from riocli.config import Configuration
 from riocli.constants import Colors
 
 
-def filter_trees(
-        root_dir: str,
-        tree_names: typing.Tuple[str]
-) -> typing.List[str]:
+def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[str]:
     trees = []
     for each in os.listdir(root_dir):
         full_path = os.path.join(root_dir, each)
@@ -43,12 +40,14 @@ def filter_trees(
             continue
 
         if not is_valid_tree_name(each):
-            raise Exception('Invalid tree name \'{}\'. Tree name must be 3-50 characters '
-                            'and can contain letters, digits, _ and -'.format(each))
+            raise Exception(
+                "Invalid tree name '{}'. Tree name must be 3-50 characters "
+                "and can contain letters, digits, _ and -".format(each)
+            )
         trees.append(each)
 
     if tree_names and not trees:
-        raise Exception('one or more specified tree names are invalid')
+        raise Exception("one or more specified tree names are invalid")
 
     return trees
 
@@ -61,52 +60,48 @@ def display_trees(root_dir: str, trees: typing.List[str]) -> None:
 
 
 def _api_call(
-        method: str,
-        name: typing.Union[str, None] = None,
-        payload: typing.Union[typing.Dict, None] = None,
-        load_response: bool = True,
+    method: str,
+    name: typing.Union[str, None] = None,
+    payload: typing.Union[typing.Dict, None] = None,
+    load_response: bool = True,
 ) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
-        'core_api_host', 'https://gaapiserver.apps.okd4v2.prod.rapyuta.io')
-    url = '{}/api/paramserver/tree'.format(catalog_host)
+        "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
+    )
+    url = "{}/api/paramserver/tree".format(catalog_host)
     if name:
-        url = '{}/{}'.format(url, name)
+        url = "{}/{}".format(url, name)
     headers = config.get_auth_header()
-    response = RestClient(url).method(method).headers(headers).execute(
-        payload=payload)
+    response = RestClient(url).method(method).headers(headers).execute(payload=payload)
     data = None
-    err_msg = 'error in the api call'
+    err_msg = "error in the api call"
     if load_response:
         data = json.loads(response.text)
 
     if not response.ok:
-        err_msg = data.get('error')
+        err_msg = data.get("error")
         raise Exception(err_msg)
     return data
 
 
 def list_trees() -> List[str]:
     resp = _api_call(HttpMethod.GET)
-    if 'data' not in resp:
-        raise Exception('Failed to list configurations')
+    if "data" not in resp:
+        raise Exception("Failed to list configurations")
 
-    return resp.get('data')
+    return resp.get("data")
 
 
 class DeepDirCmp(dircmp):
-
     def phase3(self) -> None:
         # shallow=False enables the behaviour of matching the File content. The
         # original dircmp Class only compares os.Stat between the files, and
         # gives no way to modify the behaviour.
-        f_comp = filecmp.cmpfiles(self.left,
-                                  self.right,
-                                  self.common_files,
-                                  shallow=False)
+        f_comp = filecmp.cmpfiles(self.left, self.right, self.common_files, shallow=False)
         self.same_files, self.diff_files, self.funny_files = f_comp
 
 
 def is_valid_tree_name(name: str) -> bool:
     """Validates a config tree name"""
-    return bool(re.match(r'^[0-9A-Za-z][0-9A-Za-z._-]{0,49}$', name))
+    return bool(re.match(r"^[0-9A-Za-z][0-9A-Za-z._-]{0,49}$", name))

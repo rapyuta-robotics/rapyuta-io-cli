@@ -19,7 +19,7 @@ from munch import Munch
 from riocli.constants import ApplyResult
 from riocli.jsonschema.validate import load_schema
 
-DELETE_POLICY_LABEL = 'rapyuta.io/deletionPolicy'
+DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 
 class Model(ABC, Munch):
@@ -41,6 +41,7 @@ class Model(ABC, Munch):
     by the subclasses. It validates the model against the corresponding
     schema that are defined in the schema files.
     """
+
     @abstractmethod
     def apply(self, *args, **kwargs) -> ApplyResult:
         """Create or update the object.
@@ -62,14 +63,14 @@ class Model(ABC, Munch):
     @classmethod
     def validate(cls, d: typing.Dict) -> None:
         """Validate the model against the corresponding schema."""
-        kind = d.get('kind')
+        kind = d.get("kind")
         if not kind:
-            raise ValueError('kind is required')
+            raise ValueError("kind is required")
 
         # StaticRoute's schema file is named
         # static_route-schema.yaml.
-        if kind == 'StaticRoute':
-            kind = 'static_route'
+        if kind == "StaticRoute":
+            kind = "static_route"
 
         schema = load_schema(kind.lower())
         schema.validate(d)
