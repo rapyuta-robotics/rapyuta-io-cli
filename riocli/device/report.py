@@ -24,6 +24,7 @@ from riocli.utils.spinner import with_spinner
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
+    hidden=True,
 )
 @click.option(
     "--force", "-f", "--silent", "force", is_flag=True, help="Skip confirmation"
