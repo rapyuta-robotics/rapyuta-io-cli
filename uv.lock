@@ -721,7 +721,7 @@ wheels = [
 
 [[package]]
 name = "rapyuta-io-cli"
-version = "0.0.0"
+version = "9.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "argparse" },
