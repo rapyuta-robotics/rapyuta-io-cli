@@ -30,7 +30,7 @@ from riocli.utils.execute import run_on_device
 @click.option('--user', default='root')
 @click.option('--timeout', default=300)
 @click.option('--shell', default='/bin/bash')
-@click.option('--run-async', is_flag=True, default=True, help="Run the command in the background.")
+@click.option('--run-sync', is_flag=True, default=False, help="Run the command synchronously")
 @click.argument('device-name', type=str)
 @click.argument('command', nargs=-1)
 @name_to_guid
@@ -40,7 +40,7 @@ def execute_command(
         user: str,
         timeout: int,
         shell: str,
-        run_async: bool,
+        run_sync: bool,
         command: typing.List[str]
 ) -> None:
     """Execute commands on a device.
@@ -49,7 +49,7 @@ def execute_command(
     the command execution. To specify the user, use the --user flag.
     The default is 'root'. To specify the shell, use the --shell flag.
     The default shell is '/bin/bash'. To run the command synchronously,
-    set the --run-async flag to false. The default value is true. To
+    set the --run-sync flag to true. The default value is false. To
     specify the timeout, use the --timeout flag, providing the duration
     in seconds. The default value is 300.
 
@@ -65,7 +65,7 @@ def execute_command(
             user=user,
             shell=shell,
             command=command,
-            background=run_async,
+            background=not run_sync,
             timeout=timeout,
         )
 
