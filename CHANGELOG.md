@@ -1,3 +1,22 @@
+# [9.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.4...v9.1.0) (2024-10-21)
+
+
+### Bug Fixes
+
+* **apply:** merge rio namespace with incoming values ([5141bcf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5141bcfd090cd08b14af028152ba839c26a5634b))
+* **package:** adds the missing --silent alias for force delete ([d4546a9](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d4546a973902c10579499c2d6d7f75b83d2a4cb6))
+* removes object references of project, static-routes, secret, deployment ([8cb381a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8cb381ae90ed300162801053f93b1c167b932392))
+
+
+### Features
+
+* **apply:** allow mutiple values and secret files ([1cffe09](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cffe09638049abd4507bf8b55831ed238c4ad7a)), closes [AB#18436](https://github.com/AB/issues/18436)
+* **device:** implements report device command ([#371](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/371)) ([acdde63](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/acdde634181e428b804ec3298733d1aef37d9ac4)), closes [AB#19657](https://github.com/AB/issues/19657)
+* **device:** wait until virtual device is online on rapyuta.io ([f6bd3e8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f6bd3e868316c8b1b7fce028e2528aa00bb04015)), closes [AB#18043](https://github.com/AB/issues/18043)
+* **secret:** implements batch delete with regex pattern ([9b57d69](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9b57d693d307ef6a2dfe9d1bb52cbb8279b364dd)), closes [AB#18146](https://github.com/AB/issues/18146)
+* **static-route:** implements batch delete using regex pattern ([a3b5e92](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a3b5e92906e1ae29a0797baa08b484abd45affe3)), closes [AB#18146](https://github.com/AB/issues/18146)
+* **vpn:** adds option to populate vpn peers in hosts file ([c28b9ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c28b9ce18558d090cc138186d7c14eeb8823fd1a))
+
 ## [9.0.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.3...v9.0.4) (2024-10-15)
 
 
