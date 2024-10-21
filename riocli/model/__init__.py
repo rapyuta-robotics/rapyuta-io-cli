@@ -1,1 +1,1 @@
-from riocli.model.base import Model
+from riocli.model.base import Model as Model

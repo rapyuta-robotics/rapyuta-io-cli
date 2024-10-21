@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,19 +22,25 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('project-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("project-name", type=str)
 @name_to_guid
-def inspect_project(format_type: str, project_name: str,
-                    project_guid: str) -> None:
-    """
-    Inspect the project resource
+def inspect_project(format_type: str, project_name: str, project_guid: str) -> None:
+    """Print the project details.
+
+    You can specify the format of the output using the ``--format`` flag.
+    The supported formats are ``json`` and ``yaml``. Default is ``yaml``.
     """
     try:
         client = new_v2_client(with_project=False)

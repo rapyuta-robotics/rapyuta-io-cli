@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class NoProjectSelected(Exception):
 
+class NoProjectSelected(Exception):
     def __str__(self):
         return """No project is selected. Select a project first
-        $ rio project select 
+        $ rio project select
         """
 
 
 class NoOrganizationSelected(Exception):
-
     def __str__(self):
         return """No organization is selected. Select an organization first
         $ rio organization select
@@ -29,28 +28,26 @@ class NoOrganizationSelected(Exception):
 
 
 class LoggedOut(Exception):
-
     def __str__(self):
         return """Not logged in. Please login first
-        $ rio auth login 
+        $ rio auth login
         """
 
 
 class HwilLoggedOut(Exception):
-
     def __str__(self):
         return """Not logged in to HWIL. Please login first
-        $ rio hwil login 
+        $ rio hwil login
         """
 
 
 class DeviceNotFound(Exception):
-    def __init__(self, message='device not found'):
+    def __init__(self, message="device not found"):
         self.message = message
         super().__init__(self.message)
 
 
 class ResourceNotFound(Exception):
-    def __init__(self, message='resource not found'):
+    def __init__(self, message="resource not found"):
         self.message = message
         super().__init__(self.message)

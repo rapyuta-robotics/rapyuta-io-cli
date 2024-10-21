@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,27 +29,58 @@ from riocli.v2client import Client
 
 
 @click.command(
-    'delete',
+    "delete",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--force', '-f', is_flag=True, default=False,
-              help='Skip confirmation', type=bool)
-@click.option('--workers', '-w',
-              help="Number of parallel workers while running deleting networks. Defaults to 10",
-              type=int, default=10)
-@click.argument('network-name-or-regex', type=str)
-@with_spinner(text='Deleting network...')
+@click.option(
+    "--force", "-f", is_flag=True, default=False, help="Skip confirmation", type=bool
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="Number of parallel workers while running deleting networks. Defaults to 10",
+    type=int,
+    default=10,
+)
+@click.argument("network-name-or-regex", type=str)
+@with_spinner(text="Deleting network...")
 def delete_network(
-        force: bool,
-        network_name_or_regex: str,
-        delete_all: bool = False,
-        workers: int = 10,
-        spinner: Yaspin = None
+    force: bool,
+    network_name_or_regex: str,
+    delete_all: bool = False,
+    workers: int = 10,
+    spinner: Yaspin = None,
 ) -> None:
-    """
-    Deletes a network
+    """Delete one or more networks with a name or a regex pattern.
+
+    You can specify a name or a regex pattern to delete one
+    or more networks.
+
+    If you want to delete all the networks, then
+    simply use the ``--all`` flag.
+
+    If you want to delete networks without confirmation, then use the
+    ``--force`` or ``--silent`` or ``-f``.
+
+    Usage Examples:
+
+        Delete a network by name
+
+            $ rio network delete NETWORK_NAME
+
+        Delete a network without confirmation
+
+            $ rio network delete NETWORK_NAME --force
+
+        Delete all networks in the project
+
+            $ rio network delete --all
+
+        Delete networks using regex pattern
+
+            $ rio network delete "NETWORK.*"
     """
     client = new_v2_client()
 
@@ -61,8 +92,7 @@ def delete_network(
     try:
         networks = fetch_networks(client, network_name_or_regex, "", delete_all)
     except Exception as e:
-        spinner.text = click.style(
-            'Failed to find network(s): {}'.format(e), Colors.RED)
+        spinner.text = click.style("Failed to find network(s): {}".format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -74,17 +104,18 @@ def delete_network(
     with spinner.hidden():
         print_networks_for_confirmation(networks)
 
-    spinner.write('')
+    spinner.write("")
 
     if not force:
         with spinner.hidden():
-            click.confirm('Do you want to delete the above network(s)?', default=True, abort=True)
+            click.confirm(
+                "Do you want to delete the above network(s)?", default=True, abort=True
+            )
 
     try:
         f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=f, items=networks,
-            workers=workers, key=lambda x: x[0]
+            f=f, items=networks, workers=workers, key=lambda x: x[0]
         )
         data, statuses = [], []
         for name, status, msg in result:
@@ -92,18 +123,17 @@ def delete_network(
             icon = Symbols.SUCCESS if status else Symbols.ERROR
 
             statuses.append(status)
-            data.append([
-                click.style(name, fg),
-                click.style('{}  {}'.format(icon, msg), fg)
-            ])
+            data.append(
+                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
+            )
 
         with spinner.hidden():
-            tabulate_data(data, headers=['Name', 'Status'])
+            tabulate_data(data, headers=["Name", "Status"])
 
         # When no network is deleted, raise an exception.
         if not any(statuses):
-            spinner.write('')
-            spinner.text = click.style('Failed to delete network(s).', Colors.RED)
+            spinner.write("")
+            spinner.text = click.style("Failed to delete network(s).", Colors.RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1)
 
@@ -111,12 +141,12 @@ def delete_network(
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.text = click.style(
-            'Networks(s) deleted {}.'.format(text), fg)
+        spinner.text = click.style("Networks(s) deleted {}.".format(text), fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
         spinner.text = click.style(
-            'Failed to delete network(s): {}'.format(e), Colors.RED)
+            "Failed to delete network(s): {}".format(e), Colors.RED
+        )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -124,6 +154,6 @@ def delete_network(
 def _apply_delete(client: Client, result: Queue, network: Network) -> None:
     try:
         client.delete_network(network_name=network.metadata.name)
-        result.put((network.metadata.name, True, 'Network Deleted Successfully'))
+        result.put((network.metadata.name, True, "Network Deleted Successfully"))
     except Exception as e:
         result.put((network.metadata.name, False, str(e)))

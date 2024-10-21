@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ from riocli.disk.list import list_disks
     help_options_color=Colors.GREEN,
 )
 def disk() -> None:
-    """
-    Persistent disks
+    """Manage cloud disks.
+
+    Create, list, and delete cloud disks.
     """
     pass
 

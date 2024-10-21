@@ -1,4 +1,4 @@
-# Copyright 2022 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 class Package(Model):
     RESTART_POLICY = {
-        'always': RestartPolicy.Always,
-        'never': RestartPolicy.Never,
-        'onfailure': RestartPolicy.OnFailure
+        "always": RestartPolicy.Always,
+        "never": RestartPolicy.Never,
+        "onfailure": RestartPolicy.OnFailure,
     }
 
     def __init__(self, *args, **kwargs):
@@ -50,8 +50,7 @@ class Package(Model):
 
         try:
             client.delete_package(
-                self.metadata.name,
-                query={"version": self.metadata.version}
+                self.metadata.name, query={"version": self.metadata.version}
             )
         except HttpNotFoundError:
             raise ResourceNotFound
@@ -68,13 +67,13 @@ class Package(Model):
     def _sanitize_command(self):
         for e in self.spec.executables:
             # Skip if command is not set.
-            if e.get('command') is None:
+            if e.get("command") is None:
                 continue
 
             c = []
 
-            if e.get('runAsBash'):
-                c = ['/bin/bash', '-c']
+            if e.get("runAsBash"):
+                c = ["/bin/bash", "-c"]
 
             if isinstance(e.command, list):
                 c.extend(e.command)

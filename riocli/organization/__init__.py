@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,15 @@ from riocli.organization.users import list_users
     help_options_color=Colors.GREEN,
 )
 def organization() -> None:
-    """
-    Organizations in rapyuta.io
+    """Interact with organizations.
+
+    In rapyuta.io, an organization is the top-level entity that
+    contains all the projects and resources. Using the CLI, you
+    can view and select organizations, it's users, invite users,
+    and remove users.
+
+    Note that in order to invite or remove users, you need to login
+    as the organization admin.
     """
     pass
 

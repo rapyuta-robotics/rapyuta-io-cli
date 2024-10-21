@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,15 +23,13 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 def list_devices() -> None:
-    """
-    List all the devices in the selected Project
-    """
+    """List all the devices in the current project."""
     try:
         client = new_client()
         devices = client.get_all_devices()
@@ -45,7 +43,7 @@ def list_devices() -> None:
 def _display_device_list(devices: typing.List[Device], show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ('Device ID', 'Name', 'Status')
+        headers = ("Device ID", "Name", "Status")
 
     data = [[d.uuid, d.name, d.status] for d in devices]
 

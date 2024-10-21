@@ -14,7 +14,6 @@
 from pathlib import Path
 
 import click
-import yaml
 from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
@@ -22,44 +21,63 @@ from riocli.utils import tabulate_data
 
 
 @click.command(
-    'list-examples',
+    "list-examples",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    help='List all examples supported in rio explain command'
+    help="List all examples supported in rio explain command",
 )
 def list_examples() -> None:
-    path = Path(__file__).parent.joinpath('manifests')
+    """List all examples supported in rio explain command."""
+    path = Path(__file__).parent.joinpath("manifests")
 
     examples = []
-    for each in path.glob('*.yaml'):
-        examples.append([each.name.split('.yaml')[0]])
+    for each in path.glob("*.yaml"):
+        examples.append([each.name.split(".yaml")[0]])
 
-    tabulate_data(examples, ['Examples'])
+    tabulate_data(examples, ["Examples"])
 
 
 @click.command(
-    'explain',
+    "explain",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    help='Generates a sample resource manifest for the given type'
+    help="Generates a sample resource manifest for the given type",
 )
-@click.option('--templates', help='Alternate root for templates',
-              default=None)
-@click.argument('resource')
+@click.option("--templates", help="Alternate root for templates", default=None)
+@click.argument("resource")
 def explain(resource: str, templates: str = None) -> None:
+    """Explain a resource manifest for the given type.
+
+    The explain command can be used to generate a sample
+    resource manifest using the examples that are shown
+    in the output. This is particularly useful to understand
+    the structure of the manifest and the fields that are
+    required for the resource.
+
+    Usage Examples:
+
+        View examples for deployment
+
+        $ rio explain deployment
+
+        View examples for usergroup
+
+        $ rio explain usergroup
+    """
     if templates:
         path = Path(templates)
     else:
-        path = Path(__file__).parent.joinpath('manifests')
+        path = Path(__file__).parent.joinpath("manifests")
 
-    for each in path.glob('**/*'):
-        if resource + '.yaml' == each.name:
+    for each in path.glob("**/*"):
+        if resource + ".yaml" == each.name:
             with open(each) as f:
                 click.echo_via_pager(f.readlines())
                 raise SystemExit(0)
 
-    click.secho('{} Resource "{}" not found'.format(Symbols.ERROR, resource),
-                fg=Colors.RED)
+    click.secho(
+        '{} Resource "{}" not found'.format(Symbols.ERROR, resource), fg=Colors.RED
+    )
     raise SystemExit(1)

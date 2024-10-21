@@ -32,7 +32,12 @@ from riocli.hwil.ssh import ssh
     help_options_color=Colors.GREEN,
 )
 def hwildevice():
-    """Manage Hardware-in-the-Loop (HWIL) devices"""
+    """Manage Hardware-in-the-Loop (HWIL) devices.
+
+    Hardware-in-the-Loop (HWIL) devices are virtual devices that
+    can be used to test devices on rapyuta.io. The set of commands
+    provide a convenient way to manage these devices and access them.
+    """
     pass
 
 

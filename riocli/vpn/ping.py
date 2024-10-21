@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ from yaspin.api import Yaspin
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import (
+    get_tailscale_status,
     install_vpn_tools,
     is_tailscale_up,
-    get_tailscale_status,
-    tailscale_ping
+    tailscale_ping,
 )
 
 
 @click.command(
-    'ping-all',
+    "ping-all",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -35,8 +35,12 @@ from riocli.vpn.util import (
 @click.pass_context
 @with_spinner(text="Pinging all peers...")
 def ping_all(ctx: click.Context, spinner: Yaspin = None):
-    """
-    Ping all the peers in the network
+    """Ping all the peers in the network.
+
+    This command will ping all the peers in the network. It is
+    convenient to check the connectivity of all the peers in the
+    network. Also, it helps establish a direct connection with
+    the peers.
     """
     try:
         with spinner.hidden():
@@ -44,13 +48,14 @@ def ping_all(ctx: click.Context, spinner: Yaspin = None):
 
         if not is_tailscale_up():
             spinner.text = click.style(
-                'You are not connected to the VPN', fg=Colors.YELLOW)
+                "You are not connected to the VPN", fg=Colors.YELLOW
+            )
             spinner.yellow.ok(Symbols.WARNING)
             return
 
         ping_all_peers(spinner)
 
-        spinner.text = click.style('Ping complete', fg=Colors.GREEN)
+        spinner.text = click.style("Ping complete", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(str(e), fg=Colors.RED)
@@ -61,17 +66,17 @@ def ping_all(ctx: click.Context, spinner: Yaspin = None):
 def ping_all_peers(spinner: Yaspin):
     s = get_tailscale_status()
 
-    peers = s.get('Peer', {})
+    peers = s.get("Peer", {})
 
     for _, v in peers.items():
         # Do not waste time pinging
         # offline nodes
-        if not v.get('Online'):
+        if not v.get("Online"):
             continue
 
-        spinner.text = 'Pinging: {}...'.format(
-            click.style(v.get('HostName'), italic=True)
+        spinner.text = "Pinging: {}...".format(
+            click.style(v.get("HostName"), italic=True)
         )
-        ips = v.get('TailscaleIPs')
+        ips = v.get("TailscaleIPs")
         for ip in ips:
             tailscale_ping(ip)

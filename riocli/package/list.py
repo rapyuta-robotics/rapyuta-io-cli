@@ -1,4 +1,4 @@
-# Copyright 2021 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +20,14 @@ from riocli.package.model import Package
 from riocli.utils import tabulate_data
 
 
-@click.command('list')
-@click.option('--filter', 'filter_word', type=str, default=None,
-              help='A sub-string can be provided to filter down the package list')
+@click.command("list")
+@click.option(
+    "--filter",
+    "filter_word",
+    type=str,
+    default=None,
+    help="A sub-string can be provided to filter down the package list",
+)
 def list_packages(filter_word: str) -> None:
     """
     List the packages in the selected project
@@ -32,19 +37,19 @@ def list_packages(filter_word: str) -> None:
         packages = client.list_packages()
         _display_package_list(packages, filter_word, show_header=True)
     except Exception as e:
-        click.secho(str(e), fg='red')
+        click.secho(str(e), fg="red")
         raise SystemExit(1)
 
 
 def _display_package_list(
-        packages: typing.List[Package],
-        filter_word: str,
-        show_header: bool = True,
-        truncate_limit: int = 48,
+    packages: typing.List[Package],
+    filter_word: str,
+    show_header: bool = True,
+    truncate_limit: int = 48,
 ) -> None:
     headers = []
     if show_header:
-        headers = ('Name', 'Version', 'Package ID', 'Description')
+        headers = ("Name", "Version", "Package ID", "Description")
 
     # Show IO Packages first
     iter_pkg = list(map(lambda x: x.metadata.name, packages))
@@ -57,7 +62,7 @@ def _display_package_list(
         package_dict[pkgName] = filtered_pkg
 
     data = []
-    for pkgName, pkgVersionList in package_dict.items():
+    for _, pkgVersionList in package_dict.items():
         for package in pkgVersionList:
             description = package.metadata.get("description", "")
             name = package.metadata.name
@@ -69,9 +74,11 @@ def _display_package_list(
 
             if truncate_limit:
                 if len(description) > truncate_limit:
-                    description = description[:truncate_limit] + '..'
+                    description = description[:truncate_limit] + ".."
                 if len(name) > truncate_limit:
-                    name = name[:truncate_limit] + '..'
+                    name = name[:truncate_limit] + ".."
 
-            data.append([name, package.metadata.version, package.metadata.guid, description])
+            data.append(
+                [name, package.metadata.version, package.metadata.guid, description]
+            )
     tabulate_data(data, headers=headers)

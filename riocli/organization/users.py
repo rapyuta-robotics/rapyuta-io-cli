@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,35 +22,35 @@ from riocli.utils.context import get_root_context
 
 
 @click.command(
-    'users',
+    "users",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def list_users(ctx: click.Context) -> None:
-    """
-    Lists all users in the organization.
-    """
+    """Lists all users in the organization."""
     ctx = get_root_context(ctx)
-    current_user_email = ctx.obj.data.get('email_id')
+    current_user_email = ctx.obj.data.get("email_id")
 
     try:
-        organization = get_organization_details(ctx.obj.data['organization_id'])
+        organization = get_organization_details(ctx.obj.data["organization_id"])
     except Exception as e:
-        click.secho('{} Failed to get organization details'.format(Symbols.ERROR), fg=Colors.RED)
+        click.secho(
+            "{} Failed to get organization details".format(Symbols.ERROR), fg=Colors.RED
+        )
         raise SystemExit(1) from e
 
-    users = organization.get('users')
-    users.sort(key=lambda u: u['emailID'])
+    users = organization.get("users")
+    users.sort(key=lambda u: u["emailID"])
 
     data = []
     for u in users:
         fg, bold = None, False
-        if u['emailID'] == current_user_email:
+        if u["emailID"] == current_user_email:
             fg, bold = Colors.GREEN, True
-        full_name = '{} {}'.format(u.get('firstName', ''), u.get('lastName', ''))
-        row = [u['guid'], full_name, u['emailID'], u['state']]
+        full_name = "{} {}".format(u.get("firstName", ""), u.get("lastName", ""))
+        row = [u["guid"], full_name, u["emailID"], u["state"]]
         data.append([click.style(v, fg=fg, bold=bold) for v in row])
 
-    tabulate_data(data, headers=['GUID', 'Name', 'EmailID', 'Status'])
+    tabulate_data(data, headers=["GUID", "Name", "EmailID", "Status"])

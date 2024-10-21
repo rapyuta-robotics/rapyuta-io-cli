@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,23 +23,31 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type', default='yaml',
-              type=click.Choice(['json', 'yaml'], case_sensitive=False))
-@click.argument('organization-name', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("organization-name", type=str)
 @name_to_organization_guid
 def inspect_organization(
-        format_type: str,
-        organization_name: str,
-        organization_guid: str,
-        organization_short_id: str,
+    format_type: str,
+    organization_name: str,
+    organization_guid: str,
+    organization_short_id: str,
 ) -> None:
-    """
-    Inspect an organization
+    """Inspect an organization.
+
+    Provides an overview of the organization. The output
+    is not the exact ouptut of the API, but a more human-readable
+    version of the organization details.
     """
     try:
         organization = get_organization_details(organization_guid)
@@ -51,20 +59,20 @@ def inspect_organization(
 
 def make_organization_inspectable(organization: typing.Dict) -> typing.Dict:
     creator = None
-    for user in organization['users']:
-        if user['guid'] == organization['creator']:
-            creator = user['emailID']
+    for user in organization["users"]:
+        if user["guid"] == organization["creator"]:
+            creator = user["emailID"]
             break
 
     return {
-        'name': organization['name'],
-        'created_at': organization['CreatedAt'],
-        'updated_at': organization['UpdatedAt'],
-        'guid': organization['guid'],
-        'url': organization['url'],
-        'creator': creator,
-        'short_guid': organization['shortGUID'],
-        'state': organization['state'],
-        'users': len(organization['users']),
-        'country': organization['country']['code'],
+        "name": organization["name"],
+        "created_at": organization["CreatedAt"],
+        "updated_at": organization["UpdatedAt"],
+        "guid": organization["guid"],
+        "url": organization["url"],
+        "creator": creator,
+        "short_guid": organization["shortGUID"],
+        "state": organization["state"],
+        "users": len(organization["users"]),
+        "country": organization["country"]["code"],
     }

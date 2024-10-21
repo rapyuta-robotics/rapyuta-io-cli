@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,19 +18,17 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'status',
+    "status",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def status(ctx: click.Context):
-    """
-    Shows the login status of the CLI
-    """
+    """Shows the current login status."""
     if not ctx.obj.exists:
-        click.secho('🔒You are logged out', fg=Colors.YELLOW)
+        click.secho("🔒You are logged out", fg=Colors.YELLOW)
         raise SystemExit(1)
 
-    if 'auth_token' in ctx.obj.data:
-        click.secho('🎉 You are logged in', fg=Colors.GREEN)
+    if "auth_token" in ctx.obj.data:
+        click.secho("🎉 You are logged in", fg=Colors.GREEN)

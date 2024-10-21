@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,25 +33,30 @@ from riocli.parameter.utils import filter_trees
 
 
 @click.command(
-    'diff',
+    "diff",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--tree-names', type=click.STRING, multiple=True, default=None,
-              help='Tree names to fetch')
-@click.argument('path', type=click.Path(exists=True), required=False)
+@click.option(
+    "--tree-names",
+    type=click.STRING,
+    multiple=True,
+    default=None,
+    help="Tree names to fetch",
+)
+@click.argument("path", type=click.Path(exists=True), required=False)
 def diff_configurations(path: str, tree_names: Tuple = None) -> None:
-    """
-    Diff between the local and cloud configuration trees.
+    """Diff between the local and cloud configuration trees.
+
+    You can specify the tree names to diff using the ``--tree-names`` flag.
     """
     trees = filter_trees(path, tree_names)
 
     try:
         client = new_client()
-        with TemporaryDirectory(prefix='riocli-') as tmp_path:
-            client.download_configurations(tmp_path,
-                                           tree_names=list(tree_names))
+        with TemporaryDirectory(prefix="riocli-") as tmp_path:
+            client.download_configurations(tmp_path, tree_names=list(tree_names))
 
             for tree in trees:
                 left_tree = os.path.join(tmp_path, tree)
@@ -66,55 +71,66 @@ def diff_tree(left: str, right: str) -> None:
     comp = dircmp(left, right)
 
     for f in comp.common_dirs:
-        remote_dir, local_dir = os.path.join(comp.left, f), os.path.join(
-            comp.right, f)
+        remote_dir, local_dir = os.path.join(comp.left, f), os.path.join(comp.right, f)
         diff_tree(remote_dir, local_dir)
 
     for f in comp.diff_files:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
-            comp.right, f)
+        remote_file, local_file = (
+            os.path.join(comp.left, f),
+            os.path.join(comp.right, f),
+        )
         diff_file(remote_file, local_file)
 
     for f in comp.right_only:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
-            comp.right, f)
+        remote_file, local_file = (
+            os.path.join(comp.left, f),
+            os.path.join(comp.right, f),
+        )
         changed_file(remote_file, local_file, right_only=True)
 
     for f in comp.left_only:
-        remote_file, local_file = os.path.join(comp.left, f), os.path.join(
-            comp.right, f)
+        remote_file, local_file = (
+            os.path.join(comp.left, f),
+            os.path.join(comp.right, f),
+        )
         changed_file(remote_file, local_file, left_only=True)
 
 
 def diff_file(left: str, right: str):
     try:
-        with open(left, 'r', encoding='utf-8') as left_f:
+        with open(left, "r", encoding="utf-8") as left_f:
             left_lines = left_f.readlines()
 
-        with open(right, 'r', encoding='utf-8') as right_f:
+        with open(right, "r", encoding="utf-8") as right_f:
             right_lines = right_f.readlines()
     except UnicodeDecodeError:
         changed_file(left, right, binary=True)
         return
 
-    diff = unified_diff(left_lines, right_lines, fromfile=left, tofile=right,
-                        lineterm='\n')
+    diff = unified_diff(
+        left_lines, right_lines, fromfile=left, tofile=right, lineterm="\n"
+    )
 
     for line in diff:
         click.secho(line, nl=False)
 
 
-def changed_file(left: str, right: str, left_only: bool = False,
-                 right_only: bool = False, binary: bool = False):
-    click.secho('--- {}'.format(left))
-    click.secho('+++ {}'.format(right))
+def changed_file(
+    left: str,
+    right: str,
+    left_only: bool = False,
+    right_only: bool = False,
+    binary: bool = False,
+):
+    click.secho("--- {}".format(left))
+    click.secho("+++ {}".format(right))
 
     if left_only:
-        click.secho('deleted file')
+        click.secho("deleted file")
         click.secho()
     elif right_only:
-        click.secho('new file')
+        click.secho("new file")
         click.secho()
     elif binary:
-        click.secho('binary file changed')
+        click.secho("binary file changed")
         click.secho()

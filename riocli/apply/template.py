@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from typing import Iterable
+import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -23,27 +22,64 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'template',
+    "template",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--values', '-v',
-              help='Path to values yaml file. key/values specified in the '
-                   'values file can be used as variables in template YAMLs')
-@click.option('--secrets', '-s',
-              help='Secret files are sops encoded value files. riocli '
-                   'expects sops to be authorized for decoding files on this computer')
-@click.argument('files', nargs=-1)
-def template(values: str, secrets: str, files: Iterable[str]) -> None:
-    """
-    Print manifests with filled values
+@click.option(
+    "--values",
+    "-v",
+    multiple=True,
+    default=(),
+    help="Path to values yaml file. key/values specified in the "
+    "values file can be used as variables in template YAMLs",
+)
+@click.option(
+    "--secrets",
+    "-s",
+    multiple=True,
+    default=(),
+    help="Secret files are sops encoded value files. riocli "
+    "expects sops to be authorized for decoding files on this computer",
+)
+@click.argument("files", nargs=-1)
+def template(
+    values: typing.Tuple[str],
+    secrets: typing.Tuple[str],
+    files: typing.Tuple[str],
+) -> None:
+    """Print manifests with values and secrets applied
+
+    The template command can be used to preview the manifests
+    with values and secrets applied. This is particularly useful
+    to check if the values and secrets are correctly substituted
+    in the manifests before applying them.
+
+    Just like the apply command, the template command also accepts
+    a list of files as arguments. You can specify one or more files,
+    directories or glob pattern.
+
+    You can also specify one or more values and secrets files using
+    the `-v` and `-s` flags respectively. The values and secrets files
+    are used to substitute the variables in the manifests.
+
+    Usage Examples:
+
+        Specify one value and secret file
+
+            rio template manifests/*.yaml -v values.yaml -s secrets.yaml
+
+        Specify more than one values file
+
+            rio template templates/** -v common.yaml -v site.yaml
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
-        files, values, secrets)
+        files, values, secrets
+    )
 
     if len(glob_files) == 0:
-        click.secho('No files specified', fg=Colors.RED)
+        click.secho("No files specified", fg=Colors.RED)
         raise SystemExit(1)
 
     applier = Applier(glob_files, abs_values, abs_secrets)

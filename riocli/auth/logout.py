@@ -18,27 +18,25 @@ from riocli.constants import Colors, Symbols
 
 
 @click.command(
-    'logout',
+    "logout",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
 def logout(ctx: click.Context):
-    """
-    Log out from the Rapyuta.io account using the CLI.
-    """
+    """Log out from your rapyuta.io account."""
     if not ctx.obj.exists:
         return
 
-    ctx.obj.data.pop('email_id', None)
-    ctx.obj.data.pop('auth_token', None)
-    ctx.obj.data.pop('project_id', None)
-    ctx.obj.data.pop('project_name', None)
-    ctx.obj.data.pop('organization_id', None)
-    ctx.obj.data.pop('organization_name', None)
-    ctx.obj.data.pop('organization_short_id', None)
+    ctx.obj.data.pop("email_id", None)
+    ctx.obj.data.pop("auth_token", None)
+    ctx.obj.data.pop("project_id", None)
+    ctx.obj.data.pop("project_name", None)
+    ctx.obj.data.pop("organization_id", None)
+    ctx.obj.data.pop("organization_name", None)
+    ctx.obj.data.pop("organization_short_id", None)
 
     ctx.obj.save()
 
-    click.secho('{} Logged out successfully.'.format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho("{} Logged out successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN)

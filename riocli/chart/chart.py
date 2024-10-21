@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,48 +30,65 @@ class Chart(Munch):
         self.downloaded = False
 
     def apply_chart(
-            self,
-            values: str = None,
-            secrets: str = None,
-            dryrun: bool = None,
-            workers: int = 6,
-            retry_count: int = 50,
-            retry_interval: int = 6,
-            silent: bool = False):
+        self,
+        values: str = None,
+        secrets: str = None,
+        dryrun: bool = None,
+        workers: int = 6,
+        retry_count: int = 50,
+        retry_interval: int = 6,
+        silent: bool = False,
+    ):
         if not self.downloaded:
             self.download_chart()
-        templates_dir = Path(self.tmp_dir.name, self.name, 'templates')
+        templates_dir = Path(self.tmp_dir.name, self.name, "templates")
         if not values:
-            values = Path(self.tmp_dir.name, self.name,
-                          'values.yaml').as_posix()
+            values = Path(self.tmp_dir.name, self.name, "values.yaml").as_posix()
 
-        apply.callback(values=values, files=[templates_dir], secrets=secrets,
-                       dryrun=dryrun, workers=workers, silent=silent, retry_count=retry_count, retry_interval=retry_interval)
+        apply.callback(
+            values=values,
+            files=[templates_dir],
+            secrets=secrets,
+            dryrun=dryrun,
+            workers=workers,
+            silent=silent,
+            retry_count=retry_count,
+            retry_interval=retry_interval,
+        )
 
     def delete_chart(
-            self,
-            values: str = None,
-            secrets: str = None,
-            dryrun: bool = None,
-            silent: bool = False):
+        self,
+        values: str = None,
+        secrets: str = None,
+        dryrun: bool = None,
+        silent: bool = False,
+    ):
         if not self.downloaded:
             self.download_chart()
 
-        templates_dir = Path(self.tmp_dir.name, self.name, 'templates')
+        templates_dir = Path(self.tmp_dir.name, self.name, "templates")
         if not values:
-            values = Path(self.tmp_dir.name, self.name,
-                          'values.yaml').as_posix()
+            values = Path(self.tmp_dir.name, self.name, "values.yaml").as_posix()
 
-        delete.callback(values=values, files=[templates_dir], secrets=secrets,
-                        dryrun=dryrun, silent=silent)
+        delete.callback(
+            values=values,
+            files=[templates_dir],
+            secrets=secrets,
+            dryrun=dryrun,
+            silent=silent,
+        )
 
     def download_chart(self):
         self._create_temp_directory()
-        click.secho('Downloading {}:{} chart in {}'.format(
-            self.name, self.version, self.tmp_dir.name), fg=Colors.CYAN)
+        click.secho(
+            "Downloading {}:{} chart in {}".format(
+                self.name, self.version, self.tmp_dir.name
+            ),
+            fg=Colors.CYAN,
+        )
         chart_filepath = Path(self.tmp_dir.name, self._chart_filename())
 
-        with open(chart_filepath, 'wb') as f:
+        with open(chart_filepath, "wb") as f:
             resp = requests.get(self.urls[0])
             f.write(resp.content)
 
@@ -91,8 +108,8 @@ class Chart(Munch):
             self.tmp_dir.cleanup()
 
     def _chart_filename(self):
-        return self.urls[0].split('/')[-1]
+        return self.urls[0].split("/")[-1]
 
     def _create_temp_directory(self):
-        prefix = 'rio-chart-{}-'.format(self.name)
+        prefix = "rio-chart-{}-".format(self.name)
         self.tmp_dir = TemporaryDirectory(prefix=prefix)

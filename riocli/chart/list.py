@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,20 +21,19 @@ from riocli.constants import Colors
 
 
 @click.command(
-    'list',
+    "list",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('-w', '--wide', is_flag=True, default=False,
-              help='Print more details')
+@click.option("-w", "--wide", is_flag=True, default=False, help="Print more details")
 def list_charts(wide: bool = False) -> None:
     """List all available charts."""
     index = fetch_index()
-    if 'entries' not in index:
-        raise Exception('No entries found!')
+    if "entries" not in index:
+        raise Exception("No entries found!")
     entries = []
-    for name, chart in index['entries'].items():
+    for _, chart in index["entries"].items():
         for version in chart:
             entries.append(version)
 

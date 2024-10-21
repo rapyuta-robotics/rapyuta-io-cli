@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,18 +22,16 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    'search',
+    "search",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    help='Search for available charts in the repository',
+    help="Search for available charts in the repository",
 )
-@click.option('-w', '--wide', is_flag=True, default=False,
-              help='Print more details')
-@click.argument('chart', type=str)
+@click.option("-w", "--wide", is_flag=True, default=False, help="Print more details")
+@click.argument("chart", type=str)
 @with_spinner(text="Searching for chart...")
-def search_chart(chart: str, wide: bool = False,
-                 spinner: Yaspin = None) -> None:
+def search_chart(chart: str, wide: bool = False, spinner: Yaspin = None) -> None:
     """Search for a chart in the chart repo."""
     try:
         versions = find_chart(chart)

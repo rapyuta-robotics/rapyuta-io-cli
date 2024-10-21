@@ -1,4 +1,4 @@
-# Copyright 2023 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,21 +21,27 @@ from riocli.utils import inspect_with_format
 
 
 @click.command(
-    'inspect',
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--format', '-f', 'format_type',
-              type=click.Choice(['json', 'yaml'], case_sensitive=True),
-              default='yaml')
-@click.argument('static-route', type=str)
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    type=click.Choice(["json", "yaml"], case_sensitive=True),
+    default="yaml",
+)
+@click.argument("static-route", type=str)
 def inspect_static_route(
-        format_type: str,
-        static_route: str,
+    format_type: str,
+    static_route: str,
 ) -> None:
-    """
-    Inspect a static route
+    """Print the details of a static route.
+
+    You can choose the format of the output using the ``--format`` flag.
+    The supported formats are ``json`` and ``yaml``. Default is ``yaml``.
     """
     try:
         client = new_v2_client()
@@ -44,5 +50,3 @@ def inspect_static_route(
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
-
-
