@@ -12,6 +12,9 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
       - name: Run semantic-release
         run: |
           npm install --save-dev semantic-release@18.0.0
