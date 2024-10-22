@@ -97,7 +97,5 @@ def report_device(
         spinner.green.ok(Symbols.SUCCESS)
 
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to report device: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style("Failed to report device: {}".format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
