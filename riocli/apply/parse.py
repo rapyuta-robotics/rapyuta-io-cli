@@ -18,6 +18,7 @@ import typing
 
 import click
 import yaml
+from benedict import benedict
 from graphlib import TopologicalSorter
 from munch import munchify
 
@@ -28,7 +29,7 @@ from riocli.apply.util import (
     print_resolved_objects,
 )
 from riocli.config import Configuration
-from riocli.constants import Colors, Symbols, ApplyResult
+from riocli.constants import ApplyResult, Colors, Symbols
 from riocli.exceptions import ResourceNotFound
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import Graphviz
@@ -488,7 +489,7 @@ class Applier(object):
         }
 
         if "rio" in values:
-            values["rio"].update(rio)
+            benedict(values["rio"]).merge(rio)
         else:
             values["rio"] = rio
 
@@ -498,15 +499,15 @@ class Applier(object):
         self, values: typing.List, secrets: typing.List
     ) -> None:
         """Process the values and secrets files and inject them into the manifest files"""
-        self.values, self.secrets = {}, {}
+        self.values, self.secrets = benedict({}), benedict({})
 
         values = values or []
         secrets = secrets or []
 
         for v in values:
-            self.values.update(self._load_file_content(v, is_value=True)[0])
+            benedict(self.values).merge(self._load_file_content(v, is_value=True)[0])
 
         self.values = self._inject_rio_namespace(self.values)
 
         for s in secrets:
-            self.secrets.update(self._load_file_content(s, is_secret=True)[0])
+            benedict(self.values).merge(self._load_file_content(s, is_secret=True)[0])

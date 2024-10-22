@@ -94,8 +94,7 @@ def install_vpn_tools() -> None:
 
     click.confirm(
         click.style(
-            "{} VPN tools are not installed. Do you want "
-            "to install them now?".format(
+            "{} VPN tools are not installed. Do you want " "to install them now?".format(
                 Symbols.INFO
             ),
             fg=Colors.YELLOW,
