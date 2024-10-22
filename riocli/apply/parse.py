@@ -29,8 +29,13 @@ from riocli.apply.util import (
     print_resolved_objects,
 )
 from riocli.config import Configuration
-from riocli.constants import ApplyResult, Colors, Symbols
-from riocli.exceptions import ResourceNotFound
+from riocli.constants import Colors, Symbols, ApplyResult
+from riocli.exceptions import (
+    NoProjectSelected,
+    NoOrganizationSelected,
+    ResourceNotFound,
+    LoggedOut,
+)
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
@@ -475,18 +480,32 @@ class Applier(object):
     def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
         values = values or {}
 
-        rio = {
-            "project": {
-                "name": self.config.data.get("project_name"),
-                "guid": self.config.project_guid,
-            },
-            "organization": {
-                "name": self.config.data.get("organization_name"),
-                "guid": self.config.organization_guid,
-                "short_id": self.config.organization_short_id,
-            },
-            "email_id": self.config.data.get("email_id"),
-        }
+        try:
+            rio = {
+                "project": {
+                    "name": self.config.data.get("project_name"),
+                    "guid": self.config.project_guid,
+                },
+                "organization": {
+                    "name": self.config.data.get("organization_name"),
+                    "guid": self.config.organization_guid,
+                    "short_id": self.config.organization_short_id,
+                },
+                "email_id": self.config.data.get("email_id"),
+            }
+        except (LoggedOut, NoProjectSelected, NoOrganizationSelected):
+            rio = {
+                "project": {
+                    "name": "project-name",
+                    "guid": "project-guid",
+                },
+                "organization": {
+                    "name": "org-name",
+                    "guid": "org-guid",
+                    "short_id": "org-short",
+                },
+                "email_id": "user@rapyuta.io",
+            }
 
         if "rio" in values:
             benedict(values["rio"]).merge(rio)
