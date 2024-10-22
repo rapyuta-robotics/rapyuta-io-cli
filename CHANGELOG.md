@@ -1,3 +1,10 @@
+## [9.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.0...v9.1.1) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** deep merge secrets and values ([b7af2b3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7af2b3d2bbee569e55d7568f465af8396b4a32f))
+
 # [9.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.4...v9.1.0) (2024-10-21)
 
 
