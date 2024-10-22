@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "9.1.1"
+__version__ = "9.1.2"
 
 import os
 

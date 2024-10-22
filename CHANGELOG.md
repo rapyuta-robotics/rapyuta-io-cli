@@ -1,3 +1,10 @@
+## [9.1.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.1...v9.1.2) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** handle dry-run without login ([#377](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/377)) ([ddc0f1a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ddc0f1a5b73c63f2e68532f5fe14a9657284be47))
+
 ## [9.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.0...v9.1.1) (2024-10-22)
 
 
