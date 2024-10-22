@@ -529,4 +529,4 @@ class Applier(object):
         self.values = self._inject_rio_namespace(self.values)
 
         for s in secrets:
-            benedict(self.values).merge(self._load_file_content(s, is_secret=True)[0])
+            benedict(self.secrets).merge(self._load_file_content(s, is_secret=True)[0])
