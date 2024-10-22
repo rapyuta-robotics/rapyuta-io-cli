@@ -22,15 +22,15 @@ from riocli.config import new_client
 
 
 def run_on_device(
-        device_guid: str = None,
-        command: typing.List[str] = None,
-        user: str = 'root',
-        shell: str = '/bin/bash',
-        background: bool = False,
-        deployment: str = None,
-        exec_name: str = None,
-        device_name: str = None,
-        timeout: int = 300
+    device_guid: str = None,
+    command: typing.List[str] = None,
+    user: str = "root",
+    shell: str = "/bin/bash",
+    background: bool = False,
+    deployment: str = None,
+    exec_name: str = None,
+    device_name: str = None,
+    timeout: int = 300
 ) -> str:
     client = new_client()
 

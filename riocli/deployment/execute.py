@@ -34,22 +34,22 @@ from riocli.utils.selector import show_selection
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option('--user', default='root')
-@click.option('--shell', default='/bin/bash')
-@click.option('--timeout', default=300)
-@click.option('--run-sync', is_flag=True, default=False, help="Run the command synchronously")
-@click.option('--exec', 'exec_name', default=None,
-              help='Name of a executable in the component')
-@click.argument('deployment-name', type=str)
-@click.argument('command', nargs=-1)
+@click.option("--user", default="root")
+@click.option("--shell", default="/bin/bash")
+@click.option("--timeout", default=300)
+@click.option("--run-sync", is_flag=True, default=False, help="Run the command synchronously")
+@click.option("--exec", "exec_name", default=None,
+              help="Name of a executable in the component")
+@click.argument("deployment-name", type=str)
+@click.argument("command", nargs=-1)
 def execute_command(
-        user: str,
-        shell: str,
-        timeout: int,
-        exec_name: str,
-        run_sync: bool,
-        deployment_name: str,
-        command: typing.List[str]
+    user: str,
+    shell: str,
+    timeout: int,
+    exec_name: str,
+    run_sync: bool,
+    deployment_name: str,
+    command: typing.List[str]
 ) -> None:
     """Execute a command on a device deployment
 
