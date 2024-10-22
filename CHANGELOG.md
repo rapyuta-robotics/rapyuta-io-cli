@@ -1,3 +1,10 @@
+## [9.1.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.2...v9.1.3) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** secrets are not merged ([#380](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/380)) ([a05e9db](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a05e9db05b6db95a64b52d94789d86a716ef73f5))
+
 ## [9.1.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.1...v9.1.2) (2024-10-22)
 
 
