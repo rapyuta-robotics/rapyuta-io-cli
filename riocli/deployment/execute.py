@@ -36,17 +36,20 @@ from riocli.utils.selector import show_selection
 )
 @click.option("--user", default="root")
 @click.option("--shell", default="/bin/bash")
-@click.option(
-    "--exec", "exec_name", default=None, help="Name of a executable in the component"
-)
+@click.option("--timeout", default=300)
+@click.option("--run-sync", is_flag=True, default=False, help="Run the command synchronously")
+@click.option("--exec", "exec_name", default=None,
+              help="Name of a executable in the component")
 @click.argument("deployment-name", type=str)
 @click.argument("command", nargs=-1)
 def execute_command(
     user: str,
     shell: str,
+    timeout: int,
     exec_name: str,
+    run_sync: bool,
     deployment_name: str,
-    command: typing.List[str],
+    command: typing.List[str]
 ) -> None:
     """Execute a command on a device deployment
 
@@ -60,6 +63,10 @@ def execute_command(
     You can specify the shell using the ``--shell`` option. The default
     shell is ``/bin/bash``. You can also specify the user using the ``--user``
     option. The default user is ``root``.
+
+    To run the command synchronously,set the --run-sync flag to true.
+    The default value is false. To specify the timeout, use the --timeout
+    flag, providing the duration in seconds. The default value is 300.
 
     Please ensure that you enclose the command in quotes to avoid
     any issues with the command parsing.
@@ -112,10 +119,11 @@ def execute_command(
                 user=user,
                 shell=shell,
                 command=command,
-                background=False,
+                background=not run_sync,
                 deployment=deployment,
                 exec_name=exec_name,
                 device_name=deployment.spec.device.depends.nameOrGUID,
+                timeout=timeout,
             )
         click.echo(response)
     except Exception as e:
