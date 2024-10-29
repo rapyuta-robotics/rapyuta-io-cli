@@ -13,7 +13,8 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-
+from riocli.config import new_client
+from rapyuta_io.clients.device import DeviceStatus
 from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid, generate_shared_url, upload_debug_logs
 from riocli.utils.spinner import with_spinner
@@ -76,6 +77,14 @@ def report_device(
 
             $ rio device report -s -e 10 DEVICE_NAME
     """
+    device = new_client().get_device(device_guid)
+    if device["status"] != DeviceStatus.ONLINE:
+        spinner.text = click.style(
+            "Device is not online. Skipping report.", fg=Colors.YELLOW
+        )
+        spinner.yellow.ok(Symbols.WARNING)
+        return
+
     if not force:
         with spinner.hidden():
             click.confirm(
@@ -95,7 +104,6 @@ def report_device(
 
         spinner.text = click.style("Device reported successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
-
     except Exception as e:
         spinner.text = click.style("Failed to report device: {}".format(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
