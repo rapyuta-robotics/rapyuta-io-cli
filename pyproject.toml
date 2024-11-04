@@ -46,7 +46,7 @@ dependencies = [
     "python-magic>=0.4.27",
     "pytz",
     "pyyaml>=5.4.1",
-    "rapyuta-io>=2.0.0",
+    "rapyuta-io>=2.1.0",
     "requests>=2.20.0",
     "semver>=3.0.0",
     "setuptools",
