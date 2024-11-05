@@ -287,6 +287,13 @@ spec:
       kind: device
       nameOrGUID: device-docker
   restart: always # Options: [always, onfailure, never]
+  features:
+    params:
+      enabled: true
+      trees:
+        - config01
+        - config02
+      blockUntilSynced: true # Optional [true, false]. Default is false.
   envArgs:
     - name: TEST_KEY
       value: test_value
