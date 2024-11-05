@@ -36,7 +36,7 @@ def list_organizations(ctx: click.Context) -> None:
     try:
         client = new_client(with_project=False)
         organizations = client.get_user_organizations()
-        current = ctx.obj.data["organization_id"]
+        current = ctx.obj.data.get("organization_id")
         print_organizations(organizations, current)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
