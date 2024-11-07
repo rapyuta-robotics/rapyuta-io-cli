@@ -25,7 +25,7 @@ jobs:
           MINIO_SECRET: ${{ secrets.MINIO_SECRET }}
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: appimages
           path: ${{ github.workspace }}/scripts/rio*.AppImage
