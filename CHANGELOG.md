@@ -1,3 +1,16 @@
+# [9.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.3...v9.2.0) (2024-11-14)
+
+
+### Bug Fixes
+
+* **device:** report online devices only ([#382](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/382)) ([bfe7bb3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bfe7bb326b522e24e153cb745f925c648d077351))
+* **organization:** fixes key error when no org is selected ([#383](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/383)) ([29476ff](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/29476ff87c2728be9ec59d369ede7f0831fd1216))
+
+
+### Features
+
+* **apply:** adds template func to get interface ip ([#379](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/379)) ([d370826](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d370826f75a506d09d4be40537e46a28c5f4d4ae))
+
 ## [9.1.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.2...v9.1.3) (2024-10-22)
 
 
