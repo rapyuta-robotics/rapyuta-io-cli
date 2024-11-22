@@ -1,3 +1,10 @@
+# [9.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.2.0...v9.3.0) (2024-11-22)
+
+
+### Features
+
+* adds option for virtual device expiry ([#387](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/387)) ([b10301a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b10301afae712f9f3f2a831236e3f4e749bcdd88)), closes [AB#39668](https://github.com/AB/issues/39668)
+
 # [9.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.3...v9.2.0) (2024-11-14)
 
 
