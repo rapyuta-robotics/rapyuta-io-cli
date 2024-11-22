@@ -49,6 +49,13 @@ from riocli.utils.spinner import with_spinner
     type=click.Choice(["bionic", "focal", "jammy", "bullseye"]),
     default="focal",
 )
+@click.option(
+    "--expire-after",
+    "expire_after",
+    help="Duration after which the device will expire. Example: 12h, 1d, 600s, 10m",
+    type=str,
+    default="12h",
+)
 @click.argument("device-name", type=str)
 @with_spinner(text="Creating device...")
 @click.pass_context
@@ -58,6 +65,7 @@ def create_device(
     arch: str,
     os: str,
     codename: str,
+    expire_after: str,
     spinner: Yaspin = None,
 ) -> None:
     """Create a new hardware-in-the-loop device.
@@ -78,11 +86,11 @@ def create_device(
 
       Create a new device with the name 'my-device' and the default
 
-      $ rio hwil create my-device
+        $ rio hwil create my-device
 
-        Create a new device with the name 'my-device' and custom
-        parameters for example, arm64 architecture, debian OS and
-        bullseye codename.
+      Create a new device with the name 'my-device' and custom
+      parameters for example, arm64 architecture, debian OS and
+      bullseye codename.
 
         $ rio hwil create my-device --arch arm64 --os debian --codename bullseye
 
@@ -97,6 +105,8 @@ def create_device(
     spinner.write(info)
     client = new_hwil_client()
     labels = prepare_device_labels_from_context(ctx)
+
+    labels["expiry_after"] = expire_after
 
     try:
         client.create_device(device_name, arch, os, codename, labels)
