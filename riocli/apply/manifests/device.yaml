@@ -70,6 +70,7 @@ spec:
     codename: "focal" # Options: ["bionic", "focal" (default), "jammy", "bullseye"]
     highperf: False # Optional [True, False (default)]
     wait: True # Optional [True, False (default)] Wait until the device is ready.
+    expireAfter: '12h' # Optional ["s", "m", "h", "d"] Expire after set duration.
   docker:
     enabled: True # Required
     rosbagMountPath: "/opt/rapyuta/volumes/rosbag"

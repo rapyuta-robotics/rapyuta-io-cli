@@ -301,6 +301,7 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
         "project": data["project_id"],
         "product": spec["product"],
         "rapyuta_device_name": device_name,
+        "expiry_after": spec["expireAfter"],
     }
 
     if spec.get("highperf", False):
