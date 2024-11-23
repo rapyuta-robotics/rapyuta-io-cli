@@ -67,7 +67,7 @@ spec:
     product: "sootballs" # Required Options: ["sootballs", "flaptter", "oks", "platform"]
     arch: "amd64" # Options: ["amd64" (default), "arm64" ]
     os: "ubuntu" # Options: ["ubuntu" (default), "debian" ]
-    codename: "focal" # Options: ["bionic", "focal" (default), "jammy", "bullseye"]
+    codename: "focal" # Options: ["bionic", "focal" (default), "jammy", "noble", "bullseye"]
     highperf: False # Optional [True, False (default)]
     wait: True # Optional [True, False (default)] Wait until the device is ready.
     expireAfter: '12h' # Optional ["s", "m", "h", "d"] Expire after set duration.

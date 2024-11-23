@@ -63,14 +63,15 @@ class Client(object):
     ARCH_OS_DICT = {
         "amd64": {
             "ubuntu": {
-                "bionic": "ubuntu-bionic-ros-melodic-py3",
-                "focal": "ubuntu-focal-ros-noetic-py3",
-                "jammy": "ubuntu-jammy-plain-py3",
+                "bionic": "bionic",
+                "focal": "focal",
+                "jammy": "jammy",
+                "noble": "noble",
             }
         },
         "arm64": {
-            "ubuntu": {"focal": "ubuntu-focal-ros-noetic-py3"},
-            "debian": {"bullseye": "debian-bullseye-docker"},
+            "ubuntu": {"focal": "focal"},
+            "debian": {"bullseye": "bullseye"},
         },
     }
 
