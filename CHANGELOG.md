@@ -1,3 +1,10 @@
+# [9.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.3.0...v9.4.0) (2024-11-25)
+
+
+### Features
+
+* add RIO_CONFIG env override ([#391](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/391)) ([705d648](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/705d6485c1ea27f6ab6540f846c1a9f7a677db0f))
+
 # [9.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.2.0...v9.3.0) (2024-11-22)
 
 
