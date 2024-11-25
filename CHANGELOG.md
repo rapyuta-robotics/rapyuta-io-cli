@@ -1,3 +1,70 @@
+# [9.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.3.0...v9.4.0) (2024-11-25)
+
+
+### Features
+
+* add RIO_CONFIG env override ([#391](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/391)) ([705d648](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/705d6485c1ea27f6ab6540f846c1a9f7a677db0f))
+
+# [9.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.2.0...v9.3.0) (2024-11-22)
+
+
+### Features
+
+* adds option for virtual device expiry ([#387](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/387)) ([b10301a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b10301afae712f9f3f2a831236e3f4e749bcdd88)), closes [AB#39668](https://github.com/AB/issues/39668)
+
+# [9.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.3...v9.2.0) (2024-11-14)
+
+
+### Bug Fixes
+
+* **device:** report online devices only ([#382](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/382)) ([bfe7bb3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bfe7bb326b522e24e153cb745f925c648d077351))
+* **organization:** fixes key error when no org is selected ([#383](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/383)) ([29476ff](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/29476ff87c2728be9ec59d369ede7f0831fd1216))
+
+
+### Features
+
+* **apply:** adds template func to get interface ip ([#379](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/379)) ([d370826](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d370826f75a506d09d4be40537e46a28c5f4d4ae))
+
+## [9.1.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.2...v9.1.3) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** secrets are not merged ([#380](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/380)) ([a05e9db](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a05e9db05b6db95a64b52d94789d86a716ef73f5))
+
+## [9.1.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.1...v9.1.2) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** handle dry-run without login ([#377](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/377)) ([ddc0f1a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ddc0f1a5b73c63f2e68532f5fe14a9657284be47))
+
+## [9.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.1.0...v9.1.1) (2024-10-22)
+
+
+### Bug Fixes
+
+* **apply:** deep merge secrets and values ([b7af2b3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7af2b3d2bbee569e55d7568f465af8396b4a32f))
+
+# [9.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.4...v9.1.0) (2024-10-21)
+
+
+### Bug Fixes
+
+* **apply:** merge rio namespace with incoming values ([5141bcf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5141bcfd090cd08b14af028152ba839c26a5634b))
+* **package:** adds the missing --silent alias for force delete ([d4546a9](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d4546a973902c10579499c2d6d7f75b83d2a4cb6))
+* removes object references of project, static-routes, secret, deployment ([8cb381a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8cb381ae90ed300162801053f93b1c167b932392))
+
+
+### Features
+
+* **apply:** allow mutiple values and secret files ([1cffe09](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cffe09638049abd4507bf8b55831ed238c4ad7a)), closes [AB#18436](https://github.com/AB/issues/18436)
+* **device:** implements report device command ([#371](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/371)) ([acdde63](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/acdde634181e428b804ec3298733d1aef37d9ac4)), closes [AB#19657](https://github.com/AB/issues/19657)
+* **device:** wait until virtual device is online on rapyuta.io ([f6bd3e8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f6bd3e868316c8b1b7fce028e2528aa00bb04015)), closes [AB#18043](https://github.com/AB/issues/18043)
+* **secret:** implements batch delete with regex pattern ([9b57d69](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9b57d693d307ef6a2dfe9d1bb52cbb8279b364dd)), closes [AB#18146](https://github.com/AB/issues/18146)
+* **static-route:** implements batch delete using regex pattern ([a3b5e92](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a3b5e92906e1ae29a0797baa08b484abd45affe3)), closes [AB#18146](https://github.com/AB/issues/18146)
+* **vpn:** adds option to populate vpn peers in hosts file ([c28b9ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c28b9ce18558d090cc138186d7c14eeb8823fd1a))
+
 ## [9.0.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.0.3...v9.0.4) (2024-10-15)
 
 

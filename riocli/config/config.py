@@ -56,7 +56,7 @@ class Configuration(object):
     MERGE_TOOL = "vimdiff"
 
     def __init__(self, filepath: Optional[str] = None):
-        self._filepath = filepath
+        self._filepath = os.environ.get("RIO_CONFIG", filepath)
         self.exists = True
 
         # If config file does not exist, then initialize an empty dictionary instead.
