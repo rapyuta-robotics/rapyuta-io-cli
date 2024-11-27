@@ -212,11 +212,17 @@ class Client(object):
         msg = f"Retries exhausted: Tried {retry_limit} times with {sleep_interval}s interval."
         raise RetriesExhausted(msg)
 
-    def list_devices(self: Client):
+    def list_devices(self: Client, query: dict = None) -> Munch:
         """Fetch all HWIL devices"""
         url = f"{self._host}/device/"
         headers = self._get_auth_header()
-        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+        response = (
+            RestClient(url)
+            .method(HttpMethod.GET)
+            .headers(headers)
+            .query_param(query or {})
+            .execute()
+        )
         handle_server_errors(response)
 
         data = json.loads(response.text)

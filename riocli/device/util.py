@@ -226,25 +226,62 @@ def is_remote_path(src, devices=None):
     return None, src
 
 
+def sanitize_hwil_device_name(name: str) -> str:
+    if len(name) == 0:
+        return name
+
+    name = name[0:50]
+    name = trim_suffix(name)
+    name = trim_prefix(name)
+
+    r = ""
+    for c in name:
+        if c.isalnum() or c in ["-", "_"]:
+            r = r + c
+
+    return r
+
+
+def generate_hwil_device_name(
+    name: str,
+    product: str,
+    user: str,
+    project_id: str,
+) -> str:
+    """Generates a valid hardware-in-the-loop device name."""
+    project = project_id.split("project-")[1]
+    return sanitize_hwil_device_name(f"{name}-{product}-{user}-{project}")
+
+
 def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     """Create a new hardware-in-the-loop device."""
-    virtual = spec["virtual"]
-    os = virtual["os"]
-    codename = virtual["codename"]
-    arch = virtual["arch"]
-    product = virtual["product"]
+    os = spec["os"]
+    codename = spec["codename"]
+    arch = spec["arch"]
+    product = spec["product"]
     name = metadata["name"]
 
-    labels = make_hwil_labels(virtual, name)
-    device_name = sanitize_hwil_device_name(f"{name}-{product}-{labels['user']}")
+    labels = make_hwil_labels(spec, name)
+    device_name = generate_hwil_device_name(
+        name, product, labels["user"], labels["project"]
+    )
 
     client = new_hwil_client()
+    device = None
 
     try:
         device_id = find_device_id(client, device_name)
-        return client.get_device(device_id)
+        device = client.get_device(device_id)
+        if device and device.status != "FAILED":
+            return device
     except DeviceNotFound:
         pass  # Do nothing and proceed.
+
+    if device and device.status == "FAILED":
+        try:
+            client.delete_device(device.id)
+        except Exception:
+            raise Exception("cannot delete previously failed device")
 
     response = client.create_device(device_name, arch, os, codename, labels)
     client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
@@ -255,28 +292,21 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     return response
 
 
-def delete_hwil_device(device: Device) -> None:
-    """Delete a hardware-in-the-loop device.
-
-    This is a helper method that deletes a HWIL device
-    associated with the rapyuta.io device.
-    """
-    labels = device.get("labels", {})
-    if not labels:
-        raise DeviceNotFound(message="hwil device not found")
-
-    device_id = None
-
-    for label in labels:
-        if label["key"] == "hwil_device_id":
-            device_id = label["value"]
-            break
-
-    if device_id is None:
-        raise DeviceNotFound(message="hwil device not found")
+def delete_hwil_device(spec: dict, metadata: dict) -> None:
+    """Delete a hardware-in-the-loop device by name."""
+    product = spec["product"]
+    name = metadata["name"]
+    labels = make_hwil_labels(spec, name)
+    device_name = generate_hwil_device_name(
+        name, product, labels["user"], labels["project"]
+    )
 
     client = new_hwil_client()
-    client.delete_device(device_id)
+    devices = client.list_devices(query={"name": device_name})
+    if not devices:
+        return
+
+    client.delete_device(devices[0].id)
 
 
 def execute_onboard_command(device_id: int, onboard_command: str) -> None:
@@ -312,28 +342,12 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
 
 def make_device_labels_from_hwil_device(d: Munch) -> dict:
     return {
-        "hwil_device_id": str(d.id),
-        "hwil_device_name": d.name,
         "arch": d.architecture,
         "flavor": d.flavor,
+        "hwil_device_id": str(d.id),
+        "hwil_device_name": d.name,
         "hwil_device_username": d.username,
     }
-
-
-def sanitize_hwil_device_name(name):
-    if len(name) == 0:
-        return name
-
-    name = name[0:50]
-    name = trim_suffix(name)
-    name = trim_prefix(name)
-
-    r = ""
-    for c in name:
-        if c.isalnum() or c in ["-", "_"]:
-            r = r + c
-
-    return r
 
 
 def wait_until_online(device: Device, timeout: int = 600) -> None:
