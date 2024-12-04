@@ -250,7 +250,11 @@ def generate_hwil_device_name(
 ) -> str:
     """Generates a valid hardware-in-the-loop device name."""
     project = project_id.split("project-")[1]
-    return sanitize_hwil_device_name(f"{name}-{product}-{user}-{project}")
+    device_name = f"{name}-{product}-{user}-{project}"
+    if not product:
+        device_name = f"{name}-{user}-{project}"
+
+    return sanitize_hwil_device_name(device_name)
 
 
 def create_hwil_device(spec: dict, metadata: dict) -> Munch:
@@ -258,7 +262,7 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     os = spec["os"]
     codename = spec["codename"]
     arch = spec["arch"]
-    product = spec["product"]
+    product = spec.get("product")
     name = metadata["name"]
 
     labels = make_hwil_labels(spec, name)
@@ -294,7 +298,7 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
 
 def delete_hwil_device(spec: dict, metadata: dict) -> None:
     """Delete a hardware-in-the-loop device by name."""
-    product = spec["product"]
+    product = spec.get("product")
     name = metadata["name"]
     labels = make_hwil_labels(spec, name)
     device_name = generate_hwil_device_name(
@@ -329,13 +333,12 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
         "user": user_email,
         "organization": data["organization_id"],
         "project": data["project_id"],
-        "product": spec["product"],
         "rapyuta_device_name": device_name,
         "expiry_after": spec["expireAfter"],
     }
 
-    if spec.get("highperf", False):
-        labels["highperf"] = ""
+    if "product" in spec:
+        labels["product"] = spec["product"]
 
     return labels
 
