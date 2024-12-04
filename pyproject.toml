@@ -55,6 +55,7 @@ dependencies = [
     "urllib3>=1.23",
     "waiting>=1.4.1",
     "yaspin==2.5.0",
+    "ansible-core>=2.13.13",
 ]
 
 [tool.uv]

@@ -22,6 +22,11 @@ from typing import Iterable
 import click
 import jinja2
 from yaspin.api import Yaspin
+from ansible.plugins.filter.core import FilterModule as CoreFilterModule
+from ansible.plugins.filter.urls import FilterModule as URLFilterModule
+from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
+from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
+from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
 from riocli.apply.filters import FILTERS
 from riocli.constants import Colors
@@ -147,6 +152,21 @@ def init_jinja_environment():
     """Initialize Jinja2 environment with custom filters"""
     environment = jinja2.Environment()
     for name, func in FILTERS.items():
+        environment.filters[name] = func
+
+    for name, func in CoreFilterModule().filters().items():
+        environment.filters[name] = func
+
+    for name, func in URLFilterModule().filters().items():
+        environment.filters[name] = func
+
+    for name, func in URLSplitFilterModule().filters().items():
+        environment.filters[name] = func
+
+    for name, func in MathFilterModule().filters().items():
+        environment.filters[name] = func
+
+    for name, func in EncryptionFilterModule().filters().items():
         environment.filters[name] = func
 
     return environment
