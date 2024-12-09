@@ -62,7 +62,7 @@ class Device(Model):
 
         # Create the HWIL (virtual) device and then generate the labels
         # to store HWIL metadata in rapyuta.io device.
-        hwil_response = create_hwil_device(self.spec, self.metadata)
+        hwil_response = create_hwil_device(virtual, self.metadata)
         labels = make_device_labels_from_hwil_device(hwil_response)
 
         # Create the rapyuta.io device with labels if the
@@ -100,10 +100,15 @@ class Device(Model):
         try:
             device = find_device_by_name(client, self.metadata.name)
         except DeviceNotFound:
+            # If it was a virtual device, try deleting the HWIL
+            # resource if it is present and raise ResourceNotFound.
+            if self.spec.get("virtual", {}).get("enabled", False):
+                delete_hwil_device(self.spec.virtual, self.metadata)
+
             raise ResourceNotFound
 
         if self.spec.get("virtual", {}).get("enabled", False):
-            delete_hwil_device(device)
+            delete_hwil_device(self.spec.virtual, self.metadata)
 
         device.delete()
 

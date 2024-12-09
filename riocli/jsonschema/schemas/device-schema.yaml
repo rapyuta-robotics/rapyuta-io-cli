@@ -76,7 +76,6 @@ definitions:
                   - sootballs
                   - flaptter
                   - oks
-                  - platform
               arch:
                 type: string
                 enum:
@@ -106,7 +105,6 @@ definitions:
                 default: 12h
             required:
               - enabled
-              - product
     dependencies:
       docker:
         oneOf:

@@ -174,8 +174,12 @@ definitions:
                           type: string
                       disableSync:
                         type: boolean
+                      blockUntilSynced:
+                        type: boolean
+                        default: false
                     required:
                       - enabled
+                      - trees
             type: object
             additionalProperties: false
 
@@ -211,6 +215,7 @@ definitions:
                         type: boolean
                     required:
                       - enabled
+                      - trees
               envArgs:
                 type: array
                 items:
