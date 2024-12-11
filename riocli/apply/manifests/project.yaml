@@ -4,7 +4,7 @@ metadata:
   name: test-project-name
   labels:
     purpose: testing
-    version: 1.0
+    version: "1.0"
 spec:
   users:
     - emailID: "user1@example.com"
@@ -20,4 +20,9 @@ spec:
     vpn:
       enabled: true
       subnets: ["10.81.0.0/16"]
-
+    dockerCache:
+      enabled: true
+      proxyDevice: "edge01"
+      proxyInterface: "eth0"
+      registrySecret: "quay"
+      registryURL: "https://quay.io"
