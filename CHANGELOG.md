@@ -1,3 +1,33 @@
+# [9.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.4.0...v9.5.0) (2024-12-11)
+
+
+### Features
+
+* **apply:** add support for ansible filters in Jinja2 ([#394](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/394)) ([d590490](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d59049091011d88ec715f302701e425218ba4d9c)), closes [AB#39151](https://github.com/AB/issues/39151)
+* **deployment:** adds an option to block paramsync until ready ([387181c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/387181cab56c7e5f9e1cf2b535245810cc597515))
+* **device:** add option to exec commands asynchronously ([#365](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/365)) ([c6bea52](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6bea52209881827ceea6dcd084aa6677f1e014d)), closes [AB#16668](https://github.com/AB/issues/16668)
+* **device:** handles failed hwil devices during apply and delete ([94bb48e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/94bb48e54da70cbd767bd500104f957f429c81f7))
+
+# [9.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.4.0...v9.5.0) (2024-12-11)
+
+
+### Features
+
+* **apply:** add support for ansible filters in Jinja2 ([#394](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/394)) ([d590490](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d59049091011d88ec715f302701e425218ba4d9c)), closes [AB#39151](https://github.com/AB/issues/39151)
+* **deployment:** adds an option to block paramsync until ready ([387181c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/387181cab56c7e5f9e1cf2b535245810cc597515))
+* **device:** add option to exec commands asynchronously ([#365](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/365)) ([c6bea52](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6bea52209881827ceea6dcd084aa6677f1e014d)), closes [AB#16668](https://github.com/AB/issues/16668)
+* **device:** handles failed hwil devices during apply and delete ([94bb48e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/94bb48e54da70cbd767bd500104f957f429c81f7))
+
+# [9.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.4.0...v9.5.0) (2024-12-11)
+
+
+### Features
+
+* **apply:** add support for ansible filters in Jinja2 ([#394](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/394)) ([d590490](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d59049091011d88ec715f302701e425218ba4d9c)), closes [AB#39151](https://github.com/AB/issues/39151)
+* **deployment:** adds an option to block paramsync until ready ([387181c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/387181cab56c7e5f9e1cf2b535245810cc597515))
+* **device:** add option to exec commands asynchronously ([#365](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/365)) ([c6bea52](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6bea52209881827ceea6dcd084aa6677f1e014d)), closes [AB#16668](https://github.com/AB/issues/16668)
+* **device:** handles failed hwil devices during apply and delete ([94bb48e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/94bb48e54da70cbd767bd500104f957f429c81f7))
+
 # [9.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.3.0...v9.4.0) (2024-11-25)
 
 
