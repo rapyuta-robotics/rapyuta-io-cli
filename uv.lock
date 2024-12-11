@@ -844,7 +844,7 @@ wheels = [
 
 [[package]]
 name = "rapyuta-io"
-version = "2.2.1"
+version = "2.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
@@ -855,9 +855,9 @@ dependencies = [
     { name = "six" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6e/ba/2530453629d006164e17c8b06754b0fd698c5bdf5b38ac9515b8089bf044/rapyuta_io-2.2.1.tar.gz", hash = "sha256:4bf83d65b1aefa9dcd892806af891f666b2b107049bc7ea75feb2ac55c64d78a", size = 52403 }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/51/c497160a29357ecbbb521bc3803b76867a833571109609334a5425ee27a7/rapyuta_io-2.2.2.tar.gz", hash = "sha256:2d569516b10baa83734a036223cb9599ad7a41a01021157b2e92450eb44a21c8", size = 52407 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/ca/a52c7759075c5784e33f3890deac48ba33bead8826bb30893960c651704d/rapyuta_io-2.2.1-py3-none-any.whl", hash = "sha256:9a06bd698929a9a794ebc088407d68fe2aac515d531d300b2d1412e89934fac8", size = 60881 },
+    { url = "https://files.pythonhosted.org/packages/1e/7b/9feb722161bbd9abebe6f7fbfa48c408023384b17b8b6c6b5caa62153c51/rapyuta_io-2.2.2-py3-none-any.whl", hash = "sha256:31faa0cfe150ef44fe21e730d35275ff81f0a268ca71b55b38bf8dfc68517b0c", size = 60873 },
 ]
 
 [[package]]
@@ -935,7 +935,7 @@ requires-dist = [
     { name = "python-magic", specifier = ">=0.4.27" },
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
-    { name = "rapyuta-io", specifier = ">=2.2.1" },
+    { name = "rapyuta-io", specifier = ">=2.2.2" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
