@@ -82,6 +82,27 @@ definitions:
             properties:
               enabled:
                 type: boolean
+          dockerCache:
+            oneOf:
+              - properties:
+                  enabled:
+                    const: false
+              - properties:
+                  enabled:
+                    const: true
+                  proxyDevice:
+                    type: string
+                  proxyInterface:
+                    type: string
+                  registrySecret:
+                    type: string
+                  registryURL:
+                    type: string
+                required:
+                  - proxyDevice
+                  - proxyInterface
+                  - registrySecret
+                  - registryURL
   userGroup:
     type: object
     properties:
