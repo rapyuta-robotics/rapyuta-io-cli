@@ -14,8 +14,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # We are pinning uv to lower version to workaround the existing
+      # bugs in setuptools build system. We can unpin onces the issue
+      # is resolved in upstream repos.
+      # Bug: https://github.com/pypa/setuptools/issues/4759
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: '0.4.22'
 
       - name: Publish to pypi
         run: |
