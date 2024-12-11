@@ -46,7 +46,7 @@ from riocli.utils.spinner import with_spinner
     "--codename",
     "codename",
     help="Code name of the OS",
-    type=click.Choice(["bionic", "focal", "jammy", "bullseye"]),
+    type=click.Choice(["bionic", "focal", "jammy", "noble", "bullseye"]),
     default="focal",
 )
 @click.option(

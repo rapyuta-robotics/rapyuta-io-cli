@@ -14,6 +14,7 @@
 """
 Filters to use in the manifests.
 """
+
 import os
 
 from riocli.config import new_client

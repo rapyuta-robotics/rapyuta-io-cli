@@ -46,7 +46,7 @@ dependencies = [
     "python-magic>=0.4.27",
     "pytz",
     "pyyaml>=5.4.1",
-    "rapyuta-io>=2.1.1",
+    "rapyuta-io>=2.2.2",
     "requests>=2.20.0",
     "semver>=3.0.0",
     "setuptools",
@@ -55,6 +55,7 @@ dependencies = [
     "urllib3>=1.23",
     "waiting>=1.4.1",
     "yaspin==2.5.0",
+    "ansible-core>=2.13.13",
 ]
 
 [tool.uv]

@@ -105,12 +105,15 @@ def apply(
 ) -> None:
     """Apply resource manifests.
 
-    The apply command provides the mechanism to create or update
-    resources on rapyuta.io. The resources are defined in YAML manifests allowing for
-    a declarative and repeatable process. The command can take multiple
-    files, paths or globs as arguments and parse the manifests to
-    create or update resources. It also supports Jinja templating
-    and secret management with sops.
+    The apply command provides the mechanism to create or update resources on
+    rapyuta.io. The resources are defined in YAML manifests allowing for a
+    declarative and repeatable process. The command can take multiple files,
+    paths or globs as arguments and parse the manifests to create or update
+    resources.
+
+    The manifest files can optionally be templated using Jinja2 syntax. All the
+    Ansible filters are supported. The secret management with sops is also
+    supported.
 
     You can provide value files with the ``--values`` option and
     sops encrypted secret files with ``--secret`` option.
@@ -146,6 +149,7 @@ def apply(
         Apply manifests with multiple value files.
 
             $ rio apply -v values1.yaml -v values2.yaml templates/**
+
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -257,8 +261,11 @@ def delete(
     The delete command provides the mechanism to remove resources on
     rapyuta.io defined in YAML manifests making the process declarative
     and repeatable. The command can take multiple files, paths or globs
-    as arguments and parse the manifests to remove resources. It also
-    supports Jinja templating and secret management with sops.
+    as arguments and parse the manifests to remove resources.
+
+    The manifest files can optionally be templated using Jinja2 syntax. All the
+    Ansible filters are supported. The secret management with sops is also
+    supported.
 
     You can provide value files with the ``--values`` option and
     sops encrypted secret files with ``--secret`` option.
@@ -291,6 +298,7 @@ def delete(
         Delete manifests with multiple value files.
 
             $ rio delete -v values1.yaml -v values2.yaml templates/**
+
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
