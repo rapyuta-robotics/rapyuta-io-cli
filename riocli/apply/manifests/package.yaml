@@ -337,6 +337,7 @@ metadata:
     app: test
 spec:
   runtime: device # Options: [device, cloud(default)]
+  hostPID: True   # Optional: Enable hostpid to give the host process namespace access to executables
   device:
     arch: amd64 # Options: [arm32v7, arm64v8, amd64]
     restart: always # Options: [always, never, onfailure]
