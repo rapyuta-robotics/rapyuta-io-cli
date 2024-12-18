@@ -25,7 +25,6 @@ from riocli.utils.spinner import with_spinner
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
-    hidden=True,
 )
 @click.option(
     "--force", "-f", "--silent", "force", is_flag=True, help="Skip confirmation"
@@ -57,7 +56,7 @@ def report_device(
     spinner=None,
 ) -> None:
     """
-    Uploads device debug logs and optionally generates a shareable URL with an expiry time.
+    Uploads device debug logs.
 
     Usage Examples:
 
