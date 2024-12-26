@@ -15,6 +15,7 @@ import click
 from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
+from riocli.project.features.dockercache import dockercache
 from riocli.project.features.vpn import vpn
 
 
@@ -32,3 +33,4 @@ def features():
 
 
 features.add_command(vpn)
+features.add_command(dockercache)
