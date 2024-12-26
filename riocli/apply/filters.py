@@ -15,7 +15,9 @@
 Filters to use in the manifests.
 """
 
+from functools import lru_cache
 import os
+from typing import Dict, List
 
 from riocli.config import new_client
 from riocli.device.util import find_device_guid
@@ -42,17 +44,35 @@ def get_interface_ip(device_name: str, interface: str) -> str:
 
     Usage:
         "ip" : {{ device_name | get_intf_ip(interface='intf-name') }}
+        "ip" : {{ device_name | get_intf_ip(interface='intf1,intf2') }}
 
     Args:
         device_name: The name of the device.
-        interface: The name of the interface.
+        interface: The comma-separated list of the interfaces.
 
     Returns:
-        The IP address of the interface
+        The IP address of the first interface from the list that is available.
 
     Raises:
         Exception: If the interface is not available on the device.
     """
+
+    splits = interface.split(",")
+
+    ip_interfaces = get_device_ip_interfaces(device_name)
+
+    for split in splits:
+        ip_interface = ip_interfaces.get(split, None)
+        if ip_interface is not None:
+            if len(ip_interface) == 0 or len(ip_interface[0]) == 0:
+                continue
+
+            return ip_interface[0]
+
+    raise Exception(f'interface "{interface}" not found on device "{device_name}"')
+
+@lru_cache
+def get_device_ip_interfaces(device_name: str) -> Dict[str, List[str]]:
     client = new_client(with_project=True)
     device_id = find_device_guid(client, device_name)
 
@@ -64,14 +84,4 @@ def get_interface_ip(device_name: str, interface: str) -> str:
 
     device.refresh()
 
-    for name in device.ip_interfaces:
-        if name == interface:
-            return device.ip_interfaces[name][0]
-
-    raise Exception(f'interface "{interface}" not found on device "{device_name}"')
-
-
-FILTERS = {
-    "getenv": getenv,
-    "get_intf_ip": get_interface_ip,
-}
+    return device.ip_interfaces
