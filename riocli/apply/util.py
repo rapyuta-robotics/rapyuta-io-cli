@@ -28,7 +28,7 @@ from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
 from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
 from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
-from riocli.apply.filters import FILTERS
+from riocli.apply.filters import get_interface_ip, getenv
 from riocli.constants import Colors
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
@@ -54,6 +54,11 @@ KIND_TO_CLASS = {
     "deployment": Deployment,
     "managedservice": ManagedService,
     "usergroup": UserGroup,
+}
+
+FILTERS = {
+    "getenv": getenv,
+    "get_intf_ip": get_interface_ip,
 }
 
 

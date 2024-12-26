@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
+from functools import wraps, lru_cache
 import json
 import re
 import time
@@ -37,7 +37,7 @@ from riocli.v2client.util import handle_server_errors
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
+    @wraps(f)
     def decorated(**kwargs: typing.Any):
         try:
             client = new_client()
@@ -118,6 +118,7 @@ def get_device_name(client: Client, guid: str) -> str:
     return device.name
 
 
+@lru_cache
 def find_device_guid(client: Client, name: str) -> str:
     devices = client.get_all_devices(device_name=name)
     for device in devices:
@@ -136,7 +137,7 @@ def find_device_by_name(client: Client, name: str) -> Device:
 
 
 def name_to_request_id(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
+    @wraps(f)
     def decorated(**kwargs):
         try:
             client = new_client()
