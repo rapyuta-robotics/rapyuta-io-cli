@@ -78,6 +78,8 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceROSBagJobSpec"
+              hostPID:
+                type: boolean
 
           - properties:
               runtime:
