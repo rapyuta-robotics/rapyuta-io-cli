@@ -1,3 +1,11 @@
+# [9.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.5.0...v9.6.0) (2025-01-09)
+
+
+### Features
+
+* **apply:** add support for multiple interfaces in get_intf_ip filter ([589b53c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/589b53ca78ae259c18a749ed26750a998cc378ff))
+* **package:** supports hostPID for package ([519790a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/519790a76129de81d4968715d8aaeda47f0029c0))
+
 # [9.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.4.0...v9.5.0) (2024-12-11)
 
 
