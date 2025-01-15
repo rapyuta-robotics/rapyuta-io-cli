@@ -106,9 +106,9 @@ def delete_static_route(
         raise SystemExit(1) from e
 
     if not routes:
-        spinner.text = click.style("Static route(s) not found", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        spinner.text = "Static route(s) not found"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     with spinner.hidden():
         print_routes_for_confirmation(routes)
