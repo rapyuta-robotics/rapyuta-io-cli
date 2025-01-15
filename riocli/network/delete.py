@@ -97,9 +97,9 @@ def delete_network(
         raise SystemExit(1) from e
 
     if not networks:
-        spinner.text = click.style("Network(s) not found", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        spinner.text = "Network(s) not found"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     with spinner.hidden():
         print_networks_for_confirmation(networks)

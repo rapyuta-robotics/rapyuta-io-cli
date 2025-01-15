@@ -89,9 +89,9 @@ def delete_package(
         raise SystemExit(1) from e
 
     if not packages:
-        spinner.text = click.style("Package(s) not found", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        spinner.text = "Package(s) not found"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     with spinner.hidden():
         print_packages_for_confirmation(packages)

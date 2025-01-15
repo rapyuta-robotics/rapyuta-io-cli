@@ -105,9 +105,9 @@ def delete_disk(
         raise SystemExit(1) from e
 
     if not disks:
-        spinner.text = click.style("Disk(s) not found", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+        spinner.text = "Disk(s) not found"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     with spinner.hidden():
         display_disk_list(disks)
