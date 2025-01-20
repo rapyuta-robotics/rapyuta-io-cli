@@ -245,11 +245,13 @@ def update_hosts_file():
             continue
 
         if node.get("HostName") in device_host_to_name:
+            tailscale_hostname = node.get("HostName")
+            rio_device_name = device_host_to_name[tailscale_hostname]
             entries.append(
                 HostsEntry(
                     entry_type="ipv4",
                     address=node.get("TailscaleIPs")[0],
-                    names=[device_host_to_name[node.get("HostName")]],
+                    names=[tailscale_hostname, rio_device_name],
                     comment=HOSTS_FILE_COMMENT,
                 )
             )
