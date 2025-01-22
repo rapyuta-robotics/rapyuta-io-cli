@@ -1251,3 +1251,18 @@ class Client(object):
                 retry_count, sleep_interval, status.status
             )
         )
+
+    # Devices
+    def get_device_daemons(self, device_guid: str) -> Munch:
+        url = "{}/v2/devices/daemons/{}/".format(self._host, device_guid)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("device daemons: {}".format(err_msg))
+
+        return munchify(data)
