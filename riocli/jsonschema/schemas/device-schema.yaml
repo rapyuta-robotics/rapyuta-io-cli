@@ -95,6 +95,7 @@ definitions:
                   - focal
                   - jammy
                   - bullseye
+                  - noble
                 default: focal
               highperf:
                 type: boolean
