@@ -1,3 +1,19 @@
+# [9.7.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.6.0...v9.7.0) (2025-01-29)
+
+
+### Bug Fixes
+
+* **cli:** returns success in case deployment, package, secret, route, device, disk, network not found while deleting ([2e7e377](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2e7e37778c9a7b1931723f9f53c8a4f5594333d0))
+* **device:** keep device inspect backwards compatible ([5b198b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b198b626a60e723d34e1ce7ec46151c97ce3dab)), closes [AB#47896](https://github.com/AB/issues/47896)
+* **vpn:** fix connect command with --update-hosts flag ([dadab65](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dadab65fc596be6341f56b4e90b03ac7ee7770a9))
+
+
+### Features
+
+* **project:** add support for docker-cache feature ([37aba6c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/37aba6cf3fc78ba78b1a014fd1dc311741d2228c)), closes [AB#43805](https://github.com/AB/issues/43805)
+* **projects:** add dockercache subcommand in features command ([4b78076](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4b780762ef01280ae0f570178d5fafd6c0e5fa07))
+* **vpn:** add device-hostname entry in hosts file ([bd4abe4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bd4abe45b1c77f932be186c3dbcd2d42c3f24d81))
+
 # [9.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.5.0...v9.6.0) (2025-01-09)
 
 
