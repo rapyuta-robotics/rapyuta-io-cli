@@ -97,19 +97,19 @@ def delete_secret(
         return
 
     try:
-        routes = fetch_secrets(client, secret_name_or_regex, delete_all)
+        secrets = fetch_secrets(client, secret_name_or_regex, delete_all)
     except Exception as e:
         spinner.text = click.style("Failed to delete secret(s): {}".format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    if not routes:
-        spinner.text = click.style("Secret(s) not found", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise SystemExit(1)
+    if not secrets:
+        spinner.text = "Secret(s) not found"
+        spinner.green.ok(Symbols.SUCCESS)
+        return
 
     with spinner.hidden():
-        print_secrets_for_confirmation(routes)
+        print_secrets_for_confirmation(secrets)
 
     spinner.write("")
 
@@ -121,7 +121,7 @@ def delete_secret(
     try:
         f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
-            f=f, items=routes, workers=workers, key=lambda x: x[0]
+            f=f, items=secrets, workers=workers, key=lambda x: x[0]
         )
 
         data, statuses = [], []
@@ -136,7 +136,7 @@ def delete_secret(
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
 
-        # When no route is deleted, raise an exception.
+        # When no secret is deleted, raise an exception.
         if not any(statuses):
             spinner.write("")
             spinner.text = click.style("Failed to delete secret(s).", Colors.RED)

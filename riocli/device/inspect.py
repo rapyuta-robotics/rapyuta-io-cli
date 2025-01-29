@@ -13,9 +13,10 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
+from munch import Munch
 from rapyuta_io.clients import Device
 
-from riocli.config import new_client
+from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.device.util import name_to_guid
 from riocli.utils import inspect_with_format
@@ -36,26 +37,35 @@ from riocli.utils import inspect_with_format
 )
 @click.argument("device-name", type=str)
 @name_to_guid
-def inspect_device(format_type: str, device_name: str, device_guid: str) -> None:
+@click.pass_context
+def inspect_device(ctx: click.Context, format_type: str, device_name: str, device_guid: str) -> None:
     """Print the details of a device.
 
     You can specify the format of the output using the --format flag.
     The default format is yaml. You can choose between json and yaml.
     """
     try:
-        client = new_client()
+        config = get_config_from_context(ctx)
+        client = config.new_client()
+        v2_client = config.new_v2_client()
+
         device = client.get_device(device_id=device_guid)
-        data = make_device_inspectable(device)
+        daemon = v2_client.get_device_daemons(device_guid=device_guid)
+
+        data = make_device_inspectable(device, daemon)
         inspect_with_format(data, format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
 
 
-def make_device_inspectable(device: Device) -> dict:
+def make_device_inspectable(device: Device, daemon: Munch) -> dict:
     data = {}
     for key, val in device.items():
-        if key.startswith("_") or key in ["deviceId"]:
+        if key.startswith("_") or key in ["deviceId", "daemons_status"]:
             continue
         data[key] = val
+
+    if daemon is not None and daemon.get("status") is not None:
+        data["daemons_status"] = daemon.status
 
     return data

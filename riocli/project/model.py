@@ -20,7 +20,7 @@ from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.project.util import ProjectNotFound, find_project_guid
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from riocli.v2client.error import HttpNotFoundError
 
 PROJECT_READY_TIMEOUT = 150
 
@@ -39,19 +39,24 @@ class Project(Model):
         project["metadata"]["organizationGUID"] = Configuration().organization_guid
 
         try:
-            client.create_project(project)
+            # We try to update before creating in Project. The DockerCache
+            # feature is only available in the Update API. If we instead try to
+            # create the Project with DockerCache feature enabled then the API
+            # will return BadRequest error.
+            guid = find_project_guid(
+                client, self.metadata.name, Configuration().organization_guid
+            )
+
+            client.update_project(guid, project)
             wait(
                 self.is_ready,
                 timeout_seconds=PROJECT_READY_TIMEOUT,
                 sleep_seconds=(1, 30, 2),
             )
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            guid = find_project_guid(
-                client, self.metadata.name, Configuration().organization_guid
-            )
-            client.update_project(guid, project)
             return ApplyResult.UPDATED
+        except (HttpNotFoundError, ProjectNotFound):
+            client.create_project(project)
+            return ApplyResult.CREATED
         except Exception as e:
             raise e
 

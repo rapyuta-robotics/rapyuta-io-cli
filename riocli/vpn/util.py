@@ -28,7 +28,7 @@ import click
 from munch import Munch
 from python_hosts import Hosts, HostsEntry
 
-from riocli.config import get_config_from_context, new_client
+from riocli.config import get_config_from_context, new_client, new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 from riocli.v2client import Client as v2Client
@@ -223,13 +223,14 @@ def update_hosts_file():
     and creates an entry in the system's hosts file.
     """
     v1_client = new_client(with_project=True)
+    v2_client = new_v2_client(with_project=True)
 
     device_host_to_name = {}
     for device in v1_client.get_all_devices(online_device=True):
-        vpn = device.get("daemons_status").get("vpn")
-        if vpn and vpn.get("enable") and vpn.get("status") == "running":
-            d = v1_client.get_device(device.uuid)
-            device_host_to_name[d.get("host")] = d.name
+        device_daemon = v2_client.get_device_daemons(device_guid=device.get("uuid"))
+        vpn_status = device_daemon.status.get("vpn")
+        if vpn_status is not None and vpn_status.get("enable", False) and vpn_status.get("status") == "running":
+            device_host_to_name[device.get("host")] = device.name
 
     status = get_tailscale_status()
     peers = status.get("Peer", {})
@@ -245,11 +246,13 @@ def update_hosts_file():
             continue
 
         if node.get("HostName") in device_host_to_name:
+            tailscale_hostname = node.get("HostName")
+            rio_device_name = device_host_to_name[tailscale_hostname]
             entries.append(
                 HostsEntry(
                     entry_type="ipv4",
                     address=node.get("TailscaleIPs")[0],
-                    names=[device_host_to_name[node.get("HostName")]],
+                    names=[tailscale_hostname, rio_device_name],
                     comment=HOSTS_FILE_COMMENT,
                 )
             )
