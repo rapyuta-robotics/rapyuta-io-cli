@@ -33,7 +33,8 @@ class Chart(Munch):
         self,
         values: str = None,
         secrets: str = None,
-        dryrun: bool = None,
+        delete_existing: bool = False,
+        dryrun: bool = False,
         workers: int = 6,
         retry_count: int = 50,
         retry_interval: int = 6,
@@ -47,13 +48,14 @@ class Chart(Munch):
 
         apply.callback(
             values=values,
-            files=[templates_dir],
             secrets=secrets,
+            files=[templates_dir],
+            retry_count=retry_count,
+            retry_interval=retry_interval,
+            delete_existing=delete_existing,
             dryrun=dryrun,
             workers=workers,
             silent=silent,
-            retry_count=retry_count,
-            retry_interval=retry_interval,
         )
 
     def delete_chart(
