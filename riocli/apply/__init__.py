@@ -68,6 +68,14 @@ from riocli.utils import print_centered_text
     type=int,
 )
 @click.option(
+    "--recreate",
+    "--delete-existing",
+    "delete_existing",
+    is_flag=True,
+    default=False,
+    help="Overwrite existing resources",
+)
+@click.option(
     "-f",
     "--force",
     "--silent",
@@ -98,6 +106,7 @@ def apply(
     files: Iterable[str],
     retry_count: int = 50,
     retry_interval: int = 6,
+    delete_existing: bool = False,
     dryrun: bool = False,
     workers: int = 6,
     silent: bool = False,
@@ -150,6 +159,10 @@ def apply(
 
             $ rio apply -v values1.yaml -v values2.yaml templates/**
 
+        Re-create existing resources from the manifests.
+
+            $ rio apply -v values.yaml --delete-existing templates/
+
     """
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -176,6 +189,18 @@ def apply(
 
     if not silent and not dryrun:
         click.confirm("\nDo you want to proceed?", default=True, abort=True)
+
+    if delete_existing:
+        deleter = Applier(glob_files, abs_values, abs_secrets)
+        deleter.parse_dependencies(print_resources=False)
+
+        print_centered_text("Deleting Resources")
+        deleter.delete(
+            dryrun=dryrun,
+            workers=workers,
+            retry_count=retry_count,
+            retry_interval=retry_interval,
+        )
 
     print_centered_text("Applying Manifests")
     applier.apply(
