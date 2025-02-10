@@ -85,13 +85,16 @@ def dockercache(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    project["spec"]["features"]["dockerCache"] = {
-        "enabled": enable,
-        "proxyDevice": proxy_device,
-        "proxyInterface": proxy_interface,
-        "registryURL": registry_url,
-        "registrySecret": registry_secret,
-    }
+    if enable:
+        project["spec"]["features"]["dockerCache"] = {
+            "enabled": enable,
+            "proxyDevice": proxy_device,
+            "proxyInterface": proxy_interface,
+            "registryURL": registry_url,
+            "registrySecret": registry_secret,
+        }
+    else:
+        project["spec"]["features"]["dockerCache"] = {"enabled": enable}
 
     is_enabled = project["spec"]["features"]["dockerCache"].get("enabled", False)
 
