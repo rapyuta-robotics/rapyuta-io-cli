@@ -19,7 +19,7 @@ from functools import lru_cache
 import os
 from typing import Dict, List
 
-from riocli.config import new_client
+from riocli.config import new_client, Configuration
 from riocli.device.util import find_device_guid
 
 
@@ -85,3 +85,17 @@ def get_device_ip_interfaces(device_name: str) -> Dict[str, List[str]]:
     device.refresh()
 
     return device.ip_interfaces
+
+def get_suffix(suffix: str) -> str:
+    """Get the name of the project.
+
+    Usage:
+        "suffix" : {{ "suffix_value" | get_suffix }}
+
+    Returns:
+        Value of the suffix and default value is the project name from the configuration file.
+    """
+    if suffix:
+        return suffix
+    config = Configuration()
+    return config.data.get("project_name")
