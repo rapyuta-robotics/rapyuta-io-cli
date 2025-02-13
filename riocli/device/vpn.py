@@ -99,13 +99,13 @@ def toggle_vpn(
     try:
         client = new_client()
 
-        online_devices = client.get_all_devices(online_device=True)
+        vpn_devices = _online_offline_devices(client=client)
 
-        final = process_devices(online_devices, devices)
+        final = process_devices(vpn_devices, devices)
 
         click.secho(
             "\nSetting the state of VPN client = {} on "
-            "the following online devices\n".format(enable),
+            "the following devices\n".format(enable),
             fg="yellow",
         )
 
@@ -170,6 +170,10 @@ def process_devices(online_devices, devices) -> typing.List:
 
     return final
 
+def _online_offline_devices(client) -> typing.List:
+    all_devices = client.get_all_devices()
+    potential_devices = [d for d in all_devices if d.status in ["ONLINE", "OFFLINE"]]
+    return potential_devices
 
 def print_final_devices(final) -> None:
     data = [[device.uuid, device.name, device.status] for device in final]
