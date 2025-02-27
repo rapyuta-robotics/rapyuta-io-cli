@@ -164,6 +164,7 @@ def delete_device(
 
         spinner.text = spinner_text
         spinner.ok(spinner_char)
+        raise SystemExit(failed_count)
     except Exception as e:
         spinner.text = click.style("Failed to delete devices: {}".format(e), Colors.RED)
         spinner.red.fail(Symbols.ERROR)
