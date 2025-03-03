@@ -50,6 +50,7 @@ definitions:
     properties:
       description:
         type: string
+        default: ""
       members:
         type: array
         items:
