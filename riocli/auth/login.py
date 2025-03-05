@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from riocli.auth.util import (
     select_project,
     validate_and_set_token,
 )
+from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
@@ -41,7 +42,7 @@ LOGIN_SUCCESS = click.style(
     "--organization",
     type=str,
     default=None,
-    help=("Context will be set to the organization after " "authentication"),
+    help=("Context will be set to the organization after authentication"),
 )
 @click.option(
     "--project",
@@ -115,6 +116,7 @@ def login(
         $ rio auth login --auth-token YOUR_AUTH_TOKEN
     """
     ctx = get_root_context(ctx)
+    config = get_config_from_context(ctx)
 
     if auth_token:
         if not validate_and_set_token(ctx, auth_token):
@@ -132,12 +134,12 @@ def login(
             click.secho("password not specified")
             raise SystemExit(1)
 
-        ctx.obj.data["email_id"] = email
-        ctx.obj.data["auth_token"] = get_token(email, password)
+        config.data["email_id"] = email
+        config.data["auth_token"] = get_token(email, password)
 
     # Save if the file does not already exist
-    if not ctx.obj.exists or not interactive:
-        ctx.obj.save()
+    if not config.exists or not interactive:
+        config.save()
     else:
         click.confirm(
             "{} Config already exists. Do you want to override"
@@ -166,27 +168,27 @@ def login(
         # organization name and id and the login is marked as
         # successful.
         if organization and not project:
-            select_organization(ctx.obj, organization=organization)
+            select_organization(config, organization=organization)
             click.secho(
                 "Your organization is set to '{}'".format(
-                    ctx.obj.data["organization_name"]
+                    config.data["organization_name"]
                 ),
                 fg=Colors.CYAN,
             )
-            ctx.obj.save()
+            config.save()
             click.echo(LOGIN_SUCCESS)
             return
 
-    organization = select_organization(ctx.obj, organization=organization)
-    select_project(ctx.obj, project=project, organization=organization)
+    organization = select_organization(config, organization=organization)
+    select_project(config, project=project, organization=organization)
 
-    ctx.obj.save()
+    config.save()
 
     try:
         cleanup_hosts_file()
     except Exception as e:
         click.secho(
-            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
             fg=Colors.YELLOW,
         )
 

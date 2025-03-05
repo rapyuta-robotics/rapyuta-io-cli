@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,10 +41,18 @@ class Client(object):
         self._project = project
         self._token = "Bearer {}".format(auth_token)
 
-    def _get_auth_header(self: Client, with_project: bool = True) -> dict:
+    def _get_auth_header(
+        self: Client,
+        with_organization: bool = True,
+        with_project: bool = True,
+        organization_guid: Optional[str] = None,
+    ) -> dict:
         headers = dict(Authorization=self._token)
 
-        headers["organizationguid"] = self._config.organization_guid
+        if with_organization:
+            headers["organizationguid"] = (
+                organization_guid or self._config.organization_guid
+            )
 
         if with_project and self._project is not None:
             headers["project"] = self._project
@@ -59,8 +67,8 @@ class Client(object):
 
     def list_projects(
         self,
-        organization_guid: str = None,
-        query: dict = None,
+        organization_guid: Optional[str] = None,
+        query: Optional[dict] = None,
     ) -> Munch:
         """
         List all projects in an organization
@@ -179,6 +187,62 @@ class Client(object):
         if not response.ok:
             err_msg = data.get("error")
             raise Exception("projects: {}".format(err_msg))
+
+        return munchify(data)
+
+    # Organization APIs
+    def get_organization(self, organization_guid: str) -> Munch:
+        """
+        Get an organization by its GUID
+        """
+        url = "{}/v2/organizations/{}/".format(self._host, organization_guid)
+        headers = self._get_auth_header(
+            with_project=False, organization_guid=organization_guid
+        )
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("organizations: {}".format(err_msg))
+
+        return munchify(data)
+
+    def update_organization(self, organization_guid: str, data: dict) -> Munch:
+        """
+        Update an organization
+        """
+        url = "{}/v2/organizations/{}/".format(self._host, organization_guid)
+        headers = self._get_auth_header(
+            with_project=False, organization_guid=organization_guid
+        )
+        response = (
+            RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=data)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("{}".format(err_msg))
+
+        return munchify(data)
+
+    # Users APIs
+    def get_user(self) -> Munch:
+        url = "{}/v2/users/me/".format(self._host)
+        headers = self._get_auth_header(with_project=False, with_organization=False)
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("users: {}".format(err_msg))
 
         return munchify(data)
 

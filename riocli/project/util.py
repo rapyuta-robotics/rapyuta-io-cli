@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-import typing
+from typing import Optional, Callable, Any
 
 import click
-from rapyuta_io import Client
 
-from riocli.config import new_client, new_v2_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
 from riocli.v2client import Client as v2Client
 
 
-def name_to_guid(f: typing.Callable) -> typing.Callable:
+def name_to_guid(f: Callable) -> Callable:
     @functools.wraps(f)
-    def decorated(**kwargs: typing.Any):
+    def decorated(**kwargs: Any):
         ctx = click.get_current_context()
         name = kwargs.pop("project_name")
         guid = None
@@ -61,8 +60,13 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def find_project_guid(client: v2Client, name: str, organization: str = None) -> str:
-    projects = client.list_projects(query={"name": name}, organization_guid=organization)
+def find_project_guid(
+    client: v2Client, name: str, organization: Optional[str] = None
+) -> str:
+    projects = client.list_projects(
+        query={"name": name},
+        organization_guid=organization,
+    )
 
     if projects and projects[0].metadata.name == name:
         return projects[0].metadata.guid
@@ -75,60 +79,7 @@ def get_project_name(client: v2Client, guid: str) -> str:
     return project.metadata.name
 
 
-def find_organization_guid(client: Client, name: str) -> typing.Tuple[str, str]:
-    organizations = client.get_user_organizations()
-
-    for organization in organizations:
-        if organization.name == name:
-            return organization.guid, organization.short_guid
-
-    raise OrganizationNotFound("User is not part of organization: {}".format(name))
-
-
-def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
-    organizations = client.get_user_organizations()
-    for organization in organizations:
-        if organization.guid == guid:
-            return organization.name, organization.short_guid
-
-    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
-
-
-def name_to_organization_guid(f: typing.Callable) -> typing.Callable:
-    @functools.wraps(f)
-    def decorated(*args: typing.Any, **kwargs: typing.Any):
-        client = new_client(with_project=False)
-        name = kwargs.get("organization_name")
-        guid = None
-        short_id = None
-
-        if name:
-            try:
-                if name.startswith("org-"):
-                    guid = name
-                    name, short_id = get_organization_name(client, guid)
-                else:
-                    guid, short_id = find_organization_guid(client, name)
-            except Exception as e:
-                click.secho(str(e), fg=Colors.RED)
-                raise SystemExit(1)
-
-        kwargs["organization_name"] = name
-        kwargs["organization_guid"] = guid
-        kwargs["organization_short_id"] = short_id
-
-        f(*args, **kwargs)
-
-    return decorated
-
-
 class ProjectNotFound(Exception):
     def __init__(self, message="project not found"):
-        self.message = message
-        super().__init__(self.message)
-
-
-class OrganizationNotFound(Exception):
-    def __init__(self, message="organization not found"):
         self.message = message
         super().__init__(self.message)

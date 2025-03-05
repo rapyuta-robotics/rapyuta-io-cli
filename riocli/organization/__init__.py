@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
 from riocli.organization.inspect import inspect_organization
-from riocli.organization.invite_user import invite_user
+
+from riocli.organization.add_user import invite_user, add_user
 from riocli.organization.list import list_organizations
 from riocli.organization.remove_user import remove_user
 from riocli.organization.select import select_organization
@@ -45,6 +46,7 @@ def organization() -> None:
 
 organization.add_command(list_users)
 organization.add_command(invite_user)
+organization.add_command(add_user)
 organization.add_command(remove_user)
 organization.add_command(list_organizations)
 organization.add_command(select_organization)

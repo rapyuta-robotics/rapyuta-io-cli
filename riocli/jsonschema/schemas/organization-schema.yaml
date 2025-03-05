@@ -1,0 +1,87 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: Organization
+description: A namespace for projects on Rapyuta
+$ref: "#/definitions/organization"
+definitions:
+  organization:
+    type: object
+    properties:
+      apiVersion:
+        const: api.rapyuta.io/v2
+        default: api.rapyuta.io/v2
+      kind:
+        const: Organization
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/organizationSpec"
+
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+        # TODO(ankit): Confirm regex
+        pattern: "^[a-zA-Z][a-z A-Z0-9-_]{2,63}$"
+      guid:
+        $ref: "#/definitions/organizationGUID"
+      organizationGUID:
+        $ref: "#/definitions/organizationGUID"
+      organizationCreatorGUID:
+        $ref: "#/definitions/uuid"
+      creatorGUID:
+        $ref: "#/definitions/uuid"
+      creatorGUID:
+        $ref: "#/definitions/uuid"
+      organizationName:
+        type: string
+    required:
+      - name
+      - guid
+
+  organizationSpec:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          "$ref": "#/definitions/user"
+    additionalProperties: false
+
+  user:
+    type: object
+    properties:
+      guid:
+        $ref: "#/definitions/uuid"
+      firstName:
+        type: string
+      lastName:
+        type: string
+      emailID:
+        type: string
+      roleInOrganization:
+        $ref: "#/definitions/roleSpec"
+    required:
+      - emailID
+      - roleInOrganization
+
+  organizationGUID:
+    type: string
+    pattern: "^org-([a-z0-9]{20}|[a-z]{24})$"
+
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  roleSpec:
+    type: string
+    enum:
+      - admin
+      - viewer

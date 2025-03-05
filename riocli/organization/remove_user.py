@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Iterable
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
+from munch import Munch
+from yaspin import Spinner
 
+from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.organization.utils import remove_user_from_org
 from riocli.utils.context import get_root_context
+from riocli.utils.spinner import with_spinner
 
 
 @click.command(
@@ -27,28 +31,62 @@ from riocli.utils.context import get_root_context
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument("user-email", type=str)
+@click.argument("user-email", type=str, nargs=-1)
 @click.pass_context
-def remove_user(ctx: click.Context, user_email: str) -> None:
-    """Remove a user from the current organization"""
+@with_spinner(text="Removing users...")
+def remove_user(
+    ctx: click.Context,
+    user_email: Iterable[str],
+    spinner: Spinner,
+) -> None:
+    """Remove a user from the current organization."""
+    for email in user_email:
+        try:
+            validate_email(email)
+        except EmailNotValidError as e:
+            spinner.text = click.style(
+                "{} is not a valid email address".format(email), fg=Colors.RED
+            )
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1) from e
+
     ctx = get_root_context(ctx)
+    config = get_config_from_context(ctx)
 
     try:
-        validate_email(user_email)
-    except EmailNotValidError as e:
-        click.secho(
-            "{} {} is not a valid email address".format(Symbols.ERROR, user_email),
-            fg=Colors.RED,
-        )
-        raise SystemExit(1) from e
+        client = new_v2_client(config_inst=config)
+        organization = client.get_organization(organization_guid=config.organization_guid)
+        update = remove_user_emails(organization, user_email)
+        if not update:
+            spinner.text = click.style(
+                "Users are not part of the organization.", fg=Colors.YELLOW
+            )
+            spinner.yellow.ok(Symbols.INFO)
+            return
 
-    try:
-        remove_user_from_org(ctx.obj.data["organization_id"], user_email)
-        click.secho(
-            "{} User removed successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN
+        client.update_organization(
+            organization_guid=config.organization_guid,
+            data=organization,
         )
+        spinner.text = click.style("Users removed successfully.", fg=Colors.GREEN)
+        spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        click.secho(
-            "{} Failed to remove user: {}".format(Symbols.ERROR, e), fg=Colors.RED
-        )
+        spinner.text = click.style("Failed to remove users: {}".format(e), fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
+
+
+def remove_user_emails(organization: Munch, user_emails: Iterable[str]) -> bool:
+    update = False
+    updated_users = []
+
+    for user in organization.spec.users:
+        if user.emailID in user_emails:
+            update = True
+            continue
+
+        updated_users.append(user)
+
+    organization.spec.users = updated_users
+
+    return update
