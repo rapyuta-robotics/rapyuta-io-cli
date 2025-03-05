@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
-from riocli.project.util import (
-    find_project_guid,
+from riocli.project.util import find_project_guid
+from riocli.organization.util import (
     find_organization_guid,
     get_organization_name,
 )
@@ -44,7 +44,7 @@ def select_organization(
 
     Sets the choice in the given configuration.
     """
-    client = config.new_client(with_project=False)
+    client = config.new_v2_client(with_project=False)
 
     org_guid, org_name, short_id = None, None, None
 
@@ -62,8 +62,8 @@ def select_organization(
         return org_guid
 
     # fetch user organizations and sort them on their name
-    organizations = client.get_user_organizations()
-    organizations = sorted(organizations, key=lambda org: org.name.lower())
+    user = client.get_user()
+    organizations = sorted(user.spec.organizations, key=lambda org: org.name.lower())
 
     if len(organizations) == 0:
         click.secho(
@@ -75,7 +75,7 @@ def select_organization(
 
     for o in organizations:
         org_map[o.guid] = o.name
-        org_short_guids[o.guid] = o.short_guid
+        org_short_guids[o.guid] = o.shortGUID
 
     if not org_guid:
         org_guid = show_selection(org_map, "Select an organization:")

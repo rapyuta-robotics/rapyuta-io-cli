@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
@@ -34,8 +34,10 @@ def list_organizations(ctx: click.Context) -> None:
     part of. The current organization is highlighted in green.
     """
     try:
-        client = new_client(with_project=False)
-        organizations = client.get_user_organizations()
+        config = get_config_from_context(ctx)
+        client = new_v2_client(config_inst=config, with_project=False)
+        user = client.get_user()
+        organizations = user.spec.organizations
         current = ctx.obj.data.get("organization_id")
         print_organizations(organizations, current)
     except Exception as e:
@@ -57,7 +59,7 @@ def print_organizations(organizations, current):
         data.append(
             [
                 click.style(v, fg=fg, bold=bold)
-                for v in (org.name, org.guid, org.creator, org.short_guid)
+                for v in (org.name, org.guid, org.creator, org.shortGUID)
             ]
         )
 

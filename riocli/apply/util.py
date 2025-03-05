@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ from riocli.disk.model import Disk
 from riocli.managedservice.model import ManagedService
 from riocli.model import Model
 from riocli.network.model import Network
+from riocli.organization.model import Organization
 from riocli.package.model import Package
 from riocli.project.model import Project
 from riocli.secret.model import Secret
@@ -44,15 +45,16 @@ from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
 
 KIND_TO_CLASS = {
+    "deployment": Deployment,
+    "device": Device,
+    "disk": Disk,
+    "managedservice": ManagedService,
+    "network": Network,
+    "organization": Organization,
+    "package": Package,
     "project": Project,
     "secret": Secret,
-    "device": Device,
-    "network": Network,
     "staticroute": StaticRoute,
-    "package": Package,
-    "disk": Disk,
-    "deployment": Deployment,
-    "managedservice": ManagedService,
     "usergroup": UserGroup,
 }
 

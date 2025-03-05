@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ from riocli.config import Configuration, new_client, new_v2_client
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.organization.utils import get_organization_details
 from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
 
 USER_GUID = "guid"
@@ -49,14 +48,14 @@ class UserGroup(Model):
         except Exception as e:
             raise e
 
-        organization_details = get_organization_details(organization_id)
+        org = v2client.get_organization(organization_id)
         user_projects = v2client.list_projects(organization_id)
 
         self.project_name_to_guid_map = {
             p["metadata"]["name"]: p["metadata"]["guid"] for p in user_projects
         }
         self.user_email_to_guid_map = {
-            user[USER_EMAIL]: user[USER_GUID] for user in organization_details["users"]
+            user[USER_EMAIL]: user[USER_GUID] for user in org.spec.users
         }
 
         sanitized = self._sanitize()

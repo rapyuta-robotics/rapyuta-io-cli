@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import unmunchify
 
+from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors
-from riocli.organization.utils import get_organization_details
-from riocli.project.util import name_to_organization_guid
+from riocli.organization.util import name_to_guid
 from riocli.utils import inspect_with_format
 
 
@@ -36,8 +37,10 @@ from riocli.utils import inspect_with_format
     type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
 @click.argument("organization-name", type=str)
-@name_to_organization_guid
+@name_to_guid
+@click.pass_context
 def inspect_organization(
+    ctx: click.Context,
     format_type: str,
     organization_name: str,
     organization_guid: str,
@@ -50,8 +53,10 @@ def inspect_organization(
     version of the organization details.
     """
     try:
-        organization = get_organization_details(organization_guid)
-        inspect_with_format(make_organization_inspectable(organization), format_type)
+        config = get_config_from_context(ctx)
+        client = new_v2_client(config_inst=config)
+        organization = client.get_organization(organization_guid)
+        inspect_with_format(unmunchify(organization), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
