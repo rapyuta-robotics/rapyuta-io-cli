@@ -16,6 +16,7 @@ from click_help_colors import HelpColorsGroup
 
 from riocli.vpn.connect import connect
 from riocli.vpn.disconnect import disconnect
+from riocli.vpn.flush import flush
 from riocli.vpn.machines import machines
 from riocli.vpn.ping import ping_all
 from riocli.vpn.status import status
@@ -44,3 +45,4 @@ vpn.add_command(disconnect)
 vpn.add_command(status)
 vpn.add_command(ping_all)
 vpn.add_command(machines)
+vpn.add_command(flush)
