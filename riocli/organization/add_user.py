@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable
+from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
 from munch import Munch
-from yaspin import Spinner
+from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors, Symbols
@@ -42,9 +42,9 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Adding users...")
 def add_user(
     ctx: click.Context,
-    user_email: Iterable[str],
+    user_email: List[str],
     role: str,
-    spinner: Spinner,
+    spinner: Yaspin,
 ) -> None:
     """Add a user to the current organization.
 
@@ -86,9 +86,9 @@ def add_user(
 @with_spinner(text="Adding users...")
 def invite_user(
     ctx: click.Context,
-    user_email: Iterable[str],
+    user_email: List[str],
     role: str,
-    spinner: Spinner,
+    spinner: Yaspin,
 ) -> None:
     """Add a user to the current organization.
 
@@ -114,10 +114,17 @@ def invite_user(
 
 def add_user_to_organization(
     ctx: click.Context,
-    user_emails: Iterable[str],
+    user_emails: List[str],
     role: str,
-    spinner: Spinner,
+    spinner: Yaspin,
 ) -> None:
+    if len(user_emails) == 0:
+        spinner.text = click.style(
+            "No user specified.", fg=Colors.RED
+        )
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
+
     for user_email in user_emails:
         try:
             validate_email(user_email)
@@ -155,7 +162,7 @@ def add_user_to_organization(
         raise SystemExit(1) from e
 
 
-def add_user_emails(organization: Munch, user_emails: Iterable[str], role: str) -> bool:
+def add_user_emails(organization: Munch, user_emails: List[str], role: str) -> bool:
     update = False
     existing_emails = map(lambda x: x.emailID, organization.spec.users)
 

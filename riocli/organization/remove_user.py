@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable
+from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
 from munch import Munch
-from yaspin import Spinner
+from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors, Symbols
@@ -36,10 +36,18 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Removing users...")
 def remove_user(
     ctx: click.Context,
-    user_email: Iterable[str],
-    spinner: Spinner,
+    user_email: List[str],
+    spinner: Yaspin,
 ) -> None:
     """Remove a user from the current organization."""
+    if len(user_email) == 0:
+        spinner.text = click.style(
+            "No user specified.", fg=Colors.RED
+        )
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
+
+
     for email in user_email:
         try:
             validate_email(email)
@@ -76,7 +84,7 @@ def remove_user(
         raise SystemExit(1) from e
 
 
-def remove_user_emails(organization: Munch, user_emails: Iterable[str]) -> bool:
+def remove_user_emails(organization: Munch, user_emails: List[str]) -> bool:
     update = False
     updated_users = []
 
