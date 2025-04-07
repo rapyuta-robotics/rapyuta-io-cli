@@ -15,7 +15,7 @@ import typing
 import click
 from click_help_colors import HelpColorsCommand
 from riocli.config import new_client
-from riocli.constants import Colors
+from riocli.constants import Colors, Symbols
 from riocli.device.util import fetch_devices
 from rapyuta_io import Command
 from shlex import join
@@ -71,6 +71,10 @@ def execute_command(
 
             $ rio device execute ".*" "ls -l"
     """
+
+    if len(command) == 0:
+        click.secho("{} No command specified".format(Symbols.ERROR), fg=Colors.RED)
+        raise SystemExit(1)
 
     client = new_client()
 
