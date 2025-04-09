@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.project.util import name_to_organization_guid
+from riocli.organization.util import name_to_guid as name_to_organization_guid
 from riocli.utils.spinner import with_spinner
 
 

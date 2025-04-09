@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Iterable
+
 import click
 from click_help_colors import HelpColorsCommand
 
@@ -62,6 +64,14 @@ from riocli.constants import Colors
     "this computer",
 )
 @click.option(
+    "--recreate",
+    "--delete-existing",
+    "delete_existing",
+    is_flag=True,
+    default=False,
+    help="Overwrite existing resources",
+)
+@click.option(
     "--workers",
     "-w",
     help="number of parallel workers while running apply command. " "defaults to 6.",
@@ -83,12 +93,13 @@ from riocli.constants import Colors
 @click.argument("chart", type=str)
 def apply_chart(
     chart: str,
-    values: str,
-    secrets: str,
-    dryrun: bool,
-    workers: int = 6,
+    values: Iterable[str],
+    secrets: Iterable[str],
     retry_count: int = 50,
     retry_interval: int = 6,
+    delete_existing: bool = False,
+    dryrun: bool = False,
+    workers: int = 6,
     silent: bool = False,
 ) -> None:
     """Install a chart from the rapyuta-charts repository.
@@ -118,6 +129,10 @@ def apply_chart(
      Apply a chart with values and secrets files without confirmation
 
         $ rio chart apply ioconfig-syncer -v values.yaml -s secrets.yaml -f
+
+     Re-create existing chart resources.
+
+        $ rio chart apply -v values.yaml --delete-existing
     """
     versions = find_chart(chart)
     if len(versions) > 1:
@@ -126,14 +141,15 @@ def apply_chart(
             fg=Colors.RED,
         )
 
-    chart = Chart(**versions[0])
-    chart.apply_chart(
+    c = Chart(**versions[0])
+    c.apply_chart(
         values,
         secrets,
         dryrun=dryrun,
+        delete_existing=delete_existing,
         workers=workers,
         silent=silent,
         retry_count=retry_count,
         retry_interval=retry_interval,
     )
-    chart.cleanup()
+    c.cleanup()

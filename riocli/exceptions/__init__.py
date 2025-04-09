@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,5 +49,10 @@ class DeviceNotFound(Exception):
 
 class ResourceNotFound(Exception):
     def __init__(self, message="resource not found"):
+        self.message = message
+        super().__init__(self.message)
+
+class OperationNotSupported(Exception):
+    def __init__(self, message="operation not supported"):
         self.message = message
         super().__init__(self.message)

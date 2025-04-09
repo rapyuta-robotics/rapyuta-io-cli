@@ -99,13 +99,13 @@ def toggle_vpn(
     try:
         client = new_client()
 
-        online_devices = client.get_all_devices(online_device=True)
+        all_devices = client.get_all_devices()
 
-        final = process_devices(online_devices, devices)
+        final = process_devices(all_devices, devices)
 
         click.secho(
             "\nSetting the state of VPN client = {} on "
-            "the following online devices\n".format(enable),
+            "the following devices\n".format(enable),
             fg="yellow",
         )
 
@@ -146,17 +146,17 @@ def toggle_vpn(
         raise SystemExit(1) from e
 
 
-def process_devices(online_devices, devices) -> typing.List:
+def process_devices(all_devices, devices) -> typing.List:
     if len(devices) == 0:
         click.secho(
             "\n(No devices specified. State will be applied"
             " to all online devices in the project)",
             fg="cyan",
         )
-        return online_devices
+        return all_devices
 
     name_map, uuid_map = {}, {}
-    for device in online_devices:
+    for device in all_devices:
         name_map[device.name] = device
         uuid_map[device.uuid] = device
 
@@ -169,7 +169,6 @@ def process_devices(online_devices, devices) -> typing.List:
             final.append(uuid_map[device])
 
     return final
-
 
 def print_final_devices(final) -> None:
     data = [[device.uuid, device.name, device.status] for device in final]

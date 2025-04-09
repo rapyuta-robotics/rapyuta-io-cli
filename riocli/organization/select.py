@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project
 from riocli.constants import Colors, Symbols
-from riocli.project.util import name_to_organization_guid
+from riocli.organization.util import name_to_guid
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
 
@@ -39,7 +39,7 @@ from riocli.vpn.util import cleanup_hosts_file
     help="Make the selection interactive",
 )
 @click.pass_context
-@name_to_organization_guid
+@name_to_guid
 def select_organization(
     ctx: click.Context,
     organization_name: str,
@@ -101,6 +101,6 @@ def select_organization(
         cleanup_hosts_file()
     except Exception as e:
         click.secho(
-            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
             fg=Colors.YELLOW,
         )

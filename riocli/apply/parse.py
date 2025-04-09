@@ -224,15 +224,16 @@ class Applier(object):
         while stack:
             yield stack.pop()
 
-    def parse_dependencies(self):
+    def parse_dependencies(self, print_resources: bool = True):
         for _, data in self.files.items():
             for model in data:
                 key = self._get_object_key(model)
                 self._parse_dependency(key, model)
                 self._add_graph_node(key)
 
-        print_centered_text("Parsed Resources")
-        print_resolved_objects(self.resolved_objects)
+        if print_resources:
+            print_centered_text("Parsed Resources")
+            print_resolved_objects(self.resolved_objects)
 
     def show_dependency_graph(self):
         """Lauches mermaid.live dependency graph"""
