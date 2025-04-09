@@ -1,3 +1,23 @@
+# [9.8.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.7.0...v9.8.0) (2025-04-09)
+
+
+### Bug Fixes
+
+* **device:** handle empty command in device execute ([84a5c9c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/84a5c9cb1c8bc6b6973fffc14fb741615bd9d0e1))
+* **device:** return non-zero exit code if delete fails for atleast one device ([dfcc7d7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dfcc7d739f581b709f11241777e198d902990b71)), closes [AB#51601](https://github.com/AB/issues/51601)
+* **devices:** update device schema to support noble ([730e747](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/730e747dd72eb51ef3bb61b6ab4cb1911b57c3e2))
+* **organization:** handle no user in add/remove user commands ([1741823](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1741823007c792b9a5f3f3423f426d4ea359733c))
+* **parameter:** raise exception when binary upload fails ([e327ec3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e327ec3749bb16b2c011c0911f621120cd016ed5))
+* **usergroup:** allow empty description in manifest ([c9f2ee2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c9f2ee2ca0b192303ccdb845fb86e45cb4d73d79))
+
+
+### Features
+
+* **apply:** add support for `--delete-existing` flag ([3939d01](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3939d013f0440e03fb5c1724185bb1ef0e724fe9))
+* **device:** enable vpn on all devices if not provided ([f9ae920](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f9ae920276924fabf7497b60434ff5907d00b8bf))
+* **device:** execute command on multiple devices ([fd6fb25](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fd6fb253e8e47c27533a02c4ab86abb869f47eb5))
+* **vpn:** add flush command ([5ea02ee](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5ea02ee6d34200478b67d1b7e69c41bc8ad5b0e6))
+
 # [9.7.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.6.0...v9.7.0) (2025-01-29)
 
 
