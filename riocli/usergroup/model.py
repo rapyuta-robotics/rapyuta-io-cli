@@ -55,7 +55,7 @@ class UserGroup(Model):
             p["metadata"]["name"]: p["metadata"]["guid"] for p in user_projects
         }
         self.user_email_to_guid_map = {
-            user[USER_EMAIL]: user[USER_GUID] for user in org.spec.users
+            self._sanitize_email(user[USER_EMAIL]): user[USER_GUID] for user in org.spec.users
         }
 
         sanitized = self._sanitize()
@@ -99,7 +99,8 @@ class UserGroup(Model):
             for u in group["spec"].get(entity, []):
                 if USER_GUID in u:
                     continue
-                u[USER_GUID] = self.user_email_to_guid_map.get(u[USER_EMAIL])
+                email = self._sanitize_email(u[USER_EMAIL])
+                u[USER_GUID] = self.user_email_to_guid_map.get(email)
                 u.pop(USER_EMAIL)
 
         for p in group["spec"].get("projects", []):
@@ -186,3 +187,7 @@ class UserGroup(Model):
         payload["update"]["members"]["add"].extend(payload["update"]["admins"]["add"])
 
         return payload
+
+    @staticmethod
+    def _sanitize_email(email:str) -> str:
+        return email.lower().strip()
