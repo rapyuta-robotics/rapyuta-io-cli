@@ -63,51 +63,6 @@ spec:
     - name: "UDP-RANGE"
       type: internal-udp-range
       portRange: 53,1024-1025
-  rosBagJobs:
-    - name: "testbag1" # Required
-      recordOptions: # Required
-        allTopics: True
-        topicExcludeRegex: "/topic1*"
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-    - name: "testbag2" # Required
-      recordOptions: # Required
-        topics:
-          - "/topic1"
-        topicIncludeRegex:
-          - "/telemetry*"
-        topicExcludeRegex: "/telemetry2*"
-        maxMessageCount: 100 # Valid only with topics or include regex
-        node: "talker" # Valid only with topics or include regex
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-    - name: "testbag3" # Required
-      recordOptions: # Required
-        allTopics: True
-        topicExcludeRegex: "/topic1*"
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-      overrideOptions:
-        topicOverrideInfo:
-          - topicName: "/topic1"
-            recordFrequency: 10 # Hertz
-          - topicName: "/topic2"
-            latched: True
-        excludeTopics:
-          - "/topic3"
-          - "/topic4"
   ros:
     enabled: True
     version: melodic # Required, Options: [ kinetic, melodic, noetic ]
@@ -179,65 +134,6 @@ spec:
       description: "A environment variable"
       exposed: True
       exposedName: "EXPOSED_KEY2"
-  rosBagJobs: # Not supported with preinstalled executable
-    - name: "testbag1" # Required
-      recordOptions: # Required
-        allTopics: True
-        topicExcludeRegex: "/topic1*"
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-      uploadOptions: # Only for device runtime
-        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
-        maxUploadRate: 1048576 # Bytes
-    - name: "testbag2" # Required
-      recordOptions: # Required
-        topics:
-          - "/topic1"
-        topicIncludeRegex:
-          - "/telemetry*"
-        topicExcludeRegex: "/telemetry2*"
-        maxMessageCount: 100 # Valid only with topics or include regex
-        node: "talker" # Valid only with topics or include regex
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-      uploadOptions: # Only for device runtime
-        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
-        maxUploadRate: 1048576 # Bytes
-    - name: "testbag3" # Required
-      recordOptions: # Required
-        allTopics: True
-        topicExcludeRegex: "/topic1*"
-        compression: "BZ2" # Options: [BZ2, LZ4]
-        maxSplits: 5
-        maxSplitSize: 10 # MB
-        maxSplitDuration: 60 # Minutes
-        chunkSize: 768 # KB
-        prefix: "session1"
-      uploadOptions: # Only for device runtime
-        uploadType: "OnDemand" # Options: [OnStop, Continuous, OnDemand]
-        maxUploadRate: 1048576 # Bytes
-        purgeAfter: False
-        onDemandOpts:
-          timeRange:
-            from: 1682399216 # Unix Timestamp
-            to: 1682399217 # Unix Timestamp
-      overrideOptions:
-        topicOverrideInfo:
-          - topicName: "/topic1"
-            recordFrequency: 10 # Hertz
-          - topicName: "/topic2"
-            latched: True
-        excludeTopics:
-          - "/topic3"
-          - "/topic4"
   ros:
     enabled: True
     version: melodic # Required, Options: [ kinetic, melodic, noetic ]
