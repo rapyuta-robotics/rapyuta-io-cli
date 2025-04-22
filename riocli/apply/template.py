@@ -18,6 +18,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.config import get_config_from_context
 from riocli.constants import Colors
 
 
@@ -44,7 +45,9 @@ from riocli.constants import Colors
     "expects sops to be authorized for decoding files on this computer",
 )
 @click.argument("files", nargs=-1)
+@click.pass_context
 def template(
+    ctx: click.Context,
     values: typing.Tuple[str],
     secrets: typing.Tuple[str],
     files: typing.Tuple[str],
@@ -82,5 +85,6 @@ def template(
         click.secho("No files specified", fg=Colors.RED)
         raise SystemExit(1)
 
-    applier = Applier(glob_files, abs_values, abs_secrets)
+    config = get_config_from_context(ctx)
+    applier = Applier(glob_files, abs_values, abs_secrets, config)
     applier.print_resolved_manifests()

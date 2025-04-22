@@ -18,7 +18,8 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.apply.parse import Applier
-from riocli.apply.util import process_files_values_secrets
+from riocli.apply.util import print_context, process_files_values_secrets
+from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.utils import print_centered_text
 
@@ -64,7 +65,7 @@ from riocli.utils import print_centered_text
 @click.option(
     "--workers",
     "-w",
-    help="Number of parallel workers while running apply " "command. defaults to 6.",
+    help="Number of parallel workers while running apply command. defaults to 6.",
     type=int,
 )
 @click.option(
@@ -100,7 +101,9 @@ from riocli.utils import print_centered_text
     help="Interval between retries defaults to 6",
 )
 @click.argument("files", nargs=-1)
+@click.pass_context
 def apply(
+    ctx: click.Context,
     values: Iterable[str],
     secrets: Iterable[str],
     files: Iterable[str],
@@ -164,6 +167,8 @@ def apply(
             $ rio apply -v values.yaml --delete-existing templates/
 
     """
+    print_context(ctx)
+
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
     )
@@ -176,7 +181,9 @@ def apply(
     for file in glob_files:
         click.secho(file, fg=Colors.YELLOW)
 
-    applier = Applier(glob_files, abs_values, abs_secrets)
+    config = get_config_from_context(ctx)
+
+    applier = Applier(glob_files, abs_values, abs_secrets, config)
     applier.parse_dependencies()
 
     if show_graph and dryrun:
@@ -191,7 +198,7 @@ def apply(
         click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     if delete_existing:
-        deleter = Applier(glob_files, abs_values, abs_secrets)
+        deleter = Applier(glob_files, abs_values, abs_secrets, config)
         deleter.parse_dependencies(print_resources=False)
 
         print_centered_text("Deleting Resources")
@@ -253,7 +260,7 @@ def apply(
 @click.option(
     "--workers",
     "-w",
-    help="Number of parallel workers while running apply " "command. defaults to 6.",
+    help="Number of parallel workers while running apply command. defaults to 6.",
     type=int,
 )
 @click.option(
@@ -271,7 +278,9 @@ def apply(
     help="Interval between retries defaults to 6",
 )
 @click.argument("files", nargs=-1)
+@click.pass_context
 def delete(
+    ctx: click.Context,
     values: str,
     secrets: str,
     files: Iterable[str],
@@ -325,6 +334,9 @@ def delete(
             $ rio delete -v values1.yaml -v values2.yaml templates/**
 
     """
+
+    print_context(ctx)
+
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
     )
@@ -337,7 +349,9 @@ def delete(
     for file in glob_files:
         click.secho(file, fg=Colors.YELLOW)
 
-    applier = Applier(glob_files, abs_values, abs_secrets)
+    config = get_config_from_context(ctx)
+
+    applier = Applier(glob_files, abs_values, abs_secrets, config)
     applier.parse_dependencies()
 
     if not silent and not dryrun:
