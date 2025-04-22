@@ -45,7 +45,6 @@ from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
 from riocli.project import project
-from riocli.rosbag import rosbag
 from riocli.secret import secret
 from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
@@ -152,7 +151,6 @@ cli.add_command(secret)
 cli.add_command(package)
 cli.add_command(deployment)
 cli.add_command(static_route)
-cli.add_command(rosbag)
 cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(parameter)
