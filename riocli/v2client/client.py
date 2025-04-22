@@ -17,7 +17,7 @@ import json
 import os
 import time
 from hashlib import md5
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import magic
 from munch import Munch, munchify
@@ -1328,5 +1328,105 @@ class Client(object):
         if not response.ok:
             err_msg = data.get("error")
             raise Exception("device daemons: {}".format(err_msg))
+
+        return munchify(data)
+
+    # OAuth2 Clients
+    def list_oauth2_clients(self, query: Optional[dict] = None) -> Munch:
+        """
+        List all OAuth2 Clients in the organization.
+        """
+        url = "{}/v2/oauth2/clients/".format(self._host)
+        headers = self._get_auth_header(with_project=False)
+        params = query or dict()
+
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=params)
+
+    def get_oauth2_client(self, client_id: str) -> Munch:
+        """
+        Get an OAuth2 Client by its ID
+        """
+        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        headers = self._get_auth_header(with_project=False)
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("oauth2 client: {}".format(err_msg))
+
+        return munchify(data)
+
+    def create_oauth2_client(self, client: dict[str, Any]) -> Munch:
+        """
+        Create a new OAuth2 Client.
+        """
+        url = "{}/v2/oauth2/clients/".format(self._host)
+        headers = self._get_auth_header(with_project=False)
+        response = (
+            RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload=client)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("oauth2 client: {}".format(err_msg))
+
+        return munchify(data)
+
+    def update_oauth2_client(self, client_id: str, client: dict[str, Any]) -> Munch:
+        """
+        Create a new OAuth2 Client.
+        """
+        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        headers = self._get_auth_header(with_project=False)
+        response = (
+            RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=client)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("oauth2 client: {}".format(err_msg))
+
+        return munchify(data)
+
+    def update_oauth2_client_uris(self, client_id: str, payload: dict[str, Optional[Sequence[str]]]) -> Munch:
+        url = "{}/v2/oauth2/clients/{}/uris/".format(self._host, client_id)
+        headers = self._get_auth_header(with_project=False)
+        response = (
+            RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=payload)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("oauth2 client: {}".format(err_msg))
+
+        return munchify(data)
+
+    def delete_oauth2_client(self, client_id: str) -> Munch:
+        """
+        Delete an OAuth2 client by its id.
+        """
+        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        headers = self._get_auth_header(with_project=False)
+        response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("oauth2 client: {}".format(err_msg))
 
         return munchify(data)
