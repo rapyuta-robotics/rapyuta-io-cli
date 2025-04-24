@@ -19,7 +19,7 @@ from click_help_colors import HelpColorsCommand
 from munch import unmunchify
 
 from riocli.config import new_v2_client
-from riocli.constants import Colors, Symbols
+from riocli.constants import Colors
 from riocli.organization.util import name_to_guid as name_to_organization_guid
 from riocli.utils import tabulate_data
 
@@ -74,13 +74,6 @@ def list_projects(
     """
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get("organization_id")
-    if organization_guid is None:
-        err_msg = (
-            "Organization not selected. Please set an organization with "
-            "`rio organization select ORGANIZATION_NAME` or pass the --organization option."
-        )
-        click.secho("{} {}".format(Symbols.ERROR, err_msg), fg=Colors.RED)
-        raise SystemExit(1)
 
     query = {"labelSelector": labels}
 

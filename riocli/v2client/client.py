@@ -71,11 +71,11 @@ class Client(object):
         query: Optional[dict] = None,
     ) -> Munch:
         """
-        List all projects in an organization
+        List all projects in an organization or where user have the access to in all organizations.
         """
 
         url = "{}/v2/projects/".format(self._host)
-        headers = self._get_auth_header(with_project=False)
+        headers = self._get_auth_header(with_project=False, with_organization=False)
 
         params = {}
 
@@ -96,7 +96,7 @@ class Client(object):
         Get a project by its GUID
         """
         url = "{}/v2/projects/{}/".format(self._host, project_guid)
-        headers = self._get_auth_header()
+        headers = self._get_auth_header(with_organization=False)
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
         handle_server_errors(response)
