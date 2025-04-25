@@ -46,7 +46,7 @@ dependencies = [
     "python-magic>=0.4.27",
     "pytz",
     "pyyaml>=5.4.1",
-    "rapyuta_io>=2.3.1",
+    "rapyuta-io @ git+https://github.com/rapyuta-robotics/rapyuta-io-sdk@5fb64de1603fa7d1c6e224dfd4ee0a0dbd2a5cfc",
     "requests>=2.20.0",
     "semver>=3.0.0",
     "setuptools",
