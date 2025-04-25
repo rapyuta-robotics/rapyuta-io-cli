@@ -60,7 +60,7 @@ def run_on_device(
         cmd = 'script -q -c "dectl exec {} -- {}"'.format(exec_name, cmd)
 
     return device.execute_command(
-        Command(cmd, shell=shell, bg=background, runas=user, timeout=timeout)
+        Command(cmd, shell=shell, bg=background, run_async=False, runas=user, timeout=timeout)
     )
 
 
