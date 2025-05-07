@@ -71,6 +71,7 @@ def get_interface_ip(device_name: str, interface: str) -> str:
 
     raise Exception(f'interface "{interface}" not found on device "{device_name}"')
 
+
 @lru_cache
 def get_device_ip_interfaces(device_name: str) -> Dict[str, List[str]]:
     client = new_client(with_project=True)

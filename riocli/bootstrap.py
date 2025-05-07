@@ -40,6 +40,7 @@ from riocli.disk import disk
 from riocli.hwil import hwildevice
 from riocli.managedservice import managedservice
 from riocli.network import network
+from riocli.oauth2 import oauth2
 from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
@@ -166,3 +167,4 @@ cli.add_command(usergroup)
 cli.add_command(config_trees)
 cli.add_command(hwildevice)
 cli.add_command(cli_context)
+cli.add_command(oauth2)

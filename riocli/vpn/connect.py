@@ -55,9 +55,12 @@ _TAILSCALE_CMD_FORMAT = (
     "access to them by hostname. Run with `sudo` "
     "when you enable this flag.",
 )
+@click.option(
+    "--force", "-f", "--silent", "force", is_flag=True, help="Skip confirmation"
+)
 @click.pass_context
 @with_spinner(text="Connecting...")
-def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
+def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin):
     """Connect to the current project's VPN network.
 
     Simpy run the command to connect to the VPN network
@@ -94,13 +97,15 @@ def connect(ctx: click.Context, update_hosts: bool, spinner: Yaspin):
 
         with spinner.hidden():
             if is_tailscale_up():
-                click.confirm(
-                    "{} The VPN client is already running. "
-                    "Do you want to stop it and connect to the VPN of "
-                    "the current project?".format(Symbols.WARNING),
-                    default=False,
-                    abort=True,
-                )
+                if not force:
+                    click.confirm(
+                        "{} The VPN client is already running. "
+                        "Do you want to stop it and connect to the VPN of "
+                        "the current project?".format(Symbols.WARNING),
+                        default=False,
+                        abort=True,
+                    )
+
                 success = stop_tailscale()
                 if not success:
                     msg = (

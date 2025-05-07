@@ -45,12 +45,18 @@ class Applier(object):
     DEFAULT_MAX_WORKERS = 6
     DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
-    def __init__(self, files: typing.List, values: typing.List, secrets: typing.List):
+    def __init__(
+        self,
+        files: typing.List,
+        values: typing.List,
+        secrets: typing.List,
+        config: Configuration,
+    ):
         self.files = {}
         self.objects = {}
         self.resolved_objects = {}
         self.input_file_paths = files
-        self.config = Configuration()
+        self.config = config
         self.graph = TopologicalSorter()
         self.environment = init_jinja_environment()
         self.diagram = Graphviz(direction="LR", format="svg")

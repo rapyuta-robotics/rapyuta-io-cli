@@ -29,7 +29,9 @@ from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
 from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
 from riocli.apply.filters import get_interface_ip, getenv
+from riocli.config import get_config_from_context
 from riocli.constants import Colors
+from riocli.constants.symbols import Symbols
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
@@ -177,3 +179,21 @@ def init_jinja_environment():
         environment.filters[name] = func
 
     return environment
+
+
+def print_context(ctx: click.Context):
+    config = get_config_from_context(ctx)
+
+    org_guid = config.organization_guid
+    org_name = config.data.get("organization_name")
+    project_guid = config.project_guid
+    project_name = config.data.get("project_name")
+
+    click.secho(
+        "{} Organization: {} ({})".format(Symbols.INFO, org_name, org_guid),
+        fg=Colors.YELLOW,
+    )
+    click.secho(
+        "{} Project: {} ({})".format(Symbols.INFO, project_name, project_guid),
+        fg=Colors.YELLOW,
+    )
