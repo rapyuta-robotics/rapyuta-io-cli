@@ -2,9 +2,9 @@
 apiVersion: "apiextensions.rapyuta.io/v1"
 kind: "Package"
 metadata:
-  name: "package-ros-device-no-rosbag" # Required
+  name: "package-ros-device" # Required
   version: "v1.0.0" # Required
-  description: "A RIO device ROS package without rosbag"
+  description: "A RIO device ROS package"
   labels:
     app: test
 spec:
