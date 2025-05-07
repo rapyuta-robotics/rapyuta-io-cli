@@ -1,3 +1,19 @@
+# [9.9.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.8.0...v9.9.0) (2025-05-07)
+
+
+### Bug Fixes
+
+* **oauth2:** increase default pagination limit to 50 to speed up list ([7ab1d64](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7ab1d6415f0b82f9daec661384e9abb94850823b))
+* **project:** fixes the list and inspect project functionality when no organization is selected ([80908c1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/80908c175cb75e51fecdc158efcb1bd7b797dbc6))
+* **usergroup:** handle case-insensitive email support ([15719f0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/15719f007f79a63438dea63059b1d2ab05984d9c))
+
+
+### Features
+
+* **apply:** add context in the output for apply-family of commands ([f2ddad4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f2ddad48099c63f115e0ca6e4d0e400575469654)), closes [AB#59533](https://github.com/AB/issues/59533)
+* **oauth2:** add oauth2 commands ([1cce2d1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cce2d1d92de202fa0af43387764462ecb209c0f))
+* **vpn:** support --force flag for vpn connect command ([e9aa3b4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e9aa3b4b622d093106fd07416e739a79e1094a6c)), closes [AB#48205](https://github.com/AB/issues/48205)
+
 # [9.8.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.7.0...v9.8.0) (2025-04-09)
 
 
