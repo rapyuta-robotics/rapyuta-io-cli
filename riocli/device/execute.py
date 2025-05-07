@@ -37,6 +37,14 @@ from shlex import join
     default=False,
     help="Run the command asynchronously.",
 )
+@click.option(
+    "--bg",
+    "bg",
+    default=False,
+    is_flag=True,
+    help="Run command in background.",
+    hidden=True,
+)
 @click.argument("device-name-or-regex", type=str)
 @click.argument("command", nargs=-1)
 def execute_command(
@@ -45,6 +53,7 @@ def execute_command(
     timeout: int,
     shell: str,
     run_async: bool,
+    bg:bool,
     command: typing.List[str],
 ) -> None:
     """Execute commands on one or more devices.
@@ -96,7 +105,7 @@ def execute_command(
     try:
         result = client.execute_command(
             device_ids=device_guids,
-            command=Command(cmd, shell=shell, bg=run_async, runas=user, timeout=timeout),
+            command=Command(cmd, shell=shell, bg=bg, run_async=run_async, runas=user, timeout=timeout),
             timeout=timeout,
         )
         for device_guid in result:

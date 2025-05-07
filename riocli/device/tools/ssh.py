@@ -93,7 +93,7 @@ def device_ssh(
         run_tunnel_on_device(device_guid=device_guid, remote_port=remote_port, path=path)
         run_tunnel_on_local(local_port=local_port, path=path, background=True)
         os.system(
-            "ssh -p {} {} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {}@localhost".format(
+            "ssh -p {} {} -o StrictHostKeyChecking=no {}@localhost".format(
                 local_port, extra_args, user
             )
         )
