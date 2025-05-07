@@ -1341,7 +1341,7 @@ class Client(object):
         params = query or dict()
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
-        return self._walk_pages(client, params=params)
+        return self._walk_pages(client, params=params, limit=50)
 
     def get_oauth2_client(self, client_id: str) -> Munch:
         """
