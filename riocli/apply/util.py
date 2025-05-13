@@ -22,11 +22,6 @@ from typing import Iterable
 import click
 import jinja2
 from yaspin.api import Yaspin
-from ansible.plugins.filter.core import FilterModule as CoreFilterModule
-from ansible.plugins.filter.urls import FilterModule as URLFilterModule
-from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
-from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
-from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
 from riocli.apply.filters import get_interface_ip, getenv
 from riocli.config import get_config_from_context
@@ -163,20 +158,29 @@ def init_jinja_environment():
     for name, func in FILTERS.items():
         environment.filters[name] = func
 
-    for name, func in CoreFilterModule().filters().items():
-        environment.filters[name] = func
+    try:
+        from ansible.plugins.filter.core import FilterModule as CoreFilterModule
+        from ansible.plugins.filter.urls import FilterModule as URLFilterModule
+        from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
+        from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
+        from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
-    for name, func in URLFilterModule().filters().items():
-        environment.filters[name] = func
+        for name, func in CoreFilterModule().filters().items():
+            environment.filters[name] = func
 
-    for name, func in URLSplitFilterModule().filters().items():
-        environment.filters[name] = func
+        for name, func in URLFilterModule().filters().items():
+            environment.filters[name] = func
 
-    for name, func in MathFilterModule().filters().items():
-        environment.filters[name] = func
+        for name, func in URLSplitFilterModule().filters().items():
+            environment.filters[name] = func
 
-    for name, func in EncryptionFilterModule().filters().items():
-        environment.filters[name] = func
+        for name, func in MathFilterModule().filters().items():
+            environment.filters[name] = func
+
+        for name, func in EncryptionFilterModule().filters().items():
+            environment.filters[name] = func
+    except ImportError:
+        click.secho("Ansible filters are not supported", fg=Colors.YELLOW)
 
     return environment
 
