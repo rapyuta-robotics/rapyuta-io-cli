@@ -114,12 +114,9 @@ class Device(Model):
 
     def to_v1(self) -> v1Device:
         python_version = DevicePythonVersion(self.spec.python)
-        rosbag_mount_path = None
         ros_workspace = None
 
         docker_enabled = self.spec.get("docker", False) and self.spec.docker.enabled
-        if docker_enabled:
-            rosbag_mount_path = self.spec.docker.rosbagMountPath
 
         preinstalled_enabled = (
             self.spec.get("preinstalled", False) and self.spec.preinstalled.enabled
@@ -137,7 +134,6 @@ class Device(Model):
             runtime_preinstalled=preinstalled_enabled,
             ros_distro=self.spec.rosDistro,
             python_version=python_version,
-            rosbag_mount_path=rosbag_mount_path,
             ros_workspace=ros_workspace,
             config_variables=config_variables,
             labels=labels,
