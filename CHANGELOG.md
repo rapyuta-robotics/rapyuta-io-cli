@@ -1,3 +1,10 @@
+## [9.9.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.0...v9.9.1) (2025-05-13)
+
+
+### Bug Fixes
+
+* pin click to 8.0.x ([acbd0ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/acbd0ce28530f19e250afca4cc281be823a08452))
+
 # [9.9.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.8.0...v9.9.0) (2025-05-07)
 
 
