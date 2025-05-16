@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Dict
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -206,7 +206,7 @@ from riocli.utils.spinner import with_spinner
 )
 @click.pass_context
 @with_spinner(text="Creating OAuth2 Client...")
-def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: dict[str, Any]):
+def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: Dict[str, Any]):
     params = sanitize_parameters(params)
 
     try:
