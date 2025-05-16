@@ -1,3 +1,10 @@
+## [9.9.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.1...v9.9.2) (2025-05-16)
+
+
+### Bug Fixes
+
+* **oauth2:** fix compatibility with Python3.8 ([1faf3d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1faf3d0486c9a7c82a79b74bc3286e412c217999))
+
 ## [9.9.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.0...v9.9.1) (2025-05-13)
 
 
