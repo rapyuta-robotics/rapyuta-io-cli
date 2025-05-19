@@ -52,6 +52,12 @@ from riocli.utils.spinner import with_spinner
     default=(),
     help="Name of the secret for upstream docker registry",
 )
+@click.option(
+    "--registry-blob-storage",
+    type=click.STRING,
+    default=(),
+    help="Registry blob storage path (default: /opt/rapyuta/volumes/docker-cache/)",
+)
 @name_to_guid
 @with_spinner(text="Updating DockerCache state...")
 def dockercache(
@@ -62,6 +68,7 @@ def dockercache(
     proxy_interface: str,
     registry_url: str,
     registry_secret: str,
+    registry_blob_storage: str,
     spinner=None,
 ) -> None:
     """
@@ -74,7 +81,8 @@ def dockercache(
             --proxy-device edge01 \\
             --proxy-interface eth0 \\
             --registry-url https://quay.io \\
-            --registry-secret quay
+            --registry-secret quay \\
+            --registry-blob-storage "/tmp/rapyuta/volumes"
     """
     client = new_v2_client(with_project=False)
 
@@ -91,6 +99,7 @@ def dockercache(
         "proxyInterface": proxy_interface,
         "registryURL": registry_url,
         "registrySecret": registry_secret,
+        "blobStorage": registry_blob_storage,
     }
 
     is_enabled = project["spec"]["features"]["dockerCache"].get("enabled", False)
