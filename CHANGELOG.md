@@ -1,3 +1,11 @@
+## [9.9.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.2...v9.9.3) (2025-05-28)
+
+
+### Bug Fixes
+
+* add libmagic binary package for windows ([c359b2b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c359b2bd79a5ef1eb75862528713ce632b8517db))
+* **apply:** lazy load ansible modules ([5b57c31](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b57c312ccb0013f0c1fea8d1698fe9d72a5e1cf))
+
 ## [9.9.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.1...v9.9.2) (2025-05-16)
 
 
