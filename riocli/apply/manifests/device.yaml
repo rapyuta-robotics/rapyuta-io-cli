@@ -71,6 +71,9 @@ spec:
     highperf: False # Optional [True, False (default)]
     wait: True # Optional [True, False (default)] Wait until the device is ready.
     expireAfter: '12h' # Optional ["s", "m", "h", "d"] Expire after set duration.
+    vm: True # Optional [True, False(default)] Spins up a vm in azure
+    cpu: 2 # Optional Options: [2,4,8,16] Applicable only when vm is set to True, spins a vm with specified vpcus
+    private_ip: 10.0.0.4 # Optional Allows to set vnet ip for this vm when vm is set to True
   docker:
     enabled: True # Required
     rosbagMountPath: "/opt/rapyuta/volumes/rosbag"

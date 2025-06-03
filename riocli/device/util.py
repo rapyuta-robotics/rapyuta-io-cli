@@ -282,14 +282,17 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     except DeviceNotFound:
         pass  # Do nothing and proceed.
 
-    if device and device.status == "FAILED":
-        try:
-            client.delete_device(device.id)
-        except Exception:
-            raise Exception("cannot delete previously failed device")
+    if device:
+        if device.status == "DELETING":
+            raise Exception("device in deleting phase")
+        if device.status == "FAILED":
+            try:
+                client.delete_device(device.id)
+            except Exception:
+                raise Exception("cannot delete previously failed device")
 
     response = client.create_device(device_name, arch, os, codename, labels)
-    client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=12)
+    client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=60 if labels.get('vm', False) else 12)
 
     if response.status == "FAILED":
         raise Exception("device has failed")
@@ -336,6 +339,9 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
         "project": data["project_id"],
         "rapyuta_device_name": device_name,
         "expiry_after": spec["expireAfter"],
+        "vm": spec["vm"],
+        "cpu": spec["cpu"],
+        "private_ip": spec["private_ip"]
     }
 
     if "product" in spec:

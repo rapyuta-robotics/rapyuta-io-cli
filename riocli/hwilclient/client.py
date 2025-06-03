@@ -59,7 +59,7 @@ class Client(object):
     HWILv3 API Client
     """
 
-    HWIL_URL = "https://hwilv3.rapyuta.io"
+    HWIL_URL = "http://localhost:8000/"
     ARCH_OS_DICT = {
         "amd64": {
             "ubuntu": {
