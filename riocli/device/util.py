@@ -277,22 +277,23 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
     try:
         device_id = find_device_id(client, device_name)
         device = client.get_device(device_id)
-        if device and device.status != "FAILED":
-            return device
+        if device:
+            if device.status == "DELETING":
+                    client.poll_till_device_ready_or_deleted(device_id, sleep_interval=5,
+                                                             retry_limit=60 if labels.get("vm", False) else 12)
+            if device.status != "FAILED":
+                return device
     except DeviceNotFound:
         pass  # Do nothing and proceed.
 
-    if device:
-        if device.status == "DELETING":
-            raise Exception("device in deleting phase")
-        if device.status == "FAILED":
-            try:
-                client.delete_device(device.id)
-            except Exception:
-                raise Exception("cannot delete previously failed device")
+    if device and device.status == "FAILED":
+        try:
+            client.delete_device(device.id)
+        except Exception:
+            raise Exception("cannot delete previously failed device")
 
     response = client.create_device(device_name, arch, os, codename, labels)
-    client.poll_till_device_ready(response.id, sleep_interval=5, retry_limit=60 if labels.get('vm', False) else 12)
+    client.poll_till_device_ready_or_deleted(response.id, sleep_interval=5, retry_limit=60 if labels.get("vm", False) else 12)
 
     if response.status == "FAILED":
         raise Exception("device has failed")

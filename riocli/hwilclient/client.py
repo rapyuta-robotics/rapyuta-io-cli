@@ -22,12 +22,16 @@ from munch import Munch, munchify
 from rapyuta_io.utils import ConflictError, RetriesExhausted, UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
+from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
 
 
 def handle_server_errors(response: requests.Response):
     status_code = response.status_code
 
+    # 404 Not found
+    if status_code == http.HTTPStatus.NOT_FOUND:
+        raise DeviceNotFound("hwil device not found")
     # 409 Conflict
     if status_code == http.HTTPStatus.CONFLICT:
         raise ConflictError("already exists")
@@ -186,7 +190,7 @@ class Client(object):
 
         return munchify(data)
 
-    def poll_till_device_ready(
+    def poll_till_device_ready_or_deleted(
         self: Client, device_id: int, sleep_interval: int, retry_limit: int
     ) -> None:
         """Poll until HWIL device is ready"""
