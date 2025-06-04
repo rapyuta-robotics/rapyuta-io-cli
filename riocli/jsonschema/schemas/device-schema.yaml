@@ -104,6 +104,20 @@ definitions:
                 type: string
                 format: duration
                 default: 12h
+              vm:
+                type: boolean
+                default: False
+              cpu:
+                type: number
+                enum:
+                  - 2
+                  - 4
+                  - 8
+                  - 16
+                default: 2
+              private_ip:
+                type: string
+                default: 10.0.0.4
             required:
               - enabled
     dependencies:
