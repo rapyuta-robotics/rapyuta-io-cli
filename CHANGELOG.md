@@ -1,3 +1,10 @@
+# [9.10.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.3...v9.10.0) (2025-06-04)
+
+
+### Features
+
+* **device:** add support for native hwil azure vms ([6d3215c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6d3215cdabc6ebe0cdf2267b9903be176061356a))
+
 ## [9.9.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.2...v9.9.3) (2025-05-28)
 
 
