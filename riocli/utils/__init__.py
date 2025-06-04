@@ -275,6 +275,9 @@ def trim_prefix(name):
 
 
 def sanitize_label(name):
+    if not isinstance(name, str):
+        return name
+
     if len(name) == 0:
         return name
 
