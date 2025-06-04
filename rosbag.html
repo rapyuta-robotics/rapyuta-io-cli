@@ -1,0 +1,782 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Secret" href="secret.html" /><link rel="prev" title="Project" href="project.html" />
+
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2024.08.06 -->
+        <title>Rosbag - CLI documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
+    <link rel="stylesheet" type="text/css" href="_static/css/rio-sphinx.css?v=b645b6b6" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">CLI  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo-light-mode.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo-dark-mode.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">CLI  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="apply.html">Apply</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Apply</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Authentication</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Authentication</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="chart.html">Chart</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Chart</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="completion.html">Completion</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Completion</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="config_tree.html">ConfigTree</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of ConfigTree</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="deployment.html">Deployment</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Deployment</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="device.html">Device</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Device</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="disk.html">Disk</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Disk</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hwil.html">Hardware-in-Loop</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Hardware-in-Loop</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="network.html">Network</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Network</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="organization.html">Organization</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Organization</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="package.html">Package</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of Package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="parameter.html">Parameter</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of Parameter</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="project.html">Project</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of Project</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Rosbag</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of Rosbag</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="secret.html">Secret</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of Secret</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="static_route.html">Static Route</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of Static Route</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="usergroup.html">User Group</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle navigation of User Group</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="vpn.html">VPN</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle navigation of VPN</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/rosbag.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="rosbag">
+<h1>Rosbag<a class="headerlink" href="#rosbag" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="rio-rosbag">
+<h2>rio rosbag<a class="headerlink" href="#rio-rosbag" title="Permalink to this heading">¶</a></h2>
+<p>Record ROS Topics for ROS components</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-rosbag-blob">
+<h3>blob<a class="headerlink" href="#rio-rosbag-blob" title="Permalink to this heading">¶</a></h3>
+<p>ROSBag file actions</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>blob<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-rosbag-blob-delete">
+<h4>delete<a class="headerlink" href="#rio-rosbag-blob-delete" title="Permalink to this heading">¶</a></h4>
+<p>Delete a ROSbag blob</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>blob<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>GUID
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-delete-arg-GUID">
+<span class="sig-name descname"><span class="pre">GUID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-delete-arg-GUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-blob-download">
+<h4>download<a class="headerlink" href="#rio-rosbag-blob-download" title="Permalink to this heading">¶</a></h4>
+<p>Download a ROSbag blob</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>blob<span class="w"> </span>download<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>GUID
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-download-filename">
+<span class="sig-name descname"><span class="pre">--filename</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filename&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-download-filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-download-download-dir">
+<span class="sig-name descname"><span class="pre">--download-dir</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;download_dir&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-download-download-dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Directory to download the file into</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-download-arg-GUID">
+<span class="sig-name descname"><span class="pre">GUID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-download-arg-GUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-blob-list">
+<h4>list<a class="headerlink" href="#rio-rosbag-blob-list" title="Permalink to this heading">¶</a></h4>
+<p>List the Rosbag blobs in the selected project</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>blob<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-guids">
+<span class="sig-name descname"><span class="pre">--guids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;guids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-guids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by blob guids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-deployment-ids">
+<span class="sig-name descname"><span class="pre">--deployment-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;deployment_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-deployment-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by deployment ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-component-instance-ids">
+<span class="sig-name descname"><span class="pre">--component-instance-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;component_instance_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-component-instance-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by component instance ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-job-ids">
+<span class="sig-name descname"><span class="pre">--job-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;job_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-job-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by job ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-device-ids">
+<span class="sig-name descname"><span class="pre">--device-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;device_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-device-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by device ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-blob-list-statuses">
+<span class="sig-name descname"><span class="pre">--statuses</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;statuses&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-blob-list-statuses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by rosbag blob statuses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Starting | Uploading | Uploaded | Error</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-rosbag-job">
+<h3>job<a class="headerlink" href="#rio-rosbag-job" title="Permalink to this heading">¶</a></h3>
+<p>Record the topics for any ROS component</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-rosbag-job-create">
+<h4>create<a class="headerlink" href="#rio-rosbag-job-create" title="Permalink to this heading">¶</a></h4>
+<p>Create a ROSbag job</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-name">
+<span class="sig-name descname"><span class="pre">--name</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;name&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the rosbag job</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-deployment-id">
+<span class="sig-name descname"><span class="pre">--deployment-id</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;deployment_id&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-deployment-id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deployment id</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-component-instance-id">
+<span class="sig-name descname"><span class="pre">--component-instance-id</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;component_instance_id&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-component-instance-id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Component instance id</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-all-topics">
+<span id="cmdoption-rio-rosbag-job-create-not-all-topics"></span><span class="sig-name descname"><span class="pre">--all-topics</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--not-all-topics</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-all-topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record all topics?</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-topics">
+<span class="sig-name descname"><span class="pre">--topics</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;topics&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of topics whose content is to be recorded</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-topic-include-regex">
+<span class="sig-name descname"><span class="pre">--topic-include-regex</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;topic_include_regex&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-topic-include-regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Include topics matching the given regular expression</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-topic-exclude-regex">
+<span class="sig-name descname"><span class="pre">--topic-exclude-regex</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;topic_exclude_regex&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-topic-exclude-regex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exclude topics matching the given regular expression</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-max-message-count">
+<span class="sig-name descname"><span class="pre">--max-message-count</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;max_message_count&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-max-message-count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Only record NUM messages on each topic</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-node">
+<span class="sig-name descname"><span class="pre">--node</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;node&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record all topics subscribed to by a specific node</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-compression">
+<span class="sig-name descname"><span class="pre">--compression</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;compression&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-compression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compression ?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>LZ4 | BZ2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-max-splits">
+<span class="sig-name descname"><span class="pre">--max-splits</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;max_splits&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-max-splits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split bag at most MAX_SPLITS times</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-max-split-size">
+<span class="sig-name descname"><span class="pre">--max-split-size</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;max_split_size&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-max-split-size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record a bag of maximum size</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-create-chunk-size">
+<span class="sig-name descname"><span class="pre">--chunk-size</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;chunk_size&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-create-chunk-size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record to chunks of size KB before writing to disk</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-job-inspect">
+<h4>inspect<a class="headerlink" href="#rio-rosbag-job-inspect" title="Permalink to this heading">¶</a></h4>
+<p>Inspect a ROSbag job</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>inspect<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>JOB_GUID
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-inspect-f">
+<span id="cmdoption-rio-rosbag-job-inspect-format"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;format_type&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-inspect-f" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json | yaml</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-inspect-arg-JOB_GUID">
+<span class="sig-name descname"><span class="pre">JOB_GUID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-inspect-arg-JOB_GUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-job-list">
+<h4>list<a class="headerlink" href="#rio-rosbag-job-list" title="Permalink to this heading">¶</a></h4>
+<p>List the Rosbag jobs for the given Deployment</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEPLOYMENT_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-list-component-instance-ids">
+<span class="sig-name descname"><span class="pre">--component-instance-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;component_instance_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-list-component-instance-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by component instance ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-list-guids">
+<span class="sig-name descname"><span class="pre">--guids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;guids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-list-guids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by job guids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-list-statuses">
+<span class="sig-name descname"><span class="pre">--statuses</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;statuses&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-list-statuses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by rosbag job statuses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Starting | Running | Error | Stopping | Stopped</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-list-arg-DEPLOYMENT_NAME">
+<span class="sig-name descname"><span class="pre">DEPLOYMENT_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-list-arg-DEPLOYMENT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-job-stop">
+<h4>stop<a class="headerlink" href="#rio-rosbag-job-stop" title="Permalink to this heading">¶</a></h4>
+<p>Stop ROSbag jobs</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>stop<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEPLOYMENT_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-stop-component-instance-ids">
+<span class="sig-name descname"><span class="pre">--component-instance-ids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;component_instance_ids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-stop-component-instance-ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by component instance ids</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-stop-guids">
+<span class="sig-name descname"><span class="pre">--guids</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;guids&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-stop-guids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter by job guids</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-stop-arg-DEPLOYMENT_NAME">
+<span class="sig-name descname"><span class="pre">DEPLOYMENT_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-stop-arg-DEPLOYMENT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-job-trigger">
+<h4>trigger<a class="headerlink" href="#rio-rosbag-job-trigger" title="Permalink to this heading">¶</a></h4>
+<p>Trigger Rosbag Upload</p>
+<p>Here are some examples of RFC3339 date/time format that can be given to ‘–upload-from’ &amp;
+‘–upload-to’ options</p>
+<ol class="arabic">
+<li><p>2022-10-21T23:20:50.52Z</p>
+<p>This represents 20 minutes and 50.52 seconds after the 23rd hour of
+October 21st, 2022 in UTC.</p>
+</li>
+<li><p>2022-10-21T23:20:50.52+05:30</p>
+<p>This represents 20 minutes and 50.52 seconds after the 23rd hour of
+October 21st, 2022 with an offset of +05:30 from UTC (Indian Standard Time).</p>
+<p>Note that this is equivalent to 2022-10-21T17:50:50.52Z in UTC.</p>
+</li>
+<li><p>2022-10-21T23:20:50.52+09:00</p>
+<p>This represents 20 minutes and 50.52 seconds after the 23rd hour of
+October 21st, 2022 with an offset of +09:00 from UTC (Japan Standard Time).</p>
+<p>Note that this is equivalent to 2022-10-21T14:20:50.52Z in UTC.</p>
+</li>
+<li><p>2022-10-21T23:20:50.52-07:00</p>
+<p>This represents 20 minutes and 50.52 seconds after the 23rd hour of
+October 21st, 2022 with an offset of -07:00 from UTC (Pacific Daylight Time).</p>
+<p>Note that this is equivalent to 2022-10-22T06:20:50.52Z in UTC.</p>
+</li>
+</ol>
+<p>Ref: <a class="reference external" href="https://www.rfc-editor.org/rfc/rfc3339#section-5.8">https://www.rfc-editor.org/rfc/rfc3339#section-5.8</a></p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>trigger<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEPLOYMENT_NAME<span class="w"> </span>JOB_GUID
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-trigger-upload-from">
+<span class="sig-name descname"><span class="pre">--upload-from</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;upload_from&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-trigger-upload-from" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Rosbags recorded after or at this time are uploaded. Specify time in RFC 3339 format (1985-04-12T23:20:50.52Z)</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-trigger-upload-to">
+<span class="sig-name descname"><span class="pre">--upload-to</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;upload_to&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-trigger-upload-to" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Rosbags recorded before or at this time are uploaded. Specify time in RFC 3339 format (1985-04-12T23:20:50.52Z)</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-trigger-arg-DEPLOYMENT_NAME">
+<span class="sig-name descname"><span class="pre">DEPLOYMENT_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-trigger-arg-DEPLOYMENT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-trigger-arg-JOB_GUID">
+<span class="sig-name descname"><span class="pre">JOB_GUID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-trigger-arg-JOB_GUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-rosbag-job-update">
+<h4>update<a class="headerlink" href="#rio-rosbag-job-update" title="Permalink to this heading">¶</a></h4>
+<p>Update the Rosbag Job</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>rosbag<span class="w"> </span>job<span class="w"> </span>update<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>DEPLOYMENT_NAME<span class="w"> </span>JOB_GUID
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-update-upload-mode">
+<span class="sig-name descname"><span class="pre">--upload-mode</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;upload_mode&gt;</span></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-update-upload-mode" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Change upload mode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OnStop | Continuous | OnDemand</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-update-arg-DEPLOYMENT_NAME">
+<span class="sig-name descname"><span class="pre">DEPLOYMENT_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-update-arg-DEPLOYMENT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-rosbag-job-update-arg-JOB_GUID">
+<span class="sig-name descname"><span class="pre">JOB_GUID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-rosbag-job-update-arg-JOB_GUID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="secret.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Secret</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="project.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Project</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Rapyuta Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Rosbag</a><ul>
+<li><a class="reference internal" href="#rio-rosbag">rio rosbag</a><ul>
+<li><a class="reference internal" href="#rio-rosbag-blob">blob</a><ul>
+<li><a class="reference internal" href="#rio-rosbag-blob-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-rosbag-blob-download">download</a></li>
+<li><a class="reference internal" href="#rio-rosbag-blob-list">list</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-rosbag-job">job</a><ul>
+<li><a class="reference internal" href="#rio-rosbag-job-create">create</a></li>
+<li><a class="reference internal" href="#rio-rosbag-job-inspect">inspect</a></li>
+<li><a class="reference internal" href="#rio-rosbag-job-list">list</a></li>
+<li><a class="reference internal" href="#rio-rosbag-job-stop">stop</a></li>
+<li><a class="reference internal" href="#rio-rosbag-job-trigger">trigger</a></li>
+<li><a class="reference internal" href="#rio-rosbag-job-update">update</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/scripts/furo.js?v=5fa4622c"></script>
+    <script src="_static/js/rio-sphinx.js?v=5215d7cd"></script>
+    </body>
+</html>
