@@ -98,6 +98,9 @@ definitions:
                     type: string
                   registryURL:
                     type: string
+                  dataDirectory:
+                    type: string
+                    default: "/opt/rapyuta/volumes/docker-cache/"
                 required:
                   - proxyDevice
                   - proxyInterface
