@@ -21,6 +21,7 @@ import yaml
 from benedict import benedict
 from graphlib import TopologicalSorter
 from munch import munchify
+from pathlib import Path
 
 from riocli.apply.util import (
     get_model,
@@ -379,57 +380,57 @@ class Applier(object):
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
-        """Load the file content and return the parsed data.
+        """Load and optionally render a template file, then parse as JSON/YAML."""
+        path = Path(file_name)
+        is_template = path.suffix == ".j2"
 
-        When the file is a template, render it using values or secrets.
-        """
+        # Resolve real extension (e.g., config.yaml.j2 → .yaml)
+        if is_template:
+            ext = Path(path.stem).suffix.lower()  # second-to-last extension
+        else:
+            ext = path.suffix.lower()
+
         try:
             if is_secret:
                 data = run_bash(f"sops -d {file_name}")
             else:
-                with open(file_name) as f:
+                with open(file_name, "r") as f:
                     data = f.read()
         except Exception as e:
-            raise Exception(f"Error loading file {file_name}: {str(e)}")
+            raise Exception(f"Error loading file {file_name}: {e}")
 
-        # When the file is a template, render it using
-        # values or secrets.
-        if not (is_value or is_secret):
-            if self.environment or file_name.endswith(".j2"):
-                try:
-                    template = self.environment.from_string(data)
-                except Exception as e:
-                    raise Exception(f"Error loading template {file_name}: {str(e)}")
-
-                template_args = self.values
-
-                if self.secrets:
-                    template_args["secrets"] = self.secrets
-
-                try:
-                    data = template.render(**template_args)
-                except Exception as ex:
-                    raise Exception(f"Failed to parse {file_name}: {str(ex)}")
-
-                file_name = file_name.rstrip(".j2")
+        # Handle Jinja2 templating if needed
+        if not is_secret and self.environment:
+            try:
+                template = self.environment.from_string(data)
+                if is_value:
+                    data = template.render()
+                else:
+                    render_args = dict(self.values or {})
+                    if self.secrets:
+                        render_args["secrets"] = self.secrets
+                    if ext == ".json":
+                        raise Exception("Rendering Jinja2 templates for JSON files is not supported. Please use YAML files for templating.")
+                    data = template.render(**render_args)
+            except Exception as e:
+                raise Exception(f"Error rendering template {file_name}: {e}")
 
         loaded_data = []
-        if file_name.endswith("json"):
-            # FIXME: Handle for JSON List.
-            try:
-                loaded = json.loads(data)
-                loaded_data.append(loaded)
-            except json.JSONDecodeError as ex:
-                raise Exception(f"Failed to parse {file_name}: {str(ex)}")
-        elif file_name.endswith("yaml") or file_name.endswith("yml"):
-            try:
-                loaded = yaml.safe_load_all(data)
-                loaded_data = list(loaded)
-            except yaml.YAMLError as e:
-                raise Exception(f"Failed to parse {file_name}: {str(e)}")
+
+        try:
+            if ext == ".json":
+                loaded_data.append(json.loads(data))
+            elif ext in (".yaml", ".yml"):
+                loaded_data = list(yaml.safe_load_all(data))
+            else:
+                raise Exception(
+                    f"Unsupported file extension after template rendering: {ext}"
+                )
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            raise Exception(f"Failed to parse {file_name}: {e}")
 
         if not loaded_data:
-            click.secho("{} file is empty".format(file_name))
+            click.secho(f"{file_name} file is empty")
 
         return loaded_data
 
