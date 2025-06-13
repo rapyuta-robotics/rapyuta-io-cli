@@ -381,45 +381,18 @@ class Applier(object):
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
         """Load and optionally render a template file, then parse as JSON/YAML."""
-        path = Path(file_name)
-        is_template = path.suffix == ".j2"
-
-        # Resolve real extension (e.g., config.yaml.j2 → .yaml)
-        if is_template:
-            ext = Path(path.stem).suffix.lower()  # second-to-last extension
-        else:
-            ext = path.suffix.lower()
-
-        try:
-            if is_secret:
-                data = run_bash(f"sops -d {file_name}")
-            else:
-                with open(file_name, "r") as f:
-                    data = f.read()
-        except Exception as e:
-            raise Exception(f"Error loading file {file_name}: {e}")
-
-        # Handle Jinja2 templating if needed
-        if not is_secret and self.environment:
-            try:
-                template = self.environment.from_string(data)
-                if is_value:
-                    data = template.render()
-                else:
-                    render_args = dict(self.values or {})
-                    if self.secrets:
-                        render_args["secrets"] = self.secrets
-                    if ext == ".json":
-                        raise Exception("Rendering Jinja2 templates for JSON files is not supported. Please use YAML files for templating.")
-                    data = template.render(**render_args)
-            except Exception as e:
-                raise Exception(f"Error rendering template {file_name}: {e}")
+        ext, data = self._render_file(file_name, is_value, is_secret)
 
         loaded_data = []
 
         try:
             if ext == ".json":
-                loaded_data.append(json.loads(data))
+                raw_data = json.loads(data)
+                if type(raw_data) is not dict:
+                    raise Exception(
+                        "Top-level JSON must be an object. Avoid using Jinja loops to generate a list at the top level."
+                    )
+                loaded_data.append(raw_data)
             elif ext in (".yaml", ".yml"):
                 loaded_data = list(yaml.safe_load_all(data))
             else:
@@ -433,6 +406,33 @@ class Applier(object):
             click.secho(f"{file_name} file is empty")
 
         return loaded_data
+
+    def _render_file(self, file_name, is_value=False, is_secret=False):
+        path = Path(file_name)
+        extension = path.suffix.lower()
+
+        try:
+            if is_secret:
+                data = run_bash(f"sops -d {file_name}")
+            else:
+                with open(file_name, "r") as f:
+                    data = f.read()
+        except Exception as e:
+            raise Exception(f"Error loading file {file_name}: {e}")
+
+        # Handle Jinja2 templating if needed
+        try:
+            template = self.environment.from_string(data)
+            if is_value or is_secret:
+                data = template.render()
+            else:
+                render_args = dict(self.values or {})
+                if self.secrets:
+                    render_args["secrets"] = self.secrets
+                data = template.render(**render_args)
+        except Exception as e:
+            raise Exception(f"Error rendering template {file_name}: {e}")
+        return extension, data
 
     def _add_graph_node(self, key):
         self.graph.add(key)
