@@ -21,6 +21,7 @@ import yaml
 from benedict import benedict
 from graphlib import TopologicalSorter
 from munch import munchify
+from pathlib import Path
 
 from riocli.apply.util import (
     get_model,
@@ -379,59 +380,59 @@ class Applier(object):
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
-        """Load the file content and return the parsed data.
+        """Load and optionally render a template file, then parse as JSON/YAML."""
+        ext, data = self._render_file(file_name, is_value, is_secret)
 
-        When the file is a template, render it using values or secrets.
-        """
+        loaded_data = []
+
+        try:
+            if ext == ".json":
+                raw_data = json.loads(data)
+                if type(raw_data) is not dict:
+                    raise Exception(
+                        "Top-level JSON must be an object. Avoid using Jinja loops to generate a list at the top level."
+                    )
+                loaded_data.append(raw_data)
+            elif ext in (".yaml", ".yml"):
+                loaded_data = list(yaml.safe_load_all(data))
+            else:
+                raise Exception(
+                    f"Unsupported file extension after template rendering: {ext}"
+                )
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            raise Exception(f"Failed to parse {file_name}: {e}")
+
+        if not loaded_data:
+            click.secho(f"{file_name} file is empty")
+
+        return loaded_data
+
+    def _render_file(self, file_name, is_value=False, is_secret=False):
+        path = Path(file_name)
+        extension = path.suffix.lower()
+
         try:
             if is_secret:
                 data = run_bash(f"sops -d {file_name}")
             else:
-                with open(file_name) as f:
+                with open(file_name, "r") as f:
                     data = f.read()
         except Exception as e:
-            raise Exception(f"Error loading file {file_name}: {str(e)}")
+            raise Exception(f"Error loading file {file_name}: {e}")
 
-        # When the file is a template, render it using
-        # values or secrets.
-        if not (is_value or is_secret):
-            if self.environment or file_name.endswith(".j2"):
-                try:
-                    template = self.environment.from_string(data)
-                except Exception as e:
-                    raise Exception(f"Error loading template {file_name}: {str(e)}")
-
-                template_args = self.values
-
+        # Handle Jinja2 templating if needed
+        try:
+            template = self.environment.from_string(data)
+            if is_value or is_secret:
+                data = template.render()
+            else:
+                render_args = dict(self.values or {})
                 if self.secrets:
-                    template_args["secrets"] = self.secrets
-
-                try:
-                    data = template.render(**template_args)
-                except Exception as ex:
-                    raise Exception(f"Failed to parse {file_name}: {str(ex)}")
-
-                file_name = file_name.rstrip(".j2")
-
-        loaded_data = []
-        if file_name.endswith("json"):
-            # FIXME: Handle for JSON List.
-            try:
-                loaded = json.loads(data)
-                loaded_data.append(loaded)
-            except json.JSONDecodeError as ex:
-                raise Exception(f"Failed to parse {file_name}: {str(ex)}")
-        elif file_name.endswith("yaml") or file_name.endswith("yml"):
-            try:
-                loaded = yaml.safe_load_all(data)
-                loaded_data = list(loaded)
-            except yaml.YAMLError as e:
-                raise Exception(f"Failed to parse {file_name}: {str(e)}")
-
-        if not loaded_data:
-            click.secho("{} file is empty".format(file_name))
-
-        return loaded_data
+                    render_args["secrets"] = self.secrets
+                data = template.render(**render_args)
+        except Exception as e:
+            raise Exception(f"Error rendering template {file_name}: {e}")
+        return extension, data
 
     def _add_graph_node(self, key):
         self.graph.add(key)
