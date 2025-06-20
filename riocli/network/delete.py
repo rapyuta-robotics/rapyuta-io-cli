@@ -38,13 +38,21 @@ from riocli.v2client import Client
     "--force", "-f", is_flag=True, default=False, help="Skip confirmation", type=bool
 )
 @click.option(
+    "-a",
+    "--all",
+    "delete_all",
+    is_flag=True,
+    default=False,
+    help="Deletes all networks in the project",
+)
+@click.option(
     "--workers",
     "-w",
     help="Number of parallel workers while running deleting networks. Defaults to 10",
     type=int,
     default=10,
 )
-@click.argument("network-name-or-regex", type=str)
+@click.argument("network-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting network...")
 def delete_network(
     force: bool,
