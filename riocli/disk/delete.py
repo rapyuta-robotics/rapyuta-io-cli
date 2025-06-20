@@ -52,7 +52,7 @@ from riocli.v2client import Client
     type=int,
     default=10,
 )
-@click.argument("disk-name-or-regex", type=str)
+@click.argument("disk-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting disk...")
 def delete_disk(
     force: bool,
