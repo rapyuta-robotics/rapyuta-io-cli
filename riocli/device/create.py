@@ -40,12 +40,6 @@ from riocli.config import new_client
     type=click.Choice(["2", "3"], case_sensitive=False),
 )
 @click.option(
-    "--rosbag-mount-path",
-    type=str,
-    default="/opt/rapyuta/volumes/rosbag",
-    help="Path to store recorded ROSBags (only dockercompose)",
-)
-@click.option(
     "--catkin-workspace",
     default="/home/rapyuta/catkin_ws",
     help="Path to the Catkin Workspace (only preinstalled)",
@@ -57,7 +51,6 @@ def create_device(
     runtime: [],
     ros: str,
     python: str,
-    rosbag_mount_path: str,
     catkin_workspace: str,
 ) -> None:
     """
@@ -77,7 +70,6 @@ def create_device(
                 runtime_docker=runtime_docker,
                 runtime_preinstalled=runtime_preinstalled,
                 python_version=python_version,
-                rosbag_mount_path=rosbag_mount_path,
                 ros_workspace=catkin_workspace,
             )
             client.create_device(device)

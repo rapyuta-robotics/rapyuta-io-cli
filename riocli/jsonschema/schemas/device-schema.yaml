@@ -137,9 +137,6 @@ definitions:
                   enabled:
                     enum:
                       - True
-                  rosbagMountPath:
-                    type: string
-                    default: /opt/rapyuta/volumes/rosbag
       preinstalled:
         oneOf:
           - properties:

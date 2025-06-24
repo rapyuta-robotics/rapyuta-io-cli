@@ -12,7 +12,6 @@ spec:
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   docker:
     enabled: True # Required
-    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
   configVariables:
     custom_config_variable_1: value1
     custom_config_variable_2: value2
@@ -44,7 +43,6 @@ spec:
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   docker:
     enabled: True # Required
-    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
   preinstalled:
     enabled: True
     catkinWorkspace: "/home/rapyuta/catkin_ws"
@@ -76,7 +74,6 @@ spec:
     private_ip: 10.0.0.4 # Optional Allows to set vnet ip for this vm when vm is set to True
   docker:
     enabled: True # Required
-    rosbagMountPath: "/opt/rapyuta/volumes/rosbag"
   configVariables:
     custom_config_variable_1: value1
     custom_config_variable_2: value2

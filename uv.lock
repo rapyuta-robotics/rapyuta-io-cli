@@ -853,7 +853,7 @@ wheels = [
 [[package]]
 name = "rapyuta-io"
 version = "1.17.1"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=5fb64de1603fa7d1c6e224dfd4ee0a0dbd2a5cfc#5fb64de1603fa7d1c6e224dfd4ee0a0dbd2a5cfc" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=26e05193b8e445800a609166e8e8481550992a5c#26e05193b8e445800a609166e8e8481550992a5c" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "pytz" },
@@ -940,7 +940,7 @@ requires-dist = [
     { name = "python-magic-bin", marker = "os_name == 'nt'", specifier = ">=0.4.14" },
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
-    { name = "rapyuta-io", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=5fb64de1603fa7d1c6e224dfd4ee0a0dbd2a5cfc" },
+    { name = "rapyuta-io", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=26e05193b8e445800a609166e8e8481550992a5c" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
