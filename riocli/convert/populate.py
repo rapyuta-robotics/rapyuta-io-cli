@@ -16,6 +16,8 @@ def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerC
         package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
 
         restart_policy = package["spec"].get("device", {}).get("restart", "always")
+        if restart_policy == "onfailure":
+            restart_policy = "on-failure"
         env = merge_env_vars(package["spec"].get("environmentVars", []))
         volume_mounts = build_volume_mounts(deployment)
         depends_on = populate_depends_on(
@@ -36,19 +38,19 @@ def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerC
                 environment=env,
                 volumes=volume_mounts,
                 depends_on=depends_on,
-                command="{}".format(exe.get("command", "")),
+                command=populate_command(exe=exe),
                 healthcheck=populate_healthcheck(exe),
             )
 
     return DockerCompose(version="3", services=services)
 
 
-def build_volume_mounts(deployment: dict) -> list[Any]:
+def build_volume_mounts(deployment: dict) -> List[Any]:
     """
     Builds a mapping from executable name to volume mount strings.
     Also populates the volumes_dict with named volumes if needed.
     """
-    service_volumes = []
+    service_volumes: List = []
     volumes = deployment.get("spec", {}).get("volumes", {})
 
     for volume in volumes:
@@ -63,6 +65,30 @@ def build_volume_mounts(deployment: dict) -> list[Any]:
         service_volumes.append(service_volume)
 
     return service_volumes
+
+
+def populate_command(exe: dict) -> str:
+    """
+    Extracts and normalizes the 'command' field from an executable definition.
+
+    Handles both list and string formats, returns a shell-ready command string,
+    or None if not provided.
+
+    Args:
+        exe: Executable dictionary from a package manifest.
+
+    Returns:
+        A clean shell command string or None.
+    """
+    command_raw = exe.get("command")
+
+    if command_raw is None or command_raw == "":
+        return None
+
+    if isinstance(command_raw, list):
+        return " ".join(str(item) for item in command_raw).strip()
+
+    return f"'{str(command_raw).strip()}'"
 
 
 def find_package(packages: Dict[str, dict], name: str, version: str) -> dict:
@@ -119,7 +145,6 @@ def populate_depends_on(
             continue
 
         dep_name = dep["nameOrGUID"]
-        use_conditions = dep.get("wait", False)
         dependent_deployment = deployments.get(f"deployment:{dep_name}")
         if not dependent_deployment:
             continue
@@ -136,7 +161,7 @@ def populate_depends_on(
         for exe in pkg.get("spec", {}).get("executables", []):
             service_name = f"{dep_name}_{exe['name']}"
             depends_on[service_name] = DependsCondition(
-                condition="service_healthy" if use_conditions else "service_started"
+                # condition="service_completed_successfully" if use_conditions else "service_started"
             )
 
     return depends_on
