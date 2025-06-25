@@ -83,11 +83,7 @@ def convert(
     config = get_config_from_context(ctx)
     applier = Applier(glob_files, abs_values, abs_secrets, config)
     deployments, packages = sort_deployment_package(applier)
-    # print(deployments)
-    # print(packages)
-
     docker_compose_manifest = populate(deployments, packages)
-    print(docker_compose_manifest)
 
     write_compose_yaml(
         dir_path=path, file_name=name, compose_dict=docker_compose_manifest
@@ -95,14 +91,8 @@ def convert(
 
 
 def sort_deployment_package(applier: Applier):
-    deployments = dict()
-    packages = dict()
-    for k, v in applier.objects.items():
-        if v["kind"] == "Deployment":
-            deployments[k] = v
-        elif v["kind"] == "Package":
-            packages[k] = v
-
+    deployments = {k: v for k, v in applier.objects.items() if v.get("kind") == "Deployment"}
+    packages = {k: v for k, v in applier.objects.items() if v.get("kind") == "Package"}
     return deployments, packages
 
 
