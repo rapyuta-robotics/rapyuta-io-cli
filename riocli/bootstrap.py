@@ -21,8 +21,6 @@ import click
 import rapyuta_io.version
 from click import Context
 from click_help_colors import HelpColorsGroup
-from click_plugins import with_plugins
-from pkg_resources import iter_entry_points
 
 from riocli.apply import apply, delete
 from riocli.apply.explain import list_examples, explain
@@ -58,7 +56,6 @@ from riocli.utils import (
 from riocli.vpn import vpn
 
 
-@with_plugins(iter_entry_points("riocli.plugins"))
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
