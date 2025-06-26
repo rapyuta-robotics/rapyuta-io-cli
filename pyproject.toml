@@ -25,7 +25,6 @@ dependencies = [
     "argparse>=1.4.0",
     "click-completion>=0.5.2",
     "click-help-colors>=0.9.1",
-    "click-plugins>=1.1.1",
     "click-repl>=0.2.0",
     "click-spinner>=0.1.10",
     "click~=8.0.1",
