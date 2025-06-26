@@ -91,8 +91,14 @@ def convert(
 
 
 def sort_deployment_package(applier: Applier):
-    deployments = {k: v for k, v in applier.objects.items() if v.get("kind") == "Deployment"}
-    packages = {k: v for k, v in applier.objects.items() if v.get("kind") == "Package"}
+    deployments = {
+        k: v for k, v in applier.objects.items()
+        if v.get("kind") == "Deployment" and v.get("spec", {}).get("runtime") == "device"
+    }
+    packages = {
+        k: v for k, v in applier.objects.items()
+        if v.get("kind") == "Package" and v.get("spec", {}).get("runtime") == "device"
+    }
     return deployments, packages
 
 
