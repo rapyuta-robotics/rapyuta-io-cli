@@ -8,8 +8,10 @@ definitions:
     type: object
     properties:
       apiVersion:
-        const: api.rapyuta.io/v2
         default: api.rapyuta.io/v2
+        oneOf:
+          - const: apiextensions.rapyuta.io/v1
+          - const: api.rapyuta.io/v2
       kind:
         const: UserGroup
       metadata:
