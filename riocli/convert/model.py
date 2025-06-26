@@ -39,18 +39,6 @@ class Service:
 
 
 @dataclass
-class Volume:
-    driver: Optional[str] = field(default_factory=str)
-
-
-@dataclass
-class Network:
-    driver: Optional[str] = field(default_factory=str)
-
-
-@dataclass
 class DockerCompose:
     version: str
     services: Dict[str, Service]
-    volumes: Optional[Dict[str, Volume]] = field(default_factory=dict)
-    networks: Optional[Dict[str, Network]] = field(default_factory=dict)
