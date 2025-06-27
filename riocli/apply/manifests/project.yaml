@@ -26,3 +26,4 @@ spec:
       proxyInterface: "eth0"
       registrySecret: "quay"
       registryURL: "https://quay.io"
+      dataDirectory: "/opt/rapyuta/volumes/docker-cache/"

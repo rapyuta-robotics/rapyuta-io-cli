@@ -90,7 +90,7 @@ def validate_and_set_hwil_token(
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
     token = b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
-    client = HwilClient(auth_token=token)
+    client = HwilClient(auth_token=token, email_id=ctx.obj.data.get("email_id"))
 
     try:
         client.list_devices()

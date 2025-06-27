@@ -79,8 +79,9 @@ class Client(object):
         },
     }
 
-    def __init__(self, auth_token: str):
+    def __init__(self, auth_token: str, email_id: str = None):
         self._token = auth_token
+        self._email_id = email_id
         self._host = self.HWIL_URL
 
     def create_device(
@@ -236,4 +237,9 @@ class Client(object):
         return munchify(data)
 
     def _get_auth_header(self: Client) -> dict:
-        return dict(Authorization=f"Basic {self._token}")
+        header = dict(Authorization=f"Basic {self._token}")
+
+        if self._email_id is not None:
+            header["X-Email-ID"] = self._email_id
+
+        return header
