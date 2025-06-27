@@ -1,3 +1,19 @@
+# [9.11.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.10.0...v9.11.0) (2025-06-27)
+
+
+### Bug Fixes
+
+* **deployment:** remove unnecessary required fields from deployment schema ([#442](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/442)) ([c0f2745](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c0f274589967dacfea1a78ac7b3a29713877bcdd))
+* **disk:** fix the delete command with --all flag ([3e4ba3d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3e4ba3d6cc5cd72dd6f2c167c6cb741ac1cada85)), closes [rapyuta-robotics/rapyuta_io#861](https://github.com/rapyuta-robotics/rapyuta_io/issues/861)
+* **network:** fix the delete command with --all flag ([245eb54](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/245eb54b72972e0bb892e84bc5552b9a7db11664)), closes [rapyuta-robotics/rapyuta_io#860](https://github.com/rapyuta-robotics/rapyuta_io/issues/860)
+
+
+### Features
+
+* **apply:** support jinja templating in values files ([20f7ac2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/20f7ac231e674cd89aebd5ccc2659099a3ae7cb6))
+* old bg replaced by async and new fucntionality ([2e350b8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2e350b80ff6df199080ba8b5edf782bf31f36d8c))
+* **projects:** support user-defined data directory for docker cache ([f133ca1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f133ca1078553129dde1f3970d4fc647ce6be2bb))
+
 # [9.10.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.3...v9.10.0) (2025-06-04)
 
 
