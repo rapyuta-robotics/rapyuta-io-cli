@@ -137,6 +137,10 @@ definitions:
       livenessProbe:
         type: object
         "$ref": "#/definitions/livenessProbe"
+      uid:
+        type: integer
+      gid:
+        type: integer
     required:
       - type
     dependencies:
