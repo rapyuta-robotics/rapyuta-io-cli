@@ -128,7 +128,7 @@ class Configuration(object):
 
         token = self.data.get("hwil_auth_token", None)
 
-        return HwilClient(auth_token=token)
+        return HwilClient(auth_token=token, email_id=self.data.get("email_id"))
 
     def get_auth_header(self: Configuration) -> dict:
         if not ("auth_token" in self.data and "project_id" in self.data):
