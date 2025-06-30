@@ -105,6 +105,8 @@ spec:
         - "sleep infinity"
       # command: "sleep infinity"
       runAsBash: True
+      uid: 1001
+      gid: 1001
       limits:
         cpu: 0.025 # Unit: Core Options: [Multiple of 0.025, <= 8]
         memory: 128 # Unit: MB Options: [Multiple of 128, <= 32768]
