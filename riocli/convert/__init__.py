@@ -66,6 +66,13 @@ def convert(
     files: typing.Tuple[str],
     path: str,
 ) -> None:
+    """
+    Converts Kubernetes manifests into a Docker Compose YAML
+
+    Usage Example:
+
+        rio convert templates/ -v values.yaml path_to_file
+    """
     if os.path.isfile(path):
         click.secho(
             "Invalid path: expected a directory, but received a file.", fg=Colors.RED
@@ -92,11 +99,13 @@ def convert(
 
 def sort_deployment_package(applier: Applier):
     deployments = {
-        k: v for k, v in applier.objects.items()
+        k: v
+        for k, v in applier.objects.items()
         if v.get("kind") == "Deployment" and v.get("spec", {}).get("runtime") == "device"
     }
     packages = {
-        k: v for k, v in applier.objects.items()
+        k: v
+        for k, v in applier.objects.items()
         if v.get("kind") == "Package" and v.get("spec", {}).get("runtime") == "device"
     }
     return deployments, packages
