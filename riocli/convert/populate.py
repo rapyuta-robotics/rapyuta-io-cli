@@ -1,158 +1,261 @@
-from typing import Dict, List, Any
-from riocli.convert.defaults import get_roscore
-from riocli.convert.model import (
-    DockerCompose,
-    Service,
-    DependsCondition,
-    HealthCheck,
-)
+from __future__ import annotations
+
 import shlex
+from typing import Dict, List, Any, Optional
+
+from riocli.convert.defaults import get_roscore, get_default_volume_mounts
+from riocli.convert.model import DockerCompose, Service, DependsCondition, HealthCheck
+from riocli.convert.utils import (
+    safe_get_nested,
+    normalize_restart_policy,
+    format_memory_limit,
+    format_cpu_limit,
+)
+
+# Constants
+VOLUME_PERMISSIONS = {
+    755: "rw",
+    777: "rw",
+}
 
 
 def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerCompose:
+    """
+    Converts a set of Kubernetes-style deployments and packages into a Docker Compose structure.
+
+    Args:
+        deployments: Dictionary of deployment definitions.
+        packages: Dictionary of package definitions.
+
+    Returns:
+        DockerCompose object representing the final configuration.
+    """
     services: Dict[str, Service] = {}
-    ros_enabled = False
 
+    # Check if ROS is enabled in any package (optimized with early exit)
+    ros_enabled = _is_ros_enabled(deployments, packages)
+
+    # Process deployments and create services
     for deployment in deployments.values():
-        dep_name = deployment["metadata"]["name"]
-        pkg_dep = deployment["metadata"]["depends"]
-        package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
-
-        if not ros_enabled:
-            ros_enabled = package.get("spec", {}).get("ros", {}).get("enabled", False)
-
-        restart_policy = package["spec"].get("device", {}).get("restart", "always")
-        if restart_policy == "onfailure":
-            restart_policy = "on-failure"
-
-        env = merge_env_vars(
-            package["spec"].get("environmentVars", []),
-            deployment["spec"].get("envArgs", []),
-        )
-        volume_mounts = build_volume_mounts(deployment)
-        depends_on = populate_depends_on(
-            deployment,
-            deployments=deployments,
-            packages=packages,
-        )
-
-        for exe in package["spec"]["executables"]:
-            exe_name = exe["name"]
-            image = exe["docker"]["image"]
-            # Check limits
-            limits = exe.get("limits", {})
-            cpu_limit = limits.get("cpu", None)
-            mem_limit = (
-                str(limits.get("memory", "")) + "m" if limits.get("memory") else None
+        try:
+            _process_deployment(
+                deployment=deployment,
+                deployments=deployments,
+                packages=packages,
+                services=services,
             )
-
-            service_name = f"{dep_name}_{exe_name}"
-
-            services[service_name] = Service(
-                container_name=service_name,
-                image=image,
-                restart=restart_policy,
-                environment=env,
-                volumes=volume_mounts,
-                depends_on=depends_on,
-                command=populate_command(exe=exe),
-                # healthcheck=populate_healthcheck(exe),
-                mem_limit=mem_limit,
-                cpus=cpu_limit,
+        except (KeyError, ValueError) as e:
+            # Log error but continue processing other deployments
+            print(
+                f"Warning: Skipping deployment {deployment.get('metadata', {}).get('name', 'unknown')}: {e}"
             )
+            continue
 
-    if ros_enabled == "true" or ros_enabled:
+    # Add ROS master service if needed
+    if ros_enabled:
         services["ros-master"] = get_roscore()
 
     return DockerCompose(version="3", services=services)
 
 
-def build_volume_mounts(deployment: dict) -> List[Any]:
-    """
-    Builds a mapping from executable name to volume mount strings.
-    Also populates the volumes_dict with named volumes if needed.
-    """
-    service_volumes: List = [
-        "/opt/rapyuta/configs:/opt/rapyuta/configs:rslave",
-        "/var/log/riouser:/var/log/riouser:rslave",
-        "/var/log/rapyuta/deployments:/var/log/rapyuta/deployments:rslave",
-        "/var/lib/docker/containers:/var/lib/docker/containers:rslave",
-        "/dev:/dev:rslave",
-    ]
-    volumes = deployment.get("spec", {}).get("volumes", {})
-
-    for volume in volumes:
-        mount_path = volume.get("mountPath")
-        sub_path = volume.get("subPath")
-        permissions = volume.get("perm")
-        read_only = "rw" if permissions in [755, 777] else "rslave"
-
-        if not (mount_path or sub_path):
+def _is_ros_enabled(deployments: Dict[str, dict], packages: Dict[str, dict]) -> bool:
+    """Check if ROS is enabled in any deployment package."""
+    for deployment in deployments.values():
+        try:
+            pkg_dep = deployment["metadata"]["depends"]
+            package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
+            if package.get("spec", {}).get("ros", {}).get("enabled", False):
+                return True
+        except (KeyError, ValueError):
             continue
-        service_volume = "{}:{}:{}".format(sub_path, mount_path, read_only)
-        service_volumes.append(service_volume)
+    return False
+
+
+def _process_deployment(
+    deployment: dict,
+    deployments: Dict[str, dict],
+    packages: Dict[str, dict],
+    services: Dict[str, Service],
+) -> None:
+    """Process a single deployment and add its services to the services dictionary."""
+    dep_name = deployment["metadata"]["name"]
+    pkg_dep = deployment["metadata"]["depends"]
+    package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
+
+    # Get restart policy with normalization
+    restart_policy = safe_get_nested(
+        package, "spec", "device", "restart", default="always"
+    )
+    restart_policy = normalize_restart_policy(restart_policy)
+
+    # Merge environment variables
+    env = merge_env_vars(
+        safe_get_nested(package, "spec", "environmentVars", default=[]),
+        safe_get_nested(deployment, "spec", "envArgs", default=[]),
+    )
+
+    # Build volume mounts
+    volume_mounts = build_volume_mounts(deployment)
+
+    # Build dependencies
+    depends_on = populate_depends_on(
+        deployment=deployment, deployments=deployments, packages=packages
+    )
+
+    # Create services for each executable
+    for exe in safe_get_nested(package, "spec", "executables", default=[]):
+        service = create_service(
+            dep_name, exe, restart_policy, env, volume_mounts, depends_on
+        )
+        services[service.container_name] = service
+
+
+def create_service(
+    dep_name: str,
+    exe: dict,
+    restart_policy: str,
+    env: Dict[str, str],
+    volume_mounts: List[str],
+    depends_on: Dict[str, DependsCondition],
+) -> Service:
+    """
+    Creates a Docker Compose Service object for an executable.
+
+    Args:
+        dep_name: Name of the deployment.
+        exe: Executable dictionary from package.
+        restart_policy: Restart policy string.
+        env: Environment variables.
+        volume_mounts: List of volume mount strings.
+        depends_on: Dependency dictionary.
+
+    Returns:
+        A populated Service object.
+    """
+    exe_name = exe["name"]
+    image = exe["docker"]["image"]
+    limits = exe.get("limits", {})
+
+    # Format resource limits using utility functions
+    mem_limit = format_memory_limit(limits.get("memory"))
+    cpu_limit = format_cpu_limit(limits.get("cpu"))
+
+    return Service(
+        container_name=f"{dep_name}_{exe_name}",
+        image=image,
+        restart=restart_policy,
+        environment=env,
+        volumes=volume_mounts,
+        depends_on=depends_on,
+        command=populate_command(exe),
+        healthcheck=populate_healthcheck(exe),
+        mem_limit=mem_limit,
+        cpus=cpu_limit,
+    )
+
+
+def build_volume_mounts(deployment: dict) -> List[str]:
+    """
+    Constructs a list of volume mount strings for a given deployment.
+    Includes default volumes and custom volumes specified in the deployment.
+
+    Args:
+        deployment: The deployment definition dictionary.
+
+    Returns:
+        List of Docker volume mount strings.
+    """
+    # Start with default volume mounts
+    service_volumes = get_default_volume_mounts()
+
+    # Add custom volumes from deployment
+    for volume in safe_get_nested(deployment, "spec", "volumes", default=[]):
+        src = volume.get("subPath")
+        dst = volume.get("mountPath")
+        if not src or not dst:
+            continue
+
+        # Determine volume mode based on permissions
+        perm = volume.get("perm")
+        mode = VOLUME_PERMISSIONS.get(perm, "rslave")
+        service_volumes.append(f"{src}:{dst}:{mode}")
 
     return service_volumes
 
 
-def populate_command(exe: dict) -> list:
+def populate_command(exe: dict) -> Optional[List[str]]:
     """
-    Returns:
-    - If runAsBash == true: ['sh', '-c', '<command string>']
-    - Else: shlex.split(<command string>)
-    """
-    command_raw = exe.get("command")
-    run_as_bash = exe.get("runAsBash", False)
+    Constructs the command to run for a container from the executable definition.
+    Wraps the command in a shell invocation if runAsBash is True.
 
-    if not command_raw:
+    Args:
+        exe: Executable dictionary from package spec.
+
+    Returns:
+        List of command arguments suitable for Docker Compose, or None if no command.
+    """
+    cmd_raw = exe.get("command")
+    if not cmd_raw:
         return None
 
-    # Normalize command to string
-    if isinstance(command_raw, list):
-        command_str = " ".join(str(item) for item in command_raw).strip()
+    run_as_bash = exe.get("runAsBash", False)
+
+    # Convert command to string if it's a list
+    cmd_str = " ".join(cmd_raw) if isinstance(cmd_raw, list) else str(cmd_raw).strip()
+
+    # Return shell-wrapped command or split command
+    if run_as_bash in (True, "true"):
+        return ["bash", "-c", cmd_str]
     else:
-        command_str = str(command_raw).strip()
-
-    if run_as_bash == "true" or run_as_bash is True:
-        return ["bash", "-c", command_str]
-
-    return shlex.split(command_str)
+        return shlex.split(cmd_str)
 
 
 def find_package(packages: Dict[str, dict], name: str, version: str) -> dict:
-    """Find package related to deployment.
+    """
+    Finds a package by name and version in the provided dictionary.
 
     Args:
-        packages (Dict[str, dict]): dictionary of packages
-        name (str): name of package
-        version (str): version of package
+        packages: All package definitions.
+        name: Name of the package.
+        version: Expected version.
 
     Returns:
-        dict
+        The matched package dictionary.
+
+    Raises:
+        KeyError: If package is not found.
+        ValueError: If version mismatch occurs.
     """
-    key = f"package:{name}"
-    pkg = packages.get(key)
+    pkg = packages.get(f"package:{name}")
     if not pkg:
         raise KeyError(f"No Package found with name '{name}'")
-    if str(pkg.get("metadata", {}).get("version", "")) != str(version):
+    if str(pkg.get("metadata", {}).get("version")) != str(version):
         raise ValueError(
             f"Version mismatch: expected {version}, found {pkg['metadata'].get('version')}"
         )
     return pkg
 
 
-def merge_env_vars(*env_vars_lists: List[Dict]) -> Dict[str, str]:
+def merge_env_vars(*env_vars_lists: List[Dict[str, Any]]) -> Dict[str, str]:
     """
-    Merges multiple lists of environment variable dictionaries into a single dict.
-    Later lists override earlier ones for duplicate names.
+    Merges multiple lists of environment variable definitions into a single dictionary.
+    Later variables override earlier ones with the same name.
+
+    Args:
+        *env_vars_lists: Lists of environment variable dictionaries.
+
+    Returns:
+        Dictionary of environment variable name to value.
     """
-    env_dict = {}
-    for env_vars in env_vars_lists:
-        for env in env_vars:
-            name = env.get("name")
+    env = {}
+    for vars_list in env_vars_lists:
+        for var in vars_list:
+            name = var.get("name")
             if name:
-                env_dict[name] = env.get("default", "") or env.get("value", "")
-    return env_dict
+                # Convert value to string for consistency
+                value = var.get("default") or var.get("value", "")
+                env[name] = str(value) if value is not None else ""
+    return env
 
 
 def populate_depends_on(
@@ -161,22 +264,19 @@ def populate_depends_on(
     packages: Dict[str, dict],
 ) -> Dict[str, DependsCondition]:
     """
-    Builds the depends_on field for a service based on deployment.spec.depends.
+    Builds the depends_on relationships for a Docker Compose service
+    based on other deployments it references.
 
     Args:
-        deployment: The deployment being processed.
-        deployments: All deployments keyed by kind:name.
-        packages: All packages keyed by kind:name.
+        deployment: The current deployment.
+        packages: All package definitions.
 
     Returns:
-        List of dependent service names OR dict with DependsCondition objects.
+        Dictionary of service name to DependsCondition.
     """
-    dep_list = deployment.get("spec", {}).get("depends")
-    depends_on: Dict[str, DependsCondition] = {}
-    if dep_list is None:
-        return depends_on
+    depends_on = {}
 
-    for dep in dep_list:
+    for dep in safe_get_nested(deployment, "spec", "depends", default=[]):
         if dep.get("kind") != "deployment":
             continue
 
@@ -196,17 +296,25 @@ def populate_depends_on(
         # Generate service names for each executable in the dependent package
         for exe in pkg.get("spec", {}).get("executables", []):
             service_name = f"{dep_name}_{exe['name']}"
-            depends_on[service_name] = DependsCondition(
-                # condition="service_completed_successfully" if use_conditions else "service_started"
-            )
+            depends_on[service_name] = DependsCondition()
 
     return depends_on
 
 
-def populate_healthcheck(exe: dict):
+def populate_healthcheck(exe: dict) -> Optional[HealthCheck]:
+    """
+    Generates a Docker Compose healthcheck configuration from a livenessProbe.
+
+    Args:
+        exe: Executable dictionary from package spec.
+
+    Returns:
+        HealthCheck object or None if no valid probe is found.
+    """
     probe = exe.get("livenessProbe")
-    if not probe or not probe.get("exec", {}).get("command"):
+    if not probe or not safe_get_nested(probe, "exec", "command"):
         return None
+
     return HealthCheck(
         test=" ".join(probe["exec"]["command"]),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
