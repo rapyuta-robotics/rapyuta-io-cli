@@ -97,30 +97,13 @@ def convert(
     Examples:
         rio convert templates/ /output/path
         rio convert templates/ /output/path --up
-        rio convert templates/ /output/path --down --up
+        rio convert templates/ /output/path --down 
     """
     # Validate input path
     if os.path.isfile(path):
         click.secho("Invalid path: expected a directory.", fg=Colors.RED)
         raise SystemExit(1)
 
-    # Process input files and configurations
-    glob_files, abs_values, abs_secrets = process_files_values_secrets(
-        files, values, secrets
-    )
-
-    # Validate required inputs
-    if not path or not glob_files:
-        click.secho("No path or files specified.", fg=Colors.RED)
-        raise SystemExit(1)
-
-    # Parse and process manifests
-    config = get_config_from_context(ctx)
-    applier = Applier(glob_files, abs_values, abs_secrets, config)
-    deployments, packages = sort_deployment_package(applier)
-
-    # Generate Docker Compose configuration
-    docker_compose_manifest = populate(deployments, packages)
     compose_path = Path(path) / name
     compose_manager = DockerComposeManager(compose_path)
 
@@ -130,10 +113,27 @@ def convert(
 
     # Always write output file first (except for down-only when file exists)
     should_write_file = True
-    if down and compose_manager.file_exists():
+    if down and not up and compose_manager.file_exists():
         should_write_file = False
 
     if should_write_file:
+        # Process input files and configurations
+        glob_files, abs_values, abs_secrets = process_files_values_secrets(
+            files, values, secrets
+        )
+
+        # Validate required inputs
+        if not path or not glob_files:
+            click.secho("No path or files specified.", fg=Colors.RED)
+            raise SystemExit(1)
+
+        # Parse and process manifests
+        config = get_config_from_context(ctx)
+        applier = Applier(glob_files, abs_values, abs_secrets, config)
+        deployments, packages = sort_deployment_package(applier)
+
+        docker_compose_manifest = populate(deployments, packages)
+
         write_compose_yaml(output_path=compose_path, compose_dict=docker_compose_manifest)
 
     # Handle docker compose down operation (if requested)
