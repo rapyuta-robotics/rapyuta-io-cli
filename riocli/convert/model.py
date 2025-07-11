@@ -3,6 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Literal, Union
 
+# Type aliases for better readability
+EnvironmentDict = Dict[str, Union[str, int, float]]
+DependsDict = Dict[str, "DependsCondition"]
+ServiceDict = Dict[str, "Service"]
+
+# Constants
+DEFAULT_PULL_POLICY = "if_not_present"
+DEFAULT_RESTART_POLICY = "always"
+DEFAULT_NETWORK_MODE = "host"
+DEFAULT_DEPENDS_CONDITION = "service_started"
+
 
 @dataclass
 class BuildConfig:
@@ -18,7 +29,7 @@ class DependsCondition:
 
     condition: Literal[
         "service_started", "service_healthy", "service_completed_successfully"
-    ] = "service_started"
+    ] = DEFAULT_DEPENDS_CONDITION
 
 
 @dataclass
@@ -37,17 +48,17 @@ class Service:
 
     container_name: str
     image: str
-    pull_policy: Optional[str] = "if_not_present"
+    pull_policy: Optional[str] = DEFAULT_PULL_POLICY
     command: Optional[Union[str, List[str]]] = None
     hostname: Optional[str] = None
-    restart: Optional[str] = "always"
+    restart: Optional[str] = DEFAULT_RESTART_POLICY
     build: Optional[BuildConfig] = None
     ports: Optional[List[str]] = field(default_factory=list)
     volumes: Optional[List[str]] = field(default_factory=list)
-    environment: Optional[Dict[str, Union[str, int, float]]] = field(default_factory=dict)
-    depends_on: Optional[Dict[str, DependsCondition]] = field(default_factory=dict)
+    environment: Optional[EnvironmentDict] = field(default_factory=dict)
+    depends_on: Optional[DependsDict] = field(default_factory=dict)
     healthcheck: Optional[HealthCheck] = None
-    network_mode: Optional[str] = "host"
+    network_mode: Optional[str] = DEFAULT_NETWORK_MODE
     mem_limit: Optional[str] = None
     cpus: Optional[Union[str, float]] = None
 
@@ -56,5 +67,5 @@ class Service:
 class DockerCompose:
     """Docker Compose configuration."""
 
-    version: str
-    services: Dict[str, Service]
+    services: ServiceDict
+    version: Optional[str] = None

@@ -28,9 +28,10 @@ from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.convert.model import DockerCompose
 from riocli.convert.populate import populate
+from riocli.convert.compose import DockerComposeManager
 
 # Constants
-DEFAULT_COMPOSE_FILENAME = "docker-compose.yml"
+DEFAULT_COMPOSE_FILENAME = "docker-compose.yaml"
 DEVICE_RUNTIME = "device"
 
 
@@ -44,23 +45,35 @@ DEVICE_RUNTIME = "device"
     "--name",
     "-n",
     default=DEFAULT_COMPOSE_FILENAME,
-    help="Define file name for docker compose",
+    help="Output Docker Compose file name.",
 )
 @click.option(
     "--values",
     "-v",
     multiple=True,
     default=(),
-    help="Path to values yaml file. key/values specified in the "
-    "values file can be used as variables in template YAMLs",
+    help="YAML file(s) with variable values.",
 )
 @click.option(
     "--secrets",
     "-s",
     multiple=True,
     default=(),
-    help="Secret files are sops encoded value files. riocli "
-    "expects sops to be authorized for decoding files on this computer",
+    help="SOPS-encrypted secret file(s).",
+)
+@click.option(
+    "--up",
+    "up",
+    default=False,
+    is_flag=True,
+    help="Run 'docker compose up' after generating the file.",
+)
+@click.option(
+    "--down",
+    "down",
+    default=False,
+    is_flag=True,
+    help="Run 'docker compose down' for the generated file.",
 )
 @click.argument("files", nargs=-1)
 @click.argument("path", type=click.Path(exists=True))
@@ -70,22 +83,26 @@ def convert(
     name: str,
     values: typing.Tuple[str, ...],
     secrets: typing.Tuple[str, ...],
+    up: bool,
+    down: bool,
     files: typing.Tuple[str, ...],
     path: str,
 ) -> None:
     """
-    Converts Kubernetes manifests into a Docker Compose YAML
+    Convert Kubernetes manifests to Docker Compose YAML.
 
-    Usage Example:
+    By default, only generates the compose file. Use --up to start services
+    or --down to stop them. Both flags can be combined to restart services.
 
-        rio convert templates/ -v values.yaml path_to_file
+    Examples:
+        rio convert templates/ /output/path
+        rio convert templates/ /output/path --up
+        rio convert templates/ /output/path --down --up
     """
     # Validate input path
     if os.path.isfile(path):
-        click.secho(
-            "Invalid path: expected a directory, but received a file.", fg=Colors.RED
-        )
-        raise SystemError
+        click.secho("Invalid path: expected a directory.", fg=Colors.RED)
+        raise SystemExit(1)
 
     # Process input files and configurations
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
@@ -104,11 +121,32 @@ def convert(
 
     # Generate Docker Compose configuration
     docker_compose_manifest = populate(deployments, packages)
+    compose_path = Path(path) / name
+    compose_manager = DockerComposeManager(compose_path)
 
-    # Write output file
-    write_compose_yaml(
-        dir_path=path, file_name=name, compose_dict=docker_compose_manifest
-    )
+    # Validate Docker availability if up or down operations are requested
+    if (up or down) and not compose_manager.validate_docker_availability():
+        raise SystemExit(1)
+
+    # Always write output file first (except for down-only when file exists)
+    should_write_file = True
+    if down and compose_manager.file_exists():
+        should_write_file = False
+
+    if should_write_file:
+        write_compose_yaml(output_path=compose_path, compose_dict=docker_compose_manifest)
+
+    # Handle docker compose down operation (if requested)
+    if down:
+        if not compose_manager.down():
+            click.secho("Docker Compose down operation failed.", fg=Colors.RED)
+            raise SystemExit(1)
+
+    # Handle docker compose up operation (if requested)
+    if up:
+        if not compose_manager.up():
+            click.secho("Docker Compose up operation failed.", fg=Colors.RED)
+            raise SystemExit(1)
 
 
 def sort_deployment_package(
@@ -144,9 +182,7 @@ def sort_deployment_package(
     return deployments, packages
 
 
-def write_compose_yaml(
-    compose_dict: DockerCompose, dir_path: str, file_name: str
-) -> None:
+def write_compose_yaml(compose_dict: DockerCompose, output_path: str) -> None:
     """
     Writes the given Docker Compose dictionary to a YAML file.
 
@@ -158,9 +194,6 @@ def write_compose_yaml(
     Raises:
         OSError: If the file cannot be written
     """
-    # Create absolute path using pathlib for better path handling
-    output_path = Path(dir_path) / file_name
-
     # Clean the compose dictionary
     cleaned_compose = clean_dict(asdict(compose_dict))
 

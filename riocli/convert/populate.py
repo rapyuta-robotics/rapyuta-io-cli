@@ -18,6 +18,8 @@ VOLUME_PERMISSIONS = {
     777: "rw",
 }
 
+ROS_MASTER_URI = "http://127.0.0.1:1234"
+
 
 def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerCompose:
     """
@@ -47,7 +49,7 @@ def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerC
         except (KeyError, ValueError) as e:
             # Log error but continue processing other deployments
             print(
-                f"Warning: Skipping deployment {deployment.get('metadata', {}).get('name', 'unknown')}: {e}"
+                f"⚠️ Warning: Skipping deployment {deployment.get('metadata', {}).get('name', 'unknown')}: {e}"
             )
             continue
 
@@ -55,20 +57,37 @@ def populate(deployments: Dict[str, dict], packages: Dict[str, dict]) -> DockerC
     if ros_enabled:
         services["ros-master"] = get_roscore()
 
-    return DockerCompose(version="3", services=services)
+    return DockerCompose(services=services)
 
 
 def _is_ros_enabled(deployments: Dict[str, dict], packages: Dict[str, dict]) -> bool:
-    """Check if ROS is enabled in any deployment package."""
+    """Check if ROS is enabled in any deployment package. And if package has ros enabled then add EnvVar for ROS_MASTER_URI"""
+    ros_found = False
+
     for deployment in deployments.values():
         try:
             pkg_dep = deployment["metadata"]["depends"]
             package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
-            if package.get("spec", {}).get("ros", {}).get("enabled", False):
-                return True
+
+            # Check if ROS is enabled for this package
+            if not package.get("spec", {}).get("ros", {}).get("enabled", False):
+                continue
+
+            # ROS is enabled, add environment variable to this deployment
+            ros_found = True
+            if "envArgs" in deployment["spec"]:
+                deployment["spec"]["envArgs"].append(
+                    {"name": "ROS_MASTER_URI", "value": ROS_MASTER_URI}
+                )
+            else:
+                package.setdefault("spec", {}).setdefault("environmentVars", []).append(
+                    {"name": "ROS_MASTER_URI", "default": ROS_MASTER_URI}
+                )
+
         except (KeyError, ValueError):
             continue
-    return False
+
+    return ros_found
 
 
 def _process_deployment(
@@ -83,23 +102,18 @@ def _process_deployment(
     package = find_package(packages, pkg_dep["nameOrGUID"], pkg_dep["version"])
 
     # Get restart policy with normalization
-    restart_policy = safe_get_nested(
-        package, "spec", "device", "restart", default="always"
+    restart_policy = normalize_restart_policy(
+        safe_get_nested(package, "spec", "device", "restart", default="always")
     )
-    restart_policy = normalize_restart_policy(restart_policy)
 
-    # Merge environment variables
+    # Build volume mounts, dependencies, and environment variables
+    volume_mounts = build_volume_mounts(deployment)
+    depends_on = populate_depends_on(
+        deployment=deployment, deployments=deployments, packages=packages
+    )
     env = merge_env_vars(
         safe_get_nested(package, "spec", "environmentVars", default=[]),
         safe_get_nested(deployment, "spec", "envArgs", default=[]),
-    )
-
-    # Build volume mounts
-    volume_mounts = build_volume_mounts(deployment)
-
-    # Build dependencies
-    depends_on = populate_depends_on(
-        deployment=deployment, deployments=deployments, packages=packages
     )
 
     # Create services for each executable
@@ -198,13 +212,11 @@ def populate_command(exe: dict) -> Optional[List[str]]:
     if not cmd_raw:
         return None
 
-    run_as_bash = exe.get("runAsBash", False)
-
     # Convert command to string if it's a list
     cmd_str = " ".join(cmd_raw) if isinstance(cmd_raw, list) else str(cmd_raw).strip()
 
     # Return shell-wrapped command or split command
-    if run_as_bash in (True, "true"):
+    if exe.get("runAsBash") in (True, "true"):
         return ["bash", "-c", cmd_str]
     else:
         return shlex.split(cmd_str)
@@ -269,12 +281,22 @@ def populate_depends_on(
 
     Args:
         deployment: The current deployment.
+        deployments: All deployment definitions.
         packages: All package definitions.
 
     Returns:
         Dictionary of service name to DependsCondition.
     """
     depends_on = {}
+
+    # Check if deployment and its package depends on ros
+    current_pkg_meta = deployment["metadata"]["depends"]
+    current_pkg = find_package(
+        packages, current_pkg_meta["nameOrGUID"], current_pkg_meta["version"]
+    )
+
+    if current_pkg.get("spec", {}).get("ros", {}).get("enabled", False):
+        depends_on["ros-master"] = DependsCondition()
 
     for dep in safe_get_nested(deployment, "spec", "depends", default=[]):
         if dep.get("kind") != "deployment":
@@ -286,12 +308,13 @@ def populate_depends_on(
             continue
 
         # Find the associated package for the dependent deployment
-        dep_pkg_meta = dependent_deployment.get("metadata", {}).get("depends", {})
-        pkg = find_package(
-            packages,
-            name=dep_pkg_meta.get("nameOrGUID"),
-            version=dep_pkg_meta.get("version"),
-        )
+        dep_pkg_meta = dependent_deployment["metadata"]["depends"]
+        try:
+            pkg = find_package(
+                packages, dep_pkg_meta["nameOrGUID"], dep_pkg_meta["version"]
+            )
+        except (KeyError, ValueError):
+            continue
 
         # Generate service names for each executable in the dependent package
         for exe in pkg.get("spec", {}).get("executables", []):
@@ -312,11 +335,15 @@ def populate_healthcheck(exe: dict) -> Optional[HealthCheck]:
         HealthCheck object or None if no valid probe is found.
     """
     probe = exe.get("livenessProbe")
-    if not probe or not safe_get_nested(probe, "exec", "command"):
+    if not probe:
+        return None
+
+    command = safe_get_nested(probe, "exec", "command")
+    if not command:
         return None
 
     return HealthCheck(
-        test=" ".join(probe["exec"]["command"]),
+        test=" ".join(command),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
         interval=f"{probe.get('periodSeconds', 10)}s",
         retries=probe.get("failureThreshold", 3),
