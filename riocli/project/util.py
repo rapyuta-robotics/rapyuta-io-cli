@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-from typing import Optional, Callable, Any
+from typing import Callable, Any
 
 import click
 
@@ -20,6 +20,7 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
 from riocli.v2client import Client as v2Client
+from riocli.auth.util import find_project_guid
 
 
 def name_to_guid(f: Callable) -> Callable:
@@ -59,27 +60,7 @@ def name_to_guid(f: Callable) -> Callable:
 
     return decorated
 
-
-def find_project_guid(
-    client: v2Client, name: str, organization: Optional[str] = None
-) -> str:
-    projects = client.list_projects(
-        query={"name": name},
-        organization_guid=organization,
-    )
-
-    if projects and projects[0].metadata.name == name:
-        return projects[0].metadata.guid
-
-    raise ProjectNotFound()
-
-
 def get_project_name(client: v2Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.metadata.name
 
-
-class ProjectNotFound(Exception):
-    def __init__(self, message="project not found"):
-        self.message = message
-        super().__init__(self.message)

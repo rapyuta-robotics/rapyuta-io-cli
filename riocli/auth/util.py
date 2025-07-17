@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import os
+from typing import Optional, Tuple
 
 import click
 from munch import munchify
@@ -23,14 +24,11 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
-from riocli.project.util import find_project_guid
-from riocli.organization.util import (
-    find_organization_guid,
-    get_organization_name,
-)
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client as v2Client
 from riocli.v2client.util import handle_server_errors
+from riocli.exceptions import ProjectNotFound, OrganizationNotFound
 
 TOKEN_LEVELS = {0: AuthTokenLevel.LOW, 1: AuthTokenLevel.MED, 2: AuthTokenLevel.HIGH}
 
@@ -228,3 +226,37 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
         spinner.text = click.style(str(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         return False
+
+def find_project_guid(
+    client: v2Client, name: str, organization: Optional[str] = None
+) -> str:
+    projects = client.list_projects(
+        query={"name": name},
+        organization_guid=organization,
+    )
+
+    if projects and projects[0].metadata.name == name:
+        return projects[0].metadata.guid
+
+    raise ProjectNotFound()
+
+
+def find_organization_guid(client: Client, name: str) -> Tuple[str, str]:
+    user = client.get_user()
+
+    for organization in user.spec.organizations:
+        if organization.name == name:
+            return organization.guid, organization.shortGUID
+
+    raise OrganizationNotFound("User is not part of organization: {}".format(name))
+
+
+def get_organization_name(client: Client, guid: str) -> Tuple[str, str]:
+    user = client.get_user()
+
+    for organization in user.spec.organizations:
+        if organization.guid == guid:
+            return organization.name, organization.shortGUID
+
+    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
+
