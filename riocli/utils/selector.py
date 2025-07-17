@@ -77,7 +77,7 @@ def _show_selection_dict(
 
     for idx, key in enumerate(ranger):
         if show_keys:
-            fmt = "{}) {} - {}".format(idx + 1, key, ranger[key])
+            fmt = "{}) {} - {}".format(idx + 1, ranger[key], key)
         else:
             fmt = "{}) {}".format(idx + 1, ranger[key])
 
