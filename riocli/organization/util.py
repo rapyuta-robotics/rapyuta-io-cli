@@ -14,9 +14,9 @@
 import functools
 import typing
 
-from riocli.v2client import Client
 from riocli.config import new_v2_client
 from riocli.constants import Colors
+from riocli.auth.util import find_organization_guid, get_organization_name
 
 import click
 
@@ -49,27 +49,3 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def find_organization_guid(client: Client, name: str) -> typing.Tuple[str, str]:
-    user = client.get_user()
-
-    for organization in user.spec.organizations:
-        if organization.name == name:
-            return organization.guid, organization.shortGUID
-
-    raise OrganizationNotFound("User is not part of organization: {}".format(name))
-
-
-def get_organization_name(client: Client, guid: str) -> typing.Tuple[str, str]:
-    user = client.get_user()
-
-    for organization in user.spec.organizations:
-        if organization.guid == guid:
-            return organization.name, organization.shortGUID
-
-    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
-
-
-class OrganizationNotFound(Exception):
-    def __init__(self, message="organization not found"):
-        self.message = message
-        super().__init__(self.message)

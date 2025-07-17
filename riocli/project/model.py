@@ -19,7 +19,8 @@ from riocli.config import Configuration, new_v2_client
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.project.util import ProjectNotFound, find_project_guid
+from riocli.auth.util import find_project_guid
+from riocli.exceptions import ProjectNotFound
 from riocli.v2client.error import HttpNotFoundError
 
 PROJECT_READY_TIMEOUT = 150

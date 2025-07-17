@@ -840,8 +840,8 @@ wheels = [
 
 [[package]]
 name = "rapyuta-io"
-version = "1.17.1"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=26e05193b8e445800a609166e8e8481550992a5c#26e05193b8e445800a609166e8e8481550992a5c" }
+version = "2.3.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "pytz" },
@@ -850,6 +850,10 @@ dependencies = [
     { name = "setuptools" },
     { name = "six" },
     { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/ed/44e4e40bc93d567309498797a507c8f52ded3683803fff941d40b3c4353f/rapyuta_io-2.3.2.tar.gz", hash = "sha256:71aa0405ac69ace85f35c7c99d0296ac4f65e0094c621a523ca0eccf7a2d60a1", size = 45628, upload-time = "2025-06-27T11:36:38.142Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/34/82/f669bb349d6f59171cf30c3b4f2c73f437369acd10c464a321e1460ee2bd/rapyuta_io-2.3.2-py3-none-any.whl", hash = "sha256:de9fe77d172170d64f56cb16ef03e6de5d4c80e2d33c34b161f435f98b6216ed", size = 53187, upload-time = "2025-06-27T11:36:37.119Z" },
 ]
 
 [[package]]
@@ -926,7 +930,7 @@ requires-dist = [
     { name = "python-magic-bin", marker = "os_name == 'nt'", specifier = ">=0.4.14" },
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
-    { name = "rapyuta-io", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk?rev=26e05193b8e445800a609166e8e8481550992a5c" },
+    { name = "rapyuta-io", specifier = ">=2.3.2" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
