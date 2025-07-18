@@ -40,7 +40,7 @@ from riocli.utils import tabulate_data
     multiple=True,
     type=click.STRING,
     default=(),
-    help="Filter the deployment list by labels",
+    help="Filter the project list by labels",
 )
 @click.option(
     "--wide", "-w", is_flag=True, default=False, help="Print more details", type=bool
