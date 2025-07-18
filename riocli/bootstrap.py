@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
 from riocli.project import project
+from riocli.role import role, role_binding
 from riocli.secret import secret
 from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
@@ -165,3 +166,5 @@ cli.add_command(hwildevice)
 cli.add_command(cli_context)
 cli.add_command(oauth2)
 cli.add_command(compose)
+cli.add_command(role)
+cli.add_command(role_binding)

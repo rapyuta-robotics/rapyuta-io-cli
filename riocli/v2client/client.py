@@ -1331,6 +1331,123 @@ class Client(object):
 
         return munchify(data)
 
+    # Roles API
+    def list_roles(self, query: dict = None) -> Munch:
+        """
+        List roles, optionally filtered by query
+        """
+        url = "{}/v2/roles/".format(self._host)
+        headers = self._get_auth_header()
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
+
+    def get_role(self, role_name: str) -> Munch:
+        """
+        Get a specific role by name
+        """
+        url = "{}/v2/roles/{}/".format(self._host, role_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("roles: {}".format(err_msg))
+        return munchify(data)
+
+    def create_role(self, role: dict) -> Munch:
+        """
+        Create a new role
+        """
+        url = "{}/v2/roles/".format(self._host)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload=role)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("roles: {}".format(err_msg))
+        return munchify(data)
+
+    def update_role(self, role_name: str, role: dict) -> Munch:
+        """
+        Update an existing role
+        """
+        url = "{}/v2/roles/{}/".format(self._host, role_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=role)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("roles: {}".format(err_msg))
+        return munchify(data)
+
+    def delete_role(self, role_name: str) -> Munch:
+        """
+        Delete a role
+        """
+        url = "{}/v2/roles/{}/".format(self._host, role_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("roles: {}".format(err_msg))
+        return munchify(data)
+
+    # RoleBindings API
+    def list_role_bindings(self, query: dict = None) -> Munch:
+        url = "{}/v2/role-bindings/".format(self._host)
+        headers = self._get_auth_header()
+        client = RestClient(url).method(HttpMethod.GET).headers(headers)
+        return self._walk_pages(client, params=query)
+
+    def get_role_binding(self, binding_name: str) -> Munch:
+        url = "{}/v2/role-bindings/{}/".format(self._host, binding_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("rolebinding: {}".format(err_msg))
+        return munchify(data)
+
+    def create_role_binding(self, binding: dict) -> Munch:
+        url = "{}/v2/role-bindings/".format(self._host)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload=binding)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("rolebinding: {}".format(err_msg))
+        return munchify(data)
+
+    def update_role_binding(self, binding_name: str, binding: dict) -> Munch:
+        url = "{}/v2/role-bindings/{}/".format(self._host, binding_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=binding)
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("rolebinding: {}".format(err_msg))
+        return munchify(data)
+
+    def delete_role_binding(self, binding_name: str) -> Munch:
+        url = "{}/v2/role-bindings/{}/".format(self._host, binding_name)
+        headers = self._get_auth_header()
+        response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
+        handle_server_errors(response)
+        data = json.loads(response.text)
+        if not response.ok:
+            err_msg = data.get("error")
+            raise Exception("rolebinding: {}".format(err_msg))
+        return munchify(data)
+
     # OAuth2 Clients
     def list_oauth2_clients(self, query: Optional[dict] = None) -> Munch:
         """

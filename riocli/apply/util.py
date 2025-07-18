@@ -36,6 +36,7 @@ from riocli.network.model import Network
 from riocli.organization.model import Organization
 from riocli.package.model import Package
 from riocli.project.model import Project
+from riocli.role.model import Role, RoleBinding
 from riocli.secret.model import Secret
 from riocli.static_route.model import StaticRoute
 from riocli.usergroup.model import UserGroup
@@ -53,6 +54,8 @@ KIND_TO_CLASS = {
     "secret": Secret,
     "staticroute": StaticRoute,
     "usergroup": UserGroup,
+    "role": Role,
+    "rolebinding": RoleBinding,
 }
 
 FILTERS = {

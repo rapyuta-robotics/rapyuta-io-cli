@@ -1,0 +1,65 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+title: Role
+$ref: "#/definitions/role"
+definitions:
+  role:
+    type: object
+    properties:
+      apiVersion:
+        default: api.rapyuta.io/v2
+        oneOf:
+          - const: apiextensions.rapyuta.io/v1
+          - const: api.rapyuta.io/v2
+      kind:
+        const: Role
+        default: Role
+      metadata:
+        $ref: "#/definitions/metadata"
+      spec:
+        $ref: "#/definitions/roleSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      labels:
+        $ref: "#/definitions/stringMap"
+    required:
+      - name
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  roleSpec:
+    type: object
+    properties:
+      description:
+        type: string
+      rules:
+        type: array
+        items:
+          $ref: "#/definitions/rule"
+    required:
+      - description
+      - rules
+  rule:
+    type: object
+    properties:
+      resource:
+        type: string
+      actions:
+        type: array
+        items:
+          type: string
+      instances:
+        type: array
+        items:
+          type: string
+    required:
+      - resource
