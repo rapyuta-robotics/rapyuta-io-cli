@@ -1,0 +1,89 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+title: RoleBinding
+$ref: "#/definitions/roleBinding"
+definitions:
+  roleBinding:
+    type: object
+    properties:
+      apiVersion:
+        default: api.rapyuta.io/v2
+        oneOf:
+          - const: apiextensions.rapyuta.io/v1
+          - const: api.rapyuta.io/v2
+      kind:
+        const: RoleBinding
+        default: RoleBinding
+      metadata:
+        $ref: "#/definitions/metadata"
+      spec:
+        $ref: "#/definitions/roleBindingSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      labels:
+        $ref: "#/definitions/stringMap"
+    required:
+      - name
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  roleBindingSpec:
+    type: object
+    properties:
+      roleRef:
+        $ref: "#/definitions/roleRef"
+      subject:
+        $ref: "#/definitions/subject"
+      domain:
+        $ref: "#/definitions/domain"
+    required:
+      - roleRef
+      - subject
+  roleRef:
+    type: object
+    properties:
+      kind:
+        const: Role
+        default: Role
+      name:
+        type: string
+      guid:
+        type: string
+    required:
+      - kind
+      - name
+  subject:
+    type: object
+    properties:
+      kind:
+        type: string
+        enum: ["User", "UserGroup", "ServiceAccount"]
+      name:
+        type: string
+      guid:
+        type: string
+    required:
+      - kind
+      - name
+  domain:
+    type: object
+    properties:
+      kind:
+        type: string
+        enum: ["Organization", "Project", "UserGroup"]
+      name:
+        type: string
+      guid:
+        type: string
+    required:
+      - kind
+      - name
