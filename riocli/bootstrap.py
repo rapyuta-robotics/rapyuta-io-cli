@@ -32,6 +32,7 @@ from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
+from riocli.compose import compose
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -163,3 +164,4 @@ cli.add_command(config_trees)
 cli.add_command(hwildevice)
 cli.add_command(cli_context)
 cli.add_command(oauth2)
+cli.add_command(compose)
