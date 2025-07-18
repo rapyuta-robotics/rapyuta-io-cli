@@ -139,12 +139,15 @@ def is_valid_uuid(uuid_to_test, version=4):
     return str(uuid_obj) == uuid_to_test
 
 
-def tabulate_data(data: typing.List[typing.List], headers: typing.List[str] = None):
+def tabulate_data(
+        data: typing.List[typing.List],
+        headers: typing.Union[typing.Iterable[str], str, None] = None,
+        table_format: str = "simple",
+):
     """
     Prints data in tabular format
     """
     # https://github.com/astanin/python-tabulate#table-format
-    table_format = "simple"
     header_foreground = "yellow"
 
     if headers:

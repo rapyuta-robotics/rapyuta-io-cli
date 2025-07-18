@@ -18,6 +18,7 @@ import click
 from click import types
 
 from riocli.constants import Colors
+from riocli.utils import tabulate_data
 
 
 def show_selection(
@@ -52,13 +53,17 @@ def _show_selection_list(
     highlight_item: Any = None,
 ) -> Any:
     click.secho(header, fg=Colors.YELLOW)
-
+    data = []
     for idx, opt in enumerate(ranger):
-        fmt = "{}) {}".format(idx + 1, opt)
+        idx_column = f"{idx+1})"
+        opt_column = opt
         if highlight_item is not None and opt == highlight_item:
-            fmt = click.style(fmt, bold=True, italic=True)
+            idx_column = click.style(idx_column, bold=True, italic=True)
+            opt_column = click.style(opt_column, bold=True, italic=True)
 
-        click.secho(fmt)
+        data.append([idx_column, opt_column])
+
+    tabulate_data(data, header=(), table_format="plain")
 
     prompt = click.style(prompt, fg=Colors.BLUE)
     choice = click.prompt(prompt, type=types.IntParamType())
@@ -74,17 +79,27 @@ def _show_selection_dict(
     highlight_item: Any = None,
 ) -> Any:
     click.secho(header, fg=Colors.YELLOW)
+    data = []
 
     for idx, key in enumerate(ranger):
-        if show_keys:
-            fmt = "{}) {} - {}".format(idx + 1, ranger[key], key)
-        else:
-            fmt = "{}) {}".format(idx + 1, ranger[key])
+        row = []
 
+        idx_column = f"{idx + 1})"
+        key_column = key
+        value_column = f"{ranger[key]}"
         if highlight_item is not None and key == highlight_item:
-            fmt = click.style(fmt, bold=True, italic=True)
+            idx_column = click.style(idx_column, bold=True, italic=True)
+            key_column = click.style(key_column, bold=True, italic=True)
+            value_column = click.style(value_column, bold=True, italic=True)
 
-        click.secho(fmt)
+        row.append(idx_column)
+        row.append(value_column)
+        if show_keys:
+            row.append(key_column)
+
+        data.append(row)
+
+    tabulate_data(data, headers=(), table_format="plain")
 
     prompt = click.style(prompt, fg=Colors.BLUE)
     choice = click.prompt(prompt, type=types.IntParamType())
