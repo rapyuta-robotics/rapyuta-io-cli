@@ -50,12 +50,6 @@ definitions:
           - melodic
           - noetic
         default: melodic
-      python:
-        type: string
-        enum:
-          - "2"
-          - "3"
-        default: "3"
       configVariables:
         $ref: "#/definitions/stringMap"
       virtual:

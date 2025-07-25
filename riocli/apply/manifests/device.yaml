@@ -8,7 +8,6 @@ metadata:
     custom_label_3: label3
     app: test
 spec:
-  python: "3"
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   docker:
     enabled: True # Required
@@ -25,7 +24,6 @@ metadata:
   labels:
     app: test
 spec:
-  python: "3"
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   preinstalled:
     enabled: True # Required
@@ -39,7 +37,6 @@ metadata:
   labels:
     app: test
 spec:
-  python: "3"
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   docker:
     enabled: True # Required
@@ -58,7 +55,6 @@ metadata:
     custom_label_3: label3
     app: test
 spec:
-  python: "3"
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   virtual:
     enabled: True # Required
