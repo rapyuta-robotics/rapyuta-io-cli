@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from rapyuta_io.clients.device import Device as v1Device, DevicePythonVersion
+from rapyuta_io.clients.device import Device as v1Device
 
 from riocli.config import new_client
 from riocli.constants import ApplyResult
@@ -113,7 +113,6 @@ class Device(Model):
         device.delete()
 
     def to_v1(self) -> v1Device:
-        python_version = DevicePythonVersion(self.spec.python)
         ros_workspace = None
 
         docker_enabled = self.spec.get("docker", False) and self.spec.docker.enabled
@@ -133,7 +132,6 @@ class Device(Model):
             runtime_docker=docker_enabled,
             runtime_preinstalled=preinstalled_enabled,
             ros_distro=self.spec.rosDistro,
-            python_version=python_version,
             ros_workspace=ros_workspace,
             config_variables=config_variables,
             labels=labels,

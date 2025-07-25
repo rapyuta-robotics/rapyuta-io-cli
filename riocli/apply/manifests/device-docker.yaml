@@ -6,7 +6,6 @@ metadata:
   labels:
     app: test
 spec:
-  python: "3"
   rosDistro: "melodic" # Options: ["kinetic", "melodic" (default), "noetic"]
   docker:
     enabled: True # Required
