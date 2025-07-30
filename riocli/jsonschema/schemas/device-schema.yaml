@@ -24,7 +24,10 @@ definitions:
     type: object
     properties:
       apiVersion:
-        const: apiextensions.rapyuta.io/v1
+        default: api.rapyuta.io/v2
+        oneOf:
+          - const: apiextensions.rapyuta.io/v1
+          - const: api.rapyuta.io/v2
       kind:
         const: Device
       metadata:
@@ -47,12 +50,6 @@ definitions:
           - melodic
           - noetic
         default: melodic
-      python:
-        type: string
-        enum:
-          - "2"
-          - "3"
-        default: "3"
       configVariables:
         $ref: "#/definitions/stringMap"
       virtual:

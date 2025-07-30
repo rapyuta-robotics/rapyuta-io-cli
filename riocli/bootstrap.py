@@ -21,8 +21,6 @@ import click
 import rapyuta_io.version
 from click import Context
 from click_help_colors import HelpColorsGroup
-from click_plugins import with_plugins
-from pkg_resources import iter_entry_points
 
 from riocli.apply import apply, delete
 from riocli.apply.explain import list_examples, explain
@@ -34,6 +32,7 @@ from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
+from riocli.compose import compose
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -58,7 +57,6 @@ from riocli.utils import (
 from riocli.vpn import vpn
 
 
-@with_plugins(iter_entry_points("riocli.plugins"))
 @click.group(
     invoke_without_command=False,
     cls=HelpColorsGroup,
@@ -166,3 +164,4 @@ cli.add_command(config_trees)
 cli.add_command(hwildevice)
 cli.add_command(cli_context)
 cli.add_command(oauth2)
+cli.add_command(compose)

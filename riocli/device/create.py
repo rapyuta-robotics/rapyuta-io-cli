@@ -14,7 +14,7 @@
 import click
 from click_spinner import spinner
 from rapyuta_io import ROSDistro
-from rapyuta_io.clients.device import DevicePythonVersion, Device, DeviceRuntime
+from rapyuta_io.clients.device import Device, DeviceRuntime
 
 from riocli.config import new_client
 
@@ -34,12 +34,6 @@ from riocli.config import new_client
     type=click.Choice(["kinetic", "melodic", "noetic"], case_sensitive=False),
 )
 @click.option(
-    "--python",
-    help="Python Version to use on the Device",
-    default="3",
-    type=click.Choice(["2", "3"], case_sensitive=False),
-)
-@click.option(
     "--catkin-workspace",
     default="/home/rapyuta/catkin_ws",
     help="Path to the Catkin Workspace (only preinstalled)",
@@ -50,7 +44,6 @@ def create_device(
     description: str,
     runtime: [],
     ros: str,
-    python: str,
     catkin_workspace: str,
 ) -> None:
     """
@@ -59,7 +52,6 @@ def create_device(
     try:
         client = new_client()
         with spinner():
-            python_version = DevicePythonVersion(python)
             ros_distro = ROSDistro(ros)
             runtime_docker = DeviceRuntime.DOCKER in runtime
             runtime_preinstalled = DeviceRuntime.PREINSTALLED in runtime
@@ -68,8 +60,8 @@ def create_device(
                 description=description,
                 ros_distro=ros_distro,
                 runtime_docker=runtime_docker,
+                python_version ="3",
                 runtime_preinstalled=runtime_preinstalled,
-                python_version=python_version,
                 ros_workspace=catkin_workspace,
             )
             client.create_device(device)
