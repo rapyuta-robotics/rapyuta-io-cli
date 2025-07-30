@@ -1,3 +1,18 @@
+# [9.12.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.11.0...v9.12.0) (2025-07-30)
+
+
+### Bug Fixes
+
+* **apply:** support both APIVersion strings ([a7f1466](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a7f1466cb2314c2c07a1b8406261fa79b05a8b74)), closes [rapyuta-robotics/rapyuta_io#865](https://github.com/rapyuta-robotics/rapyuta_io/issues/865)
+* fix cyclic dependency between auth, project and organization modules ([#452](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/452)) ([e635011](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e635011db2bee0414f21f28a4318be7ca1c485ed)), closes [rapyuta-robotics/rapyuta_io#888](https://github.com/rapyuta-robotics/rapyuta_io/issues/888)
+* remove deprecated pkg_resources module ([92aaa05](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/92aaa0548653467a8d1561fe031869544447492f)), closes [rapyuta-robotics/rapyuta_io#887](https://github.com/rapyuta-robotics/rapyuta_io/issues/887)
+
+
+### Features
+
+* add compose commands to generate compose files from manifests ([692a92b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/692a92b656a27827f07a1347c30d857a510d3523))
+* **packages:** support specifying UID/GID per executable ([a9b860f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a9b860f8e9daf3b4dfa1037bfd6afc5a76972c3b)), closes [rapyuta-robotics/rapyuta_io#868](https://github.com/rapyuta-robotics/rapyuta_io/issues/868)
+
 # [9.11.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.10.0...v9.11.0) (2025-06-27)
 
 
