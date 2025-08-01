@@ -53,7 +53,7 @@ def execute_command(
     timeout: int,
     shell: str,
     run_async: bool,
-    bg:bool,
+    bg: bool,
     command: typing.List[str],
 ) -> None:
     """Execute commands on one or more devices.
@@ -81,8 +81,8 @@ def execute_command(
             $ rio device execute ".*" "ls -l"
     """
 
-    if len(command) == 0:
-        click.secho("{} No command specified".format(Symbols.ERROR), fg=Colors.RED)
+    if command == ("",):
+        click.secho(f"{Symbols.ERROR} No command specified", fg=Colors.RED)
         raise SystemExit(1)
 
     client = new_client()
@@ -101,17 +101,43 @@ def execute_command(
 
     device_guids = [d.uuid for d in devices if d.status == "ONLINE"]
     device_dict = {d.uuid: d.name for d in devices}
-    cmd = join(tuple(["bash", "-c"]) + command)
-    try:
-        result = client.execute_command(
-            device_ids=device_guids,
-            command=Command(cmd, shell=shell, bg=bg, run_async=run_async, runas=user, timeout=timeout),
-            timeout=timeout,
-        )
-        for device_guid in result:
-            click.secho(">>> {}({})".format(device_dict[device_guid], device_guid), fg=Colors.YELLOW)
-            click.echo("{}\n".format(result[device_guid]))
-    except Exception as e:
-        click.secho(str(e), fg=Colors.RED)
-        raise SystemExit(1) from e
+    cmd = join(("bash", "-c", *command))
+    max_retries = 3
 
+    for _ in range(max_retries):
+        if not device_guids:
+            break
+        try:
+            result = client.execute_command(
+                device_ids=device_guids,
+                command=Command(
+                    cmd,
+                    shell=shell,
+                    bg=bg,
+                    run_async=run_async,
+                    runas=user,
+                    timeout=timeout,
+                ),
+                timeout=timeout,
+            )
+        except Exception as e:
+            click.secho(str(e), fg=Colors.RED)
+            raise SystemExit(1) from e
+
+        succeeded = []
+        for device_guid, output in result.items():
+            click.secho(
+                f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
+                fg=Colors.YELLOW,
+            )
+            click.echo(f"{output}\n")
+            succeeded.append(device_guid)
+
+        device_guids = [guid for guid in device_guids if guid not in succeeded]
+
+    if device_guids:
+        click.secho(
+            f"Failed to execute command on devices: {', '.join(device_guids)}",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
