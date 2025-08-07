@@ -46,7 +46,7 @@ dependencies = [
     "python-magic-bin>=0.4.14; os_name == 'nt'",
     "pytz",
     "pyyaml>=5.4.1",
-    "rapyuta-io>=v2.3.2",
+    "rapyuta_io @ git+https://github.com/rapyuta-robotics/rapyuta-io-sdk@59fb5b7307ec4fc9610695751c2cb56a8b2503f2",
     "requests>=2.20.0",
     "semver>=3.0.0",
     "setuptools",
@@ -64,6 +64,9 @@ dev-dependencies = [
     "sphinx-click",
     "furo",
 ]
+
+[tool.uv.sources]
+rapyuta-io = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk.git", rev = "59fb5b7307ec4fc9610695751c2cb56a8b2503f2" }
 
 [project.scripts]
 rio = "riocli.bootstrap:safe_cli"
