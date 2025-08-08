@@ -179,11 +179,10 @@ def get_async_output(client, jid, device_guids, device_dict, timeout):
     remaining_devices = device_guids.copy()
     for _ in range(max_retries):
         wait_result = client.fetch_cmd_result(
-            jid=jid, device_ids=device_guids, timeout=timeout
+            jid=jid, device_ids=remaining_devices, timeout=timeout
         )
-
         remaining_devices = print_response(
-            result=wait_result, device_guids=device_guids, device_dict=device_dict
+            result=wait_result, device_guids=remaining_devices, device_dict=device_dict
         )
 
         if len(remaining_devices) <= 0:
@@ -199,8 +198,6 @@ def print_response(result, device_guids, device_dict):
     devices_no_output = device_guids.copy()
 
     for device_guid, output in result.items():
-        if device_guid == "jid":
-            continue
         if output:  # Only print if there's actual output
             click.secho(
                 f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
