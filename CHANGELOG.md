@@ -1,3 +1,12 @@
+## [9.12.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.0...v9.12.1) (2025-08-12)
+
+
+### Bug Fixes
+
+* **apply:** fix the `default` behaviour in the templates ([#457](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/457)) ([4d02f47](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4d02f473f4bfa0f026ecb0affed80cb366702363))
+* **device:** fixes default python-version to 3 ([c75018c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c75018c179f89025d6097609c9d49b51cd5bdd03))
+* **device:** improve async logic ([dbaa927](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dbaa927903a8572fc63ac67a618138b614abe053))
+
 # [9.12.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.11.0...v9.12.0) (2025-07-30)
 
 
