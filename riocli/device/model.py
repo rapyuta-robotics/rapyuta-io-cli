@@ -135,4 +135,5 @@ class Device(Model):
             ros_workspace=ros_workspace,
             config_variables=config_variables,
             labels=labels,
+            python_version="3"
         )

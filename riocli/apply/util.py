@@ -166,6 +166,13 @@ def init_jinja_environment():
         from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
 
         for name, func in CoreFilterModule().filters().items():
+            # Ansible added this new filter in v2.19.0 that replaces the
+            # Jinja2's built-in default filter. The Ansible's version breaks
+            # some manifests.
+            # https://github.com/ansible/ansible/blob/faf86ca2b3e7b06660528d69a9839bb8d1409f70/lib/ansible/plugins/filter/core.py#L669
+            if name == "default":
+                continue
+
             environment.filters[name] = func
 
         for name, func in URLFilterModule().filters().items():
