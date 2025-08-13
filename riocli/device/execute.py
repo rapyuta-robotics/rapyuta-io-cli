@@ -198,14 +198,14 @@ def print_response(result, device_guids, device_dict):
     devices_no_output = device_guids.copy()
 
     for device_guid, output in result.items():
+        click.secho(
+            f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
+            fg=Colors.YELLOW,
+        )
+        if device_guid in devices_no_output:
+            devices_no_output.remove(device_guid)
         if output:  # Only print if there's actual output
-            click.secho(
-                f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
-                fg=Colors.YELLOW,
-            )
             click.echo(f"{output}\n")
-            if device_guid in devices_no_output:
-                devices_no_output.remove(device_guid)
 
     return devices_no_output
 
