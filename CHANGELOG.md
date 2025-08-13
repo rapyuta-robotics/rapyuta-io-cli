@@ -1,3 +1,10 @@
+## [9.12.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.1...v9.12.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* **devices:** handle no-output for execute commands ([3ed1ed2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3ed1ed2b28e7e18d058ca515371782591f9640a7))
+
 ## [9.12.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.0...v9.12.1) (2025-08-12)
 
 
