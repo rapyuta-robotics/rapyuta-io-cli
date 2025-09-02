@@ -1,3 +1,11 @@
+## [9.12.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.2...v9.12.3) (2025-09-02)
+
+
+### Bug Fixes
+
+* **apply:** reduce device poll time for get_intf_ip filter ([0e0e92b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0e0e92b9b2324d9f9a195bc221dd1631a7cf0f69))
+* **ssh:** expand tilde to user home folder ([a2e503c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a2e503c89482260b76958913bc46634672387511))
+
 ## [9.12.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.1...v9.12.2) (2025-08-13)
 
 
