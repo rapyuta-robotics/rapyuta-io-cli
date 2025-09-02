@@ -22,7 +22,7 @@ jobs:
           export LC_ALL=C.UTF-8
           export LANG=C.UTF-8
           uv python pin ${{ matrix.python-version }}
-          DEBUG=true uv run rio
+          DEBUG=true uv run rio --help
 
   windows-python-compatibility:
     runs-on: windows-latest
@@ -44,4 +44,4 @@ jobs:
       - name: Run the CLI
         run: |
           uv python pin ${{ matrix.python-version }}
-          uv run rio
+          uv run rio --help

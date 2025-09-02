@@ -79,7 +79,8 @@ def get_device_ip_interfaces(device_name: str) -> Dict[str, List[str]]:
 
     device = client.get_device(device_id)
     try:
-        device.poll_till_ready(retry_count=50, sleep_interval=10)
+        # Poll for 3 minutes.
+        device.poll_till_ready(retry_count=18, sleep_interval=10)
     except Exception as e:
         raise e
 
