@@ -19,7 +19,7 @@ from munch import Munch
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
-from riocli.v2client.client import Client
+from rapyuta_io_sdk_v2 import Client
 
 
 class StaticRouteNotFound(Exception):

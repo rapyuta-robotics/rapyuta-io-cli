@@ -29,7 +29,7 @@ def open_static_route(static_route) -> None:
     """Open a static route in the default browser."""
     try:
         client = new_v2_client()
-        route = client.get_static_route(static_route)
+        route = client.get_staticroute(static_route)
         click.launch(url="https://{}".format(route.spec.url), wait=False)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

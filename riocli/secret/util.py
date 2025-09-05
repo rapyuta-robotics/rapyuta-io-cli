@@ -18,7 +18,7 @@ from typing import List
 from munch import Munch
 
 from riocli.utils import tabulate_data
-from riocli.v2client.client import Client
+from rapyuta_io_sdk_v2 import Client
 
 
 def fetch_secrets(

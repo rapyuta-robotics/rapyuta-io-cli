@@ -24,7 +24,7 @@ from riocli.secret.util import fetch_secrets, print_secrets_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.client import Client
+from rapyuta_io_sdk_v2 import Client
 
 
 @click.command(
