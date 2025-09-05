@@ -14,7 +14,6 @@
 import click
 from riocli.config.config import Configuration
 
-
 def new_client(config_inst: Configuration = None, with_project: bool = True):
     """
     new_client is a simple wrapper around the Configuration's new_client method. It can be called
