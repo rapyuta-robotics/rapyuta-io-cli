@@ -37,9 +37,20 @@ New dependencies can be installed directly using `uv`. This modifies the
 uv add <package-name>
 ```
 
-### Linting and formatting
-You can check and fix the code style by running the following commands.
-```bash
-uvx ruff check --fix
-uvx ruff format
+### Linting and Formatting
+
+To ensure your code follows the project's style guidelines, use the following commands:
+
+- To check code style and run static analysis:
+    ```bash
+    just check
+    just format-check
+    ```
+
+- To automatically format your code:
+    ```bash
+    just format
+    ```
+
+These commands help maintain code quality and consistency across the project.
 ```
