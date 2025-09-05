@@ -15,7 +15,6 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from munch import Munch
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -57,12 +56,13 @@ def list_networks(network: str, labels: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-
-        query = {"labelSelector": labels}
         if network not in ("both", ""):
-            query.update({"networkType": network})
-
-        networks = client.list_networks(query=query)
+            result = client.list_networks(label_selector = labels, network_type = network)
+        else:
+            result = client.list_networks(label_selector = labels)
+        networks = []
+        if isinstance(result, dict) and "items" in result:
+            networks = result["items"]
         networks = sorted(networks, key=lambda n: n.metadata.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
@@ -71,7 +71,7 @@ def list_networks(network: str, labels: typing.List[str]) -> None:
 
 
 def _display_network_list(
-    networks: typing.List[Munch],
+    networks: typing.List,
     show_header: bool = True,
 ) -> None:
     headers = []

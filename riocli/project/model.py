@@ -56,7 +56,7 @@ class Project(Model):
             )
             return ApplyResult.UPDATED
         except (HttpNotFoundError, ProjectNotFound):
-            client.create_project(project)
+            client.create_project(body=project, organization_guid=Configuration().organization_guid)
             return ApplyResult.CREATED
         except Exception as e:
             raise e
@@ -66,13 +66,13 @@ class Project(Model):
 
         try:
             guid = find_project_guid(
-                client, self.metadata.name, Configuration().data["organization_id"]
+                client, self.metadata.name, Configuration().organization_guid
             )
-            client.delete_project(guid)
+            client.delete_project(project_guid=guid)
         except (HttpNotFoundError, ProjectNotFound):
             raise ResourceNotFound
 
     def is_ready(self) -> bool:
         client = new_v2_client()
-        projects = client.list_projects(query={"name": self.metadata.name})
+        projects = client.list_projects(name= self.metadata.name)
         return projects[0].status.status == "Success"

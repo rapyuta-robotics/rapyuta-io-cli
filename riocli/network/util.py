@@ -18,7 +18,7 @@ from munch import Munch
 
 from riocli.network.model import Network
 from riocli.utils import tabulate_data
-from riocli.v2client import Client
+from rapyuta_io_sdk_v2 import Client
 
 
 def fetch_networks(
