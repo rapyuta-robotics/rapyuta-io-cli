@@ -45,7 +45,7 @@ def inspect_static_route(
     """
     try:
         client = new_v2_client()
-        route = client.get_static_route(static_route)
+        route = client.get_staticroute(static_route)
         inspect_with_format(unmunchify(route), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

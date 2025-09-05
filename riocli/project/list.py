@@ -75,12 +75,10 @@ def list_projects(
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get("organization_id")
 
-    query = {"labelSelector": labels}
-
     try:
         client = new_v2_client(with_project=False)
-        projects = client.list_projects(organization_guid=organization_guid, query=query)
-        projects = sorted(projects, key=lambda p: p.metadata.name.lower())
+        projects = client.list_projects(organizations=organization_guid, label_selector=labels)
+        projects = sorted(projects["items"], key=lambda p: p.metadata.name.lower())
         current = ctx.obj.data.get("project_id", None)
         _display_project_list(projects, current, show_header=True, wide=wide)
     except Exception as e:

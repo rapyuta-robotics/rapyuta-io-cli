@@ -18,7 +18,7 @@ import munch
 
 from riocli.deployment.list import DEFAULT_PHASES
 from riocli.utils import tabulate_data
-from riocli.v2client import Client
+from rapyuta_io_sdk_v2 import Client
 from riocli.v2client.enums import DeploymentPhaseConstants
 
 ALL_PHASES = [
@@ -34,7 +34,7 @@ def fetch_deployments(
     deployment_name_or_regex: str,
     include_all: bool,
 ) -> typing.List[munch.Munch]:
-    deployments = client.list_deployments(query={"phases": DEFAULT_PHASES})
+    deployments = client.list_deployments(phases=DEFAULT_PHASES)
     result = []
     for deployment in deployments:
         if (

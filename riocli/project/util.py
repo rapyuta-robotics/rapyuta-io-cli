@@ -19,7 +19,7 @@ import click
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
-from riocli.v2client import Client as v2Client
+from rapyuta_io_sdk_v2 import Client as v2Client
 from riocli.auth.util import find_project_guid
 
 

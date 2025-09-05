@@ -20,7 +20,7 @@ from munch import Munch
 from riocli.package.model import Package
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
-from riocli.v2client import Client
+from rapyuta_io_sdk_v2 import Client
 
 
 def find_package(
@@ -31,18 +31,21 @@ def find_package(
     package_obj = None
 
     if package_name.startswith("pkg-"):
-        packages = client.list_packages(query={"guid": package_name})
+        result = client.list_packages(name=package_name)
+        packages = result["items"]
         if not packages:
             raise Exception("Package not found")
 
         obj = packages[0]
         package_obj = client.get_package(
-            obj.metadata.name, query={"version": obj.metadata.version}
+            name=obj.metadata.name, version=obj.metadata.version
         )
     elif package_name and package_version:
-        package_obj = client.get_package(package_name, query={"version": package_version})
+        package_obj = client.get_package(name=package_name, version=package_version)
     elif package_name:
-        packages = client.list_packages(query={"name": package_name})
+        result = client.list_packages(name=package_name)
+
+        packages = result["items"]
 
         if len(packages) == 0:
             click.secho("package not found", fg="red")
@@ -51,7 +54,7 @@ def find_package(
         if len(packages) == 1:
             obj = packages[0]
             package_obj = client.get_package(
-                obj.metadata.name, query={"version": obj.metadata.version}
+                name=obj.metadata.name, version=obj.metadata.version
             )
         else:
             options = {}
@@ -66,7 +69,7 @@ def find_package(
             )
             obj = package_objs[choice]
             package_obj = client.get_package(
-                obj.metadata.name, query={"version": obj.metadata.version}
+                name=obj.metadata.name, version=obj.metadata.version
             )
 
     return package_obj

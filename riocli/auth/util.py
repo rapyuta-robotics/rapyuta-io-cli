@@ -26,7 +26,7 @@ from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
+from rapyuta_io_sdk_v2 import Client as v2Client
 from riocli.v2client.util import handle_server_errors
 from riocli.exceptions import ProjectNotFound, OrganizationNotFound
 
@@ -60,7 +60,7 @@ def select_organization(
         return org_guid
 
     # fetch user organizations and sort them on their name
-    user = client.get_user()
+    user = munchify(client.get_user(with_organization=False))
     organizations = sorted(user.spec.organizations, key=lambda org: org.name.lower())
 
     if len(organizations) == 0:
@@ -109,8 +109,8 @@ def select_project(
             else find_project_guid(client, project, organization=organization)
         )
 
-    projects = client.list_projects(organization_guid=organization)
-    if len(projects) == 0:
+    projects = client.list_projects(organizations=organization)
+    if len(projects.get("items", [])) == 0:
         config.data["project_id"] = ""
         config.data["project_name"] = ""
         click.secho(
@@ -121,7 +121,7 @@ def select_project(
         return
 
     # Sort projects based on their names for an easier selection
-    projects = sorted(projects, key=lambda p: p.metadata.name.lower())
+    projects = sorted(projects["items"], key=lambda p: p.metadata.name.lower())
 
     if len(projects) == 0:
         click.secho("You are not a part of any project", fg=Colors.BLACK, bg=Colors.WHITE)
@@ -230,10 +230,12 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
 def find_project_guid(
     client: v2Client, name: str, organization: Optional[str] = None
 ) -> str:
-    projects = client.list_projects(
-        query={"name": name},
-        organization_guid=organization,
+    result = client.list_projects(
+        organizations=organization,
+        name=name,
     )
+
+    projects = result.get("items", None)
 
     if projects and projects[0].metadata.name == name:
         return projects[0].metadata.guid
@@ -252,7 +254,7 @@ def find_organization_guid(client: Client, name: str) -> Tuple[str, str]:
 
 
 def get_organization_name(client: Client, guid: str) -> Tuple[str, str]:
-    user = client.get_user()
+    user = munchify(client.get_user())
 
     for organization in user.spec.organizations:
         if organization.guid == guid:
