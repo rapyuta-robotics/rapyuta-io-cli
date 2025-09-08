@@ -22,11 +22,12 @@ from riocli.project.list import list_projects
 from riocli.project.select import select_project
 from riocli.project.update_owner import update_owner
 from riocli.project.whoami import whoami
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

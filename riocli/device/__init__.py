@@ -29,11 +29,12 @@ from riocli.device.report import report_device
 from riocli.device.tools import tools
 from riocli.device.topic import device_topics
 from riocli.device.vpn import toggle_vpn
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

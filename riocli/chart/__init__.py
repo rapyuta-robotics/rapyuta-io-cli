@@ -20,11 +20,12 @@ from riocli.chart.info import info_chart
 from riocli.chart.list import list_charts
 from riocli.chart.search import search_chart
 from riocli.constants import Colors
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

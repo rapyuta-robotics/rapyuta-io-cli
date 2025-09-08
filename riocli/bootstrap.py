@@ -20,7 +20,6 @@ import os
 import click
 import rapyuta_io.version
 from click import Context
-from click_help_colors import HelpColorsGroup
 
 from riocli.apply import apply, delete
 from riocli.apply.explain import list_examples, explain
@@ -54,12 +53,18 @@ from riocli.utils import (
     pip_install_cli,
     update_appimage,
 )
+from riocli.utils import AliasedGroup
 from riocli.vpn import vpn
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
+    aliases={
+        "o2": "oauth2",
+        "sr": "static-route",
+        "ug": "usergroup",
+    },
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

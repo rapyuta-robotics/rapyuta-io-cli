@@ -22,12 +22,13 @@ from riocli.config import new_client
 from riocli.constants import Colors
 from riocli.device.util import name_to_guid
 from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     "labels",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color=Colors.GREEN,
 )

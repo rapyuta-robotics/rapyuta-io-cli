@@ -20,11 +20,12 @@ from riocli.vpn.flush import flush
 from riocli.vpn.machines import machines
 from riocli.vpn.ping import ping_all
 from riocli.vpn.status import status
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )
