@@ -20,11 +20,12 @@ from riocli.device.tools.rapyuta_logs import rapyuta_agent_logs
 from riocli.device.tools.ssh import device_ssh, ssh_authorize_key
 from .scp import scp
 from .service import service
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

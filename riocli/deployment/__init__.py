@@ -23,11 +23,12 @@ from riocli.deployment.logs import deployment_logs
 from riocli.deployment.status import status
 from riocli.deployment.update import update_deployment, restart_deployment
 from riocli.deployment.wait import wait_for_deployment
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

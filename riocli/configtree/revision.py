@@ -35,6 +35,7 @@ from riocli.constants.symbols import Symbols
 from riocli.utils.spinner import with_spinner
 from riocli.utils.state import StateFile
 from riocli.v2client import Client
+from riocli.utils import AliasedGroup
 
 
 class Revision(object):
@@ -198,7 +199,7 @@ class Revision(object):
 @click.group(
     name="revision",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

@@ -22,11 +22,12 @@ from riocli.organization.list import list_organizations
 from riocli.organization.remove_user import remove_user
 from riocli.organization.select import select_organization
 from riocli.organization.users import list_users
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

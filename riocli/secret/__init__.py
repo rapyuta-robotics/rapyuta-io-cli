@@ -19,11 +19,12 @@ from riocli.constants import Colors
 from riocli.secret.delete import delete_secret
 from riocli.secret.inspect import inspect_secret
 from riocli.secret.list import list_secrets
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
