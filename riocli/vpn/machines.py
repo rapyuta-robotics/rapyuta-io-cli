@@ -23,11 +23,12 @@ from riocli.constants.symbols import Symbols
 from riocli.utils import tabulate_data
 from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import create_binding, get_binding_labels
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

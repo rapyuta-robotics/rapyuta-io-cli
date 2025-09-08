@@ -34,6 +34,7 @@ from munch import munchify
 from tabulate import tabulate
 
 from riocli.constants import Colors, Symbols
+from riocli.utils.alias import AliasedGroup as AliasedGroup
 
 
 class Singleton(type):
@@ -140,9 +141,9 @@ def is_valid_uuid(uuid_to_test, version=4):
 
 
 def tabulate_data(
-        data: typing.List[typing.List],
-        headers: typing.Union[typing.Iterable[str], str, None] = None,
-        table_format: str = "simple",
+    data: typing.List[typing.List],
+    headers: typing.Union[typing.Iterable[str], str, None] = None,
+    table_format: str = "simple",
 ):
     """
     Prints data in tabular format

@@ -22,12 +22,13 @@ from click_help_colors import HelpColorsGroup, HelpColorsCommand
 from riocli.config import Configuration
 from riocli.constants import Symbols, Colors
 from riocli.utils import inspect_with_format
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     name="context",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

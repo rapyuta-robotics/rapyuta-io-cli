@@ -29,12 +29,13 @@ from riocli.configtree.tree import (
     set_tree_revision,
 )
 from riocli.constants.colors import Colors
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     name="configtree",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

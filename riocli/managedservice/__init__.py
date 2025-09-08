@@ -18,11 +18,12 @@ from riocli.managedservice.delete import delete_instance
 from riocli.managedservice.inspect import inspect_instance
 from riocli.managedservice.list import list_instances
 from riocli.managedservice.list_providers import list_providers
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
     hidden=True,

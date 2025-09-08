@@ -20,11 +20,12 @@ from riocli.static_route.delete import delete_static_route
 from riocli.static_route.inspect import inspect_static_route
 from riocli.static_route.list import list_static_routes
 from riocli.static_route.open import open_static_route
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

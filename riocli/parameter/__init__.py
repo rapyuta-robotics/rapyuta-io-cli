@@ -22,11 +22,12 @@ from riocli.parameter.diff import diff_configurations
 from riocli.parameter.download import download_configurations
 from riocli.parameter.list import list_configuration_trees
 from riocli.parameter.upload import upload_configurations
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

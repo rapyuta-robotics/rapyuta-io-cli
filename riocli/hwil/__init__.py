@@ -22,12 +22,13 @@ from riocli.hwil.inspect import inspect_device
 from riocli.hwil.list import list_devices
 from riocli.hwil.login import login
 from riocli.hwil.ssh import ssh
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     name="hwil",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
