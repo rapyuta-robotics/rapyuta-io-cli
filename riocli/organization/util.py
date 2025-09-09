@@ -47,5 +47,3 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         f(*args, **kwargs)
 
     return decorated
-
-

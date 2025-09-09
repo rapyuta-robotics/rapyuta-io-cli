@@ -28,7 +28,7 @@ def process_errors(errors: typing.List[str], no_action: bool = False) -> str:
     """Process the deployment errors and return the formatted error message"""
     err_fmt = "[{}] {}\nAction: {}"
     support_action = (
-        "Report the issue together with the relevant" " details to the support team"
+        "Report the issue together with the relevant details to the support team"
     )
 
     action, description = "", ""

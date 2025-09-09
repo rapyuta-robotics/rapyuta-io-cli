@@ -74,7 +74,7 @@ from riocli.constants import Colors
 @click.option(
     "--workers",
     "-w",
-    help="number of parallel workers while running apply command. " "defaults to 6.",
+    help="number of parallel workers while running apply command. defaults to 6.",
 )
 @click.option(
     "--retry-count",

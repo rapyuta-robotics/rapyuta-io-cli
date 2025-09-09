@@ -14,7 +14,6 @@
 import typing
 
 import click
-from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
 from rapyuta_io import Label
 

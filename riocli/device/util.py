@@ -279,8 +279,11 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
         device = client.get_device(device_id)
         if device:
             if device.status == "DELETING":
-                    client.poll_till_device_ready_or_deleted(device_id, sleep_interval=5,
-                                                             retry_limit=60 if labels.get("vm", False) else 12)
+                client.poll_till_device_ready_or_deleted(
+                    device_id,
+                    sleep_interval=5,
+                    retry_limit=60 if labels.get("vm", False) else 12,
+                )
             if device.status != "FAILED":
                 return device
     except DeviceNotFound:
@@ -293,7 +296,9 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
             raise Exception("cannot delete previously failed device")
 
     response = client.create_device(device_name, arch, os, codename, labels)
-    client.poll_till_device_ready_or_deleted(response.id, sleep_interval=5, retry_limit=60 if labels.get("vm", False) else 12)
+    client.poll_till_device_ready_or_deleted(
+        response.id, sleep_interval=5, retry_limit=60 if labels.get("vm", False) else 12
+    )
 
     if response.status == "FAILED":
         raise Exception("device has failed")
@@ -342,7 +347,7 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
         "expiry_after": spec["expireAfter"],
         "vm": spec["vm"],
         "cpu": spec["cpu"],
-        "private_ip": spec["private_ip"]
+        "private_ip": spec["private_ip"],
     }
 
     if "product" in spec:

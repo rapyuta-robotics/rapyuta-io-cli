@@ -1367,7 +1367,10 @@ class Client(object):
         url = "{}/v2/oauth2/clients/".format(self._host)
         headers = self._get_auth_header(with_project=False)
         response = (
-            RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload=client)
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(headers)
+            .execute(payload=client)
         )
 
         handle_server_errors(response)
@@ -1386,7 +1389,10 @@ class Client(object):
         url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
         headers = self._get_auth_header(with_project=False)
         response = (
-            RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=client)
+            RestClient(url)
+            .method(HttpMethod.PUT)
+            .headers(headers)
+            .execute(payload=client)
         )
 
         handle_server_errors(response)
@@ -1398,11 +1404,16 @@ class Client(object):
 
         return munchify(data)
 
-    def update_oauth2_client_uris(self, client_id: str, payload: dict[str, Optional[Sequence[str]]]) -> Munch:
+    def update_oauth2_client_uris(
+        self, client_id: str, payload: dict[str, Optional[Sequence[str]]]
+    ) -> Munch:
         url = "{}/v2/oauth2/clients/{}/uris/".format(self._host, client_id)
         headers = self._get_auth_header(with_project=False)
         response = (
-            RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=payload)
+            RestClient(url)
+            .method(HttpMethod.PUT)
+            .headers(headers)
+            .execute(payload=payload)
         )
 
         handle_server_errors(response)

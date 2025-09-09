@@ -163,7 +163,9 @@ def init_jinja_environment():
         from ansible.plugins.filter.urls import FilterModule as URLFilterModule
         from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
         from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
-        from ansible.plugins.filter.encryption import FilterModule as EncryptionFilterModule
+        from ansible.plugins.filter.encryption import (
+            FilterModule as EncryptionFilterModule,
+        )
 
         for name, func in CoreFilterModule().filters().items():
             # Ansible added this new filter in v2.19.0 that replaces the

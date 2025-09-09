@@ -84,7 +84,7 @@ def delete_device(
 
     if not final:
         spinner.text = click.style(
-            f'No devices found with name(s): {", ".join(devices)}', fg=Colors.RED
+            f"No devices found with name(s): {', '.join(devices)}", fg=Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
@@ -92,7 +92,7 @@ def delete_device(
     with spinner.hidden():
         if not force:
             click.confirm(
-                f'Do you want to delete {", ".join(final.values())}?', abort=True
+                f"Do you want to delete {', '.join(final.values())}?", abort=True
             )
 
     try:

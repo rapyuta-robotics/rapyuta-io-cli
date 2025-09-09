@@ -227,6 +227,7 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
         spinner.red.fail(Symbols.ERROR)
         return False
 
+
 def find_project_guid(
     client: v2Client, name: str, organization: Optional[str] = None
 ) -> str:
@@ -259,4 +260,3 @@ def get_organization_name(client: Client, guid: str) -> Tuple[str, str]:
             return organization.name, organization.shortGUID
 
     raise OrganizationNotFound("User is not part of organization: {}".format(guid))
-

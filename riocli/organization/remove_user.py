@@ -41,12 +41,9 @@ def remove_user(
 ) -> None:
     """Remove a user from the current organization."""
     if len(user_email) == 0:
-        spinner.text = click.style(
-            "No user specified.", fg=Colors.RED
-        )
+        spinner.text = click.style("No user specified.", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
-
 
     for email in user_email:
         try:

@@ -14,7 +14,7 @@
 from typing import Iterable
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
+from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client

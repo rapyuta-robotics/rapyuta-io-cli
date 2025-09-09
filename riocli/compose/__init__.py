@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import click
-from click_help_colors import HelpColorsGroup
+
 
 from riocli.compose.down import down
 from riocli.compose.generate import generate
