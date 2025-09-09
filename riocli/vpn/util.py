@@ -94,7 +94,7 @@ def install_vpn_tools() -> None:
 
     click.confirm(
         click.style(
-            "{} VPN tools are not installed. Do you want " "to install them now?".format(
+            "{} VPN tools are not installed. Do you want to install them now?".format(
                 Symbols.INFO
             ),
             fg=Colors.YELLOW,
@@ -229,7 +229,11 @@ def update_hosts_file():
     for device in v1_client.get_all_devices(online_device=True):
         device_daemon = v2_client.get_device_daemons(device_guid=device.get("uuid"))
         vpn_status = device_daemon.status.get("vpn")
-        if vpn_status is not None and vpn_status.get("enable", False) and vpn_status.get("status") == "running":
+        if (
+            vpn_status is not None
+            and vpn_status.get("enable", False)
+            and vpn_status.get("status") == "running"
+        ):
             device_host_to_name[device.get("host")] = device.name
 
     status = get_tailscale_status()

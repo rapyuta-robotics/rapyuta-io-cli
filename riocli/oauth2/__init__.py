@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
+
 from riocli.oauth2.create import create_oauth2_client
 from riocli.oauth2.delete import delete_oauth2_client
 from riocli.oauth2.inspect import inspect_oauth2_client

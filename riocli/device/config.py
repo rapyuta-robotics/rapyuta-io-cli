@@ -15,7 +15,6 @@ import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from click_help_colors import HelpColorsGroup
 from rapyuta_io import DeviceConfig
 
 from riocli.config import new_client

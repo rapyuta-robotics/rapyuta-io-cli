@@ -60,7 +60,7 @@ def create_device(
                 description=description,
                 ros_distro=ros_distro,
                 runtime_docker=runtime_docker,
-                python_version ="3",
+                python_version="3",
                 runtime_preinstalled=runtime_preinstalled,
                 ros_workspace=catkin_workspace,
             )

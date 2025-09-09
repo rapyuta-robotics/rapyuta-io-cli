@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
+
 
 from riocli.project.create import create_project
 from riocli.project.delete import delete_project

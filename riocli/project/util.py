@@ -60,7 +60,7 @@ def name_to_guid(f: Callable) -> Callable:
 
     return decorated
 
+
 def get_project_name(client: v2Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.metadata.name
-

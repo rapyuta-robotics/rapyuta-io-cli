@@ -104,8 +104,9 @@ def toggle_vpn(
         final = process_devices(all_devices, devices)
 
         click.secho(
-            "\nSetting the state of VPN client = {} on "
-            "the following devices\n".format(enable),
+            "\nSetting the state of VPN client = {} on the following devices\n".format(
+                enable
+            ),
             fg="yellow",
         )
 
@@ -169,6 +170,7 @@ def process_devices(all_devices, devices) -> typing.List:
             final.append(uuid_map[device])
 
     return final
+
 
 def print_final_devices(final) -> None:
     data = [[device.uuid, device.name, device.status] for device in final]

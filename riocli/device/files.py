@@ -14,7 +14,7 @@
 from datetime import datetime, timedelta
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
+from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients import LogUploads, LogsUploadRequest, SharedURL
 
 from riocli.config import new_client

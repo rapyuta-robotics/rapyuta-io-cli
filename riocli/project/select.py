@@ -49,7 +49,7 @@ def select_project(
         cleanup_hosts_file()
     except Exception as e:
         click.secho(
-            f"{Symbols.WARNING} Failed to " f"clean up hosts file: {str(e)}",
+            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
             fg=Colors.YELLOW,
         )
 

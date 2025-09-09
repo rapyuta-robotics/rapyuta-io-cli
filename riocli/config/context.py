@@ -17,7 +17,7 @@ from typing import Optional
 
 import click
 import yaml
-from click_help_colors import HelpColorsGroup, HelpColorsCommand
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import Configuration
 from riocli.constants import Symbols, Colors

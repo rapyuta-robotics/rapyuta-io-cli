@@ -56,7 +56,7 @@ def disconnect(ctx: click.Context):
             cleanup_hosts_file()
         except Exception as e:
             click.secho(
-                f"{Symbols.WARNING} Could not clean " f"up hosts file: {str(e)}",
+                f"{Symbols.WARNING} Could not clean up hosts file: {str(e)}",
                 fg=Colors.YELLOW,
             )
 

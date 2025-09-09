@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
+
 
 from riocli.constants import Colors
 from riocli.hwil.create import create_device
