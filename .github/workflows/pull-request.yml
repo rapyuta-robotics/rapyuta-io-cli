@@ -8,7 +8,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Run checks
-        uses: astral-sh/ruff-action@v1
+      - name: Run ruff check
+        uses: astral-sh/ruff-action@v3
         with:
           args: "check"
+
+      - name: Run ruff format --check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
