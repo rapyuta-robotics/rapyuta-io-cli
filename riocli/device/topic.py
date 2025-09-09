@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
 from rapyuta_io import TopicsStatus
 from rapyuta_io.clients.device import QoS, TopicKind

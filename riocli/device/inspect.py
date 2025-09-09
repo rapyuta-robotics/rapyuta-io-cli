@@ -38,7 +38,9 @@ from riocli.utils import inspect_with_format
 @click.argument("device-name", type=str)
 @name_to_guid
 @click.pass_context
-def inspect_device(ctx: click.Context, format_type: str, device_name: str, device_guid: str) -> None:
+def inspect_device(
+    ctx: click.Context, format_type: str, device_name: str, device_guid: str
+) -> None:
     """Print the details of a device.
 
     You can specify the format of the output using the --format flag.

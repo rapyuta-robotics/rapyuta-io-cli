@@ -36,9 +36,9 @@ from riocli.utils import inspect_with_format
 @click.argument("client-id", type=str)
 @click.pass_context
 def inspect_oauth2_client(
-        ctx: click.Context,
-        client_id: str,
-        format_type: str,
+    ctx: click.Context,
+    client_id: str,
+    format_type: str,
 ) -> None:
     try:
         config = get_config_from_context(ctx)

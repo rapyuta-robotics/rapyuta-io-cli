@@ -52,7 +52,7 @@ def ssh(device_name: str, device_id: str, spinner=None) -> None:
             f"{Symbols.INFO} Enter this password when prompted: {device.password}",
             fg=Colors.BRIGHT_CYAN,
         )
-        os.system(f'ssh {device.username}@{device["ip_address"]}')
+        os.system(f"ssh {device.username}@{device['ip_address']}")
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

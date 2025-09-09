@@ -55,7 +55,7 @@ def _show_selection_list(
     click.secho(header, fg=Colors.YELLOW)
     data = []
     for idx, opt in enumerate(ranger):
-        idx_column = f"{idx+1})"
+        idx_column = f"{idx + 1})"
         opt_column = opt
         if highlight_item is not None and opt == highlight_item:
             idx_column = click.style(idx_column, bold=True, italic=True)

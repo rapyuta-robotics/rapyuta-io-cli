@@ -19,7 +19,7 @@ from hashlib import md5
 from typing import Optional, Type, Any
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
+from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client

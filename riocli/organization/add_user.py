@@ -119,9 +119,7 @@ def add_user_to_organization(
     spinner: Yaspin,
 ) -> None:
     if len(user_emails) == 0:
-        spinner.text = click.style(
-            "No user specified.", fg=Colors.RED
-        )
+        spinner.text = click.style("No user specified.", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
 

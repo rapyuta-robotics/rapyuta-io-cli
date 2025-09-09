@@ -111,7 +111,9 @@ def device_ssh(
 @click.option("--user", "-u", default="root", help="User for which SSH keys are added")
 @click.argument("device-name", type=str)
 @click.argument(
-    "public-key-file", default=os.path.expanduser("~/.ssh/id_rsa.pub"), type=click.Path(exists=True)
+    "public-key-file",
+    default=os.path.expanduser("~/.ssh/id_rsa.pub"),
+    type=click.Path(exists=True),
 )
 @with_spinner(text="Authorizing public SSH key...", timer=True)
 @name_to_guid

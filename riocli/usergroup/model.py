@@ -55,7 +55,8 @@ class UserGroup(Model):
             p["metadata"]["name"]: p["metadata"]["guid"] for p in user_projects
         }
         self.user_email_to_guid_map = {
-            self._sanitize_email(user[USER_EMAIL]): user[USER_GUID] for user in org.spec.users
+            self._sanitize_email(user[USER_EMAIL]): user[USER_GUID]
+            for user in org.spec.users
         }
 
         sanitized = self._sanitize()
@@ -189,5 +190,5 @@ class UserGroup(Model):
         return payload
 
     @staticmethod
-    def _sanitize_email(email:str) -> str:
+    def _sanitize_email(email: str) -> str:
         return email.lower().strip()

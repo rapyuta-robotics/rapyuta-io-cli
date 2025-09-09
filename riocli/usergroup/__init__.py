@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import click
-from click_help_colors import HelpColorsGroup
+
 
 from riocli.constants import Colors
 from riocli.usergroup.delete import delete_usergroup

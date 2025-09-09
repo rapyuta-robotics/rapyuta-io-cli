@@ -99,7 +99,7 @@ def delete_chart(
     versions = find_chart(chart)
     if len(versions) > 1:
         click.secho(
-            "More than one charts are available, " "please specify the version!",
+            "More than one charts are available, please specify the version!",
             fg=Colors.YELLOW,
         )
 
