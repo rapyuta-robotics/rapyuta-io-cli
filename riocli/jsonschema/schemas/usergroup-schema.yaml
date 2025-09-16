@@ -45,7 +45,6 @@ definitions:
 
     required:
       - name
-      - organization
 
   usergroupSpec:
     type: object
@@ -57,29 +56,71 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/member"
-      admins:
+      roles:
         type: array
         items:
-          "$ref": "#/definitions/member"
-      projects:
+          "$ref": "#/definitions/groupRole"
+    additionalProperties: false
+
+  groupRole:
+    type: object
+    properties:
+      domain:
+        $ref: "#/definitions/domain"
+      roles:
         type: array
         items:
-          "$ref": "#/definitions/project"
+          type: string
+    additionalProperties: false
+
+  domain:
+    type: object
+    properties:
+      kind:
+        type: string
+        enum:
+        - Organization
+        - Project
+      name:
+        type: string
+      guid:
+        type: string
+    oneOf:
+    - required:
+      - name
+    - required:
+      - guid
     additionalProperties: false
 
   member:
     type: object
     properties:
-      guid:
-        $ref: "#/definitions/uuid"
-      emailID:
-        type: string
+      subject:
+        $ref: "#/definitions/subject"
+      roles:
+        type: array
+        items:
+          type: string
+    additionalProperties: false
 
+  subject:
+    type: object
+    properties:
+      kind:
+        type: string
+        enum:
+        - User
+        - ServiceAccount
+      name:
+        type: string
+      guid:
+        type: string
     oneOf:
-      - required:
-          - guid
-      - required:
-          - emailID
+    - required:
+      - guid
+    - required:
+      - name
+    additionalProperties: false
 
   project:
     type: object
