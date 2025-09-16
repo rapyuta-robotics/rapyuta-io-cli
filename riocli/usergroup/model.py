@@ -11,13 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
+from typing import override
+from munch import Munch, unmunchify
 
-from munch import unmunchify
-
-from riocli.config import Configuration, new_client, new_v2_client
-from riocli.constants import ApplyResult
-from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
 from rapyuta_io_sdk_v2.utils import walk_pages
@@ -193,8 +189,4 @@ class UserGroup(Model):
         # And as a consequence they don't show up in the group. This will fix that.
         payload["update"]["members"]["add"].extend(payload["update"]["admins"]["add"])
 
-        return payload
-
-    @staticmethod
-    def _sanitize_email(email: str) -> str:
-        return email.lower().strip()
+        return dependencies

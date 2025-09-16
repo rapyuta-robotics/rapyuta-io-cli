@@ -8,12 +8,20 @@ metadata:
 spec:
   description: This is a sample user group description
   members:
-    - emailID: qa.rapyuta+e2e@gmail.com
-    - emailID: random.user@rapyuta-robotics.com
-  admins:
-    - emailID: admin.user@rapyuta-robotics.com
-  projects:
-    - name: project01
-      role: viewer
-    - name: project02
-      role: admin
+  - subject:
+      kind: User
+      name: qa.rapyuta+e2e@gmail.com
+    roles: [group_admin]
+  - subject:
+      kind: ServiceAccount
+      name: sa-paramsync
+    roles: [group_viewer]
+  roles:
+  - domain:
+      kind: Project
+      name: site-1
+    roles: [project_admin]
+  - domain:
+      kind: Project
+      name: site-2
+    roles: [project_viewer]
