@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
+from typing import override
+from munch import Munch, unmunchify
 
 from riocli.model import Model
 from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
@@ -82,5 +83,115 @@ class UserGroup(Model):
 
             for role in group_role.roles:
                 dependencies.append(f"role:{role}")
+
+        organization_id = self.metadata.organization or Configuration().organization_guid
+
+        try:
+            guid = find_usergroup_guid(v1client, organization_id, self.metadata.name)
+            v1client.delete_usergroup(organization_id, guid)
+        except UserGroupNotFound:
+            raise ResourceNotFound
+        except Exception as e:
+            raise e
+
+    def _sanitize(self) -> dict:
+        u = unmunchify(self)
+        u.pop("project_name_to_guid_map", None)
+        u.pop("user_email_to_guid_map", None)
+
+        return u
+
+    def _modify_payload(self, group: dict) -> dict:
+        group["spec"]["userGroupRoleInProjects"] = []
+        for entity in ("members", "admins"):
+            for u in group["spec"].get(entity, []):
+                if USER_GUID in u:
+                    continue
+                email = self._sanitize_email(u[USER_EMAIL])
+                u[USER_GUID] = self.user_email_to_guid_map.get(email)
+                u.pop(USER_EMAIL)
+
+        for p in group["spec"].get("projects", []):
+            if "guid" not in p:
+                p["guid"] = self.project_name_to_guid_map.get(p["name"])
+                p.pop("name")
+
+            if "role" in p:
+                group["spec"]["userGroupRoleInProjects"].append(
+                    {
+                        "projectGUID": p["guid"],
+                        "groupRole": p["role"],
+                    }
+                )
+                p.pop("role")
+
+        return group
+
+    @staticmethod
+    def _generate_update_payload(old: typing.Any, new: dict) -> dict:
+        payload = {
+            "name": old.name,
+            "guid": old.guid,
+            "description": new["spec"]["description"],
+            "update": {
+                "members": {"add": [], "remove": []},
+                "projects": {"add": [], "remove": []},
+                "admins": {"add": [], "remove": []},
+            },
+            "userGroupRoleInProjects": new["spec"].get("userGroupRoleInProjects", []),
+        }
+
+        entity_sets = {
+            "members": {
+                "old": set(),
+                "new": set(),
+            },
+            "admins": {
+                "old": set(),
+                "new": set(),
+            },
+            "projects": {
+                "old": set(),
+                "new": set(),
+            },
+        }
+
+        for entity in ("members", "projects", "admins"):
+            # Assure that the group creator is not removed
+            old_set = {
+                i.guid for i in (getattr(old, entity) or []) if i.guid != old.creator
+            }
+            new_set = {i["guid"] for i in new["spec"].get(entity, [])}
+
+            entity_sets[entity]["old"] = old_set
+            entity_sets[entity]["new"] = new_set
+
+        for entity in ("projects", "admins"):
+            new = entity_sets[entity]["new"]
+            old = entity_sets[entity]["old"]
+            added = new - old
+            removed = old - new
+
+            payload["update"][entity]["add"] = [{"guid": guid} for guid in added]
+            payload["update"][entity]["remove"] = [{"guid": guid} for guid in removed]
+
+        # Handle special cases in the members section separately
+        new_members = entity_sets["members"]["new"]
+        old_members = entity_sets["members"]["old"]
+        added_members = new_members - old_members
+        removed_members = old_members - new_members
+
+        # Additional handling to avoid active admins becoming a part of
+        # removed members set which leads to their removal altogether.
+        removed_members = removed_members - entity_sets["admins"]["new"]
+
+        payload["update"]["members"]["add"] = [{"guid": guid} for guid in added_members]
+        payload["update"]["members"]["remove"] = [
+            {"guid": guid} for guid in removed_members
+        ]
+
+        # This is a special case where admins are not added to the membership list
+        # And as a consequence they don't show up in the group. This will fix that.
+        payload["update"]["members"]["add"].extend(payload["update"]["admins"]["add"])
 
         return dependencies
