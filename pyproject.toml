@@ -7,7 +7,7 @@ name = "rapyuta-io-cli"
 dynamic = ["version"]
 description = "rapyuta.io Command Line Interface"
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [
     { name = "Rapyuta Robotics", email = "opensource@rapyuta-robotics.com" },
