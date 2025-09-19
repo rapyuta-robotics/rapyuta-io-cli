@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Literal, Union
+from typing import Literal
 
 # Type aliases for better readability
-EnvironmentDict = Dict[str, Union[str, int, float]]
-DependsDict = Dict[str, "DependsCondition"]
-ServiceDict = Dict[str, "Service"]
+EnvironmentDict = dict[str, str | int | float]
+DependsDict = dict[str, "DependsCondition"]
+ServiceDict = dict[str, "Service"]
 
 # Constants
 DEFAULT_PULL_POLICY = "if_not_present"
@@ -29,9 +29,9 @@ class HealthCheck:
     """Health check configuration for Docker Compose services."""
 
     test: str
-    interval: Optional[str] = None
-    timeout: Optional[str] = None
-    retries: Optional[int] = None
+    interval: str | None = None
+    timeout: str | None = None
+    retries: int | None = None
 
 
 @dataclass
@@ -40,18 +40,18 @@ class Service:
 
     container_name: str
     image: str
-    pull_policy: Optional[str] = DEFAULT_PULL_POLICY
-    command: Optional[Union[str, List[str]]] = None
-    hostname: Optional[str] = None
-    restart: Optional[str] = DEFAULT_RESTART_POLICY
-    ports: Optional[List[str]] = field(default_factory=list)
-    volumes: Optional[List[str]] = field(default_factory=list)
-    environment: Optional[EnvironmentDict] = field(default_factory=dict)
-    depends_on: Optional[DependsDict] = field(default_factory=dict)
-    healthcheck: Optional[HealthCheck] = None
-    network_mode: Optional[str] = DEFAULT_NETWORK_MODE
-    mem_limit: Optional[str] = None
-    cpus: Optional[Union[str, float]] = None
+    pull_policy: str | None = DEFAULT_PULL_POLICY
+    command: str | list[str] | None = None
+    hostname: str | None = None
+    restart: str | None = DEFAULT_RESTART_POLICY
+    ports: list[str] | None = field(default_factory=list)
+    volumes: list[str] | None = field(default_factory=list)
+    environment: EnvironmentDict | None = field(default_factory=dict)
+    depends_on: DependsDict | None = field(default_factory=dict)
+    healthcheck: HealthCheck | None = None
+    network_mode: str | None = DEFAULT_NETWORK_MODE
+    mem_limit: str | None = None
+    cpus: str | float | None = None
 
 
 @dataclass
@@ -59,4 +59,4 @@ class DockerCompose:
     """Docker Compose configuration."""
 
     services: ServiceDict
-    version: Optional[str] = None
+    version: str | None = None

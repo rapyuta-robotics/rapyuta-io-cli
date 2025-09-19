@@ -13,7 +13,6 @@
 # limitations under the License.
 import json
 from pathlib import Path
-from typing import Optional
 
 import click
 import yaml
@@ -55,7 +54,7 @@ def cli_context() -> None:
     default="yaml",
     type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
-def view_cli_context(format_type: Optional[str]) -> None:
+def view_cli_context(format_type: str | None) -> None:
     """View the current CLI context.
 
     This command prints the current CLI context to the console.

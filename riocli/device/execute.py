@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from time import sleep
-import typing
 import click
 from click_help_colors import HelpColorsCommand
 from riocli.config import new_client
@@ -55,7 +54,7 @@ def execute_command(
     shell: str,
     run_async: bool,
     bg: bool,
-    command: typing.List[str],
+    command: list[str],
 ) -> None:
     """Execute commands on one or more devices.
 

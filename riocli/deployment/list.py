@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -73,8 +72,8 @@ DEFAULT_PHASES = [
 )
 def list_deployments(
     device: str,
-    phase: typing.List[str],
-    labels: typing.List[str],
+    phase: list[str],
+    labels: list[str],
     wide: bool = False,
 ) -> None:
     """List the deployments in the current project
@@ -109,7 +108,7 @@ def list_deployments(
 
 
 def display_deployment_list(
-    deployments: typing.List[Deployment],
+    deployments: list[Deployment],
     show_header: bool = True,
     wide: bool = False,
 ):

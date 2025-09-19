@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-from typing import List
 
 import click
 import munch
@@ -38,7 +36,7 @@ from riocli.utils import tabulate_data
     default=(),
     help="Filter the deployment list by labels",
 )
-def list_static_routes(labels: typing.List[str]) -> None:
+def list_static_routes(labels: list[str]) -> None:
     """List the static routes in the current project.
 
     You can filter the list by providing labels using
@@ -59,7 +57,7 @@ def list_static_routes(labels: typing.List[str]) -> None:
         raise SystemExit(1) from e
 
 
-def _display_routes_list(routes: List[munch.Munch]) -> None:
+def _display_routes_list(routes: list[munch.Munch]) -> None:
     headers = ["Route ID", "Name", "URL", "Creator", "CreatedAt"]
 
     data = []

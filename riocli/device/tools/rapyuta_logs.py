@@ -36,9 +36,7 @@ def rapyuta_agent_logs(device_name: str, device_guid: str) -> None:
         run_tunnel_on_device(device_guid=device_guid, remote_port=22, path=path)
         run_tunnel_on_local(local_port=local_port, path=path, background=True)
         os.system(
-            "ssh -p {} -o StrictHostKeyChecking=no root@localhost tail -f /var/log/salt/minion".format(
-                local_port
-            )
+            f"ssh -p {local_port} -o StrictHostKeyChecking=no root@localhost tail -f /var/log/salt/minion"
         )
     except Exception as e:
         click.secho(str(e), fg="red")

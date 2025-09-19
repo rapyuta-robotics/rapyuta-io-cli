@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -62,7 +61,7 @@ def inspect_organization(
         raise SystemExit(1) from e
 
 
-def make_organization_inspectable(organization: typing.Dict) -> typing.Dict:
+def make_organization_inspectable(organization: dict) -> dict:
     creator = None
     for user in organization["users"]:
         if user["guid"] == organization["creator"]:

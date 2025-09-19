@@ -56,9 +56,7 @@ def update_owner(
     try:
         project = client.get_project(project_guid)
     except Exception as e:
-        click.secho(
-            "{} Failed to fetch project: {}".format(Symbols.ERROR, e), fg=Colors.RED
-        )
+        click.secho(f"{Symbols.ERROR} Failed to fetch project: {e}", fg=Colors.RED)
         raise SystemExit(1)
 
     project_users = project.spec.users
@@ -70,7 +68,7 @@ def update_owner(
             validate_email(user_email)
         except EmailNotValidError as e:
             click.secho(
-                "{} {} is not a valid email address".format(Symbols.ERROR, user_email),
+                f"{Symbols.ERROR} {user_email} is not a valid email address",
                 fg=Colors.RED,
             )
             raise SystemExit(1) from e
@@ -95,16 +93,12 @@ def update_owner(
         )
 
     if user_guid is None:
-        click.secho("{} User not found in project".format(Symbols.ERROR), fg=Colors.RED)
+        click.secho(f"{Symbols.ERROR} User not found in project", fg=Colors.RED)
         raise SystemExit(1)
 
     try:
         client.update_project_owner(project_guid, user_guid)
-        click.secho(
-            "{} Owner updated successfully".format(Symbols.SUCCESS), fg=Colors.GREEN
-        )
+        click.secho(f"{Symbols.SUCCESS} Owner updated successfully", fg=Colors.GREEN)
     except Exception as e:
-        click.secho(
-            "{} Failed to update owner: {}".format(Symbols.ERROR, e), fg=Colors.RED
-        )
+        click.secho(f"{Symbols.ERROR} Failed to update owner: {e}", fg=Colors.RED)
         raise SystemExit(1)

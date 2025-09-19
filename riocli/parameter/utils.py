@@ -17,7 +17,6 @@ import os
 import re
 import typing
 from filecmp import dircmp
-from typing import List
 
 import click
 from directory_tree import display_tree
@@ -28,7 +27,7 @@ from riocli.config import Configuration
 from riocli.constants import Colors
 
 
-def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[str]:
+def filter_trees(root_dir: str, tree_names: tuple[str]) -> list[str]:
     trees = []
     for each in os.listdir(root_dir):
         full_path = os.path.join(root_dir, each)
@@ -41,8 +40,8 @@ def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[st
 
         if not is_valid_tree_name(each):
             raise Exception(
-                "Invalid tree name '{}'. Tree name must be 3-50 characters "
-                "and can contain letters, digits, _ and -".format(each)
+                f"Invalid tree name '{each}'. Tree name must be 3-50 characters "
+                "and can contain letters, digits, _ and -"
             )
         trees.append(each)
 
@@ -52,7 +51,7 @@ def filter_trees(root_dir: str, tree_names: typing.Tuple[str]) -> typing.List[st
     return trees
 
 
-def display_trees(root_dir: str, trees: typing.List[str]) -> None:
+def display_trees(root_dir: str, trees: list[str]) -> None:
     trees = trees or []
     for each in trees:
         tree_out = display_tree(os.path.join(root_dir, each), string_rep=True)
@@ -61,17 +60,17 @@ def display_trees(root_dir: str, trees: typing.List[str]) -> None:
 
 def _api_call(
     method: str,
-    name: typing.Union[str, None] = None,
-    payload: typing.Union[typing.Dict, None] = None,
+    name: str | None = None,
+    payload: dict | None = None,
     load_response: bool = True,
 ) -> typing.Any:
     config = Configuration()
     catalog_host = config.data.get(
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
-    url = "{}/api/paramserver/tree".format(catalog_host)
+    url = f"{catalog_host}/api/paramserver/tree"
     if name:
-        url = "{}/{}".format(url, name)
+        url = f"{url}/{name}"
     headers = config.get_auth_header()
     response = RestClient(url).method(method).headers(headers).execute(payload=payload)
     data = None
@@ -85,7 +84,7 @@ def _api_call(
     return data
 
 
-def list_trees() -> List[str]:
+def list_trees() -> list[str]:
     resp = _api_call(HttpMethod.GET)
     if "data" not in resp:
         raise Exception("Failed to list configurations")

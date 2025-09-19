@@ -93,9 +93,7 @@ def device_ssh(
         run_tunnel_on_device(device_guid=device_guid, remote_port=remote_port, path=path)
         run_tunnel_on_local(local_port=local_port, path=path, background=True)
         os.system(
-            "ssh -p {} {} -o StrictHostKeyChecking=no {}@localhost".format(
-                local_port, extra_args, user
-            )
+            f"ssh -p {local_port} {extra_args} -o StrictHostKeyChecking=no {user}@localhost"
         )
     except Exception as e:
         click.secho(str(e), fg="red")
@@ -143,7 +141,7 @@ def ssh_authorize_key(
         $ rio device tools ssh-authorize DEVICE_NAME
     """
     try:
-        temp_path = "/tmp/{}".format(random_string(8, 5))
+        temp_path = f"/tmp/{random_string(8, 5)}"
 
         spinner.write("> Uploading public SSH key to device")
         with spinner.hidden():
@@ -162,12 +160,10 @@ def ssh_authorize_key(
         run_on_device(device_guid=device_guid, command=command, user=user)
 
         spinner.text = click.style(
-            "Public key {} added successfully".format(public_key_file), fg=Colors.GREEN
+            f"Public key {public_key_file} added successfully", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to add keys. Error: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to add keys. Error: {e}", fg=Colors.RED)
         spinner.red.ok(Symbols.ERROR)
         raise SystemExit(1)

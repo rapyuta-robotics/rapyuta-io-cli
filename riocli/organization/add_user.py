@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
@@ -42,7 +41,7 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Adding users...")
 def add_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     role: str,
     spinner: Yaspin,
 ) -> None:
@@ -86,7 +85,7 @@ def add_user(
 @with_spinner(text="Adding users...")
 def invite_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     role: str,
     spinner: Yaspin,
 ) -> None:
@@ -114,7 +113,7 @@ def invite_user(
 
 def add_user_to_organization(
     ctx: click.Context,
-    user_emails: List[str],
+    user_emails: list[str],
     role: str,
     spinner: Yaspin,
 ) -> None:
@@ -128,7 +127,7 @@ def add_user_to_organization(
             validate_email(user_email)
         except EmailNotValidError as e:
             spinner.text = click.style(
-                "{} is not a valid email address".format(user_email), fg=Colors.RED
+                f"{user_email} is not a valid email address", fg=Colors.RED
             )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
@@ -155,12 +154,12 @@ def add_user_to_organization(
         spinner.text = click.style("Users added successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to add users: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to add users: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def add_user_emails(organization: Munch, user_emails: List[str], role: str) -> bool:
+def add_user_emails(organization: Munch, user_emails: list[str], role: str) -> bool:
     update = False
     existing_emails = map(lambda x: x.emailID, organization.spec.users)
 

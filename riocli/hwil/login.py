@@ -25,7 +25,7 @@ from riocli.utils.context import get_root_context
 from riocli.utils.spinner import with_spinner
 
 HWIL_LOGIN_SUCCESS = click.style(
-    "{} Successfully logged into HWIL!".format(Symbols.SUCCESS), fg=Colors.GREEN
+    f"{Symbols.SUCCESS} Successfully logged into HWIL!", fg=Colors.GREEN
 )
 
 
@@ -89,7 +89,7 @@ def validate_and_set_hwil_token(
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
-    token = b64encode(f"{username}:{password}".encode("utf-8")).decode("ascii")
+    token = b64encode(f"{username}:{password}".encode()).decode("ascii")
     client = HwilClient(auth_token=token, email_id=ctx.obj.data.get("email_id"))
 
     try:

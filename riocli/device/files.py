@@ -143,9 +143,7 @@ def create_upload(
         spinner.text = click.style("File upload requested successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to request upload: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to request upload: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -199,7 +197,7 @@ def delete_upload(
         spinner.text = click.style("Deleted upload successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to delete upload: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to delete upload: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -307,9 +305,7 @@ def shared_url(
         spinner.text = click.style(public_url.url, fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create shared URL: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create shared URL: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

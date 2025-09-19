@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -57,7 +56,7 @@ def inspect_usergroup(
         raise SystemExit(1)
 
 
-def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
+def to_manifest(usergroup: UserGroup, org_guid: str) -> dict:
     """
     Transform a usergroup resource to a rio apply manifest construct
     """

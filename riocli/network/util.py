@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import List
 
 from munch import Munch
 
@@ -26,7 +25,7 @@ def fetch_networks(
     network_name_or_regex: str,
     network_type: str,
     include_all: bool,
-) -> List[Network]:
+) -> list[Network]:
     if network_type:
         networks = client.list_networks(query={"network_type": network_type})
     else:
@@ -43,7 +42,7 @@ def fetch_networks(
     return result
 
 
-def print_networks_for_confirmation(networks: List[Munch]) -> None:
+def print_networks_for_confirmation(networks: list[Munch]) -> None:
     headers = ["Name", "Type"]
     data = [[n.metadata.name, n.spec.type] for n in networks]
     tabulate_data(data, headers)

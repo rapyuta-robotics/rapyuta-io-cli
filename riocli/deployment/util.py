@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-import typing
 
 import munch
 
@@ -33,7 +32,7 @@ def fetch_deployments(
     client: Client,
     deployment_name_or_regex: str,
     include_all: bool,
-) -> typing.List[munch.Munch]:
+) -> list[munch.Munch]:
     deployments = client.list_deployments(query={"phases": DEFAULT_PHASES})
     result = []
     for deployment in deployments:
@@ -43,9 +42,7 @@ def fetch_deployments(
             or deployment_name_or_regex == deployment.metadata.guid
             or (
                 deployment_name_or_regex not in deployment.metadata.name
-                and re.search(
-                    r"^{}$".format(deployment_name_or_regex), deployment.metadata.name
-                )
+                and re.search(rf"^{deployment_name_or_regex}$", deployment.metadata.name)
             )
         ):
             result.append(deployment)
@@ -53,7 +50,7 @@ def fetch_deployments(
     return result
 
 
-def print_deployments_for_confirmation(deployments: typing.List[munch.Munch]):
+def print_deployments_for_confirmation(deployments: list[munch.Munch]):
     headers = ["Name", "GUID", "Phase", "Status"]
 
     data = []

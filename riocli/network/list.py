@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -43,7 +42,7 @@ from riocli.utils import tabulate_data
     default=(),
     help="Filter the deployment list by labels",
 )
-def list_networks(network: str, labels: typing.List[str]) -> None:
+def list_networks(network: str, labels: list[str]) -> None:
     """List the networks in the current project.
 
     You can also filter the list by specifying labels using
@@ -71,7 +70,7 @@ def list_networks(network: str, labels: typing.List[str]) -> None:
 
 
 def _display_network_list(
-    networks: typing.List[Munch],
+    networks: list[Munch],
     show_header: bool = True,
 ) -> None:
     headers = []

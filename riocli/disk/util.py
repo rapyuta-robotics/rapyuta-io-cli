@@ -23,7 +23,7 @@ def fetch_disks(
     client: Client,
     disk_name_or_regex: str,
     include_all: bool,
-) -> typing.List[Disk]:
+) -> list[Disk]:
     disks = client.list_disks()
 
     if include_all:

@@ -42,15 +42,15 @@ from riocli.utils.graph import Graphviz
 from riocli.utils.spinner import with_spinner
 
 
-class Applier(object):
+class Applier:
     DEFAULT_MAX_WORKERS = 6
     DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
     def __init__(
         self,
-        files: typing.List,
-        values: typing.List,
-        secrets: typing.List,
+        files: list,
+        values: list,
+        secrets: list,
         config: Configuration,
     ):
         self.files = {}
@@ -89,9 +89,7 @@ class Applier(object):
             spinner.text = click.style("Apply successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = click.style(
-                "Apply failed. Error: {}".format(e), fg=Colors.BRIGHT_RED
-            )
+            spinner.text = click.style(f"Apply failed. Error: {e}", fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -143,9 +141,7 @@ class Applier(object):
             spinner.text = click.style("Delete successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
-            spinner.text = click.style(
-                "Delete failed. Error: {}".format(e), fg=Colors.BRIGHT_RED
-            )
+            spinner.text = click.style(f"Delete failed. Error: {e}", fg=Colors.BRIGHT_RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
@@ -264,7 +260,7 @@ class Applier(object):
         obj_key = click.style(obj_key, bold=True)
 
         message_with_prompt(
-            "{} Applying {}...".format(Symbols.WAITING, obj_key),
+            f"{Symbols.WAITING} Applying {obj_key}...",
             fg=Colors.CYAN,
             spinner=spinner,
         )
@@ -276,22 +272,20 @@ class Applier(object):
 
             if result == ApplyResult.EXISTS:
                 message_with_prompt(
-                    "{} {} already exists".format(Symbols.INFO, obj_key),
+                    f"{Symbols.INFO} {obj_key} already exists",
                     fg=Colors.WHITE,
                     spinner=spinner,
                 )
                 return
 
             message_with_prompt(
-                "{} {} {}".format(Symbols.SUCCESS, result, obj_key),
+                f"{Symbols.SUCCESS} {result} {obj_key}",
                 fg=Colors.GREEN,
                 spinner=spinner,
             )
         except Exception as ex:
             message_with_prompt(
-                "{} Failed to apply {}. Error: {}".format(
-                    Symbols.ERROR, obj_key, str(ex)
-                ),
+                f"{Symbols.ERROR} Failed to apply {obj_key}. Error: {str(ex)}",
                 fg=Colors.RED,
                 spinner=spinner,
             )
@@ -315,7 +309,7 @@ class Applier(object):
         obj_key = click.style(obj_key, bold=True)
 
         message_with_prompt(
-            "{} Deleting {}...".format(Symbols.WAITING, obj_key),
+            f"{Symbols.WAITING} Deleting {obj_key}...",
             fg=Colors.CYAN,
             spinner=spinner,
         )
@@ -327,9 +321,7 @@ class Applier(object):
 
         if not can_delete:
             message_with_prompt(
-                "{} {} cannot be deleted since deletion policy is set to 'retain'".format(
-                    Symbols.INFO, obj_key
-                ),
+                f"{Symbols.INFO} {obj_key} cannot be deleted since deletion policy is set to 'retain'",
                 fg=Colors.WHITE,
                 spinner=spinner,
             )
@@ -340,22 +332,20 @@ class Applier(object):
                 ist.delete(*args, **kwargs)
 
             message_with_prompt(
-                "{} Deleted {}".format(Symbols.SUCCESS, obj_key),
+                f"{Symbols.SUCCESS} Deleted {obj_key}",
                 fg=Colors.GREEN,
                 spinner=spinner,
             )
         except ResourceNotFound:
             message_with_prompt(
-                "{} {} not found".format(Symbols.WARNING, obj_key),
+                f"{Symbols.WARNING} {obj_key} not found",
                 fg=Colors.YELLOW,
                 spinner=spinner,
             )
             return
         except Exception as ex:
             message_with_prompt(
-                "{} Failed to delete {}. Error: {}".format(
-                    Symbols.ERROR, obj_key, str(ex)
-                ),
+                f"{Symbols.ERROR} Failed to delete {obj_key}. Error: {str(ex)}",
                 fg=Colors.RED,
                 spinner=spinner,
             )
@@ -376,7 +366,7 @@ class Applier(object):
             self.objects[key] = data
             self.resolved_objects[key] = {"src": "local", "manifest": data}
         except KeyError:
-            click.secho("Key error {}".format(data), fg=Colors.RED)
+            click.secho(f"Key error {data}", fg=Colors.RED)
             return
 
     def _load_file_content(self, file_name, is_value=False, is_secret=False):
@@ -415,7 +405,7 @@ class Applier(object):
             if is_secret:
                 data = run_bash(f"sops -d {file_name}")
             else:
-                with open(file_name, "r") as f:
+                with open(file_name) as f:
                     data = f.read()
         except Exception as e:
             raise Exception(f"Error loading file {file_name}: {e}")
@@ -471,7 +461,7 @@ class Applier(object):
     def _resolve_dependency(self, dependent_key, dependency):
         kind = dependency.get("kind")
         name_or_guid = dependency.get("nameOrGUID")
-        key = "{}:{}".format(kind, name_or_guid)
+        key = f"{kind}:{name_or_guid}"
 
         self._add_graph_edge(dependent_key, key)
 
@@ -481,11 +471,11 @@ class Applier(object):
         name_or_guid = obj.get("metadata", {}).get("name")
 
         if not name_or_guid:
-            raise ValueError("[kind:{}] name is required.".format(kind))
+            raise ValueError(f"[kind:{kind}] name is required.")
 
-        return "{}:{}".format(kind, name_or_guid)
+        return f"{kind}:{name_or_guid}"
 
-    def _inject_rio_namespace(self, values: typing.Optional[dict] = None) -> dict:
+    def _inject_rio_namespace(self, values: dict | None = None) -> dict:
         values = values or {}
 
         try:
@@ -522,9 +512,7 @@ class Applier(object):
 
         return values
 
-    def _process_values_and_secrets(
-        self, values: typing.List, secrets: typing.List
-    ) -> None:
+    def _process_values_and_secrets(self, values: list, secrets: list) -> None:
         """Process the values and secrets files and inject them into the manifest files"""
         self.values, self.secrets = benedict({}), benedict({})
 

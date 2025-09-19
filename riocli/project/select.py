@@ -54,8 +54,6 @@ def select_project(
         )
 
     click.secho(
-        "{} Project {} ({}) is selected!".format(
-            Symbols.SUCCESS, project_name, project_guid
-        ),
+        f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",
         fg=Colors.GREEN,
     )

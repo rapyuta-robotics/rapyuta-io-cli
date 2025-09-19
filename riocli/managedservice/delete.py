@@ -27,7 +27,7 @@ def delete_instance(instance_name: str):
         client = new_v2_client()
         r = client.delete_instance(instance_name)
         if r.get("success", None):
-            click.secho("✅ Deleted instance '{}'".format(instance_name), fg="green")
+            click.secho(f"✅ Deleted instance '{instance_name}'", fg="green")
     except Exception as e:
         click.secho(str(e), fg="red")
         raise SystemExit(1)

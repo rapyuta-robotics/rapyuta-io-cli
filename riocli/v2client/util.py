@@ -14,7 +14,6 @@
 
 import http
 import json
-import typing
 
 import click
 import requests
@@ -24,7 +23,7 @@ from riocli.v2client.constants import DEPLOYMENT_ERRORS as ERRORS
 from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
-def process_errors(errors: typing.List[str], no_action: bool = False) -> str:
+def process_errors(errors: list[str], no_action: bool = False) -> str:
     """Process the deployment errors and return the formatted error message"""
     err_fmt = "[{}] {}\nAction: {}"
     support_action = (

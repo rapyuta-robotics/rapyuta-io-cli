@@ -81,9 +81,7 @@ def upload_debug_logs(device_guid: str) -> dict:
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
 
-    url = "{}/api/device-manager/v0/error_handler/upload_debug_logs/{}".format(
-        coreapi_host, device_guid
-    )
+    url = f"{coreapi_host}/api/device-manager/v0/error_handler/upload_debug_logs/{device_guid}"
 
     headers = config.get_auth_header()
     response = (
@@ -165,7 +163,7 @@ def fetch_devices(
     device_name_or_regex: str,
     include_all: bool,
     online_devices: bool = False,
-) -> typing.List[Device]:
+) -> list[Device]:
     devices = client.get_all_devices(online_device=online_devices)
     result = []
     for device in devices:
@@ -175,7 +173,7 @@ def fetch_devices(
             or device_name_or_regex == device.uuid
             or (
                 device_name_or_regex not in device.name
-                and re.search(r"^{}$".format(device_name_or_regex), device.name)
+                and re.search(rf"^{device_name_or_regex}$", device.name)
             )
         ):
             result.append(device)
@@ -190,7 +188,7 @@ def migrate_device_to_project(
     host = config.data.get(
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
-    url = "{}/api/device-manager/v0/devices/{}/migrate".format(host, device_id)
+    url = f"{host}/api/device-manager/v0/devices/{device_id}/migrate"
     headers = config.get_auth_header()
     payload = {"project": dest_project_id}
 
@@ -203,7 +201,7 @@ def migrate_device_to_project(
         raise Exception(err_msg)
 
 
-def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, str):
+def find_request_id(requests: list[LogUploads], file_name: str) -> (str, str):
     for request in requests:
         if request.filename == file_name or request.request_uuid == file_name:
             return request.filename, request.request_uuid
@@ -334,7 +332,7 @@ def execute_onboard_command(device_id: int, onboard_command: str) -> None:
         raise e
 
 
-def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
+def make_hwil_labels(spec: dict, device_name: str) -> dict:
     data = Configuration().data
     user_email = data["email_id"]
     user_email = user_email.split("@")[0]

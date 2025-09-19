@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_spinner import spinner
@@ -103,7 +102,7 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
         raise SystemExit(1)
 
 
-def _display_label_list(labels: typing.List[Label], show_header: bool = True) -> None:
+def _display_label_list(labels: list[Label], show_header: bool = True) -> None:
     headers = []
     if show_header:
         headers = ("Key", "Value")
@@ -128,7 +127,7 @@ def _delete_label(device_guid: str, key: str) -> None:
     device.delete_label(label.id)
 
 
-def _find_label(labels: typing.List[Label], key: str) -> Label:
+def _find_label(labels: list[Label], key: str) -> Label:
     for label in labels:
         if label.key == key:
             return label

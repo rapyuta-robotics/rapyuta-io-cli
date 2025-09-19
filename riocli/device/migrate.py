@@ -73,9 +73,7 @@ def migrate_project(
         migrate_device_to_project(ctx, device_guid, project_guid)
         spinner.write(
             click.style(
-                "{} Device {} migrated successfully.".format(
-                    Symbols.SUCCESS, device_name
-                ),
+                f"{Symbols.SUCCESS} Device {device_name} migrated successfully.",
                 fg=Colors.GREEN,
             )
         )
@@ -91,11 +89,11 @@ def migrate_project(
             )
             spinner.write(
                 click.style(
-                    "{} Enabled VPN on the device.".format(Symbols.SUCCESS),
+                    f"{Symbols.SUCCESS} Enabled VPN on the device.",
                     fg=Colors.GREEN,
                 )
             )
     except Exception as e:
-        spinner.text = click.style("Failed to migrate device: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to migrate device: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from pathlib import Path
-from typing import Optional
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -59,10 +58,10 @@ from riocli.utils.spinner import with_spinner
 def export_keys(
     _: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
-    export_directory: Optional[str],
-    file_format: Optional[str],
+    export_directory: str | None,
+    file_format: str | None,
     spinner: Yaspin,
 ) -> None:
     """Export keys of the Config tree to files."""

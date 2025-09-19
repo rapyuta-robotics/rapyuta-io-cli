@@ -45,17 +45,17 @@ def run_tunnel_on_device(device_guid: str, remote_port: int, path: str) -> None:
 def run_tunnel_on_local(local_port: int, path: str, background: bool = False) -> None:
     config = Configuration()
     tunnel = os.path.join(os.path.dirname(config.filepath), "tools", "piping-tunnel")
-    command = "{} client --server {} --port {} {}".format(
-        tunnel, config.piping_server, local_port, path
+    command = (
+        f"{tunnel} client --server {config.piping_server} --port {local_port} {path}"
     )
     if background:
-        command = "{} --progress=false".format(command)
+        command = f"{command} --progress=false"
     click.secho(command)
     run_bash(command, bg=background)
 
 
 def copy_from_device(device_guid: str, src: str, dest: str) -> None:
-    file = "{}-{}".format(src, random_string(7, 5)).lstrip("/").replace("/", "-")
+    file = f"{src}-{random_string(7, 5)}".lstrip("/").replace("/", "-")
     client = new_client()
     device = client.get_device(device_id=device_guid)
     request_uuid = device.upload_log_file(LogsUploadRequest(src, file_name=file))
@@ -68,12 +68,10 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
         continue
 
     if status.status != "COMPLETED":
-        raise Exception(
-            "Upload status: {} Error: {}".format(status.status, status.error_message)
-        )
+        raise Exception(f"Upload status: {status.status} Error: {status.error_message}")
 
     url = device.download_log_file(request_uuid)
-    run_bash('curl -o "{}" "{}"'.format(dest, url))
+    run_bash(f'curl -o "{dest}" "{url}"')
 
 
 def copy_to_device(

@@ -39,4 +39,4 @@ def logout(ctx: click.Context):
 
     ctx.obj.save()
 
-    click.secho("{} Logged out successfully.".format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} Logged out successfully.", fg=Colors.GREEN)

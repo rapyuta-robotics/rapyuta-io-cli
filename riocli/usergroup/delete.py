@@ -55,9 +55,7 @@ def delete_usergroup(
     """
     if not force:
         with spinner.hidden():
-            click.confirm(
-                "Deleting usergroup {} ({})".format(group_name, group_guid), abort=True
-            )
+            click.confirm(f"Deleting usergroup {group_name} ({group_guid})", abort=True)
 
     try:
         client = new_client()
@@ -66,6 +64,6 @@ def delete_usergroup(
         spinner.text = click.style("User group deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to delete usergroup: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete usergroup: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e

@@ -1,5 +1,4 @@
 from pathlib import Path
-import typing
 import click
 from click_help_colors import HelpColorsCommand
 
@@ -68,7 +67,7 @@ def up(
     path: Path,
     detach: bool,
     build: bool,
-    files: typing.Tuple[str, ...],
+    files: tuple[str, ...],
 ):
     """
     Generate and start services using Docker Compose.
