@@ -15,7 +15,6 @@
 import base64
 import tempfile
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import click
 from graphviz import Digraph
@@ -23,7 +22,7 @@ from graphviz import Digraph
 
 class GraphVisualizer(ABC):
     @abstractmethod
-    def node(self, key: str, label: Optional[str] = None) -> None:
+    def node(self, key: str, label: str | None = None) -> None:
         pass
 
     @abstractmethod
@@ -37,21 +36,18 @@ class GraphVisualizer(ABC):
 
 class Mermaid(GraphVisualizer):
     def __init__(self, format: str = "svg", direction: str = "LR") -> None:
-        self._diagram = ["flowchart {}".format(direction)]
+        self._diagram = [f"flowchart {direction}"]
         self._format = format
 
-    def node(self, key: str, label: Optional[str] = None) -> None:
+    def node(self, key: str, label: str | None = None) -> None:
         if label is None:
             label = key
 
-        self._diagram.append("\t{}[{}]".format(self._mermaid_safe(key), label))
+        self._diagram.append(f"\t{self._mermaid_safe(key)}[{label}]")
 
     def edge(self, from_node: str, to_node: str) -> None:
         self._diagram.append(
-            "\t{} --> {}".format(
-                self._mermaid_safe(from_node),
-                self._mermaid_safe(to_node),
-            )
+            f"\t{self._mermaid_safe(from_node)} --> {self._mermaid_safe(to_node)}"
         )
 
     def visualize(self) -> None:
@@ -61,7 +57,7 @@ class Mermaid(GraphVisualizer):
     def _mermaid_link(self):
         diagram = "\n".join(self._diagram).encode("ascii")
         data = base64.b64encode(diagram).decode("ascii")
-        return "https://mermaid.ink/{}/{}".format(self._format, data)
+        return f"https://mermaid.ink/{self._format}/{data}"
 
     def _mermaid_safe(self, s: str) -> str:
         return s.replace(" ", "_")
@@ -70,7 +66,7 @@ class Mermaid(GraphVisualizer):
 class Graphviz(GraphVisualizer):
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         format: str = "svg",
         direction: str = "TB",
         shape: str = "box",
@@ -80,7 +76,7 @@ class Graphviz(GraphVisualizer):
         self._graph.attr("graph", overlap="False", rankdir=direction)
         self._graph.attr("node", shape=shape)
 
-    def node(self, key: str, label: Optional[str] = None) -> None:
+    def node(self, key: str, label: str | None = None) -> None:
         self._graph.node(self._graphviz_safe(key), label=label)
 
     def edge(self, from_node: str, to_node: str) -> None:

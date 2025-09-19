@@ -17,7 +17,6 @@ Filters to use in the manifests.
 
 from functools import lru_cache
 import os
-from typing import Dict, List
 
 from riocli.config import new_client
 from riocli.device.util import find_device_guid
@@ -73,7 +72,7 @@ def get_interface_ip(device_name: str, interface: str) -> str:
 
 
 @lru_cache
-def get_device_ip_interfaces(device_name: str) -> Dict[str, List[str]]:
+def get_device_ip_interfaces(device_name: str) -> dict[str, list[str]]:
     client = new_client(with_project=True)
     device_id = find_device_guid(client, device_name)
 

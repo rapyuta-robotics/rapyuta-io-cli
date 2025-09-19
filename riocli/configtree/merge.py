@@ -13,7 +13,6 @@
 # limitations under the License.
 import os
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 import click
 from benedict import benedict
@@ -82,7 +81,7 @@ def merge_revisions(
     ref: str,
     silent: bool,
     with_org: bool,
-    milestone: Optional[str],
+    milestone: str | None,
     ignore_conflict: bool,
     spinner: Yaspin,
 ):
@@ -131,9 +130,7 @@ def merge_revisions(
                 merged = interactive_merge(ctx, base_keys, source_keys, old_base_keys)
             data, metadata = split_metadata(merged)
         else:
-            spinner.write(
-                click.style("{}  Fast-forwarding".format(Symbols.INFO), fg=Colors.CYAN)
-            )
+            spinner.write(click.style(f"{Symbols.INFO}  Fast-forwarding", fg=Colors.CYAN))
             # Combining and Splitting is required to remove the extra API fields
             # in the Value.
             base_keys = combine_metadata(base_keys)
@@ -183,22 +180,22 @@ def merge_revisions(
 
 
 def interactive_merge(
-    ctx: click.Context, keys_1: dict, keys_2: dict, keys_3: Optional[dict]
+    ctx: click.Context, keys_1: dict, keys_2: dict, keys_3: dict | None
 ) -> dict:
     cfg = get_config_from_context(ctx)
     keys_1 = unflatten_keys(keys_1)
     keys_2 = unflatten_keys(keys_2)
     keys_3 = unflatten_keys(keys_3)
 
-    with NamedTemporaryFile(mode="w+b", prefix="HEAD_") as file_1, NamedTemporaryFile(
-        mode="w+b", prefix="MERGE_HEAD_"
-    ) as file_2, NamedTemporaryFile(mode="w+b", prefix="PREV_BASE_") as file_3:
+    with (
+        NamedTemporaryFile(mode="w+b", prefix="HEAD_") as file_1,
+        NamedTemporaryFile(mode="w+b", prefix="MERGE_HEAD_") as file_2,
+        NamedTemporaryFile(mode="w+b", prefix="PREV_BASE_") as file_3,
+    ):
         keys_1.to_json(filepath=file_1.name, indent=4)
         keys_2.to_json(filepath=file_2.name, indent=4)
         keys_3.to_json(filepath=file_3.name, indent=4)
-        os.system(
-            "{} {} {} {}".format(cfg.merge_tool, file_3.name, file_1.name, file_2.name)
-        )
+        os.system(f"{cfg.merge_tool} {file_3.name} {file_1.name} {file_2.name}")
 
         return benedict(file_1.name, format="json")
 

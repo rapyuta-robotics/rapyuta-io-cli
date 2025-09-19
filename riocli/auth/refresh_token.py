@@ -70,6 +70,4 @@ def refresh_token(ctx: click.Context, password: str, interactive: bool):
     ctx.obj.data["auth_token"] = refreshed
     ctx.obj.save()
 
-    click.secho(
-        "{} Token refreshed successfully!".format(Symbols.SUCCESS), fg=Colors.GREEN
-    )
+    click.secho(f"{Symbols.SUCCESS} Token refreshed successfully!", fg=Colors.GREEN)

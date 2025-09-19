@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -125,7 +124,7 @@ def update(silent: bool) -> None:
         click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
         return
 
-    click.secho("🎉 A newer version ({}) is available.".format(latest), fg=Colors.GREEN)
+    click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
 
     if not silent:
         click.confirm("Do you want to update?", abort=True, default=False)
@@ -136,10 +135,10 @@ def update(silent: bool) -> None:
         else:
             update_appimage(version=latest)
     except Exception as e:
-        click.secho("{} Failed to update: {}".format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
 
-    click.secho("{} Update successful!".format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} Update successful!", fg=Colors.GREEN)
 
 
 cli.add_command(apply)

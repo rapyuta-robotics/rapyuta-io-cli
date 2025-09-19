@@ -18,7 +18,6 @@ import json
 import os
 import uuid
 from functools import lru_cache
-from typing import Optional
 
 from click import get_app_dir
 from rapyuta_io import Client
@@ -33,7 +32,7 @@ from riocli.hwilclient import Client as HwilClient
 from riocli.v2client import Client as v2Client
 
 
-class Configuration(object):
+class Configuration:
     """
     Configuration defines a class to define operations on the CLI's configuration file centrally.
     The class can be initialized irrespective of if the actual file exists or not. The object will
@@ -55,7 +54,7 @@ class Configuration(object):
     DIFF_TOOL = "diff"
     MERGE_TOOL = "vimdiff"
 
-    def __init__(self, filepath: Optional[str] = None):
+    def __init__(self, filepath: str | None = None):
         self._filepath = os.environ.get("RIO_CONFIG", filepath)
         self.exists = True
 
@@ -65,7 +64,7 @@ class Configuration(object):
             self.data = dict()
             return
 
-        with open(self.filepath, "r") as config_file:
+        with open(self.filepath) as config_file:
             self.data = json.load(config_file)
 
     def save(self: Configuration):
@@ -136,7 +135,7 @@ class Configuration(object):
 
         token, project = self.data["auth_token"], self.data["project_id"]
         if not token.startswith("Bearer"):
-            token = "Bearer {}".format(token)
+            token = f"Bearer {token}"
 
         return dict(Authorization=token, project=project)
 

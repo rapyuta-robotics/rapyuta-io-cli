@@ -84,10 +84,10 @@ def create_disk(
         client.create_disk(payload)
         client.poll_disk(disk_name)
         spinner.text = click.style(
-            "Disk {} created successfully.".format(disk_name), fg=Colors.GREEN
+            f"Disk {disk_name} created successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to create disk: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to create disk: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

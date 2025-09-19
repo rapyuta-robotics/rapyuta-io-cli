@@ -67,6 +67,6 @@ def scp(source: str, destination: str, spinner: Yaspin = None) -> None:
         spinner.text = click.style("Files copied successfully", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to copy files: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to copy files: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

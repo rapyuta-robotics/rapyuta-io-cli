@@ -41,7 +41,7 @@ def wait_for_deployment(
         client = new_v2_client()
         deployment = client.poll_deployment(deployment_name)
         spinner.text = click.style(
-            "Phase: Succeeded Status: {}".format(deployment.status.status),
+            f"Phase: Succeeded Status: {deployment.status.status}",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)

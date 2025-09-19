@@ -42,7 +42,7 @@ def delete_oauth2_client(
     if not force:
         with spinner.hidden():
             click.confirm(
-                "Deleting OAuth2 Client {}".format(client_id),
+                f"Deleting OAuth2 Client {client_id}",
                 abort=True,
             )
 
@@ -53,8 +53,6 @@ def delete_oauth2_client(
         spinner.text = click.style("OAuth2 Client deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete OAuth2 Client: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete OAuth2 Client: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

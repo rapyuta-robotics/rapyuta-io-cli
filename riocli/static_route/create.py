@@ -40,13 +40,11 @@ def create_static_route(name: str, spinner=None) -> None:
         payload = {"metadata": {"name": name}}
         route = client.create_static_route(payload)
         spinner.text = click.style(
-            "Static Route created successfully for URL {}".format(route.spec.url),
+            f"Static Route created successfully for URL {route.spec.url}",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create static route: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create static route: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e

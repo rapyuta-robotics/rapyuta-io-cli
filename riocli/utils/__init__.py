@@ -42,7 +42,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
@@ -55,7 +55,7 @@ def inspect_with_format(obj: typing.Any, format_type: str):
         raise Exception("Invalid format")
 
 
-def dump_all_yaml(objs: typing.List):
+def dump_all_yaml(objs: list):
     """
     Dump multiple documents as YAML separated by triple dash (---)
     """
@@ -103,8 +103,8 @@ riocli_group_opts = {
 
 
 def random_string(letter_count, digit_count):
-    str1 = "".join((random.choice(string.ascii_letters) for x in range(letter_count)))
-    str1 += "".join((random.choice(string.digits) for x in range(digit_count)))
+    str1 = "".join(random.choice(string.ascii_letters) for x in range(letter_count))
+    str1 += "".join(random.choice(string.digits) for x in range(digit_count))
 
     sam_list = list(str1)  # it converts the string to list.
     random.shuffle(sam_list)  # It uses a random.shuffle() function to shuffle the string.
@@ -141,8 +141,8 @@ def is_valid_uuid(uuid_to_test, version=4):
 
 
 def tabulate_data(
-    data: typing.List[typing.List],
-    headers: typing.Union[typing.Iterable[str], str, None] = None,
+    data: list[list],
+    headers: typing.Iterable[str] | str | None = None,
     table_format: str = "simple",
 ):
     """
@@ -169,11 +169,11 @@ def is_pip_installation() -> bool:
     return "python" in sys.executable
 
 
-def check_for_updates(current_version: typing.Text) -> typing.Tuple[bool, typing.Text]:
+def check_for_updates(current_version: str) -> tuple[bool, str]:
     try:
         package_info = requests.get("https://pypi.org/pypi/rapyuta-io-cli/json").json()
     except Exception as e:
-        click.secho("Failed to fetch upstream package info: {}".format(e), fg=Colors.RED)
+        click.secho(f"Failed to fetch upstream package info: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
 
     upstream_version = package_info.get("info", {}).get("version")
@@ -199,7 +199,7 @@ def pip_install_cli(
     except ValueError as err:
         raise err
 
-    package_name = "rapyuta-io-cli=={}".format(version)
+    package_name = f"rapyuta-io-cli=={version}"
 
     # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
     command = [sys.executable, "-m", "pip", "install", package_name]
@@ -223,7 +223,7 @@ def update_appimage(version: str):
         response = requests.get(url)
         data = munchify(response.json())
     except Exception as e:
-        click.secho("Failed to fetch release info: {}".format(e), fg=Colors.RED)
+        click.secho(f"Failed to fetch release info: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
 
     asset = None
@@ -239,7 +239,7 @@ def update_appimage(version: str):
     try:
         response = requests.get(asset.browser_download_url)
     except Exception as e:
-        raise Exception("Failed to download the new version: {}".format(e))
+        raise Exception(f"Failed to download the new version: {e}")
 
     with TemporaryDirectory() as tmp:
         # Save the binary in a temp dir
@@ -252,7 +252,7 @@ def update_appimage(version: str):
             move(save_to, sys.executable)
         except OSError as e:
             click.secho(
-                "{} Please consider running as a root user.".format(Symbols.WARNING),
+                f"{Symbols.WARNING} Please consider running as a root user.",
                 fg=Colors.YELLOW,
             )
             raise e

@@ -17,7 +17,8 @@ import json
 import os
 import time
 from hashlib import md5
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 import magic
 from munch import Munch, munchify
@@ -28,24 +29,24 @@ from riocli.v2client.error import DeploymentNotRunning, ImagePullError, RetriesE
 from riocli.v2client.util import handle_server_errors, process_errors
 
 
-class Client(object):
+class Client:
     """
     v2 API Client
     """
 
     PROD_V2API_URL = "https://api.rapyuta.io"
 
-    def __init__(self, config, auth_token: str, project: Optional[str] = None):
+    def __init__(self, config, auth_token: str, project: str | None = None):
         self._config = config
         self._host = config.data.get("v2api_host", self.PROD_V2API_URL)
         self._project = project
-        self._token = "Bearer {}".format(auth_token)
+        self._token = f"Bearer {auth_token}"
 
     def _get_auth_header(
         self: Client,
         with_organization: bool = True,
         with_project: bool = True,
-        organization_guid: Optional[str] = None,
+        organization_guid: str | None = None,
     ) -> dict:
         headers = dict(Authorization=self._token)
 
@@ -67,14 +68,14 @@ class Client(object):
 
     def list_projects(
         self,
-        organization_guid: Optional[str] = None,
-        query: Optional[dict] = None,
+        organization_guid: str | None = None,
+        query: dict | None = None,
     ) -> Munch:
         """
         List all projects in an organization or where user have the access to in all organizations.
         """
 
-        url = "{}/v2/projects/".format(self._host)
+        url = f"{self._host}/v2/projects/"
         headers = self._get_auth_header(with_project=False, with_organization=False)
 
         params = {}
@@ -95,7 +96,7 @@ class Client(object):
         """
         Get a project by its GUID
         """
-        url = "{}/v2/projects/{}/".format(self._host, project_guid)
+        url = f"{self._host}/v2/projects/{project_guid}/"
         headers = self._get_auth_header(with_organization=False)
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -104,7 +105,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("projects: {}".format(err_msg))
+            raise Exception(f"projects: {err_msg}")
 
         return munchify(data)
 
@@ -112,7 +113,7 @@ class Client(object):
         """
         Create a new project
         """
-        url = "{}/v2/projects/".format(self._host)
+        url = f"{self._host}/v2/projects/"
         headers = self._get_auth_header(with_project=False)
 
         # Set the organizationguid header
@@ -128,7 +129,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("projects: {}".format(err_msg))
+            raise Exception(f"projects: {err_msg}")
 
         return munchify(data)
 
@@ -136,7 +137,7 @@ class Client(object):
         """
         Update an existing project
         """
-        url = "{}/v2/projects/{}/".format(self._host, project_guid)
+        url = f"{self._host}/v2/projects/{project_guid}/"
         headers = self._get_auth_header(with_project=False)
         response = (
             RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=spec)
@@ -147,7 +148,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("projects: {}".format(err_msg))
+            raise Exception(f"projects: {err_msg}")
 
         return munchify(data)
 
@@ -155,7 +156,7 @@ class Client(object):
         """
         Update an existing project's owner (creator)
         """
-        url = "{}/v2/projects/{}/owner/".format(self._host, project_guid)
+        url = f"{self._host}/v2/projects/{project_guid}/owner/"
         headers = self._get_auth_header(with_project=False)
         response = (
             RestClient(url)
@@ -169,7 +170,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("projects: {}".format(err_msg))
+            raise Exception(f"projects: {err_msg}")
 
         return munchify(data)
 
@@ -177,7 +178,7 @@ class Client(object):
         """
         Delete a project by its GUID
         """
-        url = "{}/v2/projects/{}/".format(self._host, project_guid)
+        url = f"{self._host}/v2/projects/{project_guid}/"
         headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -186,7 +187,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("projects: {}".format(err_msg))
+            raise Exception(f"projects: {err_msg}")
 
         return munchify(data)
 
@@ -195,7 +196,7 @@ class Client(object):
         """
         Get an organization by its GUID
         """
-        url = "{}/v2/organizations/{}/".format(self._host, organization_guid)
+        url = f"{self._host}/v2/organizations/{organization_guid}/"
         headers = self._get_auth_header(
             with_project=False, organization_guid=organization_guid
         )
@@ -206,7 +207,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("organizations: {}".format(err_msg))
+            raise Exception(f"organizations: {err_msg}")
 
         return munchify(data)
 
@@ -214,7 +215,7 @@ class Client(object):
         """
         Update an organization
         """
-        url = "{}/v2/organizations/{}/".format(self._host, organization_guid)
+        url = f"{self._host}/v2/organizations/{organization_guid}/"
         headers = self._get_auth_header(
             with_project=False, organization_guid=organization_guid
         )
@@ -227,13 +228,13 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("{}".format(err_msg))
+            raise Exception(f"{err_msg}")
 
         return munchify(data)
 
     # Users APIs
     def get_user(self) -> Munch:
-        url = "{}/v2/users/me/".format(self._host)
+        url = f"{self._host}/v2/users/me/"
         headers = self._get_auth_header(with_project=False, with_organization=False)
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -242,16 +243,16 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("users: {}".format(err_msg))
+            raise Exception(f"users: {err_msg}")
 
         return munchify(data)
 
     # ManagedService APIs
-    def list_providers(self) -> List:
+    def list_providers(self) -> list:
         """
         List all managedservice provider
         """
-        url = "{}/v2/managedservices/providers/".format(self._host)
+        url = f"{self._host}/v2/managedservices/providers/"
         headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -260,15 +261,15 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data.get("items", []))
 
-    def list_instances(self) -> List:
+    def list_instances(self) -> list:
         """
         List all managedservice instances in a project
         """
-        url = "{}/v2/managedservices/".format(self._host)
+        url = f"{self._host}/v2/managedservices/"
         headers = self._get_auth_header()
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
@@ -278,7 +279,7 @@ class Client(object):
         """
         Get a managedservice instance by instance_name
         """
-        url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
+        url = f"{self._host}/v2/managedservices/{instance_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -287,12 +288,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
-    def create_instance(self, instance: Dict) -> Munch:
-        url = "{}/v2/managedservices/".format(self._host)
+    def create_instance(self, instance: dict) -> Munch:
+        url = f"{self._host}/v2/managedservices/"
         headers = self._get_auth_header()
 
         response = (
@@ -307,12 +308,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
     def delete_instance(self, instance_name) -> Munch:
-        url = "{}/v2/managedservices/{}/".format(self._host, instance_name)
+        url = f"{self._host}/v2/managedservices/{instance_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -321,15 +322,15 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
-    def list_instance_bindings(self, instance_name: str, labels: str = "") -> List:
+    def list_instance_bindings(self, instance_name: str, labels: str = "") -> list:
         """
         List all managedservice instances in a project
         """
-        url = "{}/v2/managedservices/{}/bindings/".format(self._host, instance_name)
+        url = f"{self._host}/v2/managedservices/{instance_name}/bindings/"
         headers = self._get_auth_header()
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
@@ -339,7 +340,7 @@ class Client(object):
         """
         Create a new managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/".format(self._host, instance_name)
+        url = f"{self._host}/v2/managedservices/{instance_name}/bindings/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -353,7 +354,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
@@ -361,9 +362,7 @@ class Client(object):
         """
         Get a managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/{}/".format(
-            self._host, instance_name, binding_name
-        )
+        url = f"{self._host}/v2/managedservices/{instance_name}/bindings/{binding_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -372,7 +371,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
@@ -380,9 +379,7 @@ class Client(object):
         """
         Delete a managed service instance binding
         """
-        url = "{}/v2/managedservices/{}/bindings/{}/".format(
-            self._host, instance_name, binding_name
-        )
+        url = f"{self._host}/v2/managedservices/{instance_name}/bindings/{binding_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -391,7 +388,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("managedservice: {}".format(err_msg))
+            raise Exception(f"managedservice: {err_msg}")
 
         return munchify(data)
 
@@ -399,7 +396,7 @@ class Client(object):
         """
         List all static routes in a project
         """
-        url = "{}/v2/staticroutes/".format(self._host)
+        url = f"{self._host}/v2/staticroutes/"
         headers = self._get_auth_header()
 
         params = {}
@@ -412,7 +409,7 @@ class Client(object):
         """
         Get a static route by its name
         """
-        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        url = f"{self._host}/v2/staticroutes/{name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -421,7 +418,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("static routes: {}".format(err_msg))
+            raise Exception(f"static routes: {err_msg}")
 
         return munchify(data)
 
@@ -429,7 +426,7 @@ class Client(object):
         """
         Create a new static route
         """
-        url = "{}/v2/staticroutes/".format(self._host)
+        url = f"{self._host}/v2/staticroutes/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -443,7 +440,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("static routes: {}".format(err_msg))
+            raise Exception(f"static routes: {err_msg}")
 
         return munchify(data)
 
@@ -451,7 +448,7 @@ class Client(object):
         """
         Update the new static route
         """
-        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        url = f"{self._host}/v2/staticroutes/{name}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=sr)
@@ -462,7 +459,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("static routes: {}".format(err_msg))
+            raise Exception(f"static routes: {err_msg}")
 
         return munchify(data)
 
@@ -470,7 +467,7 @@ class Client(object):
         """
         Delete a static route by its name
         """
-        url = "{}/v2/staticroutes/{}/".format(self._host, name)
+        url = f"{self._host}/v2/staticroutes/{name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -479,7 +476,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("static routes: {}".format(err_msg))
+            raise Exception(f"static routes: {err_msg}")
 
         return munchify(data)
 
@@ -487,7 +484,7 @@ class Client(object):
         """
         Create a new secret
         """
-        url = "{}/v2/secrets/".format(self._host)
+        url = f"{self._host}/v2/secrets/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -500,7 +497,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("secret: {}".format(err_msg))
+            raise Exception(f"secret: {err_msg}")
 
         return munchify(data)
 
@@ -508,7 +505,7 @@ class Client(object):
         """
         Delete a secret
         """
-        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        url = f"{self._host}/v2/secrets/{secret_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
@@ -516,7 +513,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("secret: {}".format(err_msg))
+            raise Exception(f"secret: {err_msg}")
 
         return munchify(data)
 
@@ -524,7 +521,7 @@ class Client(object):
         """
         List all secrets in a project
         """
-        url = "{}/v2/secrets/".format(self._host)
+        url = f"{self._host}/v2/secrets/"
         headers = self._get_auth_header()
 
         params = {}
@@ -537,14 +534,14 @@ class Client(object):
         """
         Get secret by name
         """
-        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        url = f"{self._host}/v2/secrets/{secret_name}/"
         headers = self._get_auth_header()
 
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("secrets: {}".format(err_msg))
+            raise Exception(f"secrets: {err_msg}")
 
         return munchify(data)
 
@@ -552,7 +549,7 @@ class Client(object):
         """
         Update a secret
         """
-        url = "{}/v2/secrets/{}/".format(self._host, secret_name)
+        url = f"{self._host}/v2/secrets/{secret_name}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=spec)
@@ -562,19 +559,19 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("secret: {}".format(err_msg))
+            raise Exception(f"secret: {err_msg}")
 
         return munchify(data)
 
     # ConfigTrees APIs
     def list_config_trees(self) -> Munch:
-        url = "{}/v2/configtrees/".format(self._host)
+        url = f"{self._host}/v2/configtrees/"
         headers = self._get_auth_header()
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client)
 
     def create_config_tree(self, tree_spec: dict) -> Munch:
-        url = "{}/v2/configtrees/".format(self._host)
+        url = f"{self._host}/v2/configtrees/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -587,12 +584,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def delete_config_tree(self, tree_name: str) -> Munch:
-        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        url = f"{self._host}/v2/configtrees/{tree_name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
@@ -600,19 +597,19 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def get_config_tree(
         self,
         tree_name: str,
-        rev_id: Optional[str] = None,
+        rev_id: str | None = None,
         include_data: bool = False,
-        filter_content_types: Optional[List[str]] = None,
-        filter_prefixes: Optional[List[str]] = None,
+        filter_content_types: list[str] | None = None,
+        filter_prefixes: list[str] | None = None,
     ) -> Munch:
-        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        url = f"{self._host}/v2/configtrees/{tree_name}/"
         query = {
             "includeData": include_data,
             "contentTypes": filter_content_types,
@@ -632,12 +629,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def set_revision_config_tree(self, tree_name: str, spec: dict) -> Munch:
-        url = "{}/v2/configtrees/{}/".format(self._host, tree_name)
+        url = f"{self._host}/v2/configtrees/{tree_name}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url).method(HttpMethod.PUT).headers(headers).execute(payload=spec)
@@ -647,18 +644,18 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def list_config_tree_revisions(self, tree_name: str, labels: str = "") -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/"
         headers = self._get_auth_header()
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client, params={"labelSelector": labels})
 
     def initialize_config_tree_revision(self, tree_name: str) -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/".format(self._host, tree_name)
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.POST).headers(headers).execute()
         handle_server_errors(response)
@@ -666,14 +663,14 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def commit_config_tree_revision(
         self, tree_name: str, rev_id: str, payload: dict
     ) -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/{rev_id}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -686,12 +683,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def store_keys_in_revision(self, tree_name: str, rev_id: str, payload: Any) -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/{}/".format(self._host, tree_name, rev_id)
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/{rev_id}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -704,16 +701,14 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def store_key_in_revision(
         self, tree_name: str, rev_id: str, key: str, value: str, perms: int = 644
     ) -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(
-            self._host, tree_name, rev_id, key
-        )
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/{rev_id}/{key}"
         headers = self._get_auth_header()
         headers["Content-Type"] = "kv"
         headers["X-Checksum"] = md5(str(value).encode("utf-8")).hexdigest()
@@ -725,7 +720,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
@@ -737,9 +732,7 @@ class Client(object):
 
         content_type = magic.from_file(file_path, mime=True)
 
-        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(
-            self._host, tree_name, rev_id, key
-        )
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/{rev_id}/{key}"
         headers = self._get_auth_header()
         headers["Content-Type"] = content_type
         headers["X-Permissions"] = perms
@@ -765,14 +758,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def delete_key_in_revision(self, tree_name: str, rev_id: str, key: str) -> Munch:
-        url = "{}/v2/configtrees/{}/revisions/{}/{}".format(
-            self._host, tree_name, rev_id, key
-        )
+        url = f"{self._host}/v2/configtrees/{tree_name}/revisions/{rev_id}/{key}"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
@@ -780,12 +771,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("configtree: {}".format(err_msg))
+            raise Exception(f"configtree: {err_msg}")
 
         return munchify(data)
 
     def _walk_pages(
-        self, c: RestClient, params: dict = None, limit: Optional[int] = None
+        self, c: RestClient, params: dict = None, limit: int | None = None
     ) -> Munch:
         offset, result = 0, []
 
@@ -801,7 +792,7 @@ class Client(object):
             data = response.json()
             if not response.ok:
                 err_msg = data.get("error")
-                raise Exception("listing: {}".format(err_msg))
+                raise Exception(f"listing: {err_msg}")
 
             items = data.get("items", [])
             if not items:
@@ -816,7 +807,7 @@ class Client(object):
         """
         List all packages in a project
         """
-        url = "{}/v2/packages/".format(self._host)
+        url = f"{self._host}/v2/packages/"
         headers = self._get_auth_header()
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
@@ -826,7 +817,7 @@ class Client(object):
         """
         Create a new package
         """
-        url = "{}/v2/packages/".format(self._host)
+        url = f"{self._host}/v2/packages/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -839,7 +830,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("package: {}".format(err_msg))
+            raise Exception(f"package: {err_msg}")
 
         return munchify(data)
 
@@ -851,7 +842,7 @@ class Client(object):
         """
         List all packages in a project
         """
-        url = "{}/v2/packages/{}/".format(self._host, name)
+        url = f"{self._host}/v2/packages/{name}/"
         headers = self._get_auth_header()
 
         params = {}
@@ -867,7 +858,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("package: {}".format(err_msg))
+            raise Exception(f"package: {err_msg}")
 
         return munchify(data)
 
@@ -875,7 +866,7 @@ class Client(object):
         """
         Delete a secret
         """
-        url = "{}/v2/packages/{}/".format(self._host, package_name)
+        url = f"{self._host}/v2/packages/{package_name}/"
         headers = self._get_auth_header()
 
         params = {}
@@ -893,7 +884,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("package: {}".format(err_msg))
+            raise Exception(f"package: {err_msg}")
 
         return munchify(data)
 
@@ -904,7 +895,7 @@ class Client(object):
         """
         List all networks in a project
         """
-        url = "{}/v2/networks/".format(self._host)
+        url = f"{self._host}/v2/networks/"
         headers = self._get_auth_header()
 
         params = {}
@@ -926,7 +917,7 @@ class Client(object):
             data = json.loads(response.text)
             if not response.ok:
                 err_msg = data.get("error")
-                raise Exception("networks: {}".format(err_msg))
+                raise Exception(f"networks: {err_msg}")
             networks = data.get("items", [])
             if not networks:
                 break
@@ -939,7 +930,7 @@ class Client(object):
         """
         Create a new network
         """
-        url = "{}/v2/networks/".format(self._host)
+        url = f"{self._host}/v2/networks/"
         headers = self._get_auth_header()
         response = (
             RestClient(url)
@@ -953,7 +944,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("network: {}".format(err_msg))
+            raise Exception(f"network: {err_msg}")
 
         return munchify(data)
 
@@ -965,7 +956,7 @@ class Client(object):
         """
         get a network in a project
         """
-        url = "{}/v2/networks/{}/".format(self._host, name)
+        url = f"{self._host}/v2/networks/{name}/"
         headers = self._get_auth_header()
 
         params = {}
@@ -985,7 +976,7 @@ class Client(object):
 
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("network: {}".format(err_msg))
+            raise Exception(f"network: {err_msg}")
 
         return munchify(data)
 
@@ -997,7 +988,7 @@ class Client(object):
         """
         Delete a secret
         """
-        url = "{}/v2/networks/{}/".format(self._host, network_name)
+        url = f"{self._host}/v2/networks/{network_name}/"
         headers = self._get_auth_header()
 
         params = {}
@@ -1015,7 +1006,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("network: {}".format(err_msg))
+            raise Exception(f"network: {err_msg}")
 
         return munchify(data)
 
@@ -1024,7 +1015,7 @@ class Client(object):
         name: str,
         retry_count: int = 50,
         sleep_interval: int = 6,
-        ready_phases: List[str] = None,
+        ready_phases: list[str] = None,
     ) -> Munch:
         if ready_phases is None:
             ready_phases = []
@@ -1043,15 +1034,13 @@ class Client(object):
                     "DEP_E153" in errors
                 ):  # DEP_E153 (image-pull error) will persist across retries
                     raise ImagePullError(
-                        "Network not running. Phase: Provisioning Status: {}".format(
-                            status.phase
-                        )
+                        f"Network not running. Phase: Provisioning Status: {status.phase}"
                     )
             elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
                 return network
             elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
                 raise DeploymentNotRunning(
-                    "Network not running. Phase: Stopped  Status: {}".format(status.phase)
+                    f"Network not running. Phase: Stopped  Status: {status.phase}"
                 )
 
             time.sleep(sleep_interval)
@@ -1072,7 +1061,7 @@ class Client(object):
         """
         List all deployments in a project
         """
-        url = "{}/v2/deployments/".format(self._host)
+        url = f"{self._host}/v2/deployments/"
         headers = self._get_auth_header()
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
         return self._walk_pages(client, params=query)
@@ -1081,7 +1070,7 @@ class Client(object):
         """
         Create a new deployment
         """
-        url = "{}/v2/deployments/".format(self._host)
+        url = f"{self._host}/v2/deployments/"
         headers = self._get_auth_header()
 
         deployment["metadata"]["projectGUID"] = headers["project"]
@@ -1097,12 +1086,12 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("deployment: {}".format(err_msg))
+            raise Exception(f"deployment: {err_msg}")
 
         return munchify(data)
 
     def get_deployment(self, name: str):
-        url = "{}/v2/deployments/{}/".format(self._host, name)
+        url = f"{self._host}/v2/deployments/{name}/"
         headers = self._get_auth_header()
 
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
@@ -1113,7 +1102,7 @@ class Client(object):
 
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("deployment: {}".format(err_msg))
+            raise Exception(f"deployment: {err_msg}")
 
         return munchify(data)
 
@@ -1121,7 +1110,7 @@ class Client(object):
         """
         Update a deployment
         """
-        url = "{}/v2/deployments/{}/".format(self._host, name)
+        url = f"{self._host}/v2/deployments/{name}/"
         headers = self._get_auth_header()
         response = (
             RestClient(url).method(HttpMethod.PATCH).headers(headers).execute(payload=dep)
@@ -1130,7 +1119,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("deployment: {}".format(err_msg))
+            raise Exception(f"deployment: {err_msg}")
 
         return munchify(data)
 
@@ -1138,7 +1127,7 @@ class Client(object):
         """
         Delete a deployment
         """
-        url = "{}/v2/deployments/{}/".format(self._host, name)
+        url = f"{self._host}/v2/deployments/{name}/"
         headers = self._get_auth_header()
         params = {}
         params.update(query or {})
@@ -1147,7 +1136,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("deployment: {}".format(err_msg))
+            raise Exception(f"deployment: {err_msg}")
 
         return munchify(data)
 
@@ -1156,7 +1145,7 @@ class Client(object):
         name: str,
         retry_count: int = 50,
         sleep_interval: int = 6,
-        ready_phases: List[str] = None,
+        ready_phases: list[str] = None,
     ) -> Munch:
         if ready_phases is None:
             ready_phases = []
@@ -1175,17 +1164,13 @@ class Client(object):
                     "DEP_E153" in errors
                 ):  # DEP_E153 (image-pull error) will persist across retries
                     raise ImagePullError(
-                        "Deployment not running. Phase: Provisioning Status: {}".format(
-                            status.phase
-                        )
+                        f"Deployment not running. Phase: Provisioning Status: {status.phase}"
                     )
             elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
                 return deployment
             elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
                 raise DeploymentNotRunning(
-                    "Deployment not running. Phase: Stopped  Status: {}".format(
-                        status.phase
-                    )
+                    f"Deployment not running. Phase: Stopped  Status: {status.phase}"
                 )
 
             time.sleep(sleep_interval)
@@ -1208,9 +1193,7 @@ class Client(object):
         executable: str,
         replica: int = 0,
     ):
-        url = "{}/v2/deployments/{}/logs/?replica={}&executable={}".format(
-            self._host, name, replica, executable
-        )
+        url = f"{self._host}/v2/deployments/{name}/logs/?replica={replica}&executable={executable}"
         headers = self._get_auth_header()
 
         curl = 'curl -H "project: {}" -H "Authorization: {}" "{}"'.format(
@@ -1226,7 +1209,7 @@ class Client(object):
         """
         List all disks in a project
         """
-        url = "{}/v2/disks/".format(self._host)
+        url = f"{self._host}/v2/disks/"
         headers = self._get_auth_header()
 
         client = RestClient(url).method(HttpMethod.GET).headers(headers)
@@ -1236,7 +1219,7 @@ class Client(object):
         """
         Get a Disk by its name
         """
-        url = "{}/v2/disks/{}/".format(self._host, name)
+        url = f"{self._host}/v2/disks/{name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -1245,7 +1228,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("disks: {}".format(err_msg))
+            raise Exception(f"disks: {err_msg}")
 
         return munchify(data)
 
@@ -1253,7 +1236,7 @@ class Client(object):
         """
         Create a new disk
         """
-        url = "{}/v2/disks/".format(self._host)
+        url = f"{self._host}/v2/disks/"
         headers = self._get_auth_header()
         response = (
             RestClient(url).method(HttpMethod.POST).headers(headers).execute(payload=disk)
@@ -1264,7 +1247,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("disks: {}".format(err_msg))
+            raise Exception(f"disks: {err_msg}")
 
         return munchify(data)
 
@@ -1272,7 +1255,7 @@ class Client(object):
         """
         Delete a disk by its name
         """
-        url = "{}/v2/disks/{}/".format(self._host, name)
+        url = f"{self._host}/v2/disks/{name}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -1281,7 +1264,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("disks: {}".format(err_msg))
+            raise Exception(f"disks: {err_msg}")
 
         return munchify(data)
 
@@ -1302,23 +1285,19 @@ class Client(object):
             ]:
                 return disk
             elif status.status == DiskStatusConstants.DiskStatusFailed.value:
-                raise DeploymentNotRunning(
-                    "Disk not running. Status: {}".format(status.status)
-                )
+                raise DeploymentNotRunning(f"Disk not running. Status: {status.status}")
 
             time.sleep(sleep_interval)
             disk = self.get_disk(name)
             status = disk.status
 
         raise RetriesExhausted(
-            "Retries exhausted: Tried {} times with {}s interval. Disk: status={}".format(
-                retry_count, sleep_interval, status.status
-            )
+            f"Retries exhausted: Tried {retry_count} times with {sleep_interval}s interval. Disk: status={status.status}"
         )
 
     # Devices
     def get_device_daemons(self, device_guid: str) -> Munch:
-        url = "{}/v2/devices/daemons/{}/".format(self._host, device_guid)
+        url = f"{self._host}/v2/devices/daemons/{device_guid}/"
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -1327,16 +1306,16 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("device daemons: {}".format(err_msg))
+            raise Exception(f"device daemons: {err_msg}")
 
         return munchify(data)
 
     # OAuth2 Clients
-    def list_oauth2_clients(self, query: Optional[dict] = None) -> Munch:
+    def list_oauth2_clients(self, query: dict | None = None) -> Munch:
         """
         List all OAuth2 Clients in the organization.
         """
-        url = "{}/v2/oauth2/clients/".format(self._host)
+        url = f"{self._host}/v2/oauth2/clients/"
         headers = self._get_auth_header(with_project=False)
         params = query or dict()
 
@@ -1347,7 +1326,7 @@ class Client(object):
         """
         Get an OAuth2 Client by its ID
         """
-        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        url = f"{self._host}/v2/oauth2/clients/{client_id}/"
         headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.GET).headers(headers).execute()
 
@@ -1356,7 +1335,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("oauth2 client: {}".format(err_msg))
+            raise Exception(f"oauth2 client: {err_msg}")
 
         return munchify(data)
 
@@ -1364,7 +1343,7 @@ class Client(object):
         """
         Create a new OAuth2 Client.
         """
-        url = "{}/v2/oauth2/clients/".format(self._host)
+        url = f"{self._host}/v2/oauth2/clients/"
         headers = self._get_auth_header(with_project=False)
         response = (
             RestClient(url)
@@ -1378,7 +1357,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("oauth2 client: {}".format(err_msg))
+            raise Exception(f"oauth2 client: {err_msg}")
 
         return munchify(data)
 
@@ -1386,7 +1365,7 @@ class Client(object):
         """
         Create a new OAuth2 Client.
         """
-        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        url = f"{self._host}/v2/oauth2/clients/{client_id}/"
         headers = self._get_auth_header(with_project=False)
         response = (
             RestClient(url)
@@ -1400,14 +1379,14 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("oauth2 client: {}".format(err_msg))
+            raise Exception(f"oauth2 client: {err_msg}")
 
         return munchify(data)
 
     def update_oauth2_client_uris(
-        self, client_id: str, payload: dict[str, Optional[Sequence[str]]]
+        self, client_id: str, payload: dict[str, Sequence[str] | None]
     ) -> Munch:
-        url = "{}/v2/oauth2/clients/{}/uris/".format(self._host, client_id)
+        url = f"{self._host}/v2/oauth2/clients/{client_id}/uris/"
         headers = self._get_auth_header(with_project=False)
         response = (
             RestClient(url)
@@ -1421,7 +1400,7 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("oauth2 client: {}".format(err_msg))
+            raise Exception(f"oauth2 client: {err_msg}")
 
         return munchify(data)
 
@@ -1429,7 +1408,7 @@ class Client(object):
         """
         Delete an OAuth2 client by its id.
         """
-        url = "{}/v2/oauth2/clients/{}/".format(self._host, client_id)
+        url = f"{self._host}/v2/oauth2/clients/{client_id}/"
         headers = self._get_auth_header(with_project=False)
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
 
@@ -1438,6 +1417,6 @@ class Client(object):
         data = json.loads(response.text)
         if not response.ok:
             err_msg = data.get("error")
-            raise Exception("oauth2 client: {}".format(err_msg))
+            raise Exception(f"oauth2 client: {err_msg}")
 
         return munchify(data)

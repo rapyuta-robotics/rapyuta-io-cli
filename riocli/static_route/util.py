@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import re
-from typing import List
 
 from munch import Munch
 
@@ -39,7 +38,7 @@ def fetch_static_routes(
     client: Client,
     route_name_or_regex: str,
     include_all: bool,
-) -> List[Munch]:
+) -> list[Munch]:
     routes = client.list_static_routes()
     result = []
     for route in routes:
@@ -49,7 +48,7 @@ def fetch_static_routes(
             or route_name_or_regex == route.metadata.guid
             or (
                 route_name_or_regex not in route.metadata.name
-                and re.search(r"^{}$".format(route_name_or_regex), route.metadata.name)
+                and re.search(rf"^{route_name_or_regex}$", route.metadata.name)
             )
         ):
             result.append(route)
@@ -57,7 +56,7 @@ def fetch_static_routes(
     return result
 
 
-def print_routes_for_confirmation(routes: List[Munch]):
+def print_routes_for_confirmation(routes: list[Munch]):
     data = []
     for route in routes:
         data.append(

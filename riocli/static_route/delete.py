@@ -99,9 +99,7 @@ def delete_static_route(
     try:
         routes = fetch_static_routes(client, route_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete static route(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete static route(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -131,9 +129,7 @@ def delete_static_route(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -150,12 +146,10 @@ def delete_static_route(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Static route(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Static route(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete static route(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete static route(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

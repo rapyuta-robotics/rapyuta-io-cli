@@ -73,7 +73,7 @@ def select_organization(
 
     if ctx.obj.data.get("organization_id") == organization_guid:
         click.secho(
-            "You are already in the '{}' organization".format(organization_name),
+            f"You are already in the '{organization_name}' organization",
             fg=Colors.GREEN,
         )
         return
@@ -88,10 +88,8 @@ def select_organization(
         ctx.obj.data["project_id"] = ""
         ctx.obj.data["project_name"] = ""
         click.secho(
-            "Your organization has been set to '{}'\n"
-            "Please set your project with `rio project select PROJECT_NAME`".format(
-                organization_name
-            ),
+            f"Your organization has been set to '{organization_name}'\n"
+            "Please set your project with `rio project select PROJECT_NAME`",
             fg=Colors.GREEN,
         )
 

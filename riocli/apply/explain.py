@@ -77,7 +77,5 @@ def explain(resource: str, templates: str = None) -> None:
                 click.echo_via_pager(f.readlines())
                 raise SystemExit(0)
 
-    click.secho(
-        '{} Resource "{}" not found'.format(Symbols.ERROR, resource), fg=Colors.RED
-    )
+    click.secho(f'{Symbols.ERROR} Resource "{resource}" not found', fg=Colors.RED)
     raise SystemExit(1)

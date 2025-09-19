@@ -89,7 +89,7 @@ def dockercache(
     try:
         project = client.get_project(project_guid)
     except Exception as e:
-        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -114,6 +114,6 @@ def dockercache(
         spinner.text = click.style("Done", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e

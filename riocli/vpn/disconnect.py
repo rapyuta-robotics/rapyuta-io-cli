@@ -46,8 +46,8 @@ def disconnect(ctx: click.Context):
 
         if is_tailscale_up() and not stop_tailscale():
             click.secho(
-                "{} Failed to disconnect from VPN. "
-                "Although, trying again may work.".format(Symbols.ERROR),
+                f"{Symbols.ERROR} Failed to disconnect from VPN. "
+                "Although, trying again may work.",
                 fg=Colors.RED,
             )
             raise SystemExit(1)
@@ -61,9 +61,7 @@ def disconnect(ctx: click.Context):
             )
 
         click.secho(
-            "{} You have been disconnected from the project's VPN".format(
-                Symbols.SUCCESS
-            ),
+            f"{Symbols.SUCCESS} You have been disconnected from the project's VPN",
             fg=Colors.GREEN,
         )
     except Exception as e:

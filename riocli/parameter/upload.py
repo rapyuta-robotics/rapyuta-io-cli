@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -59,7 +58,7 @@ from riocli.parameter.utils import filter_trees, display_trees
 @click.argument("path", type=click.Path(exists=True))
 def upload_configurations(
     path: str,
-    tree_names: typing.Tuple[str] = None,
+    tree_names: tuple[str] = None,
     delete_existing: bool = False,
     silent: bool = False,
 ) -> None:
@@ -95,12 +94,12 @@ def upload_configurations(
     try:
         trees = filter_trees(path, tree_names)
     except Exception as e:
-        click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
         raise SystemExit(1)
 
     if not trees:
         click.secho(
-            "{} No configuration trees to upload.".format(Symbols.INFO),
+            f"{Symbols.INFO} No configuration trees to upload.",
             fg=Colors.BRIGHT_CYAN,
         )
         return

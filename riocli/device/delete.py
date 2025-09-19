@@ -95,7 +95,7 @@ def delete_device(
     try:
         devices = fetch_devices(client, device_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style("Failed to delete device(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete device(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -149,7 +149,7 @@ def delete_device(
 
         if failed_count == 0 and success_count == len(devices):
             spinner_text = click.style(
-                "{} device(s) deleted successfully.".format(len(devices)), Colors.GREEN
+                f"{len(devices)} device(s) deleted successfully.", Colors.GREEN
             )
             spinner_char = click.style(Symbols.SUCCESS, Colors.GREEN)
         elif success_count == 0 and failed_count == len(devices):
@@ -157,7 +157,7 @@ def delete_device(
             spinner_char = click.style(Symbols.WARNING, Colors.YELLOW)
         else:
             spinner_text = click.style(
-                "{}/{} devices deleted successfully".format(success_count, len(devices)),
+                f"{success_count}/{len(devices)} devices deleted successfully",
                 Colors.YELLOW,
             )
             spinner_char = click.style(Symbols.WARNING, Colors.YELLOW)
@@ -166,7 +166,7 @@ def delete_device(
         spinner.ok(spinner_char)
         raise SystemExit(failed_count)
     except Exception as e:
-        spinner.text = click.style("Failed to delete devices: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete devices: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -190,6 +190,6 @@ def get_error_message(response: requests.models.Response, name: str) -> str:
         error = r.get("response", {}).get("error")
 
         if "deployments" in error:
-            return "Device {0} has running deployments.".format(name)
+            return f"Device {name} has running deployments."
 
     return ""

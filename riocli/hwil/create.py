@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -120,7 +119,7 @@ def create_device(
         raise SystemExit(1)
 
 
-def prepare_device_labels_from_context(ctx: click.Context) -> typing.Dict:
+def prepare_device_labels_from_context(ctx: click.Context) -> dict:
     user_email = ctx.obj.data.get("email_id", "")
     if user_email:
         user_email = user_email.split("@")[0]

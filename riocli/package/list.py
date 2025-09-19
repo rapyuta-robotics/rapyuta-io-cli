@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 
@@ -42,7 +41,7 @@ def list_packages(filter_word: str) -> None:
 
 
 def _display_package_list(
-    packages: typing.List[Package],
+    packages: list[Package],
     filter_word: str,
     show_header: bool = True,
     truncate_limit: int = 48,

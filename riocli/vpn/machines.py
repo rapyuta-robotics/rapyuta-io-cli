@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable
+from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -97,11 +97,11 @@ def register_machine(
             labels=labels,
         )
         spinner.text = click.style(
-            "Machine {} registered successfully.".format(name), fg=Colors.GREEN
+            f"Machine {name} registered successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to register: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to register: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -120,11 +120,11 @@ def deregister_machine(name: str, spinner: Yaspin) -> None:
         client = new_v2_client()
         client.delete_instance_binding("rio-internal-headscale", name)
         spinner.text = click.style(
-            "Machine {} de-registered successfully.".format(name), fg=Colors.GREEN
+            f"Machine {name} de-registered successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to de-register: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to de-register: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -145,7 +145,7 @@ def sanitize_node_key(node_key: str) -> str:
     if node_key.startswith("nodekey:"):
         return node_key
 
-    return "nodekey:{}".format(node_key)
+    return f"nodekey:{node_key}"
 
 
 machines.add_command(register_machine)

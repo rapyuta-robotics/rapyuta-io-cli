@@ -14,10 +14,9 @@
 
 import glob
 import os
-import typing
 from datetime import datetime
 from shutil import get_terminal_size
-from typing import Iterable
+from collections.abc import Iterable
 
 import click
 import jinja2
@@ -69,7 +68,7 @@ def get_model(data: dict) -> Model:
 
     klass = KIND_TO_CLASS.get(str(kind).lower(), None)
     if klass is None:
-        raise Exception("invalid kind {}".format(kind))
+        raise Exception(f"invalid kind {kind}")
 
     return klass
 
@@ -143,7 +142,7 @@ def message_with_prompt(
     printer(text)
 
 
-def print_resolved_objects(objects: typing.Dict) -> None:
+def print_resolved_objects(objects: dict) -> None:
     data = []
     for o in objects:
         kind, name = o.split(":")
@@ -203,10 +202,10 @@ def print_context(ctx: click.Context):
     project_name = config.data.get("project_name")
 
     click.secho(
-        "{} Organization: {} ({})".format(Symbols.INFO, org_name, org_guid),
+        f"{Symbols.INFO} Organization: {org_name} ({org_guid})",
         fg=Colors.YELLOW,
     )
     click.secho(
-        "{} Project: {} ({})".format(Symbols.INFO, project_name, project_guid),
+        f"{Symbols.INFO} Project: {project_name} ({project_guid})",
         fg=Colors.YELLOW,
     )

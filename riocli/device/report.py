@@ -99,10 +99,10 @@ def report_device(
             public_url = generate_shared_url(
                 device_guid, response["response"]["data"]["request_uuid"], expiry
             )
-            click.secho("\nURL: {}".format(public_url.url), fg=Colors.GREEN)
+            click.secho(f"\nURL: {public_url.url}", fg=Colors.GREEN)
 
         spinner.text = click.style("Device reported successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to report device: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to report device: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)

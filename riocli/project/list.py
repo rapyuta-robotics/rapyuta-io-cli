@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 import munch
@@ -52,7 +51,7 @@ def list_projects(
     organization_guid: str = None,
     organization_name: str = None,
     organization_short_id: str = None,
-    labels: typing.List[str] = (),
+    labels: list[str] = (),
     wide: bool = False,
 ) -> None:
     """List all the projects you are a part of in current organization.
@@ -89,7 +88,7 @@ def list_projects(
 
 
 def _display_project_list(
-    projects: typing.List[munch.Munch],
+    projects: list[munch.Munch],
     current: str = None,
     show_header: bool = True,
     wide: bool = False,

@@ -21,7 +21,6 @@ import os.path
 from difflib import unified_diff
 from filecmp import dircmp
 from tempfile import TemporaryDirectory
-from typing import Tuple
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -46,7 +45,7 @@ from riocli.parameter.utils import filter_trees
     help="Tree names to fetch",
 )
 @click.argument("path", type=click.Path(exists=True), required=False)
-def diff_configurations(path: str, tree_names: Tuple = None) -> None:
+def diff_configurations(path: str, tree_names: tuple = None) -> None:
     """Diff between the local and cloud configuration trees.
 
     You can specify the tree names to diff using the ``--tree-names`` flag.
@@ -98,10 +97,10 @@ def diff_tree(left: str, right: str) -> None:
 
 def diff_file(left: str, right: str):
     try:
-        with open(left, "r", encoding="utf-8") as left_f:
+        with open(left, encoding="utf-8") as left_f:
             left_lines = left_f.readlines()
 
-        with open(right, "r", encoding="utf-8") as right_f:
+        with open(right, encoding="utf-8") as right_f:
             right_lines = right_f.readlines()
     except UnicodeDecodeError:
         changed_file(left, right, binary=True)
@@ -122,8 +121,8 @@ def changed_file(
     right_only: bool = False,
     binary: bool = False,
 ):
-    click.secho("--- {}".format(left))
-    click.secho("+++ {}".format(right))
+    click.secho(f"--- {left}")
+    click.secho(f"+++ {right}")
 
     if left_only:
         click.secho("deleted file")

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 import click
 from munch import Munch
@@ -23,8 +23,8 @@ ROS_MASTER_URI = "http://127.0.0.1:1234"
 @with_spinner(text="Converting...", timer=True)
 def populate(
     ctx: click.Context,
-    deployments: Dict[str, dict],
-    packages: Dict[str, dict],
+    deployments: dict[str, dict],
+    packages: dict[str, dict],
     *args,
     **kwargs,
 ) -> DockerCompose:
@@ -39,7 +39,7 @@ def populate(
         DockerCompose object representing the final configuration.
     """
     spinner = kwargs.get("spinner")
-    services: Dict[str, Service] = {}
+    services: dict[str, Service] = {}
 
     # Process deployments and create services
     for deployment in deployments.values():
@@ -84,9 +84,9 @@ def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:
 def _process_deployment_services(
     ctx: click.Context,
     deployment: dict,
-    deployments: Dict[str, dict],
-    packages: Dict[str, dict],
-    services: Dict[str, Service],
+    deployments: dict[str, dict],
+    packages: dict[str, dict],
+    services: dict[str, Service],
 ) -> None:
     """Process a single deployment and add its services to the services dictionary."""
     dep_name = deployment.metadata.name
@@ -127,9 +127,9 @@ def create_service(
     dep_name: str,
     exe: dict,
     restart_policy: str,
-    env: Dict[str, str],
-    volume_mounts: List[str],
-    depends_on: Dict[str, DependsCondition],
+    env: dict[str, str],
+    volume_mounts: list[str],
+    depends_on: dict[str, DependsCondition],
 ) -> Service:
     """
     Creates a Docker Compose Service object for an executable.
@@ -167,7 +167,7 @@ def create_service(
     )
 
 
-def build_volume_mounts(deployment: dict) -> List[str]:
+def build_volume_mounts(deployment: dict) -> list[str]:
     """
     Constructs a list of volume mount strings for a given deployment.
     Includes default volumes and custom volumes specified in the deployment.
@@ -196,7 +196,7 @@ def build_volume_mounts(deployment: dict) -> List[str]:
     return service_volumes
 
 
-def populate_command(exe: dict) -> Optional[List[str]]:
+def populate_command(exe: dict) -> list[str] | None:
     """
     Constructs the command to run for a container from the executable definition.
     If runAsBash is True, wraps the command in a shell invocation.
@@ -213,7 +213,7 @@ def populate_command(exe: dict) -> Optional[List[str]]:
         return cmd_raw if isinstance(cmd_raw, list) else [cmd_raw]
 
 
-def find_package(packages: Dict[str, dict], name: str, version: str) -> dict:
+def find_package(packages: dict[str, dict], name: str, version: str) -> dict:
     """
     Finds a package by name and version in the provided dictionary.
     """
@@ -228,8 +228,8 @@ def find_package(packages: Dict[str, dict], name: str, version: str) -> dict:
 
 
 def merge_env_vars(
-    ctx: click.Context, *env_vars_lists: List[Dict[str, Any]]
-) -> Dict[str, str]:
+    ctx: click.Context, *env_vars_lists: list[dict[str, Any]]
+) -> dict[str, str]:
     """
     Efficiently merges multiple lists of environment variable definitions into a single dictionary.
     Later variables override earlier ones with the same name.
@@ -254,10 +254,10 @@ def merge_env_vars(
 
 def populate_depends_on(
     deployment: dict,
-    deployments: Dict[str, dict],
-    packages: Dict[str, dict],
+    deployments: dict[str, dict],
+    packages: dict[str, dict],
     ros_enabled: bool = False,
-) -> Dict[str, DependsCondition]:
+) -> dict[str, DependsCondition]:
     """
     Builds the depends_on relationships for a Docker Compose service
     based on other deployments it references.
@@ -291,7 +291,7 @@ def populate_depends_on(
     return depends_on
 
 
-def populate_healthcheck(exe: dict) -> Optional[HealthCheck]:
+def populate_healthcheck(exe: dict) -> HealthCheck | None:
     """
     Generates a Docker Compose healthcheck configuration from a livenessProbe.
     """

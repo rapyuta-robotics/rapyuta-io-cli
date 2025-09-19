@@ -87,14 +87,14 @@ class UserGroup(Model):
         except Exception as e:
             raise e
 
-    def _sanitize(self) -> typing.Dict:
+    def _sanitize(self) -> dict:
         u = unmunchify(self)
         u.pop("project_name_to_guid_map", None)
         u.pop("user_email_to_guid_map", None)
 
         return u
 
-    def _modify_payload(self, group: typing.Dict) -> typing.Dict:
+    def _modify_payload(self, group: dict) -> dict:
         group["spec"]["userGroupRoleInProjects"] = []
         for entity in ("members", "admins"):
             for u in group["spec"].get(entity, []):
@@ -121,7 +121,7 @@ class UserGroup(Model):
         return group
 
     @staticmethod
-    def _generate_update_payload(old: typing.Any, new: typing.Dict) -> typing.Dict:
+    def _generate_update_payload(old: typing.Any, new: dict) -> dict:
         payload = {
             "name": old.name,
             "guid": old.guid,

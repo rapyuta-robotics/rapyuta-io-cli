@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
@@ -36,7 +35,7 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Removing users...")
 def remove_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     spinner: Yaspin,
 ) -> None:
     """Remove a user from the current organization."""
@@ -50,7 +49,7 @@ def remove_user(
             validate_email(email)
         except EmailNotValidError as e:
             spinner.text = click.style(
-                "{} is not a valid email address".format(email), fg=Colors.RED
+                f"{email} is not a valid email address", fg=Colors.RED
             )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
@@ -76,12 +75,12 @@ def remove_user(
         spinner.text = click.style("Users removed successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to remove users: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to remove users: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def remove_user_emails(organization: Munch, user_emails: List[str]) -> bool:
+def remove_user_emails(organization: Munch, user_emails: list[str]) -> bool:
     update = False
     updated_users = []
 
