@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -56,7 +55,7 @@ def execute_command(
     exec_name: str,
     run_async: bool,
     deployment_name: str,
-    command: typing.List[str],
+    command: list[str],
 ) -> None:
     """Execute a command on a device deployment
 
@@ -123,7 +122,7 @@ def execute_command(
             else:
                 exec_name = show_selection(executables, "\nSelect executable")
 
-        with Spinner(text="Executing command `{}`...".format(command)):
+        with Spinner(text=f"Executing command `{command}`..."):
             response = run_on_device(
                 user=user,
                 shell=shell,

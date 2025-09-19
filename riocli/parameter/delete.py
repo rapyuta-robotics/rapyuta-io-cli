@@ -49,7 +49,7 @@ def delete_configurations(tree: str, silent: bool = False) -> None:
     You can skip the confirmation prompt by using the ``--force`` or
     ``--silent`` or ``-f`` flag.
     """
-    click.secho("Configuration Parameter {} will be deleted".format(tree))
+    click.secho(f"Configuration Parameter {tree} will be deleted")
 
     if not silent:
         click.confirm("Do you want to proceed?", default=True, abort=True)
@@ -64,7 +64,7 @@ def delete_configurations(tree: str, silent: bool = False) -> None:
                 "Configuration deleted successfully.", fg=Colors.GREEN
             )
             spinner.green.ok(Symbols.SUCCESS)
-        except IOError as e:
+        except OSError as e:
             spinner.text = click.style(e, fg=Colors.RED)
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1)

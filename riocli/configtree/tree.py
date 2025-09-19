@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -71,14 +71,12 @@ def create_config_tree(
         }
         config_tree = client.create_config_tree(payload)
         spinner.text = click.style(
-            "Config tree {} created successfully.".format(config_tree.metadata.name),
+            f"Config tree {config_tree.metadata.name} created successfully.",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -116,9 +114,7 @@ def delete_config_tree(
         spinner.text = click.style("Config tree deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -180,14 +176,12 @@ def clone_tree(
         client = new_v2_client(with_project=True)
         config_tree = client.create_config_tree(payload)
         spinner.text = click.style(
-            "Config tree {} cloned successfully.".format(config_tree.metadata.name),
+            f"Config tree {config_tree.metadata.name} cloned successfully.",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to clone Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to clone Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -213,7 +207,7 @@ def clone_tree(
 def set_tree_revision(
     ctx: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
     spinner: Yaspin,
 ) -> None:
@@ -264,9 +258,7 @@ def set_tree_revision(
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update config-tree Head: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update config-tree Head: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -326,7 +318,7 @@ def list_config_trees(
 def list_config_tree_keys(
     _: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
 ) -> None:
     """

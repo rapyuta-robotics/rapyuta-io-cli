@@ -39,7 +39,7 @@ def port_forward(
         path = random_string(8, 5)
         if local_port == 0:
             local_port = get_free_tcp_port()
-            click.secho("Listening on local port {}".format(local_port))
+            click.secho(f"Listening on local port {local_port}")
 
         run_tunnel_on_device(device_guid=device_guid, remote_port=remote_port, path=path)
         run_tunnel_on_local(local_port=local_port, path=path, background=False)

@@ -84,7 +84,7 @@ def delete_package(
             client, package_name_or_regex, package_version, delete_all
         )
     except Exception as e:
-        spinner.text = click.style("Failed to find package(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to find package(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -115,9 +115,7 @@ def delete_package(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -133,18 +131,16 @@ def delete_package(
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.text = click.style("Package(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Package(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete package(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete package(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
 def _apply_delete(client: Client, result: Queue, package: Package) -> None:
-    name_version = "{}@{}".format(package.metadata.name, package.metadata.version)
+    name_version = f"{package.metadata.name}@{package.metadata.version}"
     try:
         client.delete_package(
             package_name=package.metadata.name,

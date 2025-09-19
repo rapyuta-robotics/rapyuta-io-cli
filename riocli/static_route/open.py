@@ -30,7 +30,7 @@ def open_static_route(static_route) -> None:
     try:
         client = new_v2_client()
         route = client.get_static_route(static_route)
-        click.launch(url="https://{}".format(route.spec.url), wait=False)
+        click.launch(url=f"https://{route.spec.url}", wait=False)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

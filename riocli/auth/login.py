@@ -25,9 +25,7 @@ from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
 
-LOGIN_SUCCESS = click.style(
-    "{} Logged in successfully!".format(Symbols.SUCCESS), fg=Colors.GREEN
-)
+LOGIN_SUCCESS = click.style(f"{Symbols.SUCCESS} Logged in successfully!", fg=Colors.GREEN)
 
 
 @click.command(
@@ -142,8 +140,8 @@ def login(
         config.save()
     else:
         click.confirm(
-            "{} Config already exists. Do you want to override"
-            " the existing config?".format(Symbols.WARNING),
+            f"{Symbols.WARNING} Config already exists. Do you want to override"
+            " the existing config?",
             abort=True,
         )
 

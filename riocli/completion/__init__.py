@@ -35,5 +35,5 @@ def completion(shell_name):
     For Fish:
         $ eval (command rio completion bash)
     """
-    os.environ["_RIO_COMPLETE"] = "{}_source".format(shell_name)
+    os.environ["_RIO_COMPLETE"] = f"{shell_name}_source"
     os.system("rio")

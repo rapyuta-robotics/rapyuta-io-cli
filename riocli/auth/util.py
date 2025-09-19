@@ -13,7 +13,6 @@
 # limitations under the License.
 import json
 import os
-from typing import Optional, Tuple
 
 import click
 from munch import munchify
@@ -186,7 +185,7 @@ def api_refresh_token(
     config = Configuration()
     client = config.new_client(with_project=False)
     rip_host = client._get_api_endpoints("rip_host")
-    url = "{}/refreshtoken".format(rip_host)
+    url = f"{rip_host}/refreshtoken"
 
     response = RestClient(url).method(HttpMethod.POST).execute(payload={"token": token})
     handle_server_errors(response)
@@ -211,7 +210,7 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
     try:
         user = client.get_authenticated_user()
         spinner.text = click.style(
-            "Token belongs to user {}".format(user.email_id), fg=Colors.CYAN
+            f"Token belongs to user {user.email_id}", fg=Colors.CYAN
         )
         # Save the token and user email_id in the context
         ctx.obj.data["auth_token"] = token
@@ -229,7 +228,7 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
 
 
 def find_project_guid(
-    client: v2Client, name: str, organization: Optional[str] = None
+    client: v2Client, name: str, organization: str | None = None
 ) -> str:
     projects = client.list_projects(
         query={"name": name},
@@ -242,21 +241,21 @@ def find_project_guid(
     raise ProjectNotFound()
 
 
-def find_organization_guid(client: Client, name: str) -> Tuple[str, str]:
+def find_organization_guid(client: Client, name: str) -> tuple[str, str]:
     user = client.get_user()
 
     for organization in user.spec.organizations:
         if organization.name == name:
             return organization.guid, organization.shortGUID
 
-    raise OrganizationNotFound("User is not part of organization: {}".format(name))
+    raise OrganizationNotFound(f"User is not part of organization: {name}")
 
 
-def get_organization_name(client: Client, guid: str) -> Tuple[str, str]:
+def get_organization_name(client: Client, guid: str) -> tuple[str, str]:
     user = client.get_user()
 
     for organization in user.spec.organizations:
         if organization.guid == guid:
             return organization.name, organization.shortGUID
 
-    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
+    raise OrganizationNotFound(f"User is not part of organization: {guid}")

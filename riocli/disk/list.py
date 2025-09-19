@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -36,7 +35,7 @@ from riocli.disk.util import display_disk_list
     default=(),
     help="Filter the disk list by labels",
 )
-def list_disks(labels: typing.List[str]) -> None:
+def list_disks(labels: list[str]) -> None:
     """List the disks in the current project.
 
     Additionally, you can filter the list by labels using the

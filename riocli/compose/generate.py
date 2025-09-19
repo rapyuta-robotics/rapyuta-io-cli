@@ -61,10 +61,10 @@ from riocli.utils import print_centered_text
 def generate(
     ctx: click.Context,
     file_name: str,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
     path: Path,
-    files: typing.Tuple[str, ...],
+    files: tuple[str, ...],
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -102,9 +102,9 @@ def generate(
 def generate_compose_file(
     ctx: click.Context,
     compose_path: Path,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
-    files: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
+    files: tuple[str, ...],
 ):
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -130,7 +130,7 @@ def generate_compose_file(
 
 def get_deployment_package(
     applier: Applier,
-) -> typing.Tuple[typing.Dict[str, dict], typing.Dict[str, dict]]:
+) -> tuple[dict[str, dict], dict[str, dict]]:
     """
     Sorts applier objects into deployments and packages for device runtime.
 

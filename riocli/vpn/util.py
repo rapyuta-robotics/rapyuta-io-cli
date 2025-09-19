@@ -22,7 +22,6 @@ from os.path import exists, join
 from shutil import move, which
 from sys import platform
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 import click
 from munch import Munch
@@ -94,9 +93,7 @@ def install_vpn_tools() -> None:
 
     click.confirm(
         click.style(
-            "{} VPN tools are not installed. Do you want to install them now?".format(
-                Symbols.INFO
-            ),
+            f"{Symbols.INFO} VPN tools are not installed. Do you want to install them now?",
             fg=Colors.YELLOW,
         ),
         default=True,
@@ -127,16 +124,16 @@ def install_vpn_tools() -> None:
         if not exists(script_path):
             raise FileNotFoundError
 
-        run_bash("sh {}".format(script_path))
+        run_bash(f"sh {script_path}")
 
     if not is_tailscale_installed():
-        raise Exception("{} Failed to install VPN tools".format(Symbols.ERROR))
+        raise Exception(f"{Symbols.ERROR} Failed to install VPN tools")
 
-    click.secho("{} VPN tools installed".format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} VPN tools installed", fg=Colors.GREEN)
 
 
 def tailscale_ping(tailscale_peer_ip):
-    cmd = "tailscale ping --icmp --tsmp --peerapi {}".format(tailscale_peer_ip)
+    cmd = f"tailscale ping --icmp --tsmp --peerapi {tailscale_peer_ip}"
     return run_bash_with_return_code(cmd)
 
 
@@ -153,7 +150,7 @@ def priviledged_command(cmd: str) -> str:
     if is_windows() or (is_linux() and os.geteuid() == 0):
         return cmd
 
-    return "sudo {}".format(cmd)
+    return f"sudo {cmd}"
 
 
 def create_binding(
@@ -161,13 +158,13 @@ def create_binding(
     name: str = "",
     machine: str = "",
     labels: dict = None,
-    delta: Optional[timedelta] = None,
+    delta: timedelta | None = None,
     ephemeral: bool = True,
     throwaway: bool = True,
 ) -> Munch:
     vpn_instance = "rio-internal-headscale"
     if name == "":
-        name = "{}-{}".format(ctx.obj.machine_id, int(time.time()))
+        name = f"{ctx.obj.machine_id}-{int(time.time())}"
 
     body = {
         "metadata": {
@@ -194,7 +191,7 @@ def create_binding(
     return binding.spec.get("environment", {})
 
 
-def get_key_expiry_time(delta: Optional[timedelta]) -> Optional[str]:
+def get_key_expiry_time(delta: timedelta | None) -> str | None:
     if delta is None:
         return None
 

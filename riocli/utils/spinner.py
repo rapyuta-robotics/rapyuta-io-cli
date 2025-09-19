@@ -35,10 +35,10 @@ class DummySpinner:
         return self
 
     def fail(self, text="FAIL"):
-        click.echo("{} {}".format(text, self.text))
+        click.echo(f"{text} {self.text}")
 
     def ok(self, text="OK"):
-        click.echo("{} {}".format(text, self.text))
+        click.echo(f"{text} {self.text}")
 
     def __getattr__(self, name):
         return self

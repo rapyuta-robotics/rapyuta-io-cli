@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 from os.path import abspath
 from tempfile import mkdtemp
 
@@ -55,7 +54,7 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Download configurations...", timer=True)
 def download_configurations(
     path: str,
-    tree_names: typing.Tuple[str] = None,
+    tree_names: tuple[str] = None,
     delete_existing: bool = False,
     spinner=None,
 ) -> None:
@@ -75,14 +74,12 @@ def download_configurations(
 
     if not tree_names:
         msg = click.style(
-            "{} No tree names specified. Downloading all the trees...".format(
-                Symbols.INFO
-            ),
+            f"{Symbols.INFO} No tree names specified. Downloading all the trees...",
             fg=Colors.BRIGHT_CYAN,
         )
         spinner.write(msg)
 
-    spinner.write("Downloading at {}".format(abspath(path)))
+    spinner.write(f"Downloading at {abspath(path)}")
 
     try:
         client = new_client()

@@ -51,7 +51,7 @@ def token(email: str, password: str, level: int = 0):
 
     if level not in TOKEN_LEVELS:
         click.secho(
-            "Invalid token level. Valid levels are {0}".format(list(TOKEN_LEVELS.keys())),
+            f"Invalid token level. Valid levels are {list(TOKEN_LEVELS.keys())}",
             fg=Colors.RED,
         )
         raise SystemExit(1)

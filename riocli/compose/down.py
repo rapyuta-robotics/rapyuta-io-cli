@@ -1,4 +1,3 @@
-import typing
 from pathlib import Path
 
 import click
@@ -51,10 +50,10 @@ from riocli.constants.colors import Colors
 def down(
     ctx: click.Context,
     file_name: str,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
     path: str,
-    files: typing.Tuple[str, ...],
+    files: tuple[str, ...],
 ):
     """
     Stop and remove services defined in the Docker Compose file.

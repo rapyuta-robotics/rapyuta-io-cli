@@ -31,13 +31,12 @@ def extend_with_default(validator_class):
                 for i in instance:
                     i.setdefault(p, sub_schema["default"])
 
-        for error in validate_properties(
+        yield from validate_properties(
             validator,
             properties,
             instance,
             schema,
-        ):
-            yield error
+        )
 
     return validators.extend(
         validator_class,
@@ -48,7 +47,7 @@ def extend_with_default(validator_class):
 DefaultValidator = extend_with_default(Draft7Validator)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def load_schema(resource: str) -> DefaultValidator:
     """
     Reads JSON schema yaml and returns a validator.

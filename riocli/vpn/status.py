@@ -50,9 +50,9 @@ def status(ctx: click.Context, wide: bool = False):
 
         if not is_vpn_enabled_in_project(client, ctx.obj.data.get("project_id")):
             click.secho(
-                "{} VPN is not enabled in the project. "
+                f"{Symbols.WARNING} VPN is not enabled in the project. "
                 "Please ask the organization or project "
-                "creator to enable VPN".format(Symbols.WARNING),
+                "creator to enable VPN",
                 fg=Colors.YELLOW,
             )
             raise SystemExit(1)
@@ -67,16 +67,14 @@ def status(ctx: click.Context, wide: bool = False):
 
         if not is_tailscale_up():
             click.secho(
-                "{} You are not connected to the VPN".format(Symbols.WARNING),
+                f"{Symbols.WARNING} You are not connected to the VPN",
                 fg=Colors.YELLOW,
             )
             return
 
         display_vpn_status(wide)
 
-        click.secho(
-            "{} You are connected to the VPN.".format(Symbols.INFO), fg=Colors.GREEN
-        )
+        click.secho(f"{Symbols.INFO} You are connected to the VPN.", fg=Colors.GREEN)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

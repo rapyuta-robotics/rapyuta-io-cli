@@ -25,7 +25,7 @@ from riocli.constants import Colors
 
 class Chart(Munch):
     def __init__(self, *args, **kwargs):
-        super(Chart, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.tmp_dir = None
         self.downloaded = False
 
@@ -83,9 +83,7 @@ class Chart(Munch):
     def download_chart(self):
         self._create_temp_directory()
         click.secho(
-            "Downloading {}:{} chart in {}".format(
-                self.name, self.version, self.tmp_dir.name
-            ),
+            f"Downloading {self.name}:{self.version} chart in {self.tmp_dir.name}",
             fg=Colors.CYAN,
         )
         chart_filepath = Path(self.tmp_dir.name, self._chart_filename())
@@ -113,5 +111,5 @@ class Chart(Munch):
         return self.urls[0].split("/")[-1]
 
     def _create_temp_directory(self):
-        prefix = "rio-chart-{}-".format(self.name)
+        prefix = f"rio-chart-{self.name}-"
         self.tmp_dir = TemporaryDirectory(prefix=prefix)

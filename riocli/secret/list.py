@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 import munch
@@ -37,7 +36,7 @@ from riocli.utils import tabulate_data
     default=(),
     help="Filter the deployment list by labels",
 )
-def list_secrets(labels: typing.List[str]) -> None:
+def list_secrets(labels: list[str]) -> None:
     """
     List the secrets in the selected project
     """
@@ -52,7 +51,7 @@ def list_secrets(labels: typing.List[str]) -> None:
 
 
 def _display_secret_list(
-    secrets: typing.List[munch.Munch],
+    secrets: list[munch.Munch],
     show_header: bool = True,
 ) -> None:
     headers = []

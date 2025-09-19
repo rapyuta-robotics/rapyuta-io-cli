@@ -17,7 +17,7 @@ from threading import Lock
 from riocli.utils import Singleton
 
 
-class SimpleCache(object, metaclass=Singleton):
+class SimpleCache(metaclass=Singleton):
     def __init__(self):
         super().__init__()
         self._cache = {}
@@ -30,10 +30,10 @@ class SimpleCache(object, metaclass=Singleton):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._lock.release()
 
-    def get(self, key: typing.Text) -> typing.Any:
+    def get(self, key: str) -> typing.Any:
         return self._cache.get(key)
 
-    def set(self, key: typing.Text, value: typing.Any) -> None:
+    def set(self, key: str, value: typing.Any) -> None:
         self._cache[key] = value
 
 

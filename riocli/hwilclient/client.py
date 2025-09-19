@@ -58,7 +58,7 @@ def handle_server_errors(response: requests.Response):
         raise Exception("unknown server error")
 
 
-class Client(object):
+class Client:
     """
     HWILv3 API Client
     """
@@ -126,7 +126,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -147,7 +147,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -174,7 +174,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -187,7 +187,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -205,7 +205,7 @@ class Client(object):
 
             data = json.loads(response.text)
             if not response.ok:
-                raise Exception("hwil: {}".format(response.text))
+                raise Exception(f"hwil: {response.text}")
 
             device = munchify(data)
             if device.status != "IDLE":
@@ -232,7 +232,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 

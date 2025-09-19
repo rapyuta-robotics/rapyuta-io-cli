@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -48,9 +47,9 @@ from riocli.constants import Colors
 @click.pass_context
 def template(
     ctx: click.Context,
-    values: typing.Tuple[str],
-    secrets: typing.Tuple[str],
-    files: typing.Tuple[str],
+    values: tuple[str],
+    secrets: tuple[str],
+    files: tuple[str],
 ) -> None:
     """Print manifests with values and secrets applied
 

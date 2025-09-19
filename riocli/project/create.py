@@ -66,6 +66,6 @@ def create_project(
         spinner.text = click.style("Project created successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to create project: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to create project: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

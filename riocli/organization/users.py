@@ -39,9 +39,7 @@ def list_users(ctx: click.Context) -> None:
         client = new_v2_client(config_inst=config)
         organization = client.get_organization(organization_guid)
     except Exception as e:
-        click.secho(
-            "{} Failed to get organization details".format(Symbols.ERROR), fg=Colors.RED
-        )
+        click.secho(f"{Symbols.ERROR} Failed to get organization details", fg=Colors.RED)
         raise SystemExit(1) from e
 
     users = organization.spec.users
@@ -52,7 +50,7 @@ def list_users(ctx: click.Context) -> None:
         fg, bold = None, False
         if u["emailID"] == current_user_email:
             fg, bold = Colors.GREEN, True
-        full_name = "{} {}".format(u.firstName, u.lastName)
+        full_name = f"{u.firstName} {u.lastName}"
         row = [u.guid, full_name, u.emailID, u.roleInOrganization]
         data.append([click.style(v, fg=fg, bold=bold) for v in row])
 

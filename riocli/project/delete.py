@@ -46,7 +46,7 @@ def delete_project(
     if not force:
         with spinner.hidden():
             click.confirm(
-                "Deleting project {} ({})".format(project_name, project_guid),
+                f"Deleting project {project_name} ({project_guid})",
                 abort=True,
             )
 
@@ -56,6 +56,6 @@ def delete_project(
         spinner.text = click.style("Project deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to delete project: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete project: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

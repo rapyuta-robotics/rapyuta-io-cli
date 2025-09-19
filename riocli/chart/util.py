@@ -1,5 +1,3 @@
-import typing
-
 import requests
 from yaml import safe_load
 
@@ -10,7 +8,7 @@ DEFAULT_REPOSITORY = (
 )
 
 
-def find_chart(chart: str) -> typing.List:
+def find_chart(chart: str) -> list:
     """Finds a chart in the upstream index."""
     chart, ver = parse_chart(chart)
 
@@ -28,7 +26,7 @@ def find_chart(chart: str) -> typing.List:
     return versions
 
 
-def fetch_index(repository=DEFAULT_REPOSITORY) -> typing.Dict:
+def fetch_index(repository=DEFAULT_REPOSITORY) -> dict:
     """Fetches the upstream chart index."""
     response = requests.get(repository)
     if not response.ok:
@@ -63,13 +61,13 @@ def parse_chart(val: str) -> (str, str):
     return chart, ver
 
 
-def _find_version(entries: typing.List, version: str):
+def _find_version(entries: list, version: str):
     for entry in entries:
         if entry.get("version") == version:
             return [entry]
 
 
-def print_chart_entries(entries: typing.List, wide: bool = False) -> None:
+def print_chart_entries(entries: list, wide: bool = False) -> None:
     """Prints charts in a tabular format."""
     entries = sorted(entries, key=lambda x: x.get("name").lower())
 

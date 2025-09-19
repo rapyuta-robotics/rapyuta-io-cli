@@ -99,9 +99,7 @@ def delete_deployment(
     try:
         deployments = fetch_deployments(client, deployment_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -131,9 +129,7 @@ def delete_deployment(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -150,12 +146,10 @@ def delete_deployment(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Deployment(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Deployment(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

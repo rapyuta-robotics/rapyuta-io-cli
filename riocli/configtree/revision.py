@@ -16,7 +16,7 @@ from __future__ import annotations
 import os
 from base64 import b64encode
 from hashlib import md5
-from typing import Optional, Type, Any
+from typing import Any
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -38,18 +38,18 @@ from riocli.v2client import Client
 from riocli.utils import AliasedGroup
 
 
-class Revision(object):
+class Revision:
     _DEFAULT_COMMIT_MSG = "imported through rio-cli"
 
     def __init__(
         self,
         tree_name: str,
         client: Client,
-        rev_id: Optional[str] = None,
-        milestone: Optional[str] = None,
+        rev_id: str | None = None,
+        milestone: str | None = None,
         commit: bool = False,
         force_new: bool = False,
-        spinner: Optional[Yaspin] = None,
+        spinner: Yaspin | None = None,
         with_org: bool = True,
     ):
         self._tree_name = tree_name
@@ -71,18 +71,16 @@ class Revision(object):
         if rev_id is not None:
             self._rev_id = rev_id
             self._explicit = True
-            msg = "{} Using revision {}.".format(Symbols.INFO, self._rev_id)
+            msg = f"{Symbols.INFO} Using revision {self._rev_id}."
         elif not force_new and rev and not rev.committed:
             self._rev_id = rev.rev_id
-            msg = "{}  Re-using revision {}.".format(Symbols.INFO, self._rev_id)
+            msg = f"{Symbols.INFO}  Re-using revision {self._rev_id}."
         else:
             self._rev = self._client.initialize_config_tree_revision(
                 tree_name=self._tree_name
             )
             self._rev_id = self._rev.metadata.guid
-            msg = "{} Revision {} created successfully.".format(
-                Symbols.SUCCESS, self._rev_id
-            )
+            msg = f"{Symbols.SUCCESS} Revision {self._rev_id} created successfully."
             save_revision(
                 org_guid=self._org_guid,
                 project_guid=self._project_guid,
@@ -102,7 +100,7 @@ class Revision(object):
         key: str,
         value: str,
         perms: int = 644,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         str_val = str(value)
         enc_val = str_val.encode("utf-8")
@@ -130,9 +128,7 @@ class Revision(object):
             tree_name=self._tree_name, rev_id=self._rev_id, key=key
         )
 
-    def commit(
-        self: Revision, msg: Optional[str] = None, author: Optional[str] = None
-    ) -> None:
+    def commit(self: Revision, msg: str | None = None, author: str | None = None) -> None:
         if msg is None:
             msg = self._DEFAULT_COMMIT_MSG
 
@@ -168,7 +164,7 @@ class Revision(object):
         if self._spinner:
             self._spinner.write(
                 click.style(
-                    "{} Revision {} committed.".format(Symbols.SUCCESS, self._rev_id),
+                    f"{Symbols.SUCCESS} Revision {self._rev_id} committed.",
                     fg=Colors.CYAN,
                 )
             )
@@ -176,7 +172,7 @@ class Revision(object):
     def __enter__(self: Revision) -> Revision:
         return self
 
-    def __exit__(self: Revision, typ: Type, val: Any, _: Any) -> None:
+    def __exit__(self: Revision, typ: type, val: Any, _: Any) -> None:
         if typ:
             raise val
 
@@ -251,10 +247,8 @@ def init_revision(
 
     if not force and rev is not None and not rev.committed:
         spinner.text = click.style(
-            "Revision {} is already present. Subsequent commands will re-use it. \n"
-            "If you want to force create a new revision use the --force flag.".format(
-                rev.rev_id
-            ),
+            f"Revision {rev.rev_id} is already present. Subsequent commands will re-use it. \n"
+            "If you want to force create a new revision use the --force flag.",
             fg=Colors.CYAN,
         )
         spinner.green.ok(Symbols.INFO)
@@ -271,7 +265,7 @@ def init_revision(
         )
     except Exception as e:
         spinner.text = click.style(
-            "Failed to initialize Config tree revision: {}".format(e), Colors.RED
+            f"Failed to initialize Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -307,7 +301,7 @@ def commit_revision(
     tree_name: str,
     rev_id: str,
     message: str,
-    milestone: Optional[str],
+    milestone: str | None,
     with_org: bool,
     spinner: Yaspin,
 ) -> None:
@@ -348,7 +342,7 @@ def commit_revision(
         rev.commit(msg=message)
     except Exception as e:
         spinner.text = click.style(
-            "Failed to commit Config tree revision: {}".format(e), Colors.RED
+            f"Failed to commit Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -411,10 +405,10 @@ def put_key_in_revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.store(key=key, value=value)
-            spinner.write(click.style("\t{} Key {} added.".format(Symbols.SUCCESS, key)))
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} Key {key} added."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to put key in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to put key in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -477,10 +471,10 @@ def put_file_in_revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.store_file(key=key, file_path=file_path)
-            spinner.write(click.style("\t{} File {} added.".format(Symbols.SUCCESS, key)))
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} File {key} added."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to put-file in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to put-file in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -540,12 +534,10 @@ def delete_key_in_revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.delete(key=key)
-            spinner.write(
-                click.style("\t{} Key {} removed.".format(Symbols.SUCCESS, key))
-            )
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} Key {key} removed."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to delete key in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to delete key in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -571,7 +563,7 @@ def delete_key_in_revision(
 def list_revision_keys(
     ctx: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
 ) -> None:
     """

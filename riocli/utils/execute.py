@@ -23,7 +23,7 @@ from riocli.config import new_client
 
 def run_on_device(
     device_guid: str = None,
-    command: typing.List[str] = None,
+    command: list[str] = None,
     user: str = "root",
     shell: str = "/bin/bash",
     background: bool = False,
@@ -57,16 +57,14 @@ def run_on_device(
 
     cmd = " ".join(command)
     if deployment:
-        cmd = 'script -q -c "dectl exec {} -- {}"'.format(exec_name, cmd)
+        cmd = f'script -q -c "dectl exec {exec_name} -- {cmd}"'
 
     return device.execute_command(
         Command(cmd, shell=shell, bg=background, runas=user, timeout=timeout)
     )
 
 
-def apply_func(
-    f: typing.Callable, items: typing.List[typing.Any], workers: int = 5
-) -> None:
+def apply_func(f: typing.Callable, items: list[typing.Any], workers: int = 5) -> None:
     """Apply a function to a list of items in parallel
 
     Parameters
@@ -84,10 +82,10 @@ def apply_func(
 
 def apply_func_with_result(
     f: typing.Callable,
-    items: typing.List[typing.Any],
+    items: list[typing.Any],
     workers: int = 5,
     key: typing.Callable = None,
-) -> typing.List[typing.Any]:
+) -> list[typing.Any]:
     """Apply a function to a list of items in parallel and return the result
 
     The function to apply must use the queue to return the result. For example,

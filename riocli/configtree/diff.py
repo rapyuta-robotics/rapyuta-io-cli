@@ -72,9 +72,10 @@ def display_diff(ctx: click.Context, keys_1: dict, keys_2: dict) -> None:
     keys_1 = unflatten_keys(keys_1)
     keys_2 = unflatten_keys(keys_2)
 
-    with NamedTemporaryFile(mode="w+b") as file_1, NamedTemporaryFile(
-        mode="w+b"
-    ) as file_2:
+    with (
+        NamedTemporaryFile(mode="w+b") as file_1,
+        NamedTemporaryFile(mode="w+b") as file_2,
+    ):
         keys_1.to_json(filepath=file_1.name, indent=4)
         keys_2.to_json(filepath=file_2.name, indent=4)
-        os.system("{} {} {}".format(cfg.diff_tool, file_1.name, file_2.name))
+        os.system(f"{cfg.diff_tool} {file_1.name} {file_2.name}")

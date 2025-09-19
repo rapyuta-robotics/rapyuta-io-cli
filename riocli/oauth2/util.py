@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Any
 
 import json
 
 
-def sanitize_parameters(params: Dict[str, Any]) -> Dict[str, Any]:
+def sanitize_parameters(params: dict[str, Any]) -> dict[str, Any]:
     scope = params.pop("scope")
     if scope is not None:
         params["scope"] = " ".join(scope)

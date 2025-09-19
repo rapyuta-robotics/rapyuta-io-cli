@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -38,7 +37,7 @@ def list_devices() -> None:
         raise SystemExit(1)
 
 
-def _display_device_list(devices: typing.List[dict], show_header: bool = True) -> None:
+def _display_device_list(devices: list[dict], show_header: bool = True) -> None:
     headers = []
     if show_header:
         headers = ("ID", "Name", "Status", "Static IP", "Dynamic IP", "Flavor")

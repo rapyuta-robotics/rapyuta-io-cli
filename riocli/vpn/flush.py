@@ -39,4 +39,4 @@ def flush() -> None:
     run_bash(priviledged_command("systemctl stop tailscaled"))
     run_bash(priviledged_command("rm -rvf /var/lib/tailscale/"))
     run_bash(priviledged_command("systemctl start tailscaled"))
-    click.secho("{} VPN configurations flushed.".format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} VPN configurations flushed.", fg=Colors.GREEN)

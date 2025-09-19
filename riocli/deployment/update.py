@@ -138,9 +138,7 @@ def _update(
     try:
         deployments = fetch_deployments(client, deployment_name_or_regex, update_all)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -170,9 +168,7 @@ def _update(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -182,12 +178,10 @@ def _update(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Deployment(s) updated {}.".format(text), fg)
+        spinner.text = click.style(f"Deployment(s) updated {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

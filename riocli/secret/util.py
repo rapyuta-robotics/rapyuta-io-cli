@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import re
-from typing import List
 
 from munch import Munch
 
@@ -25,7 +24,7 @@ def fetch_secrets(
     client: Client,
     secret_name_or_regex: str,
     include_all: bool,
-) -> List[Munch]:
+) -> list[Munch]:
     secrets = client.list_secrets()
     result = []
     for secret in secrets:
@@ -35,7 +34,7 @@ def fetch_secrets(
             or secret_name_or_regex == secret.metadata.guid
             or (
                 secret_name_or_regex not in secret.metadata.name
-                and re.search(r"^{}$".format(secret_name_or_regex), secret.metadata.name)
+                and re.search(rf"^{secret_name_or_regex}$", secret.metadata.name)
             )
         ):
             result.append(secret)
@@ -43,7 +42,7 @@ def fetch_secrets(
     return result
 
 
-def print_secrets_for_confirmation(secrets: List[Munch]):
+def print_secrets_for_confirmation(secrets: list[Munch]):
     data = []
     for secret in secrets:
         data.append(

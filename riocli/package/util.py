@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-from typing import List
 
 import click
 from munch import Munch
@@ -57,8 +56,8 @@ def find_package(
             options = {}
             package_objs = {}
             for pkg in packages:
-                options[pkg.metadata.guid] = "{} ({})".format(
-                    pkg.metadata.name, pkg.metadata.version
+                options[pkg.metadata.guid] = (
+                    f"{pkg.metadata.name} ({pkg.metadata.version})"
                 )
                 package_objs[pkg.metadata.guid] = pkg
             choice = show_selection(
@@ -77,7 +76,7 @@ def fetch_packages(
     package_name_or_regex: str,
     package_version: str,
     include_all: bool,
-) -> List[Package]:
+) -> list[Package]:
     packages = client.list_packages()
 
     result = []
@@ -99,7 +98,7 @@ def fetch_packages(
     return result
 
 
-def print_packages_for_confirmation(packages: List[Package]) -> None:
+def print_packages_for_confirmation(packages: list[Package]) -> None:
     headers = ["Name", "Version"]
     data = [[p.metadata.name, p.metadata.version] for p in packages]
     tabulate_data(data, headers)

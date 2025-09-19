@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 from munch import unmunchify
 
@@ -55,7 +54,7 @@ class Package(Model):
         except HttpNotFoundError:
             raise ResourceNotFound
 
-    def _sanitize_package(self) -> typing.Dict:
+    def _sanitize_package(self) -> dict:
         # Unset createdAt and updatedAt to avoid timestamp parsing issue.
         self.metadata.createdAt = None
         self.metadata.updatedAt = None

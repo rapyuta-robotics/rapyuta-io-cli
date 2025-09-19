@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 import munch
@@ -48,7 +47,7 @@ def list_oauth2_clients(
 
 
 def _display_oauth2_client_list(
-    oauth2_clients: typing.List[munch.Munch],
+    oauth2_clients: list[munch.Munch],
     show_header: bool = True,
     wide: bool = False,
 ) -> None:

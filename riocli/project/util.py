@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 
 import click
 
@@ -51,7 +52,7 @@ def name_to_guid(f: Callable) -> Callable:
                 organization = ctx.obj.data.get("organization_id")
                 guid = find_project_guid(client, name, organization)
             except Exception as e:
-                click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
+                click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
                 raise SystemExit(1)
 
         kwargs["project_name"] = name
