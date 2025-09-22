@@ -242,7 +242,7 @@ def update_hosts_file():
     hosts.remove_all_matching(comment=HOSTS_FILE_COMMENT)
 
     entries = []
-    for _, node in peers.items():
+    for node in peers.values():
         if not node.get("Online"):
             continue
 

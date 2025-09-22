@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from shlex import join
 from time import sleep
+
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io import Command
+
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import fetch_devices
-from rapyuta_io import Command
-from shlex import join
 
 
 @click.command(

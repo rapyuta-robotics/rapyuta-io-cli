@@ -68,7 +68,7 @@ def ping_all_peers(spinner: Yaspin):
 
     peers = s.get("Peer", {})
 
-    for _, v in peers.items():
+    for v in peers.values():
         # Do not waste time pinging
         # offline nodes
         if not v.get("Online"):

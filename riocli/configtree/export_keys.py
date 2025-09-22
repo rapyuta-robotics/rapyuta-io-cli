@@ -19,7 +19,7 @@ from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
 from riocli.configtree.util import export_to_files, unflatten_keys
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 

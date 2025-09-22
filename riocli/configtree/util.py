@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import os
 from base64 import b64decode
-from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 import yaml
 from benedict import benedict
@@ -25,6 +25,9 @@ from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 from riocli.utils.graph import Graphviz
 from riocli.utils.state import StateFile
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
 

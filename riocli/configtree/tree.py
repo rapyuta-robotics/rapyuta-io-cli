@@ -28,7 +28,7 @@ from riocli.configtree.util import (
     fetch_tree_keys,
     get_revision_from_state,
 )
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 

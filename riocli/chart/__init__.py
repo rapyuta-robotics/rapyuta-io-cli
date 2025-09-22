@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.chart.apply import apply_chart
 from riocli.chart.delete import delete_chart
 from riocli.chart.info import info_chart
