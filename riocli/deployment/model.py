@@ -14,11 +14,11 @@
 import time
 
 from munch import Munch, unmunchify
-from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.constants import Status
 from riocli.model import Model
+from rapyuta_io_sdk_v2 import Client
 from riocli.utils.error import (
     RetriesExhausted,
 )

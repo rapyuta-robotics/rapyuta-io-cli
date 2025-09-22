@@ -13,17 +13,19 @@
 # limitations under the License.
 from __future__ import annotations
 
-import json
+from collections.abc import Callable, Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from graphlib import TopologicalSorter
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+import json
+from typing import Any
 
 import click
+from rapyuta_io import Client
 import yaml
 from benedict import benedict
 from munch import munchify
+
+from yaspin.api import Yaspin
 
 from riocli.apply.util import (
     get_resource_class,
@@ -42,6 +44,10 @@ from riocli.model.base import Model
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import GraphVisualizer, Graphviz
 from riocli.utils.spinner import with_spinner
+from riocli.v2client import Client as v2Client
+
+DEFAULT_MAX_WORKERS = 6
+DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping
@@ -169,9 +175,6 @@ class Applier:
         assert v2_client is not None
         assert spinner is not None
 
-        if obj_key not in self.objects:
-            return
-
         obj = self.objects[obj_key]
         obj_key = click.style(obj_key, bold=True)
 
@@ -227,9 +230,6 @@ class Applier:
         assert client is not None
         assert v2_client is not None
         assert spinner is not None
-
-        if obj_key not in self.objects:
-            return
 
         obj = self.objects[obj_key]
         obj_key = click.style(obj_key, bold=True)
@@ -294,8 +294,8 @@ class Applier:
 
             if dependencies is not None:
                 for d in dependencies:
-                    graph.add(key, d)
-                    diagram.edge(d, key)
+                    graph.add(d, key)
+                    diagram.edge(key, d)
 
         return graph, diagram
 
@@ -349,9 +349,7 @@ class Applier:
 
         if value_files is not None:
             for v in value_files:
-                value = self._load_value(v)
-                if value is not None:
-                    values.merge(value)
+                values.merge(self._load_value(v))
 
         # The "rio" namespace exposes the commonly used fields from rio's
         # Configuration file.
@@ -366,9 +364,7 @@ class Applier:
 
         if secret_files is not None:
             for s in secret_files:
-                secret = self._load_secret(s)
-                if secret is not None:
-                    secrets.merge(secret)
+                secrets.merge(self._load_secret(s))
 
         if "secrets" in values:
             benedict(values["secrets"]).merge(secrets.dict())
@@ -527,22 +523,22 @@ class Applier:
     def _can_delete(obj: Model) -> bool:
         metadata = obj.get("metadata")
         if metadata is None:
-            return True
+            return False
 
         labels: dict[str, str] = metadata.get("labels")
         if labels is None:
-            return True
+            return False
 
         policy = labels.get(DELETE_POLICY_LABEL)
         if policy is None:
-            return True
+            return False
 
         if not isinstance(policy, str):
-            return True
+            return False
 
         # If a resource has a label with DELETE_POLICY_LABEL set
         # to 'retain', it should not be deleted.
-        return policy == "retain"
+        return policy != "retain"
 
     @staticmethod
     def _get_file_extension(file_name: str) -> str:

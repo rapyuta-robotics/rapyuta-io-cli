@@ -13,16 +13,20 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
-from rapyuta_io_sdk_v2 import Client
-from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 from typing_extensions import Any, override
 from waiting import wait
 
+from riocli.config import Configuration
+from riocli.constants import ApplyResult
+from riocli.model import Model
 from riocli.auth.util import find_project_guid
 from riocli.config import Configuration
 from riocli.constants import ApplyResult
 from riocli.exceptions import ProjectNotFound
-from riocli.model import Model
+from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
+from rapyuta_io_sdk_v2 import Client
+
+from riocli.project.util import check_project_name
 
 PROJECT_READY_TIMEOUT = 150
 
@@ -81,6 +85,8 @@ class Project(Model):
             )
             return ApplyResult.UPDATED
         except (HttpNotFoundError, ProjectNotFound):
+            project_name = project["metadata"]["name"]
+            check_project_name(project_name=project_name)
             _ = v2_client.create_project(project)  # pyright:ignore[reportArgumentType]
 
             return ApplyResult.CREATED
