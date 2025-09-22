@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
-from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
@@ -31,11 +30,8 @@ class Network(Model):
         self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> Munch | None:
         network = v2_client.create_network(unmunchify(self))  # pyright:ignore[reportArgumentType]
-        _ = poll_network(
-            client=v2_client,
-            name=network.metadata.name,  # pyright: ignore[reportOptionalMemberAccess]
-            retry_count=retry_count,
-            sleep_interval=retry_interval,
+        _ = v2_client.poll_network(
+            network.metadata.name, retry_count=retry_count, sleep_interval=retry_interval
         )
 
     @override
@@ -46,19 +42,9 @@ class Network(Model):
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
         _ = v2_client.delete_network(self.metadata.name)
 
-        try:
-            r = client.create_network(unmunchify(self))
-            poll_network(
-                client=client,
-                name=r.metadata.name,
-                retry_count=retry_count,
-                sleep_interval=retry_interval,
-            )
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            return ApplyResult.EXISTS
-        except Exception as e:
-            raise e
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        runtime = self.spec.get("runtime", None)
 
         if not runtime or runtime == "cloud":
             return None

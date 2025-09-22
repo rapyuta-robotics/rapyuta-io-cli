@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Iterable
 import json
 import os
 import random
@@ -18,6 +19,7 @@ import shlex
 import string
 import subprocess
 import sys
+from typing import Any
 import uuid
 from collections.abc import Iterable
 from pathlib import Path

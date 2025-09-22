@@ -17,6 +17,7 @@ import os
 from collections.abc import Iterable, Mapping
 from datetime import datetime
 from shutil import get_terminal_size
+from collections.abc import Iterable, Mapping
 from typing import Any, AnyStr
 
 import click
