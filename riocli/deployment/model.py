@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,15 @@
 # limitations under the License.
 import time
 
-from munch import unmunchify
+from munch import Munch, unmunchify
+from typing_extensions import override
 
-from riocli.config import new_v2_client
-from riocli.constants import Status, ApplyResult
-from riocli.exceptions import ResourceNotFound
+from riocli.constants import Status
 from riocli.model import Model
 from rapyuta_io_sdk_v2 import Client
-from rapyuta_io_sdk_v2.exceptions import (
-    HttpAlreadyExistsError,
-    HttpNotFoundError,
+from riocli.utils.error import (
+    RetriesExhausted,
 )
-from riocli.utils.error import RetriesExhausted
 
 
 class Deployment(Model):
@@ -32,33 +29,75 @@ class Deployment(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
+    @override
+    def create_object(
+        self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
+    ) -> Munch | None:
         hard_dependencies = [
             d.nameOrGUID for d in self.spec.get("depends", []) if d.get("wait", False)
         ]
 
-        client = new_v2_client()
-
-        # Block until all hard dependencies are in RUNNING state
         if hard_dependencies:
-            wait_for_dependencies(client, hard_dependencies)
+            wait_for_dependencies(
+                v2_client,
+                hard_dependencies,
+                retry_count=retry_count,
+                retry_interval=retry_interval,
+            )
 
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
+        return v2_client.create_deployment(unmunchify(self))  # pyright:ignore[reportArgumentType]
 
-        try:
-            client.create_deployment(unmunchify(self))
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            return ApplyResult.EXISTS
+    @override
+    def update_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
-    def delete(self, *args, **kwargs):
-        client = new_v2_client()
+    @override
+    def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
+        _ = v2_client.delete_deployment(self.metadata.name)
 
-        try:
-            client.delete_deployment(self.metadata.name)
-        except HttpNotFoundError:
-            raise ResourceNotFound
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        dependencies: list[str] = []
+
+        # Package Dependency
+        key = f"package:{self.metadata.depends.nameOrGUID}"
+        dependencies.append(key)
+
+        if self.spec.runtime == "cloud":
+            # Disk Dependency
+            if self.spec.get("volumes") is not None:
+                for volume in self.spec.volumes:
+                    if volume.get("depends") is not None:
+                        key = f"disk:{volume.depends.nameOrGUID}"
+                        dependencies.append(key)
+
+            # Static Route Dependency
+            if self.spec.get("staticRoutes") is not None:
+                for route in self.spec.staticRoutes:
+                    if route.get("depends") is not None:
+                        key = f"staticroute:{route.depends.nameOrGUID}"
+                        dependencies.append(key)
+
+        # Device Dependency
+        if self.spec.runtime == "device" and self.spec.get("device") is not None:
+            if self.spec.device.get("depends") is not None:
+                key = f"device:{self.spec.device.depends.nameOrGUID}"
+                dependencies.append(key)
+
+        # Deployment Dependency
+        if self.spec.get("depends") is not None:
+            for dep in self.spec.depends:
+                key = f"deployment:{dep.nameOrGUID}"
+                dependencies.append(key)
+
+        # Network Dependency
+        if self.spec.get("rosNetworks") is not None:
+            for network in self.spec.rosNetworks:
+                if network.get("depends") is not None:
+                    key = f"network:{network.depends.nameOrGUID}"
+                    dependencies.append(key)
+
+        return dependencies
 
 
 def wait_for_dependencies(
