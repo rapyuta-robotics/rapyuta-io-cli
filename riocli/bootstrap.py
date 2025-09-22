@@ -17,10 +17,10 @@ __version__ = "9.5.0"
 import os
 
 import click
-import rapyuta_io.version
 from click import Context
+import rapyuta_io
 
-from riocli.apply import apply, delete
+from riocli.apply import apply, delete, graph
 from riocli.apply.explain import list_examples, explain
 from riocli.apply.template import template
 from riocli.auth import auth
@@ -68,7 +68,7 @@ from riocli.vpn import vpn
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
-def cli(ctx: Context, config: str = None):
+def cli(ctx: Context, config: str | None = None):
     """Manage rapyuta.io features on the command-line"""
     ctx.obj = Configuration(filepath=config)
 
@@ -127,11 +127,11 @@ def update(silent: bool) -> None:
     click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
 
     if not silent:
-        click.confirm("Do you want to update?", abort=True, default=False)
+        _ = click.confirm("Do you want to update?", abort=True, default=False)
 
     try:
         if is_pip_installation():
-            pip_install_cli(version=latest)
+            _ = pip_install_cli(version=latest)
         else:
             update_appimage(version=latest)
     except Exception as e:
@@ -145,6 +145,7 @@ cli.add_command(apply)
 cli.add_command(chart)
 cli.add_command(explain)
 cli.add_command(list_examples)
+cli.add_command(graph)
 cli.add_command(delete)
 cli.add_command(auth)
 cli.add_command(project)

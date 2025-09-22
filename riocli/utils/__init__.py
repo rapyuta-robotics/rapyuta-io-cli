@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Iterable
 import json
 import os
 import random
@@ -18,7 +19,7 @@ import shlex
 import string
 import subprocess
 import sys
-import typing
+from typing import Any
 import uuid
 from pathlib import Path
 from shutil import get_terminal_size, move
@@ -46,7 +47,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-def inspect_with_format(obj: typing.Any, format_type: str):
+def inspect_with_format(obj: Any, format_type: str):
     if format_type == "json":
         click.echo_via_pager(json.dumps(obj, indent=4))
     elif format_type == "yaml":
@@ -55,7 +56,7 @@ def inspect_with_format(obj: typing.Any, format_type: str):
         raise Exception("Invalid format")
 
 
-def dump_all_yaml(objs: list):
+def dump_all_yaml(objs: list[dict[str, Any]]):
     """
     Dump multiple documents as YAML separated by triple dash (---)
     """
@@ -64,7 +65,7 @@ def dump_all_yaml(objs: list):
     )
 
 
-def run_bash_with_return_code(cmd, bg=False) -> (str, int):
+def run_bash_with_return_code(cmd, bg=False) -> tuple[str, int]:
     cmd_parts = shlex.split(cmd)
 
     if bg is True:
@@ -141,8 +142,8 @@ def is_valid_uuid(uuid_to_test, version=4):
 
 
 def tabulate_data(
-    data: list[list],
-    headers: typing.Iterable[str] | str | None = None,
+    data: list[list[str]],
+    headers: Iterable[str] | str | None = None,
     table_format: str = "simple",
 ):
     """
@@ -300,4 +301,4 @@ def sanitize_label(name):
 def print_centered_text(text: str, color: str = Colors.YELLOW):
     col, _ = get_terminal_size()
     text = click.style(f" {text} ".center(col, "-"), fg=color, bold=True)
-    click.echo(text)
+    click.echo(text, file=sys.stderr)
