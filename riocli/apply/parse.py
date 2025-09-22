@@ -13,21 +13,17 @@
 # limitations under the License.
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+import json
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-import json
-from typing import Any
+from graphlib import TopologicalSorter
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import click
-from rapyuta_io import Client
 import yaml
 from benedict import benedict
-from graphlib import TopologicalSorter
 from munch import munchify
-from pathlib import Path
-
-from yaspin.api import Yaspin
 
 from riocli.apply.util import (
     get_resource_class,
@@ -35,19 +31,26 @@ from riocli.apply.util import (
     message_with_prompt,
     print_objects_table,
 )
-from riocli.config import Configuration
-from riocli.constants import Colors, Symbols, ApplyResult
+from riocli.constants import ApplyResult, Colors, Symbols
 from riocli.exceptions import (
-    NoProjectSelected,
-    NoOrganizationSelected,
-    ResourceNotFound,
     LoggedOut,
+    NoOrganizationSelected,
+    NoProjectSelected,
+    ResourceNotFound,
 )
 from riocli.model.base import Model
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import GraphVisualizer, Graphviz
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable, Mapping
+
+    from rapyuta_io import Client
+    from yaspin.api import Yaspin
+
+    from riocli.config import Configuration
+    from riocli.v2client import Client as v2Client
 
 DEFAULT_MAX_WORKERS = 6
 DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"

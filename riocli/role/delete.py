@@ -15,9 +15,9 @@ import functools
 from queue import Queue
 
 import click
-from munch import Munch
 import requests
 from click_help_colors import HelpColorsCommand
+from munch import Munch
 from yaspin.api import Yaspin
 
 from riocli.config import get_config_from_context

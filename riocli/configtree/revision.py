@@ -16,11 +16,10 @@ from __future__ import annotations
 import os
 from base64 import b64encode
 from hashlib import md5
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 from click_help_colors import HelpColorsCommand
-from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
@@ -31,10 +30,14 @@ from riocli.configtree.util import (
 )
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
+from riocli.utils import AliasedGroup
 from riocli.utils.spinner import with_spinner
 from riocli.utils.state import StateFile
-from rapyuta_io_sdk_v2 import Client
-from riocli.utils import AliasedGroup
+
+if TYPE_CHECKING:
+    from yaspin.core import Yaspin
+
+    from rapyuta_io_sdk_v2 import Client
 
 
 class Revision:

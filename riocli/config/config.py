@@ -25,10 +25,10 @@ from rapyuta_io_sdk_v2 import Client as v2Client
 from rapyuta_io_sdk_v2 import Configuration as v2Config
 
 from riocli.exceptions import (
+    HwilLoggedOut,
     LoggedOut,
     NoOrganizationSelected,
     NoProjectSelected,
-    HwilLoggedOut,
 )
 from riocli.hwilclient import Client as HwilClient
 

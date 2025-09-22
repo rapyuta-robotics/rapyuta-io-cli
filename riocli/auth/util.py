@@ -23,6 +23,7 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
+from riocli.exceptions import OrganizationNotFound, ProjectNotFound
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
 from rapyuta_io_sdk_v2 import Client as v2Client

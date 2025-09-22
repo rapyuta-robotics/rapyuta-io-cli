@@ -26,11 +26,11 @@ from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import (
     create_binding,
     get_binding_labels,
+    install_vpn_tools,
     is_tailscale_up,
+    is_vpn_enabled_in_project,
     priviledged_command,
     stop_tailscale,
-    install_vpn_tools,
-    is_vpn_enabled_in_project,
     update_hosts_file,
 )
 

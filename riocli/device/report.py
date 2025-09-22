@@ -13,10 +13,11 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from riocli.config import new_client
 from rapyuta_io.clients.device import DeviceStatus
+
+from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.device.util import name_to_guid, generate_shared_url, upload_debug_logs
+from riocli.device.util import generate_shared_url, name_to_guid, upload_debug_logs
 from riocli.utils.spinner import with_spinner
 
 

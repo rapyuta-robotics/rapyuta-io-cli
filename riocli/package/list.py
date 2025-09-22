@@ -61,7 +61,7 @@ def _display_package_list(
         package_dict[pkgName] = filtered_pkg
 
     data = []
-    for _, pkgVersionList in package_dict.items():
+    for pkgVersionList in package_dict.values():
         for package in pkgVersionList:
             description = package.metadata.description
             name = package.metadata.name

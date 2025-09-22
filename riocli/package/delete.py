@@ -19,7 +19,7 @@ from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.package.model import Package
 from riocli.package.util import fetch_packages, print_packages_for_confirmation
 from riocli.utils import tabulate_data

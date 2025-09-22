@@ -17,20 +17,20 @@ __version__ = "9.5.0"
 import os
 
 import click
-from click import Context
 import rapyuta_io
+from click import Context
 
 from riocli.apply import apply, delete, graph
-from riocli.apply.explain import list_examples, explain
+from riocli.apply.explain import explain, list_examples
 from riocli.apply.template import template
 from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
+from riocli.compose import compose
 from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
-from riocli.compose import compose
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -47,12 +47,12 @@ from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
 from riocli.utils import (
+    AliasedGroup,
     check_for_updates,
     is_pip_installation,
     pip_install_cli,
     update_appimage,
 )
-from riocli.utils import AliasedGroup
 from riocli.vpn import vpn
 
 

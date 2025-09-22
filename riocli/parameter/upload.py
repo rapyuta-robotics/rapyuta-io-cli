@@ -24,7 +24,7 @@ else:
 from riocli.apply.util import print_context
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.parameter.utils import filter_trees, display_trees
+from riocli.parameter.utils import display_trees, filter_trees
 
 
 @click.command(

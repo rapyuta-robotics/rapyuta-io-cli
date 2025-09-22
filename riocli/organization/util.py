@@ -14,11 +14,11 @@
 import functools
 import typing
 
+import click
+
+from riocli.auth.util import find_organization_guid, get_organization_name
 from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.auth.util import find_organization_guid, get_organization_name
-
-import click
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
