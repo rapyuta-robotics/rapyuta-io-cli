@@ -37,11 +37,9 @@ definitions:
       organizationGUID:
         $ref: "#/definitions/organizationGUID"
       organizationCreatorGUID:
-        $ref: "#/definitions/uuid"
+        type: string
       creatorGUID:
-        $ref: "#/definitions/uuid"
-      creatorGUID:
-        $ref: "#/definitions/uuid"
+        type: string
       organizationName:
         type: string
     required:
@@ -54,36 +52,35 @@ definitions:
       users:
         type: array
         items:
-          "$ref": "#/definitions/user"
+          "$ref": "#/definitions/member"
     additionalProperties: false
 
-  user:
+  member:
     type: object
     properties:
-      guid:
-        $ref: "#/definitions/uuid"
-      firstName:
+      subjectKind:
         type: string
-      lastName:
+        enum:
+        - User
+        - UserGroup
+        - ServiceAccount
+      subjectGUID:
         type: string
-      emailID:
+      subjectName:
         type: string
-      roleInOrganization:
-        $ref: "#/definitions/roleSpec"
+      roleNames:
+        type: array
+        items:
+          type: string
     required:
-      - emailID
-      - roleInOrganization
+      - roleNames
+      - subjectKind
+    oneOf:
+    - required:
+      - subjectGUID
+    - required:
+      - subjectName
 
   organizationGUID:
     type: string
     pattern: "^org-([a-z0-9]{20}|[a-z]{24})$"
-
-  uuid:
-    type: string
-    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-
-  roleSpec:
-    type: string
-    enum:
-      - admin
-      - viewer

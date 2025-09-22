@@ -33,7 +33,7 @@ definitions:
       guid:
         "$ref": "#/definitions/projectGUID"
       creatorGUID:
-        "$ref": "#/definitions/uuid"
+        type: string
       projectGUID:
         "$ref": "#/definitions/projectGUID"
       organizationGUID:
@@ -59,14 +59,10 @@ definitions:
   projectSpec:
     type: object
     properties:
-      users:
+      members:
         type: array
         items:
-          "$ref": "#/definitions/user"
-      userGroups:
-        type: array
-        items:
-          "$ref": "#/definitions/userGroup"
+          "$ref": "#/definitions/member"
       features:
         type: object
         properties:
@@ -77,11 +73,6 @@ definitions:
                 type: array
                 items:
                   type: string
-              enabled:
-                type: boolean
-          tracing:
-            type: object
-            properties:
               enabled:
                 type: boolean
           dockerCache:
@@ -108,34 +99,36 @@ definitions:
                   - proxyInterface
                   - registrySecret
                   - registryURL
-  userGroup:
+
+  member:
     type: object
     properties:
+      subject:
+        $ref: "#/definitions/subject"
+      roles:
+        type: array
+        items:
+          type: string
+
+  subject:
+    type: object
+    properties:
+      kind:
+        type: string
+        enum:
+        - User
+        - UserGroup
+        - ServiceAccount
       name:
         type: string
-      userGroupGUID:
+      guid:
         type: string
-      role:
-        "$ref": "#/definitions/roleSpec"
-    required:
+    oneOf:
+    - required:
+      - guid
+    - required:
       - name
-      - role
-  user:
-    type: object
-    properties:
-      emailID:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-      userGUID:
-        "$ref": "#/definitions/uuid"
-      role:
-        "$ref": "#/definitions/roleSpec"
-    required:
-      - emailID
-      - role
+
   projectStatus:
     type: object
     properties:
@@ -145,8 +138,3 @@ definitions:
         type: string
       tracing:
         type: string
-  roleSpec:
-    type: string
-    enum:
-      - admin
-      - viewer
