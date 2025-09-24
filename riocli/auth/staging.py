@@ -24,19 +24,26 @@ _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 @click.command("environment", hidden=True)
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
 )
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
+)
 @click.argument("name", type=str)
 @click.pass_context
-def environment(ctx: click.Context, interactive: bool, name: str):
+def environment(ctx: click.Context, interactive: bool, silent: bool, name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use only)
     """
     ctx = get_root_context(ctx)
+    interactive = interactive or not silent
 
     if name == "ga":
         ctx.obj.data.pop("environment", None)

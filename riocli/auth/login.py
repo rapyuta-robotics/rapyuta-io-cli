@@ -50,11 +50,17 @@ LOGIN_SUCCESS = click.style(f"{Symbols.SUCCESS} Logged in successfully!", fg=Col
 )
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
+)
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
 )
 @click.option("--auth-token", type=str, default=None, help="Login with auth token only")
 @click.pass_context
@@ -65,6 +71,7 @@ def login(
     organization: str,
     project: str,
     interactive: bool,
+    silent: bool,
     auth_token: str,
 ) -> None:
     """Log into your rapyuta.io account.
@@ -115,6 +122,8 @@ def login(
     """
     ctx = get_root_context(ctx)
     config = get_config_from_context(ctx)
+
+    interactive = interactive or not silent
 
     if auth_token:
         if not validate_and_set_token(ctx, auth_token):
