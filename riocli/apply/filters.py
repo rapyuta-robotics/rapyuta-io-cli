@@ -20,6 +20,7 @@ import os
 
 from riocli.config import new_client
 from riocli.device.util import find_device_guid
+from riocli.exceptions import DeviceNotFound
 
 
 def getenv(default: str, env_var: str) -> str:
@@ -77,6 +78,11 @@ def get_device_ip_interfaces(device_name: str) -> dict[str, list[str]]:
     device_id = find_device_guid(client, device_name)
 
     device = client.get_device(device_id)
+
+    if device["status"] == "REGISTERED":
+        raise DeviceNotFound(
+            f'Cannot retrieve IP interfaces: device "{device["name"]}" is in REGISTERED state.'
+        )
     try:
         # Poll for 3 minutes.
         device.poll_till_ready(retry_count=18, sleep_interval=10)
