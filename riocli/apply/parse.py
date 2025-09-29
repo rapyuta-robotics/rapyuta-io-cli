@@ -57,8 +57,6 @@ DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 
 class Applier:
-    DEFAULT_MAX_WORKERS = 6
-    DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
     def __init__(
         self,
@@ -291,8 +289,8 @@ class Applier:
 
             if dependencies is not None:
                 for d in dependencies:
-                    graph.add(d, key)
-                    diagram.edge(key, d)
+                    graph.add(key, d)
+                    diagram.edge(d, key)
 
         return graph, diagram
 
@@ -520,22 +518,22 @@ class Applier:
     def _can_delete(obj: Model) -> bool:
         metadata = obj.get("metadata")
         if metadata is None:
-            return False
+            return True
 
         labels: dict[str, str] = metadata.get("labels")
         if labels is None:
-            return False
+            return True
 
         policy = labels.get(DELETE_POLICY_LABEL)
         if policy is None:
-            return False
+            return True
 
         if not isinstance(policy, str):
-            return False
+            return True
 
         # If a resource has a label with DELETE_POLICY_LABEL set
         # to 'retain', it should not be deleted.
-        return policy != "retain"
+        return policy == "retain"
 
     @staticmethod
     def _get_file_extension(file_name: str) -> str:
