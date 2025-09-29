@@ -108,11 +108,11 @@ def _find_role_binding(
     domain_name: str,
 ) -> Munch | None:
     query = {
-        "roles": [role],
+        "roleNames": [role],
         "subjectNames": [subject_name],
-        "subjectTypes": [subject_kind],
+        "subjectKinds": [subject_kind],
         "domainNames": [domain_name],
-        "domainTypes": [domain_kind],
+        "domainKinds": [domain_kind],
     }
 
     role_bindings = client.list_role_bindings(query)
