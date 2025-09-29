@@ -57,7 +57,6 @@ DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 
 class Applier:
-
     def __init__(
         self,
         files: Iterable[str],
