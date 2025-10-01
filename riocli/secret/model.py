@@ -13,10 +13,10 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
-from rapyuta_io_sdk_v2 import Client
 
 
 class Secret(Model):
@@ -30,7 +30,7 @@ class Secret(Model):
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_secret(self.metadata.name, unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.update_secret(name=self.metadata.name, body=self)  # pyright:ignore[reportArgumentType]
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:

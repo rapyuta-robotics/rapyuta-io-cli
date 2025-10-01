@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.constants import ApplyResult
 from riocli.model import Model
-from riocli.v2client.client import Client
 
 
 class Organization(Model):
