@@ -13,10 +13,10 @@
 # limitations under the license.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
-from rapyuta_io_sdk_v2 import Client
 
 
 class Package(Model):
@@ -36,9 +36,7 @@ class Package(Model):
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_package(
-            self.metadata.name, query={"version": self.metadata.version}
-        )
+        _ = v2_client.delete_package(self.metadata.name, version=self.metadata.version)
 
     @override
     def list_dependencies(self) -> list[str] | None:

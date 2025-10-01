@@ -13,10 +13,11 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client as v2Client
 from typing_extensions import override
 
+from riocli.disk.util import poll_disk
 from riocli.model import Model
-from rapyuta_io_sdk_v2 import Client as v2Client
 
 
 class Disk(Model):
@@ -29,8 +30,9 @@ class Disk(Model):
         self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> Munch | None:
         created = v2_client.create_disk(unmunchify(self))  # pyright:ignore[reportArgumentType]
-        _ = v2_client.poll_disk(
-            created.metadata.name,
+        _ = poll_disk(
+            client=v2_client,
+            name=created.metadata.name,
             retry_count=retry_count,
             sleep_interval=retry_interval,
         )
