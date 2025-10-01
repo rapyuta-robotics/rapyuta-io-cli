@@ -13,6 +13,7 @@
 # limitations under the License.
 import re
 import time
+from typing import Any
 
 from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2.models import Deployment
@@ -34,10 +35,11 @@ def fetch_deployments(
     client: Client,
     deployment_name_or_regex: str,
     include_all: bool,
-) -> list:
+) -> list[Any]:
     deployments = client.list_deployments(phases=DEFAULT_PHASES)
     result = []
-    for deployment in deployments.items:
+    items = deployments.items if deployments.items is not None else []
+    for deployment in items:
         if (
             include_all
             or deployment_name_or_regex == deployment.metadata.name
@@ -75,7 +77,7 @@ def poll_deployment(
     name: str,
     retry_count: int = 50,
     sleep_interval: int = 6,
-    ready_phases: list[str] = None,
+    ready_phases: list[str] | None = None,
 ):
     if ready_phases is None:
         ready_phases = []
@@ -84,7 +86,7 @@ def poll_deployment(
     status = deployment.status
 
     for _ in range(retry_count):
-        if status.phase in ready_phases:
+        if status is not None and status.phase in ready_phases:
             return deployment
 
         if status.phase == DeploymentPhaseConstants.DeploymentPhaseProvisioning.value:
@@ -93,9 +95,15 @@ def poll_deployment(
                 raise ImagePullError(
                     f"Deployment not running. Phase: Provisioning Status: {status.phase}"
                 )
-        elif status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value:
+        elif (
+            status is not None
+            and status.phase == DeploymentPhaseConstants.DeploymentPhaseSucceeded.value
+        ):
             return deployment
-        elif status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value:
+        elif (
+            status is not None
+            and status.phase == DeploymentPhaseConstants.DeploymentPhaseStopped.value
+        ):
             raise DeploymentNotRunning(
                 f"Deployment not running. Phase: Stopped  Status: {status.phase}"
             )
@@ -104,6 +112,9 @@ def poll_deployment(
         deployment = client.get_deployment(name=name)
         status = deployment.status
 
+    error_codes = []
+    if status is not None and hasattr(status, "error_codes"):
+        error_codes = status.error_codes or []
     msg = (
         f"Retries exhausted: Tried {retry_count} times with {sleep_interval}s interval. "
         f"Deployment: phase={status.phase} status={status.status} \n"

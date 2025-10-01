@@ -47,10 +47,10 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping
 
     from rapyuta_io import Client
+    from rapyuta_io_sdk_v2 import Client as v2Client
     from yaspin.api import Yaspin
 
     from riocli.config import Configuration
-    from riocli.v2client import Client as v2Client
 
 DEFAULT_MAX_WORKERS = 6
 DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
@@ -169,6 +169,9 @@ class Applier:
         assert v2_client is not None
         assert spinner is not None
 
+        if obj_key not in self.objects:
+            return
+
         obj = self.objects[obj_key]
         obj_key = click.style(obj_key, bold=True)
 
@@ -224,6 +227,9 @@ class Applier:
         assert client is not None
         assert v2_client is not None
         assert spinner is not None
+
+        if obj_key not in self.objects:
+            return
 
         obj = self.objects[obj_key]
         obj_key = click.style(obj_key, bold=True)
@@ -343,7 +349,9 @@ class Applier:
 
         if value_files is not None:
             for v in value_files:
-                values.merge(self._load_value(v))
+                value = self._load_value(v)
+                if value is not None:
+                    values.merge(value)
 
         # The "rio" namespace exposes the commonly used fields from rio's
         # Configuration file.
@@ -358,7 +366,9 @@ class Applier:
 
         if secret_files is not None:
             for s in secret_files:
-                secrets.merge(self._load_secret(s))
+                secret = self._load_secret(s)
+                if secret is not None:
+                    secrets.merge(secret)
 
         if "secrets" in values:
             benedict(values["secrets"]).merge(secrets.dict())
