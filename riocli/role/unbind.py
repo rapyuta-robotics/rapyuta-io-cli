@@ -15,13 +15,13 @@
 import click
 from click_help_colors import HelpColorsCommand
 from munch import Munch
+from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.role.util import get_domain, get_subject
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(

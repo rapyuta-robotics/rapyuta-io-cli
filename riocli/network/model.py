@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
@@ -25,33 +26,34 @@ class Network(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> None:
-        client = new_v2_client()
+    @override
+    def create_object(
+        self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
+    ) -> Munch | None:
+        network = v2_client.create_network(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        _ = poll_network(
+            client=v2_client,
+            name=network.metadata.name,  # pyright: ignore[reportOptionalMemberAccess]
+            retry_count=retry_count,
+            sleep_interval=retry_interval,
+        )
 
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
+    @override
+    def update_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
-        retry_count = int(kwargs.get("retry_count"))
-        retry_interval = int(kwargs.get("retry_interval"))
+    @override
+    def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
+        _ = v2_client.delete_network(self.metadata.name)
 
-        try:
-            r = client.create_network(unmunchify(self))
-            poll_network(
-                client=client,
-                name=r.metadata.name,
-                retry_count=retry_count,
-                sleep_interval=retry_interval,
-            )
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            return ApplyResult.EXISTS
-        except Exception as e:
-            raise e
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        runtime = self.spec.get("runtime", None)
 
-    def delete(self, *args, **kwargs) -> None:
-        client = new_v2_client()
+        if not runtime or runtime == "cloud":
+            return None
 
-        try:
-            client.delete_network(self.metadata.name)
-        except HttpNotFoundError:
-            raise ResourceNotFound
+        device_name = self.spec.get("depends", {}).get("nameOrGUID", None)
+
+        if device_name is not None:
+            return [f"device:{device_name}"]

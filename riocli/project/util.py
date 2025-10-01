@@ -16,12 +16,12 @@ from collections.abc import Callable
 from typing import Any
 
 import click
+from rapyuta_io_sdk_v2 import Client as v2Client
 
 from riocli.auth.util import find_project_guid
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
-from rapyuta_io_sdk_v2 import Client as v2Client
 
 
 def name_to_guid(f: Callable) -> Callable:

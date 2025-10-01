@@ -17,13 +17,13 @@ from typing import Any
 
 from munch import Munch
 from rapyuta_io import Client
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 
 from riocli.config.config import Configuration
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.jsonschema.validate import load_schema
-from riocli.v2client.client import Client as v2Client
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 

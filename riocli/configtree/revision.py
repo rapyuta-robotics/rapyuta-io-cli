@@ -35,9 +35,8 @@ from riocli.utils.spinner import with_spinner
 from riocli.utils.state import StateFile
 
 if TYPE_CHECKING:
-    from yaspin.core import Yaspin
-
     from rapyuta_io_sdk_v2 import Client
+    from yaspin.core import Yaspin
 
 
 class Revision:

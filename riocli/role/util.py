@@ -13,8 +13,9 @@
 # limitations under the License.
 import re
 
+from rapyuta_io_sdk_v2 import Client
+
 from riocli.role.model import Role
-from riocli.v2client.client import Client
 
 
 def fetch_roles(

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 from typing_extensions import Any, override
 from waiting import wait
 
@@ -21,8 +23,6 @@ from riocli.config import Configuration
 from riocli.constants import ApplyResult
 from riocli.exceptions import ProjectNotFound
 from riocli.model import Model
-from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
-from rapyuta_io_sdk_v2 import Client
 
 from riocli.project.util import check_project_name
 

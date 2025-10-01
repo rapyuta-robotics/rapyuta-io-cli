@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from munch import Munch, unmunchify
+from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli import static_route
 from riocli.model import Model
-from rapyuta_io_sdk_v2 import Client
 
 
 class StaticRoute(Model):

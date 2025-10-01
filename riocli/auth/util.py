@@ -20,6 +20,8 @@ from rapyuta_io import Client
 from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols

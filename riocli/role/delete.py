@@ -18,6 +18,7 @@ import click
 import requests
 from click_help_colors import HelpColorsCommand
 from munch import Munch
+from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import get_config_from_context
@@ -26,7 +27,6 @@ from riocli.role.util import fetch_roles
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.client import Client
 
 
 @click.command(
