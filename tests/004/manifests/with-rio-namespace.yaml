@@ -1,0 +1,10 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: StaticRoute
+metadata:
+  labels:
+    site: {{ rio.site }}
+    project: {{ rio.email_id }}
+    app: test
+  name: staticroute
+  region: jp

@@ -1,0 +1,44 @@
+apiVersion: api.rapyuta.io/v2
+kind: RoleBinding
+metadata:
+  name: project-role
+spec:
+  roleRef:
+    kind: Role
+    name: role-name
+  subject:
+    kind: User
+    name: qa.rapyuta+e2e@gmail.com
+  domain:
+    kind: Project # Options: [Organization, Project, UserGroup
+    name: project01
+---
+apiVersion: api.rapyuta.io/v2
+kind: RoleBinding
+metadata:
+  name: group-role
+spec:
+  roleRef:
+    kind: Role
+    name: role-name
+  subject:
+    kind: ServiceAccount
+    name: deployer
+  domain:
+    kind: UserGroup # Options: [Organization, Project, UserGroup
+    name: usergroup
+---
+apiVersion: api.rapyuta.io/v2
+kind: RoleBinding
+metadata:
+  name: org-role
+spec:
+  roleRef:
+    kind: Role
+    name: role-name
+  subject:
+    kind: ServiceAccount
+    name: deployer
+  domain:
+    kind: Organization # Options: [Organization, Project, UserGroup
+    name: warehouse
