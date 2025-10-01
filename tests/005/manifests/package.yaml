@@ -1,0 +1,20 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+    - name: "exec-docker"
+      type: docker
+      docker:
+        image: "private-image"
+        pullSecret:
+          depends:
+            kind: secret
+            nameOrGUID: package-secret

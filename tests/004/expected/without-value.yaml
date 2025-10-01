@@ -1,0 +1,9 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: StaticRoute
+metadata:
+  labels:
+    app: test
+  name: staticroute
+  region: jp
+

@@ -1,0 +1,14 @@
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Network
+metadata:
+  name: network
+  labels:
+    app: test
+spec:
+  type: routed
+  rosDistro: noetic
+  runtime: device
+  depends:
+    nameOrGUID: network-device
+  networkInterface: eth0
+  restartPolicy: always

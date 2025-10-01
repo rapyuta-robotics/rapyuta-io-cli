@@ -1,0 +1,7 @@
+digraph {
+	graph [overlap=False rankdir=LR]
+	node [shape=box]
+	"network/network"
+	"device/network-device" -> "network/network"
+}
+

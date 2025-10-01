@@ -1,0 +1,9 @@
+# Format:
+# ROLE DOMAIN SUBJECT
+
+
+org_admin  Organization:Rapyuta User:test.user11@rapyuta-robotics.com
+org_member Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com
+
+org_member Organization:Rapyuta User:test.user12@rapyuta-robotics.com
+org_member Organization:Rapyuta2 User:test.user12@rapyuta-robotics.com
