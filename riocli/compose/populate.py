@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 
 import click
 from munch import Munch
@@ -190,13 +190,15 @@ def build_volume_mounts(deployment: dict) -> List[str]:
 
         # Determine volume mode based on permissions
         perm = volume.get("perm")
-        mode = VOLUME_PERMISSIONS.get(perm, "rslave")
-        service_volumes.append(f"{src}:{dst}:{mode}")
+        mode = ""
+        if perm in VOLUME_PERMISSIONS:
+            mode = f":{VOLUME_PERMISSIONS.get(perm)}"
+        service_volumes.append(f"{src}:{dst}{mode}")
 
     return service_volumes
 
 
-def populate_command(exe: dict) -> Optional[List[str]]:
+def populate_command(exe: dict) -> Optional[Union[List[str], str]]:
     """
     Constructs the command to run for a container from the executable definition.
     If runAsBash is True, wraps the command in a shell invocation.
@@ -206,11 +208,33 @@ def populate_command(exe: dict) -> Optional[List[str]]:
     if not cmd_raw:
         return None
 
+    result: list[str] | str | None = None
+
     if exe.get("runAsBash") in (True, "true"):
         cmd_str = cmd_raw if isinstance(cmd_raw, str) else " ".join(cmd_raw)
-        return ["/bin/bash", "-c", cmd_str]
+        result = ["/bin/bash", "-c", cmd_str]
+    elif isinstance(cmd_raw, list) and len(cmd_raw) == 1:
+        result = cmd_raw[0]
     else:
-        return cmd_raw if isinstance(cmd_raw, list) else [cmd_raw]
+        result = cmd_raw
+
+    return sanitize_command(result)
+
+
+def sanitize_command(input: list[str] | str | None) -> list[str] | str | None:
+    # Docker compose tries to render the $VAR before running the container.
+    # Escape all the $VAR -> $$VAR.
+    # But there might already be escaped vars, avoid them.
+    if isinstance(input, list):
+        out = []
+        for each in input:
+            replaced = each.replace("$", "$$").replace("$$$$", "$$")
+            out.append(replaced)
+
+        return out
+
+    if isinstance(input, str):
+        return input.replace("$", "$$").replace("$$$$", "$$")
 
 
 def find_package(packages: Dict[str, dict], name: str, version: str) -> dict:
