@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Dict, List, Any, Optional, Union
+import shlex
 
 import click
 from munch import Munch
@@ -332,7 +333,7 @@ def populate_healthcheck(exe: dict) -> Optional[HealthCheck]:
         return None
 
     return HealthCheck(
-        test=" ".join(command),
+        test=" ".join(shlex.quote(part) for part in command),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
         interval=f"{probe.get('periodSeconds', 10)}s",
         retries=probe.get("failureThreshold", 3),
