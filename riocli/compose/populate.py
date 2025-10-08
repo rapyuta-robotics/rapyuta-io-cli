@@ -310,7 +310,11 @@ def populate_depends_on(
         # Generate service names for each executable in the dependent package
         for exe in pkg.get("spec", {}).get("executables", []):
             service_name = f"{dep_name}_{exe['name']}"
-            depends_on[service_name] = DependsCondition()
+            condition = DependsCondition()
+            if hasattr(exe, "livenessProbe") and hasattr(exe.livenessProbe, "exec"):
+                condition.condition = "service_healthy"
+
+            depends_on[service_name] = condition
 
     return depends_on
 
