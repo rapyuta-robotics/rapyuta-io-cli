@@ -292,7 +292,7 @@ def populate_depends_on(
         depends_on["ros-master"] = DependsCondition()
 
     for dep in deployment.spec.get("depends", {}):
-        if deployment.kind != "deployment":
+        if dep.kind != "deployment":
             continue
 
         dep_name = dep.nameOrGUID
