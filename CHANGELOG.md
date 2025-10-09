@@ -1,3 +1,19 @@
+# [9.13.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.3...v9.13.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* **compose:** handle deployment dependencies correctly ([b6369de](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b6369def77322a787946e1e978bcc415782b9b21))
+* **compose:** handle quoting command correctly for healthchecks ([3ae4b89](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3ae4b897443b45548457295a70ac2cc63fd78a55))
+* **compose:** replace --no-detach with --detach ([b9af823](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b9af823331f4a44a2f174d8d5520cb27f3a41b52))
+* **compose:** sanitize volume permissions and commands ([8fd2f71](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8fd2f7160d2effb9f59bd7a7d240b08dce446a03))
+* **compose:** use service_healthy condition if liveness probe present ([c7f5092](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c7f50928ff740fbe15858a2843a96df74e25ed83))
+
+
+### Features
+
+* **device:** support 32 core VMs ([098114c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/098114c73eeae3c6650beee44ca3273641046544))
+
 ## [9.12.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.2...v9.12.3) (2025-09-02)
 
 
