@@ -1,0 +1,21 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "secret-viewer"
+  labels:
+    persona: developer
+spec:
+  description: "Role to view secrets with name test-secret.*"
+  rules:
+
+  - resource: "secret"
+    instances:
+    - test-secret.*
+    actions:
+    - get
+    - create
+
+  # Read actions to the Secrets.
+  - resource: "secret"
+    actions:
+    - list

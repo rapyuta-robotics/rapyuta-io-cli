@@ -9,7 +9,7 @@
 ## Project
 Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project "" list true
 Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project test-project get false
-Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project test-project delete false
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project test-project delete false 
 
 ## Usergroup
 Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com usergroup "" list false

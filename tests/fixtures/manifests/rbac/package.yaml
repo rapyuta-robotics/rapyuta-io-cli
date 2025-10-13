@@ -1,0 +1,39 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: test-package-4
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: redis-cache
+    type: docker
+    docker:
+      image: redis:6-alpine
+      ports:
+      - containerPort: 6379
+        protocol: TCP
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: random-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: random-app
+    type: docker
+    docker:
+      image: alpine:latest
+      command: [ "sh", "-c", "while true; do echo 'Random package'; sleep 30; done" ]
