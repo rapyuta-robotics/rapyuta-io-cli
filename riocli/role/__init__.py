@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.role.bind import bind
 from riocli.role.inspect_role import inspect_role
 from riocli.role.list import list_role_bindings, list_roles
 from riocli.role.unbind import unbind
+from riocli.utils.alias import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

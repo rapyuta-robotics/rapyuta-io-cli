@@ -53,15 +53,11 @@ def list_roles(ctx: click.Context, labels: list[str] | None = None):
 
             $ rio role list --label release=3.0
     """
-    query = {}
-    if labels:
-        query = {"labelSelector": labels}
-
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        roles = client.list_roles(query=query)
-        roles = sorted(roles, key=lambda r: r.metadata.name.lower())
+        roles = client.list_roles(label_selector=[labels])
+        roles = sorted(roles.items, key=lambda r: r.metadata.name.lower())
         _display_role_list(roles)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -91,14 +87,11 @@ def list_role_bindings(ctx: click.Context, labels: list[str] | None = None):
 
         $ rio rolebinding list
     """
-    query = {}
-    if labels:
-        query = {"labelSelector": labels}
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        role_bindings = client.list_role_bindings(query=query)
-        _display_rolebindings_list(role_bindings)
+        role_bindings = client.list_role_bindings(label_selector=[labels])
+        _display_rolebindings_list(role_bindings.items)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -121,7 +114,7 @@ def _display_rolebindings_list(rolebindings: list[Munch], show_header: bool = Tr
     headers = ["Role", "Domain", "Subject"] if show_header else []
     data = [
         [
-            r.spec.roleRef.name,
+            r.spec.role_ref.name,
             _format_domain(r.spec.domain),
             _format_subject(r.spec.subject),
         ]

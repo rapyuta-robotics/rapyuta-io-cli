@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -45,7 +44,7 @@ def inspect_role(ctx: click.Context, role_name: str, format_type: str):
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
         role = client.get_role(role_name)
-        inspect_with_format(unmunchify(role), format_type)
+        inspect_with_format(role.model_dump(), format_type)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

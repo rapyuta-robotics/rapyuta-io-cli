@@ -17,7 +17,6 @@ from click_help_colors import HelpColorsCommand
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.organization.util import name_to_guid as name_to_organization_guid
-from riocli.project.util import check_project_name
 from riocli.utils.spinner import with_spinner
 
 
@@ -63,7 +62,6 @@ def create_project(
     }
 
     try:
-        check_project_name(project_name=project_name)
         client = new_v2_client(with_project=False)
         client.create_project(body=payload)
         spinner.text = click.style("Project created successfully.", fg=Colors.GREEN)
