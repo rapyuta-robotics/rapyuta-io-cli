@@ -1,0 +1,20 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-viewer
+  labels:
+    app: cli-test
+spec:
+  description: "Role to view packages with name test-package.*"
+  rules:
+  - resource: package
+    instances:
+    - "test-package.*"
+    actions:
+    - create
+    - get
+
+  - resource: package
+    actions:
+    - list
