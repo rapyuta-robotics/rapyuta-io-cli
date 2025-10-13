@@ -24,8 +24,6 @@ from riocli.constants import ApplyResult
 from riocli.exceptions import ProjectNotFound
 from riocli.model import Model
 
-from riocli.project.util import check_project_name
-
 PROJECT_READY_TIMEOUT = 150
 
 
@@ -83,8 +81,6 @@ class Project(Model):
             )
             return ApplyResult.UPDATED
         except (HttpNotFoundError, ProjectNotFound):
-            project_name = project["metadata"]["name"]
-            check_project_name(project_name=project_name)
             _ = v2_client.create_project(project)  # pyright:ignore[reportArgumentType]
 
             return ApplyResult.CREATED

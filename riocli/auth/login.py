@@ -123,7 +123,7 @@ def login(
     ctx = get_root_context(ctx)
     config = get_config_from_context(ctx)
 
-    interactive = interactive or not silent
+    interactive = interactive and not silent
 
     if auth_token:
         if not validate_and_set_token(ctx, auth_token):

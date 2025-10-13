@@ -62,7 +62,7 @@ def select_organization(
         return org_guid
 
     # fetch user organizations and sort them on their name
-    user = client.get_user()
+    user = client.get_myself()
     organizations = sorted(user.spec.organizations, key=lambda org: org.name.lower())
 
     if len(organizations) == 0:
@@ -75,7 +75,7 @@ def select_organization(
 
     for o in organizations:
         org_map[o.guid] = o.name
-        org_short_guids[o.guid] = o.shortGUID
+        org_short_guids[o.guid] = o.short_guid
 
     if not org_guid:
         org_guid = show_selection(org_map, "Select an organization:")
@@ -247,21 +247,21 @@ def find_project_guid(
     raise ProjectNotFound()
 
 
-def find_organization_guid(client: Client, name: str) -> tuple[str, str]:
-    user = client.get_user()
+def find_organization_guid(client: v2Client, name: str) -> tuple[str, str]:
+    user = client.get_myself()
 
     for organization in user.spec.organizations:
         if organization.name == name:
-            return organization.guid, organization.shortGUID
+            return organization.guid, organization.short_guid
 
     raise OrganizationNotFound(f"User is not part of organization: {name}")
 
 
-def get_organization_name(client: Client, guid: str) -> tuple[str, str]:
-    user = client.get_user()
+def get_organization_name(client: v2Client, guid: str) -> tuple[str, str]:
+    user = client.get_myself()
 
     for organization in user.spec.organizations:
         if organization.guid == guid:
-            return organization.name, organization.shortGUID
+            return organization.name, organization.short_guid
 
     raise OrganizationNotFound(f"User is not part of organization: {guid}")
