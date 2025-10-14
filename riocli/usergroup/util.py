@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import functools
+from rapyuta_io_sdk_v2.utils import walk_pages
 import typing
 
 import click
