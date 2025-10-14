@@ -46,9 +46,19 @@ class Network(Model):
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
         _ = v2_client.delete_network(self.metadata.name)
 
-    @override
-    def list_dependencies(self) -> list[str] | None:
-        runtime = self.spec.get("runtime", None)
+        try:
+            r = client.create_network(unmunchify(self))
+            poll_network(
+                client=client,
+                name=r.metadata.name,
+                retry_count=retry_count,
+                sleep_interval=retry_interval,
+            )
+            return ApplyResult.CREATED
+        except HttpAlreadyExistsError:
+            return ApplyResult.EXISTS
+        except Exception as e:
+            raise e
 
         if not runtime or runtime == "cloud":
             return None
