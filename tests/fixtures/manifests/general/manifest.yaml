@@ -1,9 +1,0 @@
-apiVersion: "apiextensions.rapyuta.io/v1"
-kind: "Disk"
-metadata:
-  name: "disk-name"
-  labels:
-    app: test
-spec:
-  runtime: invalid-runtime
-  capacity: 4

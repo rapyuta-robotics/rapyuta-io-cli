@@ -18,9 +18,6 @@ from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 from typing_extensions import Any, override
 from waiting import wait
 
-from riocli.config import Configuration
-from riocli.constants import ApplyResult
-from riocli.model import Model
 from riocli.auth.util import find_project_guid
 from riocli.config import Configuration
 from riocli.constants import ApplyResult

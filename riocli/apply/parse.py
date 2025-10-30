@@ -13,19 +13,17 @@
 # limitations under the License.
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+import graphlib
+import json
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-import json
-from typing import Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import click
-from rapyuta_io import Client
 import yaml
 from benedict import benedict
 from munch import munchify
-
-from yaspin.api import Yaspin
 
 from riocli.apply.util import (
     get_resource_class,
@@ -44,10 +42,6 @@ from riocli.model.base import Model
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
 from riocli.utils.graph import GraphVisualizer, Graphviz
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
-
-DEFAULT_MAX_WORKERS = 6
-DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping
@@ -288,8 +282,8 @@ class Applier:
 
     def _get_dependency_graph(
         self, objects: dict[str, Model]
-    ) -> tuple[TopologicalSorter[str], GraphVisualizer]:
-        graph: TopologicalSorter[str] = TopologicalSorter()
+    ) -> tuple[graphlib.TopologicalSorter[str], GraphVisualizer]:
+        graph: graphlib.TopologicalSorter[str] = graphlib.TopologicalSorter()
         diagram = Graphviz(direction="LR", format="svg")
 
         for key, obj in objects.items():
@@ -533,18 +527,18 @@ class Applier:
     def _can_delete(obj: Model) -> bool:
         metadata = obj.get("metadata")
         if metadata is None:
-            return False
+            return True
 
         labels: dict[str, str] = metadata.get("labels")
         if labels is None:
-            return False
+            return True
 
         policy = labels.get(DELETE_POLICY_LABEL)
         if policy is None:
-            return False
+            return True
 
         if not isinstance(policy, str):
-            return False
+            return True
 
         # If a resource has a label with DELETE_POLICY_LABEL set
         # to 'retain', it should not be deleted.

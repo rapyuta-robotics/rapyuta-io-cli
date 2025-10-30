@@ -112,9 +112,8 @@ def poll_deployment(
         deployment = client.get_deployment(name=name)
         status = deployment.status
 
-    error_codes = []
     if status is not None and hasattr(status, "error_codes"):
-        error_codes = status.error_codes or []
+        pass
     msg = (
         f"Retries exhausted: Tried {retry_count} times with {sleep_interval}s interval. "
         f"Deployment: phase={status.phase} status={status.status} \n"

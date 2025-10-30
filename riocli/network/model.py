@@ -17,7 +17,6 @@ from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
-from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 from riocli.network.util import poll_network
 
 

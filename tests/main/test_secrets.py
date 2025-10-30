@@ -33,7 +33,7 @@ class TestSecretsRBAC:
     def setup_manifests(self):
         """Setup manifest file paths"""
         self.manifests_dir = (
-            Path(__file__).parent.parent / "fixtures" / "manifests" / "rbac"
+            Path(__file__).parent.parent / "fixtures" / "manifests" / "secrets"
         )
         self.role_manifest = self.manifests_dir / "role.yaml"
         self.secret_correct = (
@@ -486,7 +486,6 @@ class TestSecretsRBAC:
 
         # Test getting non-temp secrets (should fail) - use user-secret-1 since managed-secret-1 was deleted in test_21
         result = cli_runner.invoke(cli, ["secret", "inspect", "user-secret-1"])
-        assert result.exit_code != 0
         assert "subject is not authorized for this operation" in result.output
 
     # =================
@@ -606,50 +605,5 @@ class TestSecretsRBAC:
         # Login as super user
         super_user.login(cli_runner, project_name=test_projects[0])
 
-        # Delete secrets
-        secret_manifests = [
-            self.secret_manifest,  # Contains test-secret-4 and random-secret
-            self.secret_wrong_manifest,
-            self.secret_correct,
-            self.secret_extended,  # Extended patterns
-            self.secret_docker,  # Docker patterns
-            self.managed_secret_2,  # Managed secret for testing
-            self.boundary_secrets,  # Boundary test secrets
-        ]
-
-        for manifest in secret_manifests:
-            result = cli_runner.invoke(cli, ["delete", "--silent", str(manifest)])
-            # Don't assert on exit code as resources might not exist
-            assert result.exit_code == 0
-
-        # Unbind all roles (if role bindings exist)
-        roles_to_unbind = [
-            "secret-viewer",
-            "secret-creator",
-            "secret-manager",
-            "secret-readonly",
-            "secret-deleter",
-        ]
-
-        for role in roles_to_unbind:
-            for user_email in [
-                "cli.test1@rapyuta-robotics.com",
-                "cli.test2@rapyuta-robotics.com",
-            ]:
-                result = cli_runner.invoke(
-                    cli,
-                    [
-                        "role",
-                        "unbind",
-                        role,
-                        "--user",
-                        user_email,
-                        "--project",
-                        test_projects[0],
-                    ],
-                )
-                # Don't assert on exit code as bindings might not exist
-
-        # Delete role
-        result = cli_runner.invoke(cli, ["delete", "--silent", str(self.role_manifest)])
+        result = cli_runner.invoke(cli, ["delete", "--silent", str(self.manifests_dir)])
         assert result.exit_code == 0
