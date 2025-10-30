@@ -20,7 +20,6 @@ from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.organization.util import name_to_guid as name_to_organization_guid
 from riocli.utils import tabulate_data
-from rapyuta_io_sdk_v2.utils import walk_pages
 
 
 @click.command(

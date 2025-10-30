@@ -16,8 +16,7 @@ from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
 from riocli.model import Model
-from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
-from rapyuta_io_sdk_v2.utils import walk_pages
+from riocli.usergroup.util import find_usergroup_guid
 
 USER_GUID = "guid"
 USER_EMAIL = "emailID"

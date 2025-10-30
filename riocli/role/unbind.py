@@ -88,7 +88,7 @@ def unbind(
             spinner.green.ok(Symbols.INFO)
             return
 
-        payload = {"oldBindings": [binding]}
+        payload = {"oldBindings": [binding], "newBindings": []}
 
         _ = client.update_role_binding(payload)
         spinner.text = click.style("Binding deleted successfully.", fg=Colors.GREEN)
@@ -107,17 +107,15 @@ def _find_role_binding(
     domain_kind: str,
     domain_name: str,
 ) -> Munch | None:
-    query = {
-        "roleNames": [role],
-        "subjectNames": [subject_name],
-        "subjectKinds": [subject_kind],
-        "domainNames": [domain_name],
-        "domainKinds": [domain_kind],
-    }
+    role_bindings = client.list_role_bindings(
+        role_names=role,
+        subject_names=subject_name,
+        subject_kinds=subject_kind,
+        domain_names=domain_name,
+        domain_kinds=domain_kind,
+    )
 
-    role_bindings = client.list_role_bindings(query)
-
-    if len(role_bindings) == 0:
+    if len(role_bindings.items) == 0:
         return
 
-    return role_bindings[0]
+    return role_bindings.items[0]

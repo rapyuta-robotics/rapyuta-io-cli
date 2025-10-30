@@ -30,7 +30,7 @@ class Role(Model):
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_role(self.metadata.name, unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.update_role(unmunchify(self))  # pyright:ignore[reportArgumentType]
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:

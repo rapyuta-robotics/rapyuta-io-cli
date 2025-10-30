@@ -16,6 +16,7 @@ import functools
 import typing
 
 import click
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors

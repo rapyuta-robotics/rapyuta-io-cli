@@ -17,11 +17,11 @@ __version__ = "9.5.0"
 import os
 
 import click
-from click import Context
 import rapyuta_io
+from click import Context
 
 from riocli.apply import apply, delete, graph
-from riocli.apply.explain import list_examples, explain
+from riocli.apply.explain import explain, list_examples
 from riocli.apply.template import template
 from riocli.auth import auth
 from riocli.chart import chart

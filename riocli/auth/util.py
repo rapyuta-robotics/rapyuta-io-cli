@@ -21,16 +21,13 @@ from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 from rapyuta_io_sdk_v2 import Client as v2Client
-from rapyuta_io_sdk_v2.utils import handle_server_errors
+from rapyuta_io_sdk_v2.utils import handle_server_errors, walk_pages
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import OrganizationNotFound, ProjectNotFound
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
-from rapyuta_io_sdk_v2 import Client as v2Client
-from rapyuta_io_sdk_v2.utils import handle_server_errors, walk_pages
-from riocli.exceptions import ProjectNotFound, OrganizationNotFound
 
 TOKEN_LEVELS = {0: AuthTokenLevel.LOW, 1: AuthTokenLevel.MED, 2: AuthTokenLevel.HIGH}
 

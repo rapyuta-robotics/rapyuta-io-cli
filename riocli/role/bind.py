@@ -79,7 +79,7 @@ def bind(
         subject_kind, subject_name = get_subject(subject)
 
         binding = {
-            "bindings": [
+            "newBindings": [
                 {
                     "metadata": {
                         "organizationGUID": config.organization_guid,
@@ -98,10 +98,11 @@ def bind(
                         },
                     },
                 }
-            ]
+            ],
+            "oldBindings": [],
         }
 
-        _ = client.create_role_binding(binding)
+        _ = client.update_role_binding(binding=binding)
         spinner.text = click.style("Binding created successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
