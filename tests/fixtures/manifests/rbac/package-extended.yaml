@@ -1,0 +1,57 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: user-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: user-web-app
+    type: docker
+    docker:
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+        protocol: TCP
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: managed-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: managed-app
+    type: docker
+    docker:
+      image: alpine:latest
+      command: [ "sh", "-c", "echo 'Managed package running'; sleep 60" ]
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: temp-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: temp-worker
+    type: docker
+    docker:
+      image: busybox:latest
+      command: [ "sh", "-c", "echo 'Temporary package'; sleep 30" ]
