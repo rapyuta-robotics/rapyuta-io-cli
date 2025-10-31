@@ -15,7 +15,7 @@ from munch import Munch, unmunchify
 from rapyuta_io_sdk_v2 import Client
 from typing_extensions import override
 
-from riocli import static_route
+from riocli.config.config import Configuration
 from riocli.model import Model
 
 
@@ -24,21 +24,24 @@ class StaticRoute(Model):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
-        client = new_v2_client()
-
-        static_route = unmunchify(self)
+    @override
+    def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
+        return v2_client.create_staticroute(body=unmunchify(self))  # pyright:ignore[reportArgumentType]
 
     @override
-    def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_static_route(self.metadata.name)
+    def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
+        return v2_client.update_staticroute(
+            name=self.metadata.name, body=unmunchify(self)
+        )  # pyright:ignore[reportArgumentType]
 
-    def delete(self, *args, **kwargs) -> None:
-        client = new_v2_client()
+    @override
+    def delete_object(
+        self, v2_client: Client, config: Configuration, *args, **kwargs
+    ) -> None:
+        _ = v2_client.delete_staticroute(
+            name=f"{self.metadata.name}-{config.organization_short_id}"
+        )
 
-        short_id = Configuration().organization_short_id
-
-        try:
-            client.delete_staticroute(f"{self.metadata.name}-{short_id}")
-        except HttpNotFoundError:
-            raise ResourceNotFound
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        return None

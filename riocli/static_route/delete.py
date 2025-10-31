@@ -52,9 +52,11 @@ from riocli.utils.spinner import with_spinner
     type=int,
     default=10,
 )
+@click.pass_context
 @click.argument("route-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting static route...")
 def delete_static_route(
+    ctx: click.Context,
     route_name_or_regex: str,
     force: bool,
     delete_all: bool = False,

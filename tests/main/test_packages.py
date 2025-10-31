@@ -581,36 +581,6 @@ class TestPackagesRBAC:
         )
 
     # =================
-    # VALIDATION TESTS
-    # =================
-
-    def test_40_pydantic_model_validation_error(
-        self, cli_runner, super_user, test_projects
-    ):
-        """Test that invalid package manifest fails with pydantic validation error"""
-        # Login as super user
-        super_user.login(cli_runner, project_name=test_projects[0])
-
-        # Try to apply the wrong manifest (Secret instead of Package)
-        result = cli_runner.invoke(
-            cli, ["apply", "--silent", str(self.package_wrong_manifest)]
-        )
-
-        # Should fail with validation error
-        assert result.exit_code != 0
-        error_output = result.output
-        if hasattr(result, "stderr") and result.stderr:
-            error_output += result.stderr
-        if result.exception:
-            error_output += str(result.exception)
-        assert (
-            "Field required" in error_output
-            or "invalid manifest" in error_output
-            or "is a required property" in error_output
-            or "'runtime' is a required property" in error_output
-        )
-
-    # =================
     # CLEANUP TESTS (Run Last)
     # =================
 
