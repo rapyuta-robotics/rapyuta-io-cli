@@ -15,13 +15,13 @@
 from munch import Munch, unmunchify
 from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
-from typing_extensions import Any, override
+from typing_extensions import override
 from waiting import wait
 
 from riocli.auth.util import find_project_guid
-from riocli.config import Configuration
+from riocli.config import Configuration, new_v2_client
 from riocli.constants import ApplyResult
-from riocli.exceptions import ProjectNotFound
+from riocli.exceptions import ProjectNotFound, ResourceNotFound
 from riocli.model import Model
 
 PROJECT_READY_TIMEOUT = 150
@@ -73,7 +73,7 @@ class Project(Model):
             # will return BadRequest error.
             guid = self._get_guid(v2_client, config)
 
-            client.update_project(project_guid=guid, body=project)
+            v2_client.update_project(project_guid=guid, body=project)
             wait(
                 self._is_ready,
                 timeout_seconds=retry_count * retry_interval,
