@@ -33,8 +33,8 @@ def list_usergroup(ctx: click.Context) -> None:
     """List all user groups in current organization."""
     try:
         client = new_v2_client(with_project=False)
-        user_groups = client.list_usergroups()
-        _display_usergroup_list(user_groups)
+        user_groups = client.list_user_groups()
+        _display_usergroup_list(user_groups.items)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -52,7 +52,7 @@ def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
                 g.metadata.guid,
                 g.metadata.name,
                 g.metadata.creatorGUID,
-                g.spec.membersCount,
+                g.spec.members_count,
                 g.spec.description,
             ]
         )

@@ -29,27 +29,27 @@ class UserGroup(Model):
 
     @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.create_usergroup(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.create_user_group(user_group=unmunchify(self))  # pyright:ignore[reportArgumentType]
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
         group_guid = self.metadata.get("guid")
         if group_guid is None:
             group_guid = find_usergroup_guid(v2_client, self.metadata.name)
-
-        return v2_client.update_usergroup(
-            group_guid,
-            self.metadata.name,
-            unmunchify(self),  # pyright:ignore[reportArgumentType]
+        self.metadata["guid"] = group_guid
+        return v2_client.update_user_group(
+            user_group=unmunchify(self),  # pyright:ignore[reportArgumentType]
         )
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
         group_guid = self.metadata.get("guid")
         if group_guid is None:
-            group_guid = find_usergroup_guid(v2_client, self.metadata.name)
+            group_guid = find_usergroup_guid(v2_client, group_name=self.metadata.name)
 
-        _ = v2_client.delete_usergroup(group_guid, self.metadata.name)
+        _ = v2_client.delete_user_group(
+            group_guid=group_guid, group_name=self.metadata.name
+        )
 
     @override
     def list_dependencies(self) -> list[str] | None:
@@ -59,14 +59,13 @@ class UserGroup(Model):
             subject = f"{member.subject.kind.lower()}:{member.subject.name}"
             dependencies.append(subject)
 
-            for role in member.roles:
+            for role in member.roleNames:
                 dependencies.append(f"role:{role}")
 
         for group_role in self.spec.roles:
             domain = f"{group_role.domain.kind.lower()}:{group_role.domain.name}"
             dependencies.append(domain)
 
-            for role in group_role.roles:
-                dependencies.append(f"role:{role}")
+            dependencies.append(f"role:{group_role.roleName}")
 
         return dependencies

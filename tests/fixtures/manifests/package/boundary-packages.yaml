@@ -1,5 +1,5 @@
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: user-package-test
@@ -18,7 +18,7 @@ spec:
       image: alpine:latest
       command: [ "echo", "User package test" ]
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: user-packages
@@ -36,7 +36,7 @@ spec:
     docker:
       image: busybox:latest
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: my-user-package-1
@@ -53,7 +53,7 @@ spec:
     docker:
       image: nginx:latest
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: dockerized-app-package
@@ -71,7 +71,7 @@ spec:
     docker:
       image: postgres:13
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: non-docker-app-package

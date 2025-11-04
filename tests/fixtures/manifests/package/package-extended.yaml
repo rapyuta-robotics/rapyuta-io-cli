@@ -15,9 +15,6 @@ spec:
     type: docker
     docker:
       image: nginx:alpine
-      ports:
-      - containerPort: 80
-        protocol: TCP
 ---
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Package
@@ -34,9 +31,9 @@ spec:
   executables:
   - name: managed-app
     type: docker
+    command: [ "sh", "-c", "echo 'Managed package running'; sleep 60" ]
     docker:
       image: alpine:latest
-      command: [ "sh", "-c", "echo 'Managed package running'; sleep 60" ]
 ---
 apiVersion: apiextensions.rapyuta.io/v1
 kind: Package
@@ -52,6 +49,6 @@ spec:
   executables:
   - name: temp-worker
     type: docker
+    command: [ "sh", "-c", "echo 'Temporary package'; sleep 30" ]
     docker:
       image: busybox:latest
-      command: [ "sh", "-c", "echo 'Temporary package'; sleep 30" ]

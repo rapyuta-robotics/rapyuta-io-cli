@@ -1,5 +1,5 @@
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: managed-package-2

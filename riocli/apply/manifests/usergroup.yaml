@@ -11,17 +11,17 @@ spec:
   - subject:
       kind: User
       name: qa.rapyuta+e2e@gmail.com
-    roles: [group_admin]
+    roleNames: [ group_admin ]
   - subject:
       kind: ServiceAccount
       name: sa-paramsync
-    roles: [group_viewer]
+    roleNames: [ group_viewer ]
   roles:
   - domain:
       kind: Project
       name: site-1
-    roles: [project_admin]
+    roleName: project_admin
   - domain:
       kind: Project
       name: site-2
-    roles: [project_viewer]
+    roleName: project_viewer
