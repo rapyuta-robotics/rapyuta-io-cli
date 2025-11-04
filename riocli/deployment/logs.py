@@ -55,7 +55,7 @@ def deployment_logs(
         client = new_v2_client()
         if not exec_name:
             deployment_manifest = client.get_deployment(name=deployment_name)
-            exec_name = list(deployment_manifest.status.executablesStatus.values())[
+            exec_name = list(deployment_manifest.status.executables_status.values())[
                 0
             ].name
         stream_logs = client.stream_deployment_logs(

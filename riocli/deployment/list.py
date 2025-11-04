@@ -117,7 +117,7 @@ def display_deployment_list(
     data = []
     for d in deployments:
         package_name_version = (
-            f"{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})"
+            f"{d.metadata.depends.name_or_guid} ({d.metadata.depends.version})"
         )
         phase = d.status.phase
 

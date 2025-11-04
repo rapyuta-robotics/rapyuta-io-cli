@@ -1,0 +1,63 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: test-package-for-deploy-1
+  version: 1.0.0
+  labels:
+    app: test
+    purpose: deployment-rbac-testing
+spec:
+  runtime: cloud
+  executables:
+  - name: test-logger-1
+    type: docker
+    docker:
+      image: chentex/random-logger:latest
+    limits:
+      cpu: 0.025
+      memory: 128
+  cloud:
+    replicas: 1
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: test-package-for-deploy-2
+  version: 1.0.0
+  labels:
+    app: test
+    purpose: deployment-rbac-testing
+spec:
+  runtime: cloud
+  executables:
+  - name: test-logger-2
+    type: docker
+    docker:
+      image: chentex/random-logger:latest
+    limits:
+      cpu: 0.025
+      memory: 128
+  cloud:
+    replicas: 1
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Package
+metadata:
+  name: test-package-for-deploy-3
+  version: 1.0.0
+  labels:
+    app: test
+    purpose: deployment-rbac-testing
+spec:
+  runtime: cloud
+  executables:
+  - name: test-logger-3
+    type: docker
+    docker:
+      image: chentex/random-logger:latest
+    limits:
+      cpu: 0.025
+      memory: 128
+  cloud:
+    replicas: 1

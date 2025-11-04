@@ -1,0 +1,117 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: deployment-viewer
+  labels:
+    app: cli-test
+    purpose: deployment-rbac-testing
+spec:
+  description: "Role to view deployments with name test-deployment.*"
+  rules:
+  - resource: deployment
+    instances:
+    - "^test-deployment.*"
+    actions:
+    - get
+    - list
+    - get_history
+    - get_graph
+    - log
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: deployment-creator
+  labels:
+    app: cli-test
+    purpose: deployment-rbac-testing
+spec:
+  description: "Role to create deployments with name user-deployment.*"
+  rules:
+  - resource: deployment
+    instances:
+    - "^user-deployment.*"
+    actions:
+    - create
+    - get
+    - list
+  - resource: package
+    actions:
+    - list
+    - get
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: deployment-manager
+  labels:
+    app: cli-test
+    purpose: deployment-rbac-testing
+spec:
+  description: "Role to fully manage deployments with name managed-deployment.*"
+  rules:
+  - resource: deployment
+    instances:
+    - "^managed-deployment.*"
+    actions:
+    - create
+    - get
+    - update
+    - delete
+    - exec
+    - get_history
+    - get_graph
+    - list
+    - log
+  - resource: package
+    actions:
+    - list
+    - get
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: deployment-readonly
+  labels:
+    app: cli-test
+    purpose: deployment-rbac-testing
+spec:
+  description: "Role to only view test deployments"
+  rules:
+  - resource: deployment
+    instances:
+    - "^test-deployment.*"
+    actions:
+    - get
+    - list
+    - get_history
+    - get_graph
+    - log
+  - resource: package
+    actions:
+    - list
+    - get
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: deployment-executor
+  labels:
+    app: cli-test
+    purpose: deployment-rbac-testing
+spec:
+  description: "Role to execute commands on test deployments"
+  rules:
+  - resource: deployment
+    instances:
+    - "^test-deployment.*"
+    actions:
+    - get
+    - list
+    - exec
+    - log
+  - resource: package
+    actions:
+    - list
+    - get
