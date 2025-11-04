@@ -47,8 +47,10 @@ def inspect_usergroup(
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        usergroup = client.list_usergroups(query={"name": group_name})
-        inspect_with_format(usergroup, format_type)
+        usergroup = client.list_user_groups(name=group_name)
+        inspect_with_format(
+            usergroup.items[0].model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

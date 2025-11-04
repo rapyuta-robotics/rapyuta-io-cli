@@ -17,6 +17,7 @@ import typing
 
 import click
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -39,7 +40,9 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
             group_name = None
 
         if group_name is None:
-            group_name = get_usergroup_name(client, group_guid)
+            group_name = get_usergroup_name(
+                client, group_guid=group_guid, group_name=group_name
+            )
 
         if group_guid is None:
             try:
@@ -55,9 +58,9 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def get_usergroup_name(client, group_guid: str) -> str:
+def get_usergroup_name(client: Client, group_guid: str) -> str:
     try:
-        usergroup = client.get_usergroup(group_guid)
+        usergroup = client.get_user_group()
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -65,17 +68,15 @@ def get_usergroup_name(client, group_guid: str) -> str:
     return getattr(usergroup, "name", getattr(usergroup, "metadata", {}).get("name"))
 
 
-def find_usergroup_guid(client: Client, org_guid, group_name: str) -> str:
-    user_groups = client.list_usergroups(org_guid=org_guid)
-    # TODO: Change to below implementation after RBAC
-    # user_groups = []
-    # for items in walk_pages(client.list_usergroups(org_guid=org_guid)):
-    #     user_groups.extend(items)
+def find_usergroup_guid(client: Client, group_name: str) -> str:
+    user_groups = []
+    for items in walk_pages(client.list_user_groups):
+        user_groups.extend(items)
 
     for g in user_groups:
-        g_name = getattr(g, "name", getattr(getattr(g, "metadata", {}), "name", None))
+        g_name = g.metadata.name or None
         if g_name == group_name:
-            return getattr(g, "guid", getattr(g, "metadata", {}).get("guid"))
+            return g.metadata.guid
 
     raise UserGroupNotFound()
 

@@ -30,7 +30,7 @@ class Secret(Model):
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_secret(name=self.metadata.name, body=self)  # pyright:ignore[reportArgumentType]
+        return v2_client.update_secret(name=self.metadata.name, body=unmunchify(self))  # pyright:ignore[reportArgumentType]
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:

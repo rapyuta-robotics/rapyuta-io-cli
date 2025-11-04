@@ -307,6 +307,8 @@ class Applier:
             objects = self._load_manifests(f)
             if objects is not None:
                 for obj in objects:
+                    if obj is None:
+                        continue
                     key, loaded = self._load_object(obj)
                     loaded_objects[key] = loaded
                     loaded_manifests.append(obj)

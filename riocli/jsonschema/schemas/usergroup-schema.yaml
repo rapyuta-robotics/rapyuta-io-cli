@@ -10,8 +10,8 @@ definitions:
       apiVersion:
         default: api.rapyuta.io/v2
         oneOf:
-          - const: apiextensions.rapyuta.io/v1
-          - const: api.rapyuta.io/v2
+        - const: apiextensions.rapyuta.io/v1
+        - const: api.rapyuta.io/v2
       kind:
         const: UserGroup
       metadata:
@@ -20,10 +20,10 @@ definitions:
         "$ref": "#/definitions/usergroupSpec"
 
     required:
-      - apiVersion
-      - kind
-      - metadata
-      - spec
+    - apiVersion
+    - kind
+    - metadata
+    - spec
 
   metadata:
     type: object
@@ -44,7 +44,7 @@ definitions:
         uniqueItems: true
 
     required:
-      - name
+    - name
 
   usergroupSpec:
     type: object
@@ -67,10 +67,8 @@ definitions:
     properties:
       domain:
         $ref: "#/definitions/domain"
-      roles:
-        type: array
-        items:
-          type: string
+      roleName:
+        type: string
     additionalProperties: false
 
   domain:
@@ -97,7 +95,7 @@ definitions:
     properties:
       subject:
         $ref: "#/definitions/subject"
-      roles:
+      roleNames:
         type: array
         items:
           type: string
@@ -133,13 +131,13 @@ definitions:
       role:
         type: string
         enum:
-          - viewer
-          - admin
+        - viewer
+        - admin
     oneOf:
-      - required:
-          - guid
-      - required:
-          - name
+    - required:
+      - guid
+    - required:
+      - name
 
   stringMap:
     type: object

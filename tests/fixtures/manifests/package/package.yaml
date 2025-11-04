@@ -1,5 +1,5 @@
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: test-package-4
@@ -15,11 +15,8 @@ spec:
     type: docker
     docker:
       image: redis:6-alpine
-      ports:
-      - containerPort: 6379
-        protocol: TCP
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: random-package
@@ -34,6 +31,6 @@ spec:
   executables:
   - name: random-app
     type: docker
+    command: [ "sh", "-c", "while true; do echo 'Random package'; sleep 30; done" ]
     docker:
       image: alpine:latest
-      command: [ "sh", "-c", "while true; do echo 'Random package'; sleep 30; done" ]

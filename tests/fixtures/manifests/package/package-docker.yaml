@@ -1,5 +1,5 @@
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: docker-registry-package
@@ -16,11 +16,8 @@ spec:
     type: docker
     docker:
       image: registry:2
-      ports:
-      - containerPort: 5000
-        protocol: TCP
 ---
-apiVersion: apiextensions.rapyuta.io/v1
+apiVersion: api.rapyuta.io/v2
 kind: Package
 metadata:
   name: dockerhub-package
