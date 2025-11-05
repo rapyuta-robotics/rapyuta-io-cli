@@ -95,9 +95,13 @@ def _process_deployment_services(
     package = find_package(packages, pkg_dep.nameOrGUID, pkg_dep.version)
 
     # Get restart policy with normalization
-    restart_policy = package.spec.get("device", {}).get("restart", "always")
+    restart_policy = deployment.spec.get("restart", None)
+    restart_policy = restart_policy or package.spec.get("device", {}).get("restart", "always")
+
     if restart_policy == "onfailure":
         restart_policy = "on-failure"
+    elif restart_policy == "never":
+        restart_policy = "no"
 
     # Build volume mounts, dependencies, and environment variables
     volume_mounts = build_volume_mounts(deployment)
