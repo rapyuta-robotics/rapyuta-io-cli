@@ -1,3 +1,10 @@
+## [9.13.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.1...v9.13.2) (2025-11-05)
+
+
+### Bug Fixes
+
+* **compose:** handle restart policy "never" and deployment overriding ([1b187c8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1b187c857cf3332b067a054c70cb01238289cb9d)), closes [rapyuta-robotics/rapyuta_io#1138](https://github.com/rapyuta-robotics/rapyuta_io/issues/1138)
+
 ## [9.13.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.0...v9.13.1) (2025-10-21)
 
 
