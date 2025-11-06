@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
@@ -64,6 +65,7 @@ class Revision:
         self._data = {}
         self._org_guid = self._config.organization_guid
         self._project_guid = None
+        self._with_org = with_org
         if not with_org:
             self._project_guid = self._config.project_guid
 
@@ -77,7 +79,11 @@ class Revision:
             self._rev_id = rev.rev_id
             msg = f"{Symbols.INFO}  Re-using revision {self._rev_id}."
         else:
-            self._rev = self._client.create_revision(name=self._tree_name)
+            self._rev = munchify(
+                self._client.create_revision(
+                    name=self._tree_name, with_project=(not self._with_org)
+                )
+            )
             self._rev_id = self._rev.metadata.guid
             msg = f"{Symbols.SUCCESS} Revision {self._rev_id} created successfully."
             save_revision(
@@ -117,7 +123,11 @@ class Revision:
 
         self._data[key] = data
 
-    def store_file(self: Revision, key: str, file_path: str) -> None:
+    def store_file(
+        self: Revision,
+        key: str,
+        file_path: str,
+    ) -> None:
         with open(file_path, "rb") as f:
             file_hash = md5()
             chunk = f.read(8192)
@@ -126,7 +136,10 @@ class Revision:
                 chunk = f.read(8192)
             f.seek(0)
         self._client.put_key_in_revision(
-            tree_name=self._tree_name, revision_id=self._rev_id, key=key
+            tree_name=self._tree_name,
+            revision_id=self._rev_id,
+            key=key,
+            project_guid=self._project_guid,
         )
 
     def delete(self: Revision, key: str) -> None:
@@ -146,6 +159,7 @@ class Revision:
             revision_id=self._rev_id,
             message=msg,
             author=author,
+            with_project=(not self._with_org),
         )
         if not self._explicit:
             save_revision(
@@ -173,7 +187,10 @@ class Revision:
 
         if self._data:
             self._client.put_keys_in_revision(
-                name=self._tree_name, revision_id=self._rev_id, config_values=self._data
+                name=self._tree_name,
+                revision_id=self._rev_id,
+                config_values=self._data,
+                with_project=(not self._with_org),
             )
 
         if self._commit and self._rev_id:
