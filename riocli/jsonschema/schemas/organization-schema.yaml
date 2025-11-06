@@ -1,4 +1,3 @@
----
 $schema: http://json-schema.org/draft-07/schema#
 title: Organization
 description: A namespace for projects on Rapyuta
@@ -10,8 +9,8 @@ definitions:
       apiVersion:
         default: api.rapyuta.io/v2
         oneOf:
-          - const: apiextensions.rapyuta.io/v1
-          - const: api.rapyuta.io/v2
+        - const: apiextensions.rapyuta.io/v1
+        - const: api.rapyuta.io/v2
       kind:
         const: Organization
       metadata:
@@ -20,10 +19,10 @@ definitions:
         "$ref": "#/definitions/organizationSpec"
 
     required:
-      - apiVersion
-      - kind
-      - metadata
-      - spec
+    - apiVersion
+    - kind
+    - metadata
+    - spec
 
   metadata:
     type: object
@@ -43,13 +42,13 @@ definitions:
       organizationName:
         type: string
     required:
-      - name
-      - guid
+    - name
+    - guid
 
   organizationSpec:
     type: object
     properties:
-      users:
+      members:
         type: array
         items:
           "$ref": "#/definitions/member"
@@ -58,29 +57,34 @@ definitions:
   member:
     type: object
     properties:
-      subjectKind:
-        type: string
-        enum:
-        - User
-        - UserGroup
-        - ServiceAccount
-      subjectGUID:
-        type: string
-      subjectName:
-        type: string
+      subject:
+        type: object
+        properties:
+          kind:
+            type: string
+            enum:
+            - User
+            - UserGroup
+            - ServiceAccount
+          guid:
+            type: string
+          name:
+            type: string
+        required:
+        - kind
+        anyOf:
+        - required:
+          - guid
+        - required:
+          - name
       roleNames:
         type: array
         items:
           type: string
     required:
-      - roleNames
-      - subjectKind
-    oneOf:
-    - required:
-      - subjectGUID
-    - required:
-      - subjectName
+    - subject
+    - roleNames
 
   organizationGUID:
     type: string
-    pattern: "^org-([a-z0-9]{20}|[a-z]{24})$"
+    pattern: "^org-[a-z0-9]{20,24}$"

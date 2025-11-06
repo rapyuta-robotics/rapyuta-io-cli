@@ -461,7 +461,8 @@ class Applier:
         try:
             if extension == ".json":
                 # TODO(ankit): Verify how this works.
-                loaded = list(json.loads(content))
+                # list() -> [] beacause list method make list of keys but [] itself wraps whole object
+                loaded = [json.loads(content)]
             elif extension in (".yaml", ".yml"):
                 loaded = list(yaml.safe_load_all(content))
         except (json.JSONDecodeError, yaml.YAMLError) as e:
