@@ -615,15 +615,15 @@ wheels = [
 
 [[package]]
 name = "email-validator"
-version = "2.0.0.post2"
+version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dnspython" },
     { name = "idna" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/01/c4/b3972387f0ed2374035b61b46c17367c2363b958c966cfb1607282db5b56/email_validator-2.0.0.post2.tar.gz", hash = "sha256:1ff6e86044200c56ae23595695c54e9614f4a9551e0e393614f764860b3d7900", size = 45253, upload-time = "2023-04-19T21:07:20.525Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/22/900cb125c76b7aaa450ce02fd727f452243f2e91a61af068b40adba60ea9/email_validator-2.3.0.tar.gz", hash = "sha256:9fc05c37f2f6cf439ff414f8fc46d917929974a82244c20eb10231ba60c54426", size = 51238, upload-time = "2025-08-26T13:09:06.831Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/f1/1645adf5a12df4889bebc77701f2b44ba37409e7db92be9eef7dded2d04c/email_validator-2.0.0.post2-py3-none-any.whl", hash = "sha256:2466ba57cda361fb7309fd3d5a225723c788ca4bbad32a0ebd5373b99730285c", size = 31733, upload-time = "2023-04-19T21:07:18.633Z" },
+    { url = "https://files.pythonhosted.org/packages/de/15/545e2b6cf2e3be84bc1ed85613edd75b8aea69807a71c26f4ca6a9258e82/email_validator-2.3.0-py3-none-any.whl", hash = "sha256:80f13f623413e6b197ae73bb10bf4eb0908faf509ad8362c5edeb0be7fd450b4", size = 35604, upload-time = "2025-08-26T13:09:05.858Z" },
 ]
 
 [[package]]
@@ -659,6 +659,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/bb/ff/b4c0dc78fbe20c3e59c0c7334de0c27eb4001a2b2017999af398bf730817/execnet-2.1.1.tar.gz", hash = "sha256:5189b52c6121c24feae288166ab41b32549c7e2348652736540b9e6e7d4e72e3", size = 166524, upload-time = "2024-04-08T09:04:19.245Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/43/09/2aea36ff60d16dd8879bdb2f5b3ee0ba8d08cbbdcdfe870e695ce3784385/execnet-2.1.1-py3-none-any.whl", hash = "sha256:26dee51f1b80cebd6d0ca8e74dd8745419761d3bef34163928cbebbdc4749fdc", size = 40612, upload-time = "2024-04-08T09:04:17.414Z" },
+]
+
+[[package]]
+name = "ftfy"
+version = "6.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "wcwidth" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a5/d3/8650919bc3c7c6e90ee3fa7fd618bf373cbbe55dff043bd67353dbb20cd8/ftfy-6.3.1.tar.gz", hash = "sha256:9b3c3d90f84fb267fe64d375a07b7f8912d817cf86009ae134aa03e1819506ec", size = 308927, upload-time = "2024-10-26T00:50:35.149Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ab/6e/81d47999aebc1b155f81eca4477a616a70f238a2549848c38983f3c22a82/ftfy-6.3.1-py3-none-any.whl", hash = "sha256:7c70eb532015cd2f9adb53f101fb6c7945988d023a085d127d1573dc49dd0083", size = 44821, upload-time = "2024-10-26T00:50:33.425Z" },
 ]
 
 [[package]]
@@ -786,7 +798,7 @@ wheels = [
 
 [[package]]
 name = "jsonschema"
-version = "4.23.0"
+version = "4.25.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -794,9 +806,9 @@ dependencies = [
     { name = "referencing" },
     { name = "rpds-py" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/38/2e/03362ee4034a4c917f697890ccd4aec0800ccf9ded7f511971c75451deec/jsonschema-4.23.0.tar.gz", hash = "sha256:d71497fef26351a33265337fa77ffeb82423f3ea21283cd9467bb03999266bc4", size = 325778, upload-time = "2024-07-08T18:40:05.546Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/74/69/f7185de793a29082a9f3c7728268ffb31cb5095131a9c139a74078e27336/jsonschema-4.25.1.tar.gz", hash = "sha256:e4a9655ce0da0c0b67a085847e00a3a51449e1157f4f75e9fb5aa545e122eb85", size = 357342, upload-time = "2025-08-18T17:03:50.038Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/4a/4f9dbeb84e8850557c02365a0eee0649abe5eb1d84af92a25731c6c0f922/jsonschema-4.23.0-py3-none-any.whl", hash = "sha256:fbadb6f8b144a8f8cf9f0b89ba94501d143e50411a1278633f56a7acf7fd5566", size = 88462, upload-time = "2024-07-08T18:40:00.165Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/9c/8c95d856233c1f82500c2450b8c68576b4cf1c871db3afac5c34ff84e6fd/jsonschema-4.25.1-py3-none-any.whl", hash = "sha256:3fba0169e345c7175110351d456342c364814cfcf3b964ba4587f22915230a63", size = 90040, upload-time = "2025-08-18T17:03:48.373Z" },
 ]
 
 [[package]]
@@ -810,6 +822,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa
 wheels = [
     { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437, upload-time = "2025-09-08T01:34:57.871Z" },
 ]
+
+[[package]]
+name = "mailchecker"
+version = "5.0.9"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/e3/d11a469f4f36770f5e529753088737d6e2e4266c04ba8e05aac63ef2911d/mailchecker-5.0.9.tar.gz", hash = "sha256:8b083907da42daa448d93eb19f0c978dde2e8565617a5e76271b35a5f7285ccd", size = 322029, upload-time = "2023-04-24T09:08:56.219Z" }
 
 [[package]]
 name = "markupsafe"
@@ -1179,6 +1197,16 @@ wheels = [
 ]
 
 [[package]]
+name = "pytest-dependency"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/3b/317cc04e77d707d338540ca67b619df8f247f3f4c9f40e67bf5ea503ad94/pytest-dependency-0.6.0.tar.gz", hash = "sha256:934b0e6a39d95995062c193f7eaeed8a8ffa06ff1bcef4b62b0dc74a708bacc1", size = 19499, upload-time = "2023-12-31T20:38:54.991Z" }
+
+[[package]]
 name = "pytest-html"
 version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1231,18 +1259,20 @@ wheels = [
 
 [[package]]
 name = "python-benedict"
-version = "0.35.0"
+version = "0.30.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "ftfy" },
+    { name = "mailchecker" },
+    { name = "phonenumbers" },
+    { name = "python-dateutil" },
     { name = "python-fsutil" },
     { name = "python-slugify" },
     { name = "requests" },
-    { name = "typing-extensions" },
-    { name = "useful-types" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bc/7f/670cea45a5de7ba79b820b9e58c19ec28070e65f8fe4584edc14b3b86ff2/python_benedict-0.35.0.tar.gz", hash = "sha256:ca825742cb60641939857417b799c6ca6680ba1ed7d3a92cf722103bc8dcb3ea", size = 58486, upload-time = "2025-09-30T22:57:42.206Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/6b/06efbc5ef2dfd203f5aab4abb730b3f0eefb10075d243d7bd9f07d9ba1a5/python-benedict-0.30.0.tar.gz", hash = "sha256:431e2eef5758277224e71c152afad1dec34324ae7b441a4cad9945a705c631f7", size = 47059, upload-time = "2023-03-22T00:29:15.331Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/ae/76f758e10b04c00f26c1613d8c77a078a3001d8ec439ec9e992d7c5a9268/python_benedict-0.35.0-py3-none-any.whl", hash = "sha256:4be33761812a2b8986b19f9dcb9df687feefd81c4cbb11becd044a5e28c340f6", size = 59905, upload-time = "2025-09-30T22:57:40.637Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/4f/2c5e83c9f178d59ffde24d7f3bc8b71d0e4654e480c5107a977c1ab36ac8/python_benedict-0.30.0-py3-none-any.whl", hash = "sha256:11fc3c6d3e9d0c7a4d87dc4828fb13519cad1744a5b1b9616185c8ace23ce474", size = 46855, upload-time = "2023-03-22T00:29:12.936Z" },
 ]
 
 [[package]]
@@ -1452,6 +1482,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-click" },
     { name = "pytest-cov" },
+    { name = "pytest-dependency" },
     { name = "pytest-html" },
     { name = "pytest-mock" },
     { name = "pytest-xdist" },
@@ -1471,16 +1502,16 @@ requires-dist = [
     { name = "click-spinner", specifier = ">=0.1.10" },
     { name = "dictdiffer", specifier = ">=0.9.0" },
     { name = "directory-tree", specifier = ">=0.0.3.1" },
-    { name = "email-validator", specifier = "==2.0.0.post2" },
+    { name = "email-validator", specifier = ">=2.0.0.post2" },
     { name = "etcd3gw", specifier = ">=2.4.0" },
     { name = "graphlib-backport", specifier = ">=1.0.3" },
     { name = "graphviz", specifier = ">=0.20.3" },
     { name = "jinja2", specifier = ">=3.0.1" },
-    { name = "jsonschema", specifier = "==4.23.0" },
+    { name = "jsonschema", specifier = ">=4.23.0" },
     { name = "munch", specifier = ">=2.4.0" },
     { name = "pretty-traceback", specifier = ">=2022.1018" },
     { name = "pyrfc3339", specifier = ">=1.1" },
-    { name = "python-benedict", specifier = ">=0.33.2" },
+    { name = "python-benedict", specifier = "==0.30" },
     { name = "python-dateutil", specifier = ">=2.8.2" },
     { name = "python-hosts", specifier = ">=1.0.7" },
     { name = "python-magic", marker = "os_name != 'nt'", specifier = ">=0.4.27" },
@@ -1506,6 +1537,7 @@ dev = [
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-click", specifier = ">=1.1.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "pytest-dependency", specifier = ">=0.6.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
@@ -2021,18 +2053,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/15/22/9ee70a2574a4f4599c47dd506532914ce044817c7752a79b6a51286319bc/urllib3-2.5.0.tar.gz", hash = "sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760", size = 393185, upload-time = "2025-06-18T14:07:41.644Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/c2/fe1e52489ae3122415c51f387e221dd0773709bad6c6cdaa599e8a2c5185/urllib3-2.5.0-py3-none-any.whl", hash = "sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc", size = 129795, upload-time = "2025-06-18T14:07:40.39Z" },
-]
-
-[[package]]
-name = "useful-types"
-version = "0.2.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/92/d6/0d6db1f8766e9b5e7ec259666c40ceae6bbb9326caf50e08717639e167b7/useful_types-0.2.1.tar.gz", hash = "sha256:870a0bcc8fcb7d0b2f14055438c1cab7e248fded942b0943a4d7019e7fbbdacd", size = 4748, upload-time = "2024-04-20T08:58:15.195Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/23/c194fd6c6258727f694e22b106c262c7d2678049dbc2d2045743e235f43a/useful_types-0.2.1-py3-none-any.whl", hash = "sha256:0dca32763d7271b5c8c7c395c44c10d09dba47a41aec97dcb085041ad096e0e9", size = 5382, upload-time = "2024-04-20T08:58:13.759Z" },
 ]
 
 [[package]]

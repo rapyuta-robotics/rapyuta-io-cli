@@ -253,7 +253,9 @@ def set_tree_revision(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        client.set_configtree_revision(name=tree_name, configtree=payload)
+        client.set_configtree_revision(
+            name=tree_name, configtree=payload, with_project=(not with_org)
+        )
         spinner.text = click.style(
             "Config tree head updated successfully.", fg=Colors.GREEN
         )
@@ -362,7 +364,7 @@ def list_tree_revisions(
     """
     try:
         client = new_v2_client(with_project=(not with_org))
-        result = client.list_revisions(tree_name=tree_name, committed=with_org)
+        result = client.list_revisions(tree_name=tree_name, with_project=(not with_org))
         revisions = munchify(result.get("items", []))
         if not isinstance(revisions, Iterable):
             raise Exception("List items are not iterable")

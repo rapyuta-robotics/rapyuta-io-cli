@@ -327,6 +327,7 @@ def fetch_tree_keys(
             revision=rev_id,
             include_data=True,
             content_types=["kv"],
+            with_project=(not is_org),
         )
     )
 
