@@ -44,7 +44,9 @@ class Organization(Model):
     @override
     def apply(self, v2_client: Client, *args, **kwargs) -> ApplyResult:
         try:
-            _ = v2_client.update_organization(self.metadata.guid, unmunchify(self))
+            _ = v2_client.update_organization(
+                organization_guid=self.metadata.guid, body=unmunchify(self)
+            )
         except Exception as e:
             raise e
 
