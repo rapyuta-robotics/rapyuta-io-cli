@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Organization as OrganizationModel
 from typing_extensions import override
 
 from riocli.constants import ApplyResult
@@ -24,6 +25,7 @@ class Organization(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = OrganizationModel.model_validate(self)
 
     @override
     def create_object(self, *args, **kwargs) -> Munch | None:
@@ -45,7 +47,7 @@ class Organization(Model):
     def apply(self, v2_client: Client, *args, **kwargs) -> ApplyResult:
         try:
             _ = v2_client.update_organization(
-                organization_guid=self.metadata.guid, body=unmunchify(self)
+                organization_guid=self._obj.metadata.guid, body=self._obj
             )
         except Exception as e:
             raise e

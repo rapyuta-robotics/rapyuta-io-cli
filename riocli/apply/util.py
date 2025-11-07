@@ -30,7 +30,6 @@ from riocli.constants.symbols import Symbols
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
-from riocli.model import Model
 from riocli.network.model import Network
 from riocli.organization.model import Organization
 from riocli.package.model import Package
@@ -62,13 +61,13 @@ FILTERS = {
 }
 
 
-def get_resource_class(data: Mapping[str, Any]) -> type[Model]:
+def get_resource_class(data: Mapping[str, Any]):
     """Get the model class based on the kind"""
     kind = data.get("kind", None)
     if kind is None:
         raise Exception("kind is missing")
 
-    klass: type[Model] | None = KIND_TO_CLASS.get(str(kind).lower(), None)
+    klass = KIND_TO_CLASS.get(str(kind).lower(), None)
     if klass is None:
         raise Exception(f"invalid kind {kind}")
 

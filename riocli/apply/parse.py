@@ -320,11 +320,10 @@ class Applier:
         kls = get_resource_class(obj)
 
         try:
-            kls.validate(obj)
+            ist = kls(munchify(obj))
         except Exception as e:
             raise Exception(f"invalid manifest {key}: {str(e)}")
 
-        ist = kls(munchify(obj))
         return key, ist
 
     def _load_manifests(self, file_name: str) -> list[dict[str, Any]] | None:

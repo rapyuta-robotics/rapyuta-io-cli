@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Network as NetworkModel
 from typing_extensions import override
 
 from riocli.model import Model
@@ -24,12 +25,13 @@ class Network(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = NetworkModel.model_validate(self)
 
     @override
     def create_object(
         self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> Munch | None:
-        network = v2_client.create_network(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        network = v2_client.create_network(self._obj)  # pyright:ignore[reportArgumentType]
         _ = poll_network(
             client=v2_client,
             name=network.metadata.name,  # pyright: ignore[reportOptionalMemberAccess]
@@ -43,16 +45,8 @@ class Network(Model):
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_network(self.metadata.name)
+        _ = v2_client.delete_network(self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        runtime = self.spec.get("runtime", None)
-
-        if not runtime or runtime == "cloud":
-            return None
-
-        device_name = self.spec.get("depends", {}).get("nameOrGUID", None)
-
-        if device_name is not None:
-            return [f"device:{device_name}"]
+        self._obj.list_dependencies()

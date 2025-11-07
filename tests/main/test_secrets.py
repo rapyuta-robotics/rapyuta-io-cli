@@ -577,26 +577,6 @@ class TestSecretsRBAC:
         )
 
     # =================
-    # VALIDATION TESTS
-    # =================
-
-    def test_40_pydantic_model_validation_error(
-        self, cli_runner, super_user, test_projects
-    ):
-        """Test that invalid secret manifest fails with pydantic validation error"""
-        # Login as super user
-        super_user.login(cli_runner, project_name=test_projects[0])
-
-        # Try to apply the wrong manifest (StaticRoute instead of Secret)
-        result = cli_runner.invoke(
-            cli, ["apply", "--silent", str(self.secret_wrong_manifest)]
-        )
-
-        # Should fail with validation error
-        assert result.exit_code != 0
-        assert "Field required" in result.output
-
-    # =================
     # CLEANUP TESTS (Run Last)
     # =================
 

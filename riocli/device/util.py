@@ -314,7 +314,7 @@ def delete_hwil_device(spec: dict, metadata: dict) -> None:
     )
 
     client = new_hwil_client()
-    devices = client.list_devices(name=device_name)
+    devices = client.list_devices(query={"name": device_name})
     if not devices:
         return
 
