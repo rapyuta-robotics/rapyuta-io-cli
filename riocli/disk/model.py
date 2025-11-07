@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2 import Disk as DiskModel
 from typing_extensions import override
 
 from riocli.disk.util import poll_disk
@@ -24,12 +25,13 @@ class Disk(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = DiskModel.model_validate(self)
 
     @override
     def create_object(
         self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> Munch | None:
-        created = v2_client.create_disk(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        created = v2_client.create_disk(body=self._obj)  # pyright:ignore[reportArgumentType]
         _ = poll_disk(
             client=v2_client,
             name=created.metadata.name,
@@ -43,7 +45,7 @@ class Disk(Model):
 
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_disk(self.metadata.name)
+        _ = v2_client.delete_disk(self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:

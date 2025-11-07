@@ -644,7 +644,7 @@ class TestStaticRouteRBAC:
         for manifest in staticroute_manifests:
             result = cli_runner.invoke(cli, ["delete", "--silent", str(manifest)])
             # Don't assert on exit code as resources might not exist
-            assert result.exit_code == 0
+            assert result.exit_code == 0, result.output
 
         # Unbind all roles (if role bindings exist)
         roles_to_unbind = [

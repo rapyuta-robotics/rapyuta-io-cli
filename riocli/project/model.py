@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Project as ProjectModel
 from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 from typing_extensions import override
 from waiting import wait
@@ -31,6 +32,7 @@ class Project(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = ProjectModel.model_validate(self)
 
     @override
     def create_object(self, *args, **kwargs) -> Munch | None:
@@ -61,27 +63,29 @@ class Project(Model):
         *args,
         **kwargs,
     ) -> ApplyResult:
-        project = unmunchify(self)
-
         # set organizationGUID irrespective of it being present in the manifest
-        self._set_organization(project, config)
+        self._set_organization(config)
 
         try:
             # We try to update before creating in Project. The DockerCache
             # feature is only available in the Update API. If we instead try to
             # create the Project with DockerCache feature enabled then the API
             # will return BadRequest error.
-            guid = self._get_guid(v2_client, config)
+            guid = find_project_guid(
+                client=v2_client,
+                name=self._obj.metadata.name,
+                organization=config.organization_guid,
+            )
 
-            v2_client.update_project(project_guid=guid, body=project)
+            v2_client.update_project(project_guid=guid, body=self._obj)
             wait(
-                self._is_ready,
+                self.is_ready,
                 timeout_seconds=retry_count * retry_interval,
                 sleep_seconds=(1, 30, 2),
             )
             return ApplyResult.UPDATED
         except (HttpNotFoundError, ProjectNotFound):
-            _ = v2_client.create_project(project)  # pyright:ignore[reportArgumentType]
+            _ = v2_client.create_project(body=self._obj)
 
             return ApplyResult.CREATED
         except Exception as e:
@@ -100,5 +104,8 @@ class Project(Model):
 
     def is_ready(self) -> bool:
         client = new_v2_client()
-        projects = client.list_projects(name=self.metadata.name)
+        projects = client.list_projects(name=self._obj.metadata.name)
         return projects.items[0].status.status == "Success"
+
+    def _set_organization(self, config):
+        self._obj.metadata.organizationGUID = config.organization_guid

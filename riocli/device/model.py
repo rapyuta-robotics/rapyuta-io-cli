@@ -36,6 +36,7 @@ class Device(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self.validate(self)
 
     @override
     def create_object(self, *args, **kwargs) -> Munch | None:

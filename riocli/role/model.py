@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Role as RoleModel
+from rapyuta_io_sdk_v2 import RoleBinding as RoleBindingModel
 from typing_extensions import override
 
 from riocli.model import Model
@@ -23,18 +25,19 @@ class Role(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = RoleModel.model_validate(self)
 
     @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.create_role(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.create_role(self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_role(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.update_role(self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_role(self.metadata.name)
+        _ = v2_client.delete_role(self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:
@@ -45,35 +48,20 @@ class RoleBinding(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = RoleBindingModel.model_validate(self)
 
     @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.create_role_binding(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.update_role_binding(self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_role_binding(self.metadata.name, unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.update_role_binding(self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_role_binding(self.metadata.name)
+        _ = v2_client.update_role_binding(self._obj)
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        dependencies: list[str] = []
-
-        role_name = self.spec.get("roleRef", {}).get("name", None)
-        if role_name is not None:
-            dependencies.append(f"role:{role_name}")
-
-        subject_kind = self.spec.get("subject", {}).get("kind", None)
-        subject_name = self.spec.get("subject", {}).get("name", None)
-        if subject_kind is not None and subject_name is not None:
-            dependencies.append(f"{subject_kind}:{subject_name}")
-
-        domain_kind = self.spec.get("domain", {}).get("kind", None)
-        domain_name = self.spec.get("domain", {}).get("name", None)
-        if domain_kind is not None and domain_name is not None:
-            dependencies.append(f"{domain_kind}:{domain_name}")
-
-        return dependencies
+        return self._obj.list_dependencies()

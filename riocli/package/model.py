@@ -12,8 +12,9 @@
 # see the license for the specific language governing permissions and
 # limitations under the license.
 
-from munch import Munch, unmunchify
+from munch import Munch
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Package as PackageModel
 from typing_extensions import override
 
 from riocli.model import Model
@@ -23,12 +24,13 @@ class Package(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = PackageModel.model_validate(self)
 
     @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
         self._sanitize_command()
 
-        return v2_client.create_package(unmunchify(self))  # pyright:ignore[reportArgumentType]
+        return v2_client.create_package(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
     def update_object(self, *args, **kwargs) -> Munch | None:
@@ -36,38 +38,29 @@ class Package(Model):
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_package(self.metadata.name, version=self.metadata.version)
+        _ = v2_client.delete_package(
+            self._obj.metadata.name, version=self._obj.metadata.version
+        )
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        dependencies: list[str] = []
-
-        for exec in self.spec.executables:
-            secret = (
-                exec.get("docker", {})
-                .get("pullSecret", {})
-                .get("depends", {})
-                .get("nameOrGUID", None)
-            )
-            if secret is not None:
-                dependencies.append(f"secret:{secret}")
-
-        return dependencies
+        return self._obj.list_dependencies()
 
     def _sanitize_command(self):
-        for e in self.spec.executables:
+        for e in self._obj.spec.executables:
             # Skip if command is not set.
-            if e.get("command", None) is None:
+            if getattr(e, "command", None) is None:
                 continue
 
             c = []
 
-            if e.get("runAsBash"):
+            if getattr(e, "runAsBash", False):
                 c = ["/bin/bash", "-c"]
 
-            if isinstance(e.command, list):
-                c.extend(e.command)
+            cmd = e.command
+            if isinstance(cmd, list):
+                c.extend(cmd)
             else:
-                c.append(e.command)
+                c.append(cmd)
 
             e.command = c
