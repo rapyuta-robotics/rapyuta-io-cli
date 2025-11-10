@@ -61,7 +61,6 @@ def find_role(
     :return: Role of the user in the project
     :raises: SystemExit
     """
-    v1_client = config.new_client()
     v2_client = config.new_v2_client()
 
     # The user email comes from the config
@@ -81,38 +80,14 @@ def find_role(
     except Exception as e:
         raise e
 
-    role = None
+    roles = None
 
     # If user is present in the users list, check if they are and admin
-    for user in getattr(project.spec, "users", []):
-        if user.emailID == user_email:
-            role = user.role
-            break
+    for member in getattr(project.spec, "members", []):
+        if member.subject.kind == "User" and member.subject.name == user_email:
+            roles = member.role_names
 
-    if role and role == ADMIN_ROLE:
-        return role
-
-    # Else, the membership may be via a group. Lookup the groups the user
-    # has access to and compare them with the list of groups where the project
-    # is included.
-    try:
-        user_groups = v1_client.list_usergroups(project.metadata.organizationGUID)
-        user_groups = {g.name: True for g in user_groups}
-    except Exception as e:
-        raise e
-
-    for group in getattr(project.spec, "userGroups", []):
-        if group.name not in user_groups:
-            continue
-
-        # If the user is part of a group that has admin access then no
-        # need to check further.
-        if role != ADMIN_ROLE and group.role == ADMIN_ROLE:
-            return ADMIN_ROLE
-
-        role = group.role
-
-    if not role:
+    if not roles:
         raise Exception("User does not have access to the project")
 
-    return role
+    return roles

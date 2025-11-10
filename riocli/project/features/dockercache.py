@@ -93,15 +93,15 @@ def dockercache(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    docker_cache = project.spec.features.dockerCache
+    docker_cache = project.spec.features.docker_cache
     docker_cache.enabled = enable
-    docker_cache.proxyDevice = proxy_device
-    docker_cache.proxyInterface = proxy_interface
-    docker_cache.registryURL = registry_url
-    docker_cache.registrySecret = registry_secret
-    docker_cache.dataDirectory = data_directory
+    docker_cache.proxy_device = proxy_device
+    docker_cache.proxy_interface = proxy_interface
+    docker_cache.registry_url = registry_url
+    docker_cache.registry_secret = registry_secret
+    docker_cache.data_directory = data_directory
 
-    is_enabled = project.spec.features.dockerCache.enabled or False
+    is_enabled = project.spec.features.docker_cache.enabled or False
 
     status = "Enabling DockerCache..." if enable else "Disabling DockerCache..."
     if is_enabled and enable:

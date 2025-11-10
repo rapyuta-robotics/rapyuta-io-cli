@@ -203,21 +203,24 @@ def api_refresh_token(
 
 
 @with_spinner(text="Validating token...")
-def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool:
+def validate_and_set_token(
+    ctx: click.Context, config: Configuration, spinner=None
+) -> bool:
     """Validates an auth token."""
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
-    client = Client(auth_token=token)
+    # client = Client(auth_token=token)
+    v2_client = config.new_v2_client(with_project=False, from_file=False)
 
     try:
-        user = client.get_authenticated_user()
+        user = v2_client.get_myself()
         spinner.text = click.style(
-            f"Token belongs to user {user.email_id}", fg=Colors.CYAN
+            f"Token belongs to user {user.spec.email_id}", fg=Colors.CYAN
         )
         # Save the token and user email_id in the context
-        ctx.obj.data["auth_token"] = token
-        ctx.obj.data["email_id"] = user.email_id
+        ctx.obj.data["auth_token"] = config.data["auth_token"]
+        ctx.obj.data["email_id"] = user.spec.email_id
         spinner.ok(Symbols.INFO)
         return True
     except UnauthorizedError:

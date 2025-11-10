@@ -126,7 +126,8 @@ def login(
     interactive = interactive and not silent
 
     if auth_token:
-        if not validate_and_set_token(ctx, auth_token):
+        config.data["auth_token"] = auth_token
+        if not validate_and_set_token(ctx, config):
             raise SystemExit(1)
     else:
         if interactive:
