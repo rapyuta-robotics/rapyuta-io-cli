@@ -102,7 +102,9 @@ class Configuration:
         return Client(auth_token=token, project=project)
 
     @lru_cache(maxsize=2)  # noqa: B019
-    def new_v2_client(self: Configuration, with_project: bool = True) -> v2Client:
+    def new_v2_client(
+        self: Configuration, with_project: bool = True, from_file: bool = True
+    ) -> v2Client:
         if "auth_token" not in self.data:
             raise LoggedOut
 
@@ -114,8 +116,13 @@ class Configuration:
         if with_project and project is None:
             raise NoProjectSelected
 
-        if not with_project:
-            project = None
+        if not with_project and not from_file:
+            return v2Client(
+                config=v2Config(
+                    auth_token=self.data["auth_token"],
+                    environment=self.data["environment"],
+                )
+            )
 
         return v2Client(config=v2Config().from_file(self.filepath))
 
