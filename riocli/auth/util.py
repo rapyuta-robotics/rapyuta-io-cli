@@ -210,7 +210,6 @@ def validate_and_set_token(
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
-    # client = Client(auth_token=token)
     v2_client = config.new_v2_client(with_project=False, from_file=False)
 
     try:
