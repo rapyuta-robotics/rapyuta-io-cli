@@ -15,6 +15,7 @@
 import click
 import munch
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors

@@ -80,12 +80,11 @@ def find_role(
     except Exception as e:
         raise e
 
-    roles = None
-
-    # If user is present in the users list, check if they are and admin
+    roles = []
     for member in getattr(project.spec, "members", []):
         if member.subject.kind == "User" and member.subject.name == user_email:
-            roles = member.role_names
+            roles.extend(getattr(member, "role_names", []))
+            roles.extend(getattr(member, "implicit_role_names", []))
 
     if not roles:
         raise Exception("User does not have access to the project")
