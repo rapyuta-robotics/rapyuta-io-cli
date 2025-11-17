@@ -64,7 +64,7 @@ def find_role(
     v2_client = config.new_v2_client()
 
     # The user email comes from the config
-    user_email = config.data.get("email_id")
+    user_email: str = config.data.get("email_id")
     if not user_email:
         raise ValueError("User email cannot be found in the config.")
 
@@ -82,7 +82,10 @@ def find_role(
 
     roles = []
     for member in getattr(project.spec, "members", []):
-        if member.subject.kind == "User" and member.subject.name == user_email:
+        if (
+            member.subject.kind == "User"
+            and member.subject.name.casefold() == user_email.casefold()
+        ):
             role_names = getattr(member, "role_names", []) or []
             implicit_role_names = getattr(member, "implicit_role_names", []) or []
             roles.extend(role_names)

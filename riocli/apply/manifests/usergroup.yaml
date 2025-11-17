@@ -11,7 +11,7 @@ spec:
   - subject:
       kind: User
       name: qa.rapyuta+e2e@gmail.com
-    roleNames: [ group_admin ]
+    roleNames: [ rio-group_admin ]
   - subject:
       kind: ServiceAccount
       name: sa-paramsync

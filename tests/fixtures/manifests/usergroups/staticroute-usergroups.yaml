@@ -65,4 +65,4 @@ spec:
   - domain:
       kind: Project
       name: "test-project1"
-    roleName: org_member
+    roleName: rio-org_member

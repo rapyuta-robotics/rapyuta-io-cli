@@ -15,6 +15,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 from munch import Munch
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -56,8 +57,10 @@ def list_roles(ctx: click.Context, labels: list[str] | None = None):
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        roles = client.list_roles(label_selector=[labels])
-        roles = sorted(roles.items, key=lambda r: r.metadata.name.lower())
+        roles = []
+        for items in walk_pages(client.list_roles, label_selector=labels):
+            roles.extend(items)
+        roles = sorted(roles, key=lambda r: r.metadata.name.lower())
         _display_role_list(roles)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -90,8 +93,10 @@ def list_role_bindings(ctx: click.Context, labels: list[str] | None = None):
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        role_bindings = client.list_role_bindings(label_selector=[labels])
-        _display_rolebindings_list(role_bindings.items)
+        role_bindings = []
+        for items in walk_pages(client.list_role_bindings, label_selector=labels):
+            role_bindings.extend(items)
+        _display_rolebindings_list(role_bindings)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
