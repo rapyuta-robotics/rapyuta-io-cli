@@ -1,0 +1,176 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-viewer-basic
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Basic viewer role for test-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^test-project.*"
+    actions:
+    - get
+    # - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-creator-user
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Creator role for user-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^user-project.*"
+    actions:
+    - create
+    - get
+    # - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-manager-admin
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Full management role for admin-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^admin-project.*"
+    actions:
+    - create
+    - get
+    # - list
+    - update
+    - delete
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-reader-all
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Read-only access to all projects"
+  rules:
+  - resource: "project"
+    actions:
+    # - list
+    - get
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-deleter-temp
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Delete-only role for temp-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^temp-project.*"
+    actions:
+    - delete
+    - get
+    # - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-updater-config
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Update-only role for config-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^config-project.*"
+    actions:
+    - update
+    - get
+    # - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-multipattern-viewer
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Multi-pattern viewer role for dev.* and staging.* projects"
+  rules:
+  - resource: "project"
+    instances:
+    - "^dev-.*"
+    - "^staging-.*"
+    actions:
+    - get
+    # - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-feature-manager
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Role to manage features on feature-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^feature-project.*"
+    actions:
+    - get
+    # - list
+    - update # For feature toggling
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-owner-transfer
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Role to transfer ownership of transfer-project.* pattern"
+  rules:
+  - resource: "project"
+    instances:
+    - "^transfer-project.*"
+    actions:
+    - get
+    # - list
+    - update # For owner transfer
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-no-list
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Role with get but no list permissions for specific projects"
+  rules:
+  - resource: "project"
+    instances:
+    - "^specific-project.*"
+    actions:
+    - get

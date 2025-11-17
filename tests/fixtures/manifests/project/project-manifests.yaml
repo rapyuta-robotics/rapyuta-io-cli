@@ -1,0 +1,68 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Project
+metadata:
+  name: test-project-manifest-1
+  labels:
+    environment: test
+    team: cli-rbac
+spec:
+  members:
+  - subject:
+      kind: User
+      name: "cli.test1@rapyuta-robotics.com"
+    roleNames: [ "rio-project_viewer" ]
+  - subject:
+      kind: User
+      name: "cli.test2@rapyuta-robotics.com"
+    roleNames: [ "rio-project_admin" ]
+  features:
+    vpn:
+      enabled: true
+---
+apiVersion: api.rapyuta.io/v2
+kind: Project
+metadata:
+  name: user-project-manifest-1
+  labels:
+    environment: development
+    owner: user
+spec:
+  members:
+  - subject:
+      kind: User
+      name: "cli.test1@rapyuta-robotics.com"
+    roleNames: [ "rio-project_admin" ]
+  features:
+    vpn:
+      enabled: false
+---
+apiVersion: api.rapyuta.io/v2
+kind: Project
+metadata:
+  name: admin-project-manifest-1
+  labels:
+    environment: production
+    access: admin-only
+spec:
+  members:
+  - subject:
+      kind: User
+      name: "cli.test2@rapyuta-robotics.com"
+    roleNames: [ "rio-project_admin" ]
+  features:
+    vpn:
+      enabled: true
+---
+apiVersion: api.rapyuta.io/v2
+kind: Project
+metadata:
+  name: random-project-denied
+  labels:
+    environment: test
+    access: unauthorized
+spec:
+  members: []
+  features:
+    vpn:
+      enabled: false

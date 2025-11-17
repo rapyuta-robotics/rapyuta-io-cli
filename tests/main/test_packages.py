@@ -211,12 +211,12 @@ class TestPackagesRBAC:
 
         # Should NOT be able to inspect unauthorized-package
         result = runner.invoke(cli, ["package", "inspect", "unauthorized-package"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
         # Should NOT be able to inspect random-package (doesn't match test-package.* pattern)
         result = runner.invoke(cli, ["package", "inspect", "random-package"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         # Check for authorization error messages
         assert "package not found" in result.output
 
@@ -287,7 +287,7 @@ class TestPackagesRBAC:
 
         # Should NOT be able to inspect unauthorized-package
         result = runner.invoke(cli, ["package", "inspect", "unauthorized-package"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         # Check for authorization error messages
         assert "subject is not authorized for this operation" in result.output
 
@@ -330,23 +330,23 @@ class TestPackagesRBAC:
                 f"User:{test_user_11.email}",
             ],
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Login as test_user_11
         test_user_11.login(cli_runner, project_name=test_projects[0])
 
         # Test listing all packages (should work)
         result = cli_runner.invoke(cli, ["package", "list"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "user-package-1" in result.output
 
         # Test getting user-package-* (should work)
         result = cli_runner.invoke(cli, ["package", "inspect", "user-package-1"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Test getting managed-package-* (should fail - wrong pattern)
         result = cli_runner.invoke(cli, ["package", "inspect", "managed-package-1"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
     def test_21_package_manager_role_permissions(
@@ -424,7 +424,7 @@ class TestPackagesRBAC:
                 f"User:{test_user_11.email}",
             ],
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Login as test_user_11
         test_user_11.login(cli_runner, project_name=test_projects[0])
@@ -437,14 +437,14 @@ class TestPackagesRBAC:
 
         # Test getting *docker* pattern packages (should work)
         result = cli_runner.invoke(cli, ["package", "inspect", "docker-registry-package"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         result = cli_runner.invoke(cli, ["package", "inspect", "dockerhub-package"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Test getting non-docker packages (should fail)
         result = cli_runner.invoke(cli, ["package", "inspect", "user-package-1"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
     def test_23_package_deleter_role_permissions(
@@ -465,29 +465,29 @@ class TestPackagesRBAC:
                 f"User:{test_user_12.email}",
             ],
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Login as test_user_12
         test_user_12.login(cli_runner, project_name=test_projects[0])
 
         # Test listing all packages (should work)
         result = cli_runner.invoke(cli, ["package", "list"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "temp-package-1" in result.output
 
         # Test getting temp-package-* (should work)
         result = cli_runner.invoke(cli, ["package", "inspect", "temp-package-1"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Test deleting temp-package-* (should work)
         result = cli_runner.invoke(
             cli, ["package", "delete", "temp-package-1", "--force", "--silent"]
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Test getting non-temp packages (should fail) - use user-package-1 since managed-package-1 was deleted in test_21
         result = cli_runner.invoke(cli, ["package", "inspect", "user-package-1"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
     # =================
@@ -514,26 +514,26 @@ class TestPackagesRBAC:
                     f"User:{test_user_11.email}",
                 ],
             )
-            assert result.exit_code == 0
+            assert result.exit_code == 0, result.output
 
         # Login as test_user_11
         test_user_11.login(cli_runner, project_name=test_projects[0])
 
         # Test listing all packages (should work from both roles)
         result = cli_runner.invoke(cli, ["package", "list"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Should be able to access user-package-* (from package-creator)
         result = cli_runner.invoke(cli, ["package", "inspect", "user-package-1"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Should be able to access *docker* (from package-readonly)
         result = cli_runner.invoke(cli, ["package", "inspect", "docker-registry-package"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Should NOT be able to access patterns from other roles
         result = cli_runner.invoke(cli, ["package", "inspect", "managed-package-2"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
     def test_31_package_pattern_boundary_validation(
@@ -560,7 +560,7 @@ class TestPackagesRBAC:
                 f"User:{test_user_11.email}",
             ],
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Login as test_user_11
         test_user_11.login(cli_runner, project_name=test_projects[0])
@@ -572,7 +572,7 @@ class TestPackagesRBAC:
 
         # Should fail: my-user-package-1 (doesn't start with user-package)
         result = cli_runner.invoke(cli, ["package", "inspect", "my-user-package-1"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
 
         # Cleanup boundary packages
         super_user.login(cli_runner, project_name=test_projects[0])
