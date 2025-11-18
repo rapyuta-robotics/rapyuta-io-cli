@@ -20,6 +20,7 @@ from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.usergroup.util import UserGroupNotFound, find_usergroup_guid
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 USER_GUID = "guid"
 USER_EMAIL = "emailID"
@@ -48,15 +49,18 @@ class UserGroup(Model):
         except Exception as e:
             raise e
 
-        org = v2client.get_organization(organization_id)
-        user_projects = v2client.list_projects(organization_id)
+        org = v2client.get_organization(organization_guid=organization_id)
+        user_projects = []
+        for page in walk_pages(
+            v2client.list_projects, organizations=[organization_id], limit=100
+        ):
+            user_projects.extend(page)
 
         self.project_name_to_guid_map = {
-            p["metadata"]["name"]: p["metadata"]["guid"] for p in user_projects
+            p.metadata.name: p.metadata.guid for p in user_projects
         }
         self.user_email_to_guid_map = {
-            self._sanitize_email(user[USER_EMAIL]): user[USER_GUID]
-            for user in org.spec.users
+            self._sanitize_email(user.emailID): user.guid for user in org.spec.users
         }
 
         sanitized = self._sanitize()
@@ -65,7 +69,9 @@ class UserGroup(Model):
         if not existing:
             try:
                 payload["spec"]["name"] = sanitized["metadata"]["name"]
-                v1client.create_usergroup(self.metadata.organization, payload["spec"])
+                v1client.create_usergroup(
+                    org_guid=self.metadata.organization, usergroup=payload["spec"]
+                )
                 return ApplyResult.CREATED
             except Exception as e:
                 raise e

@@ -17,7 +17,7 @@ import os
 import socket
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os.path import exists, join
 from shutil import move, which
 from sys import platform
@@ -26,11 +26,11 @@ from tempfile import NamedTemporaryFile
 import click
 from munch import Munch
 from python_hosts import Hosts, HostsEntry
+from rapyuta_io_sdk_v2 import Client as v2Client
 
 from riocli.config import get_config_from_context, new_client, new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
-from riocli.v2client import Client as v2Client
 
 HOSTS_FILE_COMMENT = "riovpn"
 
@@ -187,16 +187,16 @@ def create_binding(
 
     # We may end up creating multiple throwaway tokens in the database.
     # But that's okay and something that we can live with
-    binding = client.create_instance_binding(vpn_instance, binding=body)
-    return binding.spec.get("environment", {})
+    binding = client.create_instance_binding(vpn_instance, body=body)
+    return getattr(binding.spec, "environment", {})
 
 
 def get_key_expiry_time(delta: timedelta | None) -> str | None:
     if delta is None:
         return None
 
-    expiry = datetime.utcnow() + delta
-    return expiry.isoformat("T") + "Z"
+    expiry = datetime.now(timezone.utc) + delta
+    return expiry.isoformat("T").replace("+00:00", "Z")
 
 
 def get_binding_labels() -> dict:

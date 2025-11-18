@@ -15,7 +15,7 @@
 import click
 import munch
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
+from munch import munchify, unmunchify
 
 from riocli.config import get_config_from_context
 from riocli.constants.colors import Colors
@@ -39,7 +39,7 @@ def list_oauth2_clients(
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        oauth2_clients = client.list_oauth2_clients()
+        oauth2_clients = munchify(client.list_oauth2_clients())
         _display_oauth2_client_list(oauth2_clients, wide=wide)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

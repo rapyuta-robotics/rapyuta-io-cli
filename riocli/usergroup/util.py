@@ -70,6 +70,10 @@ def get_usergroup_name(client: Client, org_guid: str, group_guid: str) -> str:
 
 def find_usergroup_guid(client: Client, org_guid, group_name: str) -> str:
     user_groups = client.list_usergroups(org_guid=org_guid)
+    # TODO: Change to below implementation after RBAC
+    # user_groups = []
+    # for items in walk_pages(client.list_usergroups(org_guid=org_guid)):
+    #     user_groups.extend(items)
 
     for g in user_groups:
         if g.name == group_name:

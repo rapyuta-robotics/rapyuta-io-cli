@@ -21,6 +21,7 @@ if sys.stdout.isatty():
     from yaspin import kbi_safe_yaspin as Spinner
 else:
     from riocli.utils.spinner import DummySpinner as Spinner
+from riocli.apply.util import print_context
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.parameter.utils import filter_trees, display_trees
@@ -56,7 +57,9 @@ from riocli.parameter.utils import filter_trees, display_trees
     help="Skip confirmation",
 )
 @click.argument("path", type=click.Path(exists=True))
+@click.pass_context
 def upload_configurations(
+    ctx: click.Context,
     path: str,
     tree_names: tuple[str] = None,
     delete_existing: bool = False,
@@ -107,6 +110,8 @@ def upload_configurations(
     click.secho("Following configuration trees will be uploaded")
     click.secho()
     display_trees(path, trees)
+
+    print_context(ctx=ctx)
 
     if not silent:
         click.confirm("Do you want to proceed?", default=True, abort=True)
