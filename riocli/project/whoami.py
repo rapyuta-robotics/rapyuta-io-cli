@@ -77,16 +77,16 @@ def find_role(
         raise ValueError("Project GUID cannot be found.")
 
     try:
-        project = v2_client.get_project(project_guid)
+        project = v2_client.get_project(project_guid=project_guid)
     except Exception as e:
         raise e
 
     role = None
 
     # If user is present in the users list, check if they are and admin
-    for user in project.spec.get("users", []):
-        if user["emailID"] == user_email:
-            role = user["role"]
+    for user in getattr(project.spec, "users", []):
+        if user.emailID == user_email:
+            role = user.role
             break
 
     if role and role == ADMIN_ROLE:
@@ -96,21 +96,21 @@ def find_role(
     # has access to and compare them with the list of groups where the project
     # is included.
     try:
-        user_groups = v1_client.list_usergroups(project.metadata.get("organizationGUID"))
+        user_groups = v1_client.list_usergroups(project.metadata.organizationGUID)
         user_groups = {g.name: True for g in user_groups}
     except Exception as e:
         raise e
 
-    for group in project.spec.get("userGroups", []):
-        if group["name"] not in user_groups:
+    for group in getattr(project.spec, "userGroups", []):
+        if group.name not in user_groups:
             continue
 
         # If the user is part of a group that has admin access then no
         # need to check further.
-        if role != ADMIN_ROLE and group["role"] == ADMIN_ROLE:
+        if role != ADMIN_ROLE and group.role == ADMIN_ROLE:
             return ADMIN_ROLE
 
-        role = group["role"]
+        role = group.role
 
     if not role:
         raise Exception("User does not have access to the project")

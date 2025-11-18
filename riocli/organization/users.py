@@ -43,12 +43,12 @@ def list_users(ctx: click.Context) -> None:
         raise SystemExit(1) from e
 
     users = organization.spec.users
-    users.sort(key=lambda u: u["emailID"])
+    users.sort(key=lambda u: u.emailID)
 
     data = []
     for u in users:
         fg, bold = None, False
-        if u["emailID"] == current_user_email:
+        if u.emailID == current_user_email:
             fg, bold = Colors.GREEN, True
         full_name = f"{u.firstName} {u.lastName}"
         row = [u.guid, full_name, u.emailID, u.roleInOrganization]

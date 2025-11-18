@@ -15,12 +15,12 @@
 import click
 import munch
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.organization.util import name_to_guid as name_to_organization_guid
 from riocli.utils import tabulate_data
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 
 @click.command(
@@ -74,11 +74,13 @@ def list_projects(
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get("organization_id")
 
-    query = {"labelSelector": labels}
-
     try:
         client = new_v2_client(with_project=False)
-        projects = client.list_projects(organization_guid=organization_guid, query=query)
+        projects = []
+        for page in walk_pages(
+            client.list_projects, organizations=[organization_guid], limit=100
+        ):
+            projects.extend(page)
         projects = sorted(projects, key=lambda p: p.metadata.name.lower())
         current = ctx.obj.data.get("project_id", None)
         _display_project_list(projects, current, show_header=True, wide=wide)
@@ -112,7 +114,9 @@ def _display_project_list(
                 [
                     metadata.createdAt,
                     metadata.creatorGUID,
-                    unmunchify(project.spec.features),
+                    project.spec.features.model_dump(
+                        by_alias=True, exclude_none=True, exclude_defaults=True
+                    ),
                 ]
             )
         data.append([click.style(v, fg=fg, bold=bold) for v in row])

@@ -34,7 +34,7 @@ class Organization(Model):
 
         try:
             client.update_organization(
-                organization_guid=self.metadata.guid, data=organization
+                organization_guid=self.metadata.guid, body=organization
             )
         except Exception as e:
             raise e
