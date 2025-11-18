@@ -26,6 +26,7 @@ from rapyuta_io.clients import LogUploads, SharedURL
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import get_config_from_context, new_client, new_hwil_client
 from riocli.config.config import Configuration
@@ -33,7 +34,6 @@ from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
 from riocli.hwil.util import execute_command, find_device_id
 from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
-from riocli.v2client.util import handle_server_errors
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
