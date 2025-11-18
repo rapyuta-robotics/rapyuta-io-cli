@@ -19,7 +19,7 @@ from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.package.enum import RestartPolicy
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Package(Model):
@@ -39,7 +39,7 @@ class Package(Model):
         package = self._sanitize_package()
 
         try:
-            client.create_package(package)
+            client.create_package(body=package)
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:
             return ApplyResult.EXISTS
@@ -48,9 +48,7 @@ class Package(Model):
         client = new_v2_client()
 
         try:
-            client.delete_package(
-                self.metadata.name, query={"version": self.metadata.version}
-            )
+            client.delete_package(self.metadata.name, version=self.metadata.version)
         except HttpNotFoundError:
             raise ResourceNotFound
 
