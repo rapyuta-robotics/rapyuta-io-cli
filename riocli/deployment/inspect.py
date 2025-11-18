@@ -15,7 +15,6 @@ import re
 
 import click
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -52,9 +51,9 @@ def inspect_deployment(
         deployment_obj = None
 
         if re.fullmatch(DEPLOYMENT_GUID_PATTERN, deployment_name):
-            deployments = client.list_deployments(query={"guids": [deployment_name]})
-            if deployments:
-                deployment_obj = deployments[0]
+            deployments = client.list_deployments(guids=[deployment_name])
+            if deployments.items:
+                deployment_obj = deployments.items[0]
         else:
             deployment_obj = client.get_deployment(deployment_name)
 
@@ -62,7 +61,9 @@ def inspect_deployment(
             click.secho("deployment not found", fg="red")
             raise SystemExit(1)
 
-        inspect_with_format(unmunchify(deployment_obj), format_type)
+        inspect_with_format(
+            deployment_obj.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

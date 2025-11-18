@@ -53,7 +53,16 @@ def deployment_logs(
     try:
         # TODO(pallab): when no exec name is given, implement the logic to set default or prompt a selection.
         client = new_v2_client()
-        client.stream_deployment_logs(deployment_name, exec_name, replica)
+        if not exec_name:
+            deployment_manifest = client.get_deployment(name=deployment_name)
+            exec_name = list(deployment_manifest.status.executablesStatus.values())[
+                0
+            ].name
+        stream_logs = client.stream_deployment_logs(
+            name=deployment_name, executable=exec_name, replica=replica
+        )
+        for log in stream_logs:
+            print(log)
     except Exception as e:
         click.secho(e, fg=Colors.RED)
         raise SystemExit(1)

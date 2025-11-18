@@ -19,12 +19,12 @@ from riocli.config import new_v2_client
 from riocli.constants import Status, ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client import Client
-from riocli.v2client.error import (
+from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2.exceptions import (
     HttpAlreadyExistsError,
     HttpNotFoundError,
-    RetriesExhausted,
 )
+from riocli.utils.error import RetriesExhausted
 
 
 class Deployment(Model):
@@ -70,13 +70,11 @@ def wait_for_dependencies(
     """Waits until all deployment_names are in RUNNING state."""
     for _ in range(retry_count):
         deployments = client.list_deployments(
-            query={
-                "names": deployment_names,
-                "phases": ["InProgress", "Provisioning", "Succeeded"],
-            }
+            names=deployment_names,
+            phases=["InProgress", "Provisioning", "Succeeded"],
         )
 
-        if all(d.status.status == Status.RUNNING for d in deployments):
+        if all(d.status.status == Status.RUNNING for d in deployments.items):
             return
 
         time.sleep(retry_interval)
