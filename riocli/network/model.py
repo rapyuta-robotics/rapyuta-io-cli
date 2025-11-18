@@ -18,7 +18,8 @@ from riocli.config import new_v2_client
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
+from riocli.network.util import poll_network
 
 
 class Network(Model):
@@ -37,8 +38,11 @@ class Network(Model):
 
         try:
             r = client.create_network(unmunchify(self))
-            client.poll_network(
-                r.metadata.name, retry_count=retry_count, sleep_interval=retry_interval
+            poll_network(
+                client=client,
+                name=r.metadata.name,
+                retry_count=retry_count,
+                sleep_interval=retry_interval,
             )
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:

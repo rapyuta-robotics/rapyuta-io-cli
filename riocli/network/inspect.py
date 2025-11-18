@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -42,7 +41,9 @@ def inspect_network(format_type: str, network_name: str) -> None:
             click.secho("network not found", fg="red")
             raise SystemExit(1)
 
-        inspect_with_format(unmunchify(network_obj), format_type)
+        inspect_with_format(
+            network_obj.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
