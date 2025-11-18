@@ -16,9 +16,10 @@ from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import ApplyResult
+from riocli.disk.util import poll_disk
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Disk(Model):
@@ -36,9 +37,10 @@ class Disk(Model):
         retry_interval = int(kwargs.get("retry_interval"))
 
         try:
-            r = client.create_disk(unmunchify(self))
-            client.poll_disk(
-                r.metadata.name,
+            r = client.create_disk(body=unmunchify(self))
+            poll_disk(
+                client=client,
+                name=r.metadata.name,
                 retry_count=retry_count,
                 sleep_interval=retry_interval,
             )
@@ -52,6 +54,6 @@ class Disk(Model):
         client = new_v2_client()
 
         try:
-            client.delete_disk(self.metadata.name)
+            client.delete_disk(name=self.metadata.name)
         except HttpNotFoundError:
             raise ResourceNotFound
