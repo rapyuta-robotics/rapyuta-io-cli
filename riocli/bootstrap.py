@@ -35,7 +35,6 @@ from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
 from riocli.hwil import hwildevice
-from riocli.managedservice import managedservice
 from riocli.network import network
 from riocli.oauth2 import oauth2
 from riocli.organization import organization
@@ -159,7 +158,6 @@ cli.add_command(parameter)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
-cli.add_command(managedservice)
 cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
