@@ -20,7 +20,7 @@ import click
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
-from riocli.v2client import Client as v2Client
+from rapyuta_io_sdk_v2 import Client as v2Client
 from riocli.auth.util import find_project_guid
 
 
@@ -65,3 +65,12 @@ def name_to_guid(f: Callable) -> Callable:
 def get_project_name(client: v2Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.metadata.name
+
+
+def check_project_name(project_name: str):
+    if project_name.startswith("project-"):
+        raise Exception("Name must not start with 'project-'.")
+    elif len(project_name) < 3:
+        raise Exception("Name is too short (minimum 3 characters required).")
+    elif len(project_name) > 63:
+        raise Exception("Name is too long (maximum 63 characters allowed).")

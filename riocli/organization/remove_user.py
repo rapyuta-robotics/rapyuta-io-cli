@@ -70,7 +70,7 @@ def remove_user(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
         spinner.text = click.style("Users removed successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)

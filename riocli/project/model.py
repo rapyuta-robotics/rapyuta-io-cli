@@ -21,7 +21,9 @@ from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
 from riocli.auth.util import find_project_guid
 from riocli.exceptions import ProjectNotFound
-from riocli.v2client.error import HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
+
+from riocli.project.util import check_project_name
 
 PROJECT_READY_TIMEOUT = 150
 
@@ -48,7 +50,7 @@ class Project(Model):
                 client, self.metadata.name, Configuration().organization_guid
             )
 
-            client.update_project(guid, project)
+            client.update_project(project_guid=guid, body=project)
             wait(
                 self.is_ready,
                 timeout_seconds=PROJECT_READY_TIMEOUT,
@@ -56,6 +58,8 @@ class Project(Model):
             )
             return ApplyResult.UPDATED
         except (HttpNotFoundError, ProjectNotFound):
+            project_name = project["metadata"]["name"]
+            check_project_name(project_name=project_name)
             client.create_project(project)
             return ApplyResult.CREATED
         except Exception as e:
@@ -74,5 +78,5 @@ class Project(Model):
 
     def is_ready(self) -> bool:
         client = new_v2_client()
-        projects = client.list_projects(query={"name": self.metadata.name})
-        return projects[0].status.status == "Success"
+        projects = client.list_projects(name=self.metadata.name)
+        return projects.items[0].status.status == "Success"

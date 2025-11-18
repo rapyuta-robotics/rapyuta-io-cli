@@ -63,9 +63,10 @@ def vpn(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    project["spec"]["features"]["vpn"] = {"enabled": enable, "subnets": subnets or []}
+    project.spec.features.vpn.enabled = enable
+    project.spec.features.vpn.subnets = subnets or []
 
-    is_vpn_enabled = project["spec"]["features"]["vpn"].get("enabled", False)
+    is_vpn_enabled = project.spec.features.vpn.enabled
 
     status = "Enabling VPN..." if enable else "Disabling VPN..."
     if is_vpn_enabled and subnets:
@@ -74,7 +75,7 @@ def vpn(
     spinner.text = status
 
     try:
-        client.update_project(project_guid, project)
+        client.update_project(project_guid=project_guid, body=project)
         spinner.text = click.style("Done", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
