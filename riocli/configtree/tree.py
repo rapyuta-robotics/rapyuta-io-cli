@@ -16,6 +16,7 @@ from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
@@ -69,7 +70,7 @@ def create_config_tree(
                 "name": tree_name,
             },
         }
-        config_tree = client.create_config_tree(payload)
+        config_tree = munchify(client.create_configtree(body=payload))
         spinner.text = click.style(
             f"Config tree {config_tree.metadata.name} created successfully.",
             fg=Colors.GREEN,
@@ -110,7 +111,7 @@ def delete_config_tree(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        client.delete_config_tree(tree_name)
+        client.delete_configtree(tree_name)
         spinner.text = click.style("Config tree deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
@@ -158,7 +159,7 @@ def clone_tree(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(tree_name=tree_name)
+        tree = munchify(client.get_configtree(tree_name=tree_name))
         head = tree.get("head")
 
         if head is not None:
@@ -174,7 +175,7 @@ def clone_tree(
         # We always clone into the current project.
         # Thus, we recreate the client with_project=True.
         client = new_v2_client(with_project=True)
-        config_tree = client.create_config_tree(payload)
+        config_tree = munchify(client.create_configtree(payload))
         spinner.text = click.style(
             f"Config tree {config_tree.metadata.name} cloned successfully.",
             fg=Colors.GREEN,
@@ -252,7 +253,7 @@ def set_tree_revision(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        client.set_revision_config_tree(tree_name, payload)
+        client.set_configtree_revision(name=tree_name, configtree=payload)
         spinner.text = click.style(
             "Config tree head updated successfully.", fg=Colors.GREEN
         )
@@ -288,7 +289,8 @@ def list_config_trees(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        trees = client.list_config_trees()
+        result = client.list_configtrees()
+        trees = munchify(result.get("items", []))
         if not isinstance(trees, Iterable):
             raise Exception("List items are not iterable")
 
@@ -360,7 +362,8 @@ def list_tree_revisions(
     """
     try:
         client = new_v2_client(with_project=(not with_org))
-        revisions = client.list_config_tree_revisions(tree_name=tree_name)
+        result = client.list_revisions(tree_name=tree_name, committed=with_org)
+        revisions = munchify(result.get("items", []))
         if not isinstance(revisions, Iterable):
             raise Exception("List items are not iterable")
 

@@ -170,7 +170,7 @@ def merge_revisions(
             },
         }
 
-        client.set_revision_config_tree(base_tree_name, payload)
+        client.set_configtree_revision(name=base_tree_name, configtree=payload)
         spinner.text = click.style("Config tree merged successfully.", fg=Colors.CYAN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:

@@ -287,7 +287,7 @@ def combine_metadata(keys: dict) -> dict:
 
 def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> dict | None:
     client = new_v2_client(with_project=(not is_org))
-    revisions = client.list_config_tree_revisions(tree_name=tree_name)
+    revisions = client.list_revisions(tree_name=tree_name)
     if len(revisions) == 0:
         return
 
@@ -318,15 +318,19 @@ def fetch_tree_keys(
         )
 
     client = new_v2_client(with_project=(not is_org))
-    tree = client.get_config_tree(
-        tree_name=tree_name,
-        rev_id=rev_id,
-        include_data=True,
-        filter_content_types=["kv"],
+    tree = munchify(
+        client.get_configtree(
+            name=tree_name,
+            revision=rev_id,
+            include_data=True,
+            content_types=["kv"],
+        )
     )
 
     if not tree.get("head"):
-        raise Exception(f"Config tree {tree} does not have keys in the revision")
+        raise Exception(
+            f"Config tree {tree.metadata.name} does not have keys in the revision"
+        )
 
     keys = tree.get("keys")
     if not isinstance(keys, dict):
@@ -339,7 +343,7 @@ def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) ->
     client = new_v2_client(with_project=(not is_org))
     labels = f"{MILESTONE_LABEL_KEY}={milestone}"
 
-    revisions = client.list_config_tree_revisions(tree_name=tree_name, labels=labels)
+    revisions = client.list_revisions(tree_name=tree_name, label_selector=[labels])
     if len(revisions) == 0:
         raise Exception(f"Revision with milestone {milestone} not found")
 
