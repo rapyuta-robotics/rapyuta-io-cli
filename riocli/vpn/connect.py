@@ -165,7 +165,9 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
         ctx, delta=timedelta(minutes=10), labels=get_binding_labels()
     )
     cmd = _TAILSCALE_CMD_FORMAT.format(
-        binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG
+        binding["HEADSCALE_PRE_AUTH_KEY"],
+        binding["HEADSCALE_URL"],
+        binding["HEADSCALE_ACL_TAG"],
     )
     cmd = priviledged_command(cmd)
 
