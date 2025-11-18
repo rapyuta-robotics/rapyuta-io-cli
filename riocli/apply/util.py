@@ -29,7 +29,6 @@ from riocli.constants.symbols import Symbols
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
-from riocli.managedservice.model import ManagedService
 from riocli.model import Model
 from riocli.network.model import Network
 from riocli.organization.model import Organization
@@ -44,7 +43,6 @@ KIND_TO_CLASS = {
     "deployment": Deployment,
     "device": Device,
     "disk": Disk,
-    "managedservice": ManagedService,
     "network": Network,
     "organization": Organization,
     "package": Package,

@@ -72,8 +72,11 @@ def export_keys(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(
-            tree_name=tree_name, rev_id=rev_id, include_data=True
+        tree = client.get_configtree(
+            name=tree_name,
+            revision=rev_id,
+            include_data=True,
+            with_project=(not with_org),
         )
         if not tree.get("head"):
             raise Exception("Config tree does not have keys in the revision")

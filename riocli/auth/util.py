@@ -25,8 +25,8 @@ from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
-from riocli.v2client.util import handle_server_errors
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2.utils import handle_server_errors, walk_pages
 from riocli.exceptions import ProjectNotFound, OrganizationNotFound
 
 TOKEN_LEVELS = {0: AuthTokenLevel.LOW, 1: AuthTokenLevel.MED, 2: AuthTokenLevel.HIGH}
@@ -108,7 +108,10 @@ def select_project(
             else find_project_guid(client, project, organization=organization)
         )
 
-    projects = client.list_projects(organization_guid=organization)
+    # Fetch all projects in the organization using walk_pages
+    projects = []
+    for page in walk_pages(client.list_projects, organizations=[organization], limit=100):
+        projects.extend(page)
     if len(projects) == 0:
         config.data["project_id"] = ""
         config.data["project_name"] = ""
@@ -231,12 +234,12 @@ def find_project_guid(
     client: v2Client, name: str, organization: str | None = None
 ) -> str:
     projects = client.list_projects(
-        query={"name": name},
-        organization_guid=organization,
+        name=name,
+        organizations=[organization],
     )
 
-    if projects and projects[0].metadata.name == name:
-        return projects[0].metadata.guid
+    if projects.items and projects.items[0].metadata.name == name:
+        return projects.items[0].metadata.guid
 
     raise ProjectNotFound()
 

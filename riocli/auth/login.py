@@ -136,14 +136,13 @@ def login(
         config.data["auth_token"] = get_token(email, password)
 
     # Save if the file does not already exist
-    if not config.exists or not interactive:
-        config.save()
-    else:
+    if config.exists and interactive:
         click.confirm(
             f"{Symbols.WARNING} Config already exists. Do you want to override"
             " the existing config?",
             abort=True,
         )
+    config.save()
 
     if not interactive:
         # When just the email and password are provided
