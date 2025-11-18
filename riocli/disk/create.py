@@ -18,6 +18,7 @@ from yaspin.api import Yaspin
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Regions, Symbols
 from riocli.disk.enum import DiskCapacity
+from riocli.disk.util import poll_disk
 from riocli.utils.spinner import with_spinner
 
 SUPPORTED_CAPACITIES = [
@@ -82,7 +83,7 @@ def create_disk(
 
     try:
         client.create_disk(payload)
-        client.poll_disk(disk_name)
+        poll_disk(client=client, name=disk_name)
         spinner.text = click.style(
             f"Disk {disk_name} created successfully.", fg=Colors.GREEN
         )
