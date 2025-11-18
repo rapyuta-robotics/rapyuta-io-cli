@@ -39,13 +39,11 @@ def list_package_deployments(package_name: str, package_version: str) -> None:
             raise SystemExit(1)
 
         deployments = client.list_deployments(
-            query={
-                "packageName": package_obj.metadata.name,
-                "packageVersion": package_obj.metadata.version,
-            }
+            package_name=package_obj.metadata.name,
+            package_version=package_obj.metadata.version,
         )
 
-        display_deployment_list(deployments, show_header=True)
+        display_deployment_list(deployments.items, show_header=True)
     except Exception as e:
         click.secho(str(e), fg="red")
         raise SystemExit(1)

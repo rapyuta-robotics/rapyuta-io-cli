@@ -17,7 +17,7 @@ from riocli.config import Configuration, new_v2_client
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class StaticRoute(Model):
@@ -31,10 +31,10 @@ class StaticRoute(Model):
         static_route = unmunchify(self)
 
         try:
-            client.create_static_route(static_route)
+            client.create_staticroute(body=static_route)
             return ApplyResult.CREATED
         except HttpAlreadyExistsError:
-            client.update_static_route(self.metadata.name, static_route)
+            client.update_staticroute(name=self.metadata.name, body=static_route)
             return ApplyResult.UPDATED
 
     def delete(self, *args, **kwargs) -> None:
@@ -43,6 +43,6 @@ class StaticRoute(Model):
         short_id = Configuration().organization_short_id
 
         try:
-            client.delete_static_route(f"{self.metadata.name}-{short_id}")
+            client.delete_staticroute(f"{self.metadata.name}-{short_id}")
         except HttpNotFoundError:
             raise ResourceNotFound

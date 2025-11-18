@@ -34,7 +34,7 @@ def list_packages(filter_word: str) -> None:
     try:
         client = new_v2_client(with_project=True)
         packages = client.list_packages()
-        _display_package_list(packages, filter_word, show_header=True)
+        _display_package_list(packages.items, filter_word, show_header=True)
     except Exception as e:
         click.secho(str(e), fg="red")
         raise SystemExit(1)
@@ -63,7 +63,7 @@ def _display_package_list(
     data = []
     for _, pkgVersionList in package_dict.items():
         for package in pkgVersionList:
-            description = package.metadata.get("description", "")
+            description = package.metadata.description
             name = package.metadata.name
 
             # check if filter word was passed.
@@ -71,7 +71,7 @@ def _display_package_list(
             if filter_word and not package.metadata.name.find(filter_word):
                 continue
 
-            if truncate_limit:
+            if truncate_limit and description is not None:
                 if len(description) > truncate_limit:
                     description = description[:truncate_limit] + ".."
                 if len(name) > truncate_limit:

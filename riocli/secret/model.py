@@ -18,7 +18,7 @@ from riocli.config import new_v2_client
 from riocli.constants import ApplyResult
 from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Secret(Model):
