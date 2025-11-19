@@ -229,14 +229,17 @@ def sanitize_hwil_device_name(name: str) -> str:
     if len(name) == 0:
         return name
 
+    name = name.lower()
     name = name[0:50]
     name = trim_suffix(name)
     name = trim_prefix(name)
-
-    r = ""
+    sanitized = []
     for c in name:
-        if c.isalnum() or c in ["-", "_"]:
-            r = r + c
+        if ("a" <= c <= "z") or ("0" <= c <= "9") or c == "-":
+            sanitized.append(c)
+
+    r = "".join(sanitized)
+    r = r.strip("-")
 
     return r
 
