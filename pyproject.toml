@@ -37,6 +37,7 @@ dependencies = [
     "jinja2>=3.0.1",
     "jsonschema>=4.23.0",
     "munch>=2.4.0",
+    "parsedatetime>=2.6",
     "pretty-traceback>=2022.1018",
     "pyrfc3339>=1.1",
     "python-dateutil>=2.8.2",
