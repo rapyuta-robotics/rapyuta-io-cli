@@ -21,9 +21,8 @@ from rapyuta_io_sdk_v2 import Client, Deployment
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
-from riocli.deployment.util import fetch_deployments
-from riocli.deployment.util import print_deployments_for_confirmation
+from riocli.constants import Colors, Symbols
+from riocli.deployment.util import fetch_deployments, print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner

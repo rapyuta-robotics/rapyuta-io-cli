@@ -43,6 +43,7 @@ from riocli.parameter import parameter
 from riocli.project import project
 from riocli.role import role
 from riocli.secret import secret
+from riocli.service_account import service_account
 from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
@@ -170,3 +171,4 @@ cli.add_command(cli_context)
 cli.add_command(oauth2)
 cli.add_command(compose)
 cli.add_command(role)
+cli.add_command(service_account)
