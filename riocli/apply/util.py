@@ -36,6 +36,7 @@ from riocli.package.model import Package
 from riocli.project.model import Project
 from riocli.role.model import Role, RoleBinding
 from riocli.secret.model import Secret
+from riocli.service_account.model import ServiceAccount
 from riocli.static_route.model import StaticRoute
 from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
@@ -53,6 +54,7 @@ KIND_TO_CLASS = {
     "usergroup": UserGroup,
     "role": Role,
     "rolebinding": RoleBinding,
+    "serviceaccount": ServiceAccount,
 }
 
 FILTERS = {

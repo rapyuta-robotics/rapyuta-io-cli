@@ -1,4 +1,4 @@
-# Copyright 2025 Rapyuta Robotics
+# Copyright 2024 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.config import get_config_from_context
-from riocli.constants import Colors, Symbols
-from riocli.usergroup.util import name_to_guid
+from riocli.config import new_v2_client
+from riocli.constants import Colors
+from riocli.constants.symbols import Symbols
 from riocli.utils.spinner import with_spinner
 
 
@@ -28,6 +28,7 @@ from riocli.utils.spinner import with_spinner
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
+@click.argument("account-name", type=str)
 @click.option(
     "--force",
     "-f",
@@ -37,33 +38,27 @@ from riocli.utils.spinner import with_spinner
     default=False,
     help="Skip confirmation",
 )
-@click.argument("group-name")
-@click.pass_context
-@with_spinner(text="Deleting user group...")
-@name_to_guid
-def delete_usergroup(
-    ctx: click.Context,
-    group_name: str,
-    group_guid: str,
-    force: bool,
+@with_spinner(text="Deleting package(s)...")
+def delete_service_acc(
+    account_name: str,
     spinner: Yaspin = None,
-) -> None:
-    """Delete a usergroup from current organization.
-
-    To skip confirmation, use the ``--force`` or ``-f`` or
-    the ``--silent`` flag.
+    force: bool = False,
+):
+    """
+    Delete a service account.
     """
     if not force:
         with spinner.hidden():
-            click.confirm(f"Deleting usergroup {group_name} ({group_guid})", abort=True)
-
+            click.confirm(
+                "Do you want to delete the above service account(s)?", abort=True
+            )
+        spinner.write("")
     try:
-        config = get_config_from_context(ctx)
-        client = config.new_v2_client(with_project=False)
-        client.delete_user_group(group_guid=group_guid, group_name=group_name)
-        spinner.text = click.style("User group deleted successfully.", fg=Colors.GREEN)
-        spinner.green.ok(Symbols.SUCCESS)
+        client = new_v2_client()
+        client.delete_service_account(name=account_name)
+
+        spinner.text = click.style(f"Service account {account_name} deleted.")
+        spinner.ok(click.style(Symbols.SUCCESS, Colors.GREEN))
     except Exception as e:
-        spinner.text = click.style(f"Failed to delete usergroup: {e}", Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
+        click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
