@@ -30,7 +30,9 @@ class ServiceAccount(Model):
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs):
-        return v2_client.update_service_account(service_account=self._obj)
+        return v2_client.update_service_account(
+            service_account=self._obj, name=self._obj.metadata.name
+        )
 
     @override
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:

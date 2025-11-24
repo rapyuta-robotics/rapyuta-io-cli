@@ -1,5 +1,5 @@
 apiVersion: "api.rapyuta.io/v2"
-kind: "serviceaccount"
+kind: "ServiceAccount"
 metadata:
   name: "escalation-test-sa"
   labels:

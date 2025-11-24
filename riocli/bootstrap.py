@@ -64,6 +64,7 @@ from riocli.vpn import vpn
         "o2": "oauth2",
         "sr": "static-route",
         "ug": "usergroup",
+        "sa": "service-account",
     },
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
