@@ -1,11 +1,12 @@
 apiVersion: "api.rapyuta.io/v2"
-kind: "serviceaccount"
+kind: "ServiceAccount"
 metadata:
-  name: "escalation-test-sa"
+  name: "superuser-created-sa"
   labels:
     environment: test
+    team: rbac-test
 spec:
-  description: "Should not be created by viewer"
+  description: "Service account created by superuser"
   roles:
   - domain:
       kind: Project

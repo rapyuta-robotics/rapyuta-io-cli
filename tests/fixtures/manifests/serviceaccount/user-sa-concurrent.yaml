@@ -1,11 +1,11 @@
 apiVersion: "api.rapyuta.io/v2"
-kind: "serviceaccount"
+kind: "ServiceAccount"
 metadata:
-  name: "escalation-test-sa"
+  name: "user-sa-concurrent"
   labels:
     environment: test
 spec:
-  description: "Should not be created by viewer"
+  description: "Concurrent test SA"
   roles:
   - domain:
       kind: Project

@@ -1,5 +1,5 @@
 apiVersion: "api.rapyuta.io/v2"
-kind: "ServiceAccount"
+kind: "serviceaccount"
 metadata:
   name: "user-sa-concurrent"
   labels:
