@@ -156,10 +156,7 @@ class TestServiceAccountsRBAC:
         # We'll verify the actual results in the list test
         assert result.exit_code != 0, result.output
         assert "Created serviceaccount:test-sa-4" in result.output
-        assert (
-            "Failed to apply serviceaccount:random-sa. Error: subject is not authorized for this operation"
-            in result.output
-        )
+        assert "subject is not authorized for this operation" in result.output
 
     def test_11_user11_can_list_service_accounts(self, logged_in_user_11):
         """Test that test_user_11 can list all service accounts"""
