@@ -13,6 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+import json
 import os
 from base64 import b64encode
 from hashlib import md5
@@ -103,6 +104,9 @@ class Revision(object):
         perms: int = 644,
         metadata: Optional[dict] = None,
     ) -> None:
+        # Fix: Ensure non-string values are serialized to JSON
+        if not isinstance(value, str):
+            value = json.dumps(value, ensure_ascii=False)
         str_val = str(value)
         enc_val = str_val.encode("utf-8")
 
