@@ -1,3 +1,10 @@
+## [9.13.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.2...v9.13.3) (2025-11-27)
+
+
+### Bug Fixes
+
+* **configtrees:** serialise non-string values to JSON before storing in configtrees ([faaf19d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/faaf19d8c13945be397d031b15e33ed31a51ae84))
+
 ## [9.13.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.1...v9.13.2) (2025-11-05)
 
 
