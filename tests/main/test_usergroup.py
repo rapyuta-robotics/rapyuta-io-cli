@@ -254,58 +254,11 @@ class TestUsergroupPredefinedRoleRBAC:
     # CLEANUP TESTS - ROLES ARE EMBEDDED IN USERGROUP MANIFESTS
     # =================
 
-    def test_90_cleanup_role_bindings(self, cli_runner, super_user, test_projects):
-        """Cleanup role bindings - roles are embedded in usergroup manifests"""
-        super_user.login(cli_runner, project_name="test-project1")
-
-        # Since roles are embedded in usergroup manifests, they will be automatically
-        # removed when usergroups are deleted. This test ensures any lingering
-        # role bindings are cleaned up.
-        bindings = [
-            ("project_admin", "test-secret-managers"),
-            ("project_admin", "test-package-managers"),
-            ("project_admin", "test-staticroute-managers"),
-            ("project_viewer", "test-secret-viewers"),
-            ("project_viewer", "test-package-viewers"),
-            ("project_viewer", "test-staticroute-viewers"),
-        ]
-
-        for role, usergroup in bindings:
-            cli_runner.invoke(
-                cli,
-                [
-                    "role",
-                    "unbind",
-                    role,
-                    "--usergroup",
-                    usergroup,
-                    "--project",
-                    "test-project1",
-                ],
-            )
-
-    def test_91_cleanup_resources(self, cli_runner, super_user, test_projects):
+    def test_90_cleanup_resources(self, cli_runner, super_user, test_projects):
         """Cleanup test resources"""
         super_user.login(cli_runner, project_name="test-project1")
 
-        # Delete test resources from test-project1
-        manifests = [self.test_secrets, self.test_packages, self.test_staticroutes]
-        for manifest in manifests:
-            cli_runner.invoke(cli, ["delete", "--silent", str(manifest)])
-
-        # Switch to test-project2 and clean up resources there
-        super_user.login(cli_runner, project_name="test-project2")
-        cli_runner.invoke(cli, ["delete", "--silent", str(self.test_secrets_proj2)])
-
-    def test_92_cleanup_usergroups(self, cli_runner, super_user, test_projects):
-        """Cleanup usergroups"""
-        super_user.login(cli_runner, project_name="test-project1")
-
-        # Delete usergroups
-        manifests = [
-            self.secret_usergroups,
-            self.package_usergroups,
-            self.staticroute_usergroups,
-        ]
-        for manifest in manifests:
-            cli_runner.invoke(cli, ["delete", "--silent", str(manifest)])
+        result = cli_runner.invoke(
+            cli, ["delete", "--silent", str(self.usergroup_manifest_dir)]
+        )
+        assert result.exit_code == 0, result.output

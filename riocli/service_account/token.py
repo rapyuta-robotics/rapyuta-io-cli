@@ -72,11 +72,19 @@ def list_tokens(
 
         data = []
         for token in tokens.items:
+            # Handle None expiry_at (infinite duration tokens)
+            if token.expiry_at is None:
+                expiry_display = "No expiry (infinite)"
+                time_remaining = "Never expires"
+            else:
+                expiry_display = convert_utc_to_offset(token.expiry_at, offset_str=offset)
+                time_remaining = calculate_time_remaining(token.expiry_at)
+
             data.append(
                 [
                     token.id,
-                    convert_utc_to_offset(token.expiry_at, offset_str=offset),
-                    calculate_time_remaining(token.expiry_at),
+                    expiry_display,
+                    time_remaining,
                 ]
             )
         tabulate_data(data, headers)
@@ -92,7 +100,7 @@ def list_tokens(
     help_options_color=Colors.GREEN,
 )
 @click.argument("account-name", type=str)
-@click.argument("expiry-at", type=str)
+@click.argument("expiry-at", type=str, required=False, default=None)
 @click.option(
     "--owner", "owner", type=str, default=None, help="Define owner for the token."
 )
@@ -105,29 +113,48 @@ def list_tokens(
 )
 def create_token(
     account_name: str,
-    expiry_at: str,
+    expiry_at: str | None,
     owner: str,
     offset: str,
 ) -> None:
     """
     Create a token for a service account.
 
-    Set expiry timestamp to set an expiry time of the token.
-    Expiry can be a relative time like '3 days' or an ISO 8601 timestamp.
+    The EXPIRY-AT argument supports two formats:
+
+    1. Custom expiry: Specify a relative time (e.g., '3 days', '2 hours')
+       or an ISO 8601 timestamp (e.g., '2025-12-31T23:59:59+00:00')
+
+    2. No expiry: Leave empty or omit the argument to create a token
+       with infinite duration
     """
     try:
         client = new_v2_client()
         iso_expiry_at = parse_human_readable_time_to_iso(expiry_at)
-        token_config = ServiceAccountToken(
-            expiry_at=iso_expiry_at,
-            owner=owner,
-        )
+
+        # Handle the three scenarios
+        if iso_expiry_at is None:
+            # Default expiry - let backend handle
+            token_config = ServiceAccountToken(owner=owner)
+        else:
+            # Custom expiry or no expiry
+            token_config = ServiceAccountToken(
+                expiry_at=iso_expiry_at,
+                owner=owner,
+            )
 
         token_obj = client.create_service_account_token(
             name=account_name, expiry_at=token_config
         )
+
+        # Handle display of expiry information
+        if token_obj.expiry_at is None:
+            expiry_msg = "no expiry (infinite duration)"
+        else:
+            expiry_msg = convert_utc_to_offset(token_obj.expiry_at, offset_str=offset)
+
         click.secho(
-            f"{Symbols.SUCCESS}Token Created with expiry at: {convert_utc_to_offset(token_obj.expiry_at, offset_str=offset)}",
+            f"{Symbols.SUCCESS}Token created with expiry at: {expiry_msg}",
             fg=Colors.GREEN,
         )
         click.echo(token_obj.token)
@@ -144,7 +171,7 @@ def create_token(
 )
 @click.argument("account-name", type=str)
 @click.argument("id", type=str)
-@click.argument("expiry-at", type=str)
+@click.argument("expiry-at", type=str, required=False, default=None)
 @click.option(
     "--offset",
     "offset",
@@ -155,28 +182,49 @@ def create_token(
 def refresh_token(
     account_name: str,
     id: str,
-    expiry_at: str,
+    expiry_at: str | None,
     offset: str,
 ) -> None:
     """
     Refresh an existing token for a service account.
 
-    Set expiry timestamp to set a new expiry time for the token.
-    Expiry can be a relative time like '3 days' or an ISO 8601 timestamp.
+    The EXPIRY-AT argument supports two formats:
+
+    1. Custom expiry: Specify a relative time (e.g., '3 days', '2 hours')
+       or an ISO 8601 timestamp (e.g., '2025-12-31T23:59:59+00:00')
+
+    2. No expiry: Leave empty or omit the argument to refresh the token
+       with infinite duration
     """
     try:
         client = new_v2_client()
         iso_expiry_at = parse_human_readable_time_to_iso(expiry_at)
-        token_config = ServiceAccountToken(
-            expiry_at=iso_expiry_at,
-        )
+
+        # Handle the three scenarios
+        if iso_expiry_at is None:
+            # Default expiry - let backend handle
+            token_config = ServiceAccountToken()
+        else:
+            # Custom expiry or no expiry
+            token_config = ServiceAccountToken(
+                expiry_at=iso_expiry_at,
+            )
 
         token_obj = client.refresh_service_account_token(
             name=account_name, token_id=id, expiry_at=token_config
         )
 
+        # Handle display of expiry information
+        if token_obj.expiry_at is None:
+            if expiry_at.strip() == "0":
+                expiry_msg = "no expiry (infinite duration)"
+            else:
+                expiry_msg = "default expiry (90 days)"
+        else:
+            expiry_msg = convert_utc_to_offset(token_obj.expiry_at, offset_str=offset)
+
         click.secho(
-            f"{Symbols.SUCCESS}Token refreshed with expiry at: {convert_utc_to_offset(token_obj.expiry_at, offset_str=offset)}",
+            f"{Symbols.SUCCESS}Token refreshed with expiry at: {expiry_msg}",
             fg=Colors.GREEN,
         )
         click.echo(token_obj.token)

@@ -18,11 +18,29 @@ import click
 import parsedatetime as pdt
 
 
-def parse_human_readable_time_to_iso(time_str: str) -> str:
+def parse_human_readable_time_to_iso(time_str: str | None) -> str | None:
     """
-    Parses a human-readable time string (e.g., '3 days', 'in 2 hours') or a
-    date/datetime string and converts it to an ISO 8601 formatted string in UTC.
+    Parses a human-readable time string and converts it to an ISO 8601 formatted string in UTC.
+
+    Args:
+        time_str (str | None): Time specification with two possible cases:
+            - None for no expiry (infinite duration)
+            - String with relative time (e.g., '3 days', 'in 2 hours') or ISO 8601 timestamp
+
+    Returns:
+        str | None: ISO 8601 formatted string in UTC, or None for no expiry case
     """
+    # Handle None - no expiry (infinite duration)
+    if time_str is None:
+        return None
+
+    time_str = time_str.strip()
+
+    # Handle empty string - treat as no expiry
+    if not time_str:
+        return None
+
+    # Handle human-readable time
     cal = pdt.Calendar()
     now = datetime.now(timezone.utc)
     time_struct, parse_status = cal.parse(time_str, now)
@@ -30,8 +48,10 @@ def parse_human_readable_time_to_iso(time_str: str) -> str:
     if parse_status == 0:
         raise click.UsageError(
             f"Invalid time format: '{time_str}'. \n"
-            f"Please use a relative format (e.g., '3 days', 'in 2 hours') "
-            f"or an ISO 8601 format (e.g., '2025-12-31T23:59:59+00:00')."
+            f"Please use:\n"
+            f"- A relative format (e.g., '3 days', 'in 2 hours')\n"
+            f"- An ISO 8601 format (e.g., '2025-12-31T23:59:59+00:00')\n"
+            f"- Leave empty for no expiry (infinite duration)"
         )
 
     dt = datetime(*time_struct[:6], tzinfo=timezone.utc)

@@ -290,7 +290,7 @@ class TestProjectsRBAC:
 
         # Should NOT be able to inspect admin-project.*
         result = runner.invoke(cli, ["project", "inspect", "admin-project-main"])
-        assert result.exit_code != 0, result.outpu
+        assert result.exit_code != 0, result.output
         assert (
             "subject is not authorized for this operation" in result.output
             or "project not found" in result.output

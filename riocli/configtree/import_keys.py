@@ -208,10 +208,9 @@ def import_keys(
 
             for key, value in data.items():
                 key_metadata = metadata.get(key, None)
-                if key_metadata is not None and isinstance(key_metadata, Metadata):
+                if isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
-
-                rev.store(key=key, value=str(value), perms=644, metadata=key_metadata)
+                rev.store(key=key, value=value, perms=644, metadata=key_metadata)
                 spinner.write(
                     click.style(
                         f"\t{Symbols.SUCCESS} Key {key} added.",

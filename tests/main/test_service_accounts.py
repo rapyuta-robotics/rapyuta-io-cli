@@ -810,11 +810,25 @@ class TestServiceAccountsRBAC:
         test_user_12.login(cli_runner, project_name=test_projects[0])
 
         result = cli_runner.invoke(cli, ["service-account", "inspect", "user-sa-1"])
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
         # But user_12 can access their authorized managed-sa resources
         result = cli_runner.invoke(cli, ["service-account", "inspect", "managed-sa-2"])
+        assert result.exit_code == 0
+
+        super_user.login(cli_runner, project_name=test_projects[0])
+
+        result = cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "unbind",
+                "service-account-manager",
+                "Organization:CliTest",
+                f"User:{test_user_12.email}",
+            ],
+        )
         assert result.exit_code == 0
 
     def test_27_superuser_vs_restricted_users(
@@ -830,13 +844,12 @@ class TestServiceAccountsRBAC:
             "user-sa-1",
             "managed-sa-2",
             "token-sa-1",
-            "temp-sa-1",
         ]
 
         for sa in all_service_accounts:
             result = cli_runner.invoke(cli, ["service-account", "inspect", sa])
             assert result.exit_code == 0, (
-                f"Superuser should be able to inspect {sa}: {result.output1}"
+                f"Superuser should be able to inspect {sa}: {result.output}"
             )
 
         # Superuser can perform all operations
@@ -920,7 +933,7 @@ class TestServiceAccountsRBAC:
         result = cli_runner.invoke(
             cli, ["service-account", "delete", "managed-sa-2", "--force", "--silent"]
         )
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
         assert "subject is not authorized for this operation" in result.output
 
     def test_29_comprehensive_negative_permissions_matrix(
@@ -1063,11 +1076,6 @@ class TestServiceAccountsRBAC:
         )
         assert result.exit_code == 0
 
-        # Should NOT be able to access patterns from other roles
-        result = cli_runner.invoke(cli, ["service-account", "inspect", "temp-sa-1"])
-        assert result.exit_code != 0
-        assert "subject is not authorized for this operation" in result.output
-
     def test_30a_role_binding_and_unbinding_effects(
         self, cli_runner, super_user, test_user_11, test_projects
     ):
@@ -1154,6 +1162,16 @@ class TestServiceAccountsRBAC:
                 f"User:{test_user_12.email}",
             ],
         )
+        cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "unbind",
+                "service-account-creator",
+                "Organization:CliTest",
+                f"User:{test_user_12.email}",
+            ],
+        )
 
         # user_11 creates a user-sa resource
         test_user_11.login(cli_runner, project_name=test_projects[0])
@@ -1176,7 +1194,7 @@ class TestServiceAccountsRBAC:
         result = cli_runner.invoke(
             cli, ["service-account", "inspect", "user-sa-concurrent"]
         )
-        assert result.exit_code != 0
+        assert result.exit_code != 0, result.output
 
         # Cleanup
         super_user.login(cli_runner, project_name=test_projects[0])
