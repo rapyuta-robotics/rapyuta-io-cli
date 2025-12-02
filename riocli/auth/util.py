@@ -204,7 +204,10 @@ def api_refresh_token(
 
 @with_spinner(text="Validating token...")
 def validate_and_set_token(
-    ctx: click.Context, config: Configuration, spinner=None
+    ctx: click.Context,
+    config: Configuration,
+    interactive: bool,
+    spinner=None,
 ) -> bool:
     """Validates an auth token."""
     if "environment" in ctx.obj.data:

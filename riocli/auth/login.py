@@ -13,12 +13,12 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.auth.util import (
     get_token,
     select_organization,
     select_project,
-    validate_and_set_token,
 )
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
@@ -127,8 +127,13 @@ def login(
 
     if auth_token:
         config.data["auth_token"] = auth_token
-        if not validate_and_set_token(ctx, config):
-            raise SystemExit(1)
+        # if not validate_and_set_token(ctx, config, interactive=interactive):
+        #     raise SystemExit(1)
+        v2_cli = config.new_v2_client()
+
+        subject = munchify(v2_cli.get_subject(auth_token))
+
+        config.data["email_id"] = subject.data.email
     else:
         if interactive:
             email = email or click.prompt("Email")

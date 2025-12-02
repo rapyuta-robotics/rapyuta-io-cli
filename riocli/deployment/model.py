@@ -61,7 +61,7 @@ class Deployment(Model):
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        self._obj.list_dependencies()
+        return self._obj.list_dependencies()
 
 
 def wait_for_dependencies(

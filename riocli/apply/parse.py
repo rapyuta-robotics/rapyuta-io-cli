@@ -294,7 +294,7 @@ class Applier:
 
             if dependencies is not None:
                 for d in dependencies:
-                    graph.add(d, key)
+                    graph.add(key, d)
                     diagram.edge(key, d)
 
         return graph, diagram
