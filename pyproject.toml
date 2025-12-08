@@ -93,6 +93,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = ["tests*", "ignore*"]
 
 [tool.setuptools.package-data]
 riocli = [
@@ -132,6 +133,7 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "ignore/native_db",
 ]
 
 # Same as Black.

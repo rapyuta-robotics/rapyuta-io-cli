@@ -75,7 +75,7 @@ class TestSecretsRBAC:
         # Login as superuser
         super_user.login(cli_runner, project_name=test_projects[0])
 
-        # Create secrets from secret-correct.yaml (contains test-secret-1, test-secret-2, secret-docker, unauthorized-secret)
+        # Create secrets from secret-correct.yaml (contains test-secret-1, test-secret-2, docker-secret, unauthorized-secret)
         result = cli_runner.invoke(
             cli,
             [
@@ -86,7 +86,7 @@ class TestSecretsRBAC:
         )
 
         # Should succeed
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "Apply successful" in result.output
 
     def test_03_super_user_creates_extended_secrets(
@@ -98,12 +98,12 @@ class TestSecretsRBAC:
 
         # Create extended secrets (user-secret-1, managed-secret-1, temp-secret-1)
         result = cli_runner.invoke(cli, ["apply", "--silent", str(self.secret_extended)])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "Apply successful" in result.output
 
         # Create docker secrets (docker-registry-secret, dockerhub-secret)
         result = cli_runner.invoke(cli, ["apply", "--silent", str(self.secret_docker)])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "Apply successful" in result.output
 
     def test_04_super_user_binds_role_to_test_users(
@@ -339,12 +339,12 @@ class TestSecretsRBAC:
 
         # Test listing all secrets (should work)
         result = cli_runner.invoke(cli, ["secret", "list"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "user-secret-1" in result.output
 
         # Test getting user-secret-* (should work)
         result = cli_runner.invoke(cli, ["secret", "inspect", "user-secret-1"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Test getting managed-secret-* (should fail - wrong pattern)
         result = cli_runner.invoke(cli, ["secret", "inspect", "managed-secret-1"])
@@ -369,7 +369,7 @@ class TestSecretsRBAC:
                 f"User:{test_user_12.email}",
             ],
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Login as test_user_12
         test_user_12.login(cli_runner, project_name=test_projects[0])
@@ -431,7 +431,7 @@ class TestSecretsRBAC:
 
         # Test listing all secrets (should work)
         result = cli_runner.invoke(cli, ["secret", "list"])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
         assert "docker-registry-secret" in result.output
         assert "dockerhub-secret" in result.output
 
@@ -586,4 +586,4 @@ class TestSecretsRBAC:
         super_user.login(cli_runner, project_name=test_projects[0])
 
         result = cli_runner.invoke(cli, ["delete", "--silent", str(self.manifests_dir)])
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
