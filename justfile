@@ -112,3 +112,19 @@ run RESOURCE COVERAGE="false":
     if [ "{{COVERAGE}}" = "true" ]; then
         echo "Coverage report generated in htmlcov/ directory"
     fi
+
+# Run uv sync --upgrade and rio --help for multiple Python versions
+sync-and-help:
+    #!/bin/bash
+    set -euo pipefail
+
+    PY_VERSIONS=("3.10" "3.11" "3.12" "3.13")
+    for PY_VER in "${PY_VERSIONS[@]}"; do
+        echo "=== Using Python $PY_VER ==="
+        echo "-- Running: uv sync --upgrade"
+        uv sync --upgrade -p $PY_VER || echo "uv sync failed for Python $PY_VER"
+
+        echo "-- Running: rio --help"
+        rio --help || echo "rio --help failed for Python $PY_VER"
+        echo
+    done
