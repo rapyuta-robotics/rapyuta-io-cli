@@ -55,7 +55,7 @@ def display_disk_list(disks: typing.Any, show_header: bool = True):
     data = []
 
     for d in disks:
-        capacity_used = getattr(d.status, "capacityUsed", 0) or 0
+        capacity_used = getattr(d.status, "capacity_used", 0) or 0
 
         capacity = capacity_used / (1024 * 1204 * 1024)  # Bytes -> GB
 
@@ -66,7 +66,7 @@ def display_disk_list(disks: typing.Any, show_header: bool = True):
                 d.status.status,
                 d.spec.capacity,
                 capacity,
-                getattr(d.status.diskBound, "deployment_name", None),
+                getattr(d.status.disk_bound, "deployment_name", None),
             ]
         )
 
