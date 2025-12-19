@@ -30,9 +30,9 @@ class Network(Model):
     @override
     def create_object(
         self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
-    ) -> Munch | None:
+    ) -> NetworkModel:
         network = v2_client.create_network(self._obj)  # pyright:ignore[reportArgumentType]
-        _ = poll_network(
+        return poll_network(
             client=v2_client,
             name=network.metadata.name,  # pyright: ignore[reportOptionalMemberAccess]
             retry_count=retry_count,

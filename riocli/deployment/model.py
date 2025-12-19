@@ -34,7 +34,7 @@ class Deployment(Model):
     @override
     def create_object(
         self, v2_client: Client, retry_count: int, retry_interval: int, *args, **kwargs
-    ) -> Munch | None:
+    ) -> DeploymentModel:
         hard_dependencies = [
             getattr(d, "name_or_guid", None)
             for d in (getattr(self._obj.spec, "depends", None) or [])

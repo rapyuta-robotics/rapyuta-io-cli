@@ -30,9 +30,9 @@ class Disk(Model):
     @override
     def create_object(
         self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
-    ) -> Munch | None:
+    ) -> DiskModel:
         created = v2_client.create_disk(body=self._obj)  # pyright:ignore[reportArgumentType]
-        _ = poll_disk(
+        return poll_disk(
             client=v2_client,
             name=created.metadata.name,
             retry_count=retry_count,
