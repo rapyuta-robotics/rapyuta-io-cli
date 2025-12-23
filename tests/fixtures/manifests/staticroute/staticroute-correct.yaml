@@ -1,0 +1,33 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: test-route-1
+  region: jp
+  labels:
+    app: test
+spec:
+  sourceIPRange:
+  - 192.168.5.0/24
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: test-route-2
+  region: jp
+  labels:
+    app: test
+spec:
+  sourceIPRange:
+  - 192.168.6.0/24
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: unauthorized-route
+  region: jp
+  labels:
+    app: unauthorized
+spec:
+  sourceIPRange:
+  - 192.168.99.0/24

@@ -1,0 +1,32 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: managed-deployment-1
+  region: jp
+  depends:
+    kind: package
+    nameOrGUID: "test-package-for-deploy-1"
+    version: "1.0.0"
+  labels:
+    app: test
+    purpose: deployment-rbac-testing
+    managed: "true"
+spec:
+  runtime: cloud
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: managed-deployment-2
+  region: jp
+  depends:
+    kind: package
+    nameOrGUID: "test-package-for-deploy-2"
+    version: "1.0.0"
+  labels:
+    app: test
+    purpose: deployment-rbac-testing
+    managed: "true"
+spec:
+  runtime: cloud

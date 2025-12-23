@@ -148,7 +148,7 @@ def add_user_to_organization(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
 
         spinner.text = click.style("Users added successfully.", fg=Colors.GREEN)

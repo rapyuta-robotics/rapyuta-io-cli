@@ -1,0 +1,7 @@
+{
+    "environment": "pr1326",
+    "catalog_host": "https://pr1326catalog.apps.okd4v2.okd4beta.rapyuta.io",
+    "core_api_host": "https://pr1326apiserver.apps.okd4v2.okd4beta.rapyuta.io",
+    "rip_host": "https://pr1326rip.apps.okd4v2.okd4beta.rapyuta.io",
+    "v2api_host": "https://pr1326api.apps.okd4v2.okd4beta.rapyuta.io"
+}

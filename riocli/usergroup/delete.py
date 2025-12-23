@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.config import new_client
+from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.usergroup.util import name_to_guid
 from riocli.utils.spinner import with_spinner
@@ -58,9 +58,9 @@ def delete_usergroup(
             click.confirm(f"Deleting usergroup {group_name} ({group_guid})", abort=True)
 
     try:
-        client = new_client()
-        org_guid = ctx.obj.data.get("organization_id")
-        client.delete_usergroup(org_guid, group_guid)
+        config = get_config_from_context(ctx)
+        client = config.new_v2_client(with_project=False)
+        client.delete_user_group(group_guid=group_guid, group_name=group_name)
         spinner.text = click.style("User group deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:

@@ -1,0 +1,35 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: docker-registry-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: docker-registry-service
+    type: docker
+    docker:
+      image: registry:2
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: dockerhub-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: dockerhub-service
+    type: docker
+    docker:
+      image: hello-world:latest

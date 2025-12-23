@@ -17,6 +17,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -24,7 +25,6 @@ from riocli.secret.util import fetch_secrets, print_secrets_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.client import Client
 
 
 @click.command(
@@ -156,7 +156,7 @@ def delete_secret(
 
 def _apply_delete(client: Client, result: Queue, secret: typing.Any) -> None:
     try:
-        client.delete_secret(secret.metadata.name)
+        client.delete_secret(name=secret.metadata.name)
         result.put((secret.metadata.name, True, "Secret deleted successfully"))
     except Exception as e:
         result.put((secret.metadata.name, False, str(e)))

@@ -48,6 +48,7 @@ def create_project(
     If you do not specify the organization, the project will
     be created in the current organization.
     """
+
     if not organization_guid:
         organization_guid = ctx.obj.data.get("organization_id")
 
@@ -62,7 +63,7 @@ def create_project(
 
     try:
         client = new_v2_client(with_project=False)
-        client.create_project(payload)
+        client.create_project(body=payload, organization_guid=organization_guid)
         spinner.text = click.style("Project created successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:

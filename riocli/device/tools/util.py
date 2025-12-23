@@ -18,7 +18,7 @@ import click
 from rapyuta_io.clients import LogsUploadRequest
 
 from riocli.config import Configuration, new_client
-from riocli.utils import run_bash, random_string
+from riocli.utils import random_string, run_bash
 from riocli.utils.execute import run_on_device
 
 

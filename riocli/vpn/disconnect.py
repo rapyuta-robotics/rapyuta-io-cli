@@ -17,10 +17,10 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
 from riocli.vpn.util import (
+    cleanup_hosts_file,
     install_vpn_tools,
     is_tailscale_up,
     stop_tailscale,
-    cleanup_hosts_file,
 )
 
 

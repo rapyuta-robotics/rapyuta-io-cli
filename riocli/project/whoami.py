@@ -61,11 +61,10 @@ def find_role(
     :return: Role of the user in the project
     :raises: SystemExit
     """
-    v1_client = config.new_client()
     v2_client = config.new_v2_client()
 
     # The user email comes from the config
-    user_email = config.data.get("email_id")
+    user_email: str = config.data.get("email_id")
     if not user_email:
         raise ValueError("User email cannot be found in the config.")
 
@@ -77,42 +76,22 @@ def find_role(
         raise ValueError("Project GUID cannot be found.")
 
     try:
-        project = v2_client.get_project(project_guid)
+        project = v2_client.get_project(project_guid=project_guid)
     except Exception as e:
         raise e
 
-    role = None
+    roles = []
+    for member in getattr(project.spec, "members", []):
+        if (
+            member.subject.kind == "User"
+            and member.subject.name.casefold() == user_email.casefold()
+        ):
+            role_names = getattr(member, "role_names", []) or []
+            implicit_role_names = getattr(member, "implicit_role_names", []) or []
+            roles.extend(role_names)
+            roles.extend(implicit_role_names)
 
-    # If user is present in the users list, check if they are and admin
-    for user in project.spec.get("users", []):
-        if user["emailID"] == user_email:
-            role = user["role"]
-            break
-
-    if role and role == ADMIN_ROLE:
-        return role
-
-    # Else, the membership may be via a group. Lookup the groups the user
-    # has access to and compare them with the list of groups where the project
-    # is included.
-    try:
-        user_groups = v1_client.list_usergroups(project.metadata.get("organizationGUID"))
-        user_groups = {g.name: True for g in user_groups}
-    except Exception as e:
-        raise e
-
-    for group in project.spec.get("userGroups", []):
-        if group["name"] not in user_groups:
-            continue
-
-        # If the user is part of a group that has admin access then no
-        # need to check further.
-        if role != ADMIN_ROLE and group["role"] == ADMIN_ROLE:
-            return ADMIN_ROLE
-
-        role = group["role"]
-
-    if not role:
+    if not roles:
         raise Exception("User does not have access to the project")
 
-    return role
+    return roles

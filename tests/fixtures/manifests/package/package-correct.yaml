@@ -1,0 +1,78 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: test-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: nginx-server
+    type: docker
+    docker:
+      image: nginx:latest
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: test-package-2
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: postgres-db
+    type: docker
+    docker:
+      image: postgres:13
+  environmentArgs:
+  - name: POSTGRES_PASSWORD
+    value: testpass
+  - name: POSTGRES_USER
+    value: testuser
+  - name: POSTGRES_DB
+    value: testdb
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: package-docker
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: docker-registry
+    type: docker
+    docker:
+      image: registry:2
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: unauthorized-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: unauthorized-app
+    type: docker
+    docker:
+      image: busybox:latest

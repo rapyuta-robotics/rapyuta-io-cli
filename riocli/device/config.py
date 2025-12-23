@@ -19,9 +19,8 @@ from rapyuta_io import DeviceConfig
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 from riocli.utils.spinner import with_spinner
-from riocli.utils import AliasedGroup
 
 
 @click.group(

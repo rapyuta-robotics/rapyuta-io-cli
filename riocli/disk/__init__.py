@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
 from riocli.disk.create import create_disk
 from riocli.disk.delete import delete_disk

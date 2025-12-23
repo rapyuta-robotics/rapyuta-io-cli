@@ -12,34 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import unmunchify
+from munch import Munch
+from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Organization as OrganizationModel
+from typing_extensions import override
 
-from riocli.config import new_v2_client
 from riocli.constants import ApplyResult
-from riocli.exceptions import OperationNotSupported
 from riocli.model import Model
-
-PROJECT_READY_TIMEOUT = 150
 
 
 class Organization(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = OrganizationModel.model_validate(self)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
-        client = new_v2_client()
+    @override
+    def create_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
-        organization = unmunchify(self)
+    @override
+    def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
+    @override
+    def delete_object(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        return None
+
+    @override
+    def apply(self, v2_client: Client, *args, **kwargs) -> ApplyResult:
         try:
-            client.update_organization(
-                organization_guid=self.metadata.guid, data=organization
+            _ = v2_client.update_organization(
+                organization_guid=self._obj.metadata.guid, body=self._obj
             )
         except Exception as e:
             raise e
 
         return ApplyResult.UPDATED
-
-    def delete(self, *args, **kwargs) -> None:
-        raise OperationNotSupported

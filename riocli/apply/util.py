@@ -14,9 +14,10 @@
 
 import glob
 import os
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 from shutil import get_terminal_size
-from collections.abc import Iterable
+from typing import Any, AnyStr
 
 import click
 import jinja2
@@ -29,13 +30,13 @@ from riocli.constants.symbols import Symbols
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
-from riocli.managedservice.model import ManagedService
-from riocli.model import Model
 from riocli.network.model import Network
 from riocli.organization.model import Organization
 from riocli.package.model import Package
 from riocli.project.model import Project
+from riocli.role.model import Role, RoleBinding
 from riocli.secret.model import Secret
+from riocli.service_account.model import ServiceAccount
 from riocli.static_route.model import StaticRoute
 from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
@@ -44,7 +45,6 @@ KIND_TO_CLASS = {
     "deployment": Deployment,
     "device": Device,
     "disk": Disk,
-    "managedservice": ManagedService,
     "network": Network,
     "organization": Organization,
     "package": Package,
@@ -52,6 +52,9 @@ KIND_TO_CLASS = {
     "secret": Secret,
     "staticroute": StaticRoute,
     "usergroup": UserGroup,
+    "role": Role,
+    "rolebinding": RoleBinding,
+    "serviceaccount": ServiceAccount,
 }
 
 FILTERS = {
@@ -60,7 +63,7 @@ FILTERS = {
 }
 
 
-def get_model(data: dict) -> Model:
+def get_resource_class(data: Mapping[str, Any]):
     """Get the model class based on the kind"""
     kind = data.get("kind", None)
     if kind is None:
@@ -73,7 +76,7 @@ def get_model(data: dict) -> Model:
     return klass
 
 
-def parse_variadic_path_args(path_item):
+def parse_variadic_path_args(path_item) -> list[AnyStr]:
     glob_files = []
     abs_path = os.path.abspath(path_item)
     # make it absolute
@@ -97,8 +100,8 @@ def process_files_values_secrets(
     files: Iterable[str],
     values: Iterable[str],
     secrets: Iterable[str],
-):
-    glob_files = []
+) -> tuple[list[str], Iterable[str], Iterable[str]]:
+    glob_files: list[str] = []
 
     for path_item in files:
         path_glob = parse_variadic_path_args(path_item)
@@ -128,7 +131,7 @@ def message_with_prompt(
     left_msg: str,
     right_msg: str = "",
     fg: str = Colors.WHITE,
-    spinner: Yaspin = None,
+    spinner: Yaspin | None = None,
 ) -> None:
     """Prints a message with a prompt and a timestamp.
 
@@ -138,12 +141,16 @@ def message_with_prompt(
     t = datetime.now().isoformat("T")
     spacer = " " * (int(columns) - len(left_msg + right_msg + t) - 12)
     text = click.style(f">> {left_msg}{spacer}{right_msg} [{t}]", fg=fg)
-    printer = spinner.write if spinner else click.echo
-    printer(text)
+
+    if spinner is not None:
+        spinner.write(text)
+    else:
+        click.echo(text)
 
 
-def print_resolved_objects(objects: dict) -> None:
-    data = []
+def print_objects_table(objects: Iterable[str]) -> None:
+    data: list[list[str]] = []
+
     for o in objects:
         kind, name = o.split(":")
         data.append([kind.title(), name])
@@ -155,16 +162,16 @@ def init_jinja_environment():
     """Initialize Jinja2 environment with custom filters"""
     environment = jinja2.Environment()
     for name, func in FILTERS.items():
-        environment.filters[name] = func
+        environment.filters[name] = func  # pyright:ignore[reportArgumentType]
 
     try:
         from ansible.plugins.filter.core import FilterModule as CoreFilterModule
-        from ansible.plugins.filter.urls import FilterModule as URLFilterModule
-        from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
-        from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
         from ansible.plugins.filter.encryption import (
             FilterModule as EncryptionFilterModule,
         )
+        from ansible.plugins.filter.mathstuff import FilterModule as MathFilterModule
+        from ansible.plugins.filter.urls import FilterModule as URLFilterModule
+        from ansible.plugins.filter.urlsplit import FilterModule as URLSplitFilterModule
 
         for name, func in CoreFilterModule().filters().items():
             # Ansible added this new filter in v2.19.0 that replaces the
@@ -174,19 +181,19 @@ def init_jinja_environment():
             if name == "default":
                 continue
 
-            environment.filters[name] = func
+            environment.filters[name] = func  # pyright:ignore[reportArgumentType]
 
         for name, func in URLFilterModule().filters().items():
-            environment.filters[name] = func
+            environment.filters[name] = func  # pyright:ignore[reportArgumentType]
 
         for name, func in URLSplitFilterModule().filters().items():
             environment.filters[name] = func
 
         for name, func in MathFilterModule().filters().items():
-            environment.filters[name] = func
+            environment.filters[name] = func  # pyright:ignore[reportArgumentType]
 
         for name, func in EncryptionFilterModule().filters().items():
-            environment.filters[name] = func
+            environment.filters[name] = func  # pyright:ignore[reportArgumentType]
     except ImportError:
         click.secho("Ansible filters are not supported", fg=Colors.YELLOW)
 

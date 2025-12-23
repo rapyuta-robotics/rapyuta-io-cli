@@ -1,0 +1,15 @@
+digraph {
+	graph [overlap=False rankdir=LR]
+	node [shape=box]
+	"deployment/deployment-ros-cloud"
+	"package/package-ros-cloud" -> "deployment/deployment-ros-cloud"
+	"disk/deployment-disk" -> "deployment/deployment-ros-cloud"
+	"staticroute/deployment-route" -> "deployment/deployment-ros-cloud"
+	"deployment/deployment-dependency" -> "deployment/deployment-ros-cloud"
+	"network/deployment-network" -> "deployment/deployment-ros-cloud"
+	"deployment/deployment-ros-device"
+	"package/package-ros-device" -> "deployment/deployment-ros-device"
+	"device/deployment-device" -> "deployment/deployment-ros-device"
+	"network/deployment-network" -> "deployment/deployment-ros-device"
+}
+

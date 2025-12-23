@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -45,8 +44,10 @@ def inspect_static_route(
     """
     try:
         client = new_v2_client()
-        route = client.get_static_route(static_route)
-        inspect_with_format(unmunchify(route), format_type)
+        route = client.get_staticroute(name=static_route)
+        inspect_with_format(
+            route.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

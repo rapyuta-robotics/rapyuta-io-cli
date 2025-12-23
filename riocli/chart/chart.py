@@ -64,6 +64,7 @@ class Chart(Munch):
         secrets: str = None,
         dryrun: bool = None,
         silent: bool = False,
+        workers: int = 6,
     ):
         if not self.downloaded:
             self.download_chart()
@@ -78,6 +79,7 @@ class Chart(Munch):
             secrets=secrets,
             dryrun=dryrun,
             silent=silent,
+            workers=workers,
         )
 
     def download_chart(self):
