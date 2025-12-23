@@ -190,7 +190,7 @@ def _apply_update(
     deployment: Deployment,
 ) -> None:
     try:
-        client.update_deployment(name=deployment.metadata.name, body=deployment)
+        client.update_deployment(body=deployment)
         result.put((deployment.metadata.name, True, "Restarted"))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))
