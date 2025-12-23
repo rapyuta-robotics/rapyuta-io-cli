@@ -1,3 +1,10 @@
+## [9.13.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.3...v9.13.4) (2025-12-23)
+
+
+### Bug Fixes
+
+* **jsonschema:** update organizationGUID regex to match the newer format ([#479](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/479)) ([472c13f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/472c13f42aa4bb9e08a44c16fd183c5169ef449c))
+
 ## [9.13.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.2...v9.13.3) (2025-11-27)
 
 
