@@ -48,7 +48,7 @@ definitions:
     pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
   organizationGUID:
     type: string
-    pattern: "^org-[a-z]{24}$"
+    pattern: "^org-([a-z0-9]{20}|[a-z]{24})$"
   stringMap:
     type: object
     additionalProperties:
