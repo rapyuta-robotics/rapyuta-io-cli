@@ -112,10 +112,6 @@ class Configuration:
         if environment:
             os.environ["RIO_CONFIG"] = self.filepath
 
-        project = self.data.get("project_id", None)
-        if with_project and project is None:
-            raise NoProjectSelected
-
         if not with_project and not from_file:
             return v2Client(
                 config=v2Config(
