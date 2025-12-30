@@ -50,10 +50,15 @@ def list_users(ctx: click.Context) -> None:
     data = []
     for u in users:
         fg, bold = None, False
-        if u.email_id == current_user_email:
+        if u.spec.email_id == current_user_email:
             fg, bold = Colors.GREEN, True
-        full_name = f"{u.first_name} {u.last_name}"
-        row = [u.guid, full_name, u.email_id, u.spec.organizations]
+        full_name = f"{u.spec.first_name} {u.spec.last_name}"
+        row = [
+            u.metadata.guid,
+            full_name,
+            u.spec.email_id,
+            u.spec.organizations[0].role_names,
+        ]
         data.append([click.style(v, fg=fg, bold=bold) for v in row])
 
     tabulate_data(data, headers=["GUID", "Name", "EmailID", "Role"])
