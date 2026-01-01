@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.configtree.diff import diff_revisions
 from riocli.configtree.export_keys import export_keys
 from riocli.configtree.import_keys import import_keys

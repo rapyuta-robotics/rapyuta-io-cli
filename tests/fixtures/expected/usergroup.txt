@@ -1,0 +1,16 @@
+digraph {
+	graph [overlap=False rankdir=LR]
+	node [shape=box]
+	"usergroup/usergroup"
+	"user/test.user@rapyuta.io" -> "usergroup/usergroup"
+	"role/group_admin" -> "usergroup/usergroup"
+	"serviceaccount/deployer" -> "usergroup/usergroup"
+	"role/group_viewer" -> "usergroup/usergroup"
+	"organization/warehouse" -> "usergroup/usergroup"
+	"role/org_admin" -> "usergroup/usergroup"
+	"project/site-1" -> "usergroup/usergroup"
+	"role/project_admin" -> "usergroup/usergroup"
+	"project/site-2" -> "usergroup/usergroup"
+	"role/project_viewer" -> "usergroup/usergroup"
+}
+

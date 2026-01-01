@@ -15,16 +15,16 @@ import functools
 from queue import Queue
 
 import click
+from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.package.model import Package
 from riocli.package.util import fetch_packages, print_packages_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command("delete")
@@ -143,8 +143,8 @@ def _apply_delete(client: Client, result: Queue, package: Package) -> None:
     name_version = f"{package.metadata.name}@{package.metadata.version}"
     try:
         client.delete_package(
-            package_name=package.metadata.name,
-            query={"version": package.metadata.version},
+            name=package.metadata.name,
+            version=package.metadata.version,
         )
         result.put((name_version, True, "Package deleted successfully"))
     except Exception as e:

@@ -1,11 +1,12 @@
 from pathlib import Path
+
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.constants.colors import Colors
-from riocli.compose.generate import generate_compose_file
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
+from riocli.compose.generate import generate_compose_file
+from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
 
 

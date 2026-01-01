@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.package.delete import delete_package
 from riocli.package.deployment import list_package_deployments
 from riocli.package.inspect import inspect_package

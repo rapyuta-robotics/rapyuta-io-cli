@@ -1,0 +1,57 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: test-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: nginx-server
+    type: docker
+    docker:
+      image: nginx:latest
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: user-package-1
+  version: v1.0.0
+  labels:
+    app: user-test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: user-app
+    type: docker
+    docker:
+      image: busybox:latest
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: managed-package-1
+  version: v1.0.0
+  labels:
+    app: managed-test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: managed-app
+    type: docker
+    docker:
+      image: alpine:latest
+---
+
+

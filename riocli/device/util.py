@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import wraps, lru_cache
 import json
 import re
 import time
 import typing
 from datetime import datetime, timedelta
+from functools import lru_cache, wraps
 from pathlib import Path
 
 import click
@@ -26,6 +26,7 @@ from rapyuta_io.clients import LogUploads, SharedURL
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import get_config_from_context, new_client, new_hwil_client
 from riocli.config.config import Configuration
@@ -33,7 +34,6 @@ from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
 from riocli.hwil.util import execute_command, find_device_id
 from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
-from riocli.v2client.util import handle_server_errors
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:

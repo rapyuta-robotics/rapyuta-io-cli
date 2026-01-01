@@ -53,7 +53,7 @@ class DummySpinner:
         return False
 
 
-def with_spinner(**spin_kwargs):
+def with_spinner(text: str, timer: bool = False):
     """
     Decorator for wrapping your function with a spinner
 
@@ -82,7 +82,7 @@ def with_spinner(**spin_kwargs):
             if not sys.stdout.isatty():
                 spinner_class = DummySpinner
 
-            with spinner_class(**spin_kwargs) as spinner:
+            with spinner_class(text=text, timer=timer) as spinner:
                 kwargs["spinner"] = spinner
                 return func(*args, **kwargs)
 

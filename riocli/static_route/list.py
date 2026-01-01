@@ -50,8 +50,8 @@ def list_static_routes(labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        routes = client.list_static_routes(query={"labelSelector": labels})
-        _display_routes_list(routes)
+        routes = client.list_staticroutes(label_selector=labels)
+        _display_routes_list(routes.items)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

@@ -14,7 +14,6 @@
 
 import click
 
-
 from riocli.compose.down import down
 from riocli.compose.generate import generate
 from riocli.compose.up import up

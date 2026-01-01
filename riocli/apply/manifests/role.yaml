@@ -1,0 +1,23 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "role-name"
+  labels:
+    persona: developer
+spec:
+  description: "Developer role"
+  rules:
+  # Access to all Packages.
+  - resource: "package" # All rapyuta.io Resources: [disk, package, deployment, etc]
+
+  # Access to selected Deployments.
+  - resource: "deployment"
+    instances:
+      - otel-collector # Options: [string, regex]
+      - robot.*
+
+  # Read actions to the Disks.
+  - resource: "disk"
+    actions:
+      - get
+      - list

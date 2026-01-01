@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@ import functools
 import typing
 
 import click
-from rapyuta_io import Client
+from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2.utils import walk_pages
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 
 
@@ -26,7 +27,7 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     @functools.wraps(f)
     def decorated(*args: typing.Any, **kwargs: typing.Any) -> None:
         try:
-            client = new_client()
+            client = new_v2_client(with_project=False)
         except Exception as e:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
@@ -34,19 +35,18 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
         group_name = kwargs.pop("group_name")
         group_guid = None
 
-        ctx = args[0]
-        org_guid = ctx.obj.data.get("organization_id")
-
         if group_name.startswith("group-"):
             group_guid = group_name
             group_name = None
 
         if group_name is None:
-            group_name = get_usergroup_name(client, org_guid, group_guid)
+            group_name = get_usergroup_name(
+                client, group_guid=group_guid, group_name=group_name
+            )
 
         if group_guid is None:
             try:
-                group_guid = find_usergroup_guid(client, org_guid, group_name)
+                group_guid = find_usergroup_guid(client, group_name)
             except Exception as e:
                 click.secho(str(e), fg=Colors.RED)
                 raise SystemExit(1)
@@ -58,22 +58,25 @@ def name_to_guid(f: typing.Callable) -> typing.Callable:
     return decorated
 
 
-def get_usergroup_name(client: Client, org_guid: str, group_guid: str) -> str:
+def get_usergroup_name(client: Client, group_guid: str) -> str:
     try:
-        usergroup = client.get_usergroup(org_guid, group_guid)
+        usergroup = client.get_user_group()
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
+    # v2 shape: metadata.name fallback
+    return getattr(usergroup, "name", getattr(usergroup, "metadata", {}).get("name"))
 
-    return usergroup.name
 
-
-def find_usergroup_guid(client: Client, org_guid, group_name: str) -> str:
-    user_groups = client.list_usergroups(org_guid=org_guid)
+def find_usergroup_guid(client: Client, group_name: str) -> str:
+    user_groups = []
+    for items in walk_pages(client.list_user_groups):
+        user_groups.extend(items)
 
     for g in user_groups:
-        if g.name == group_name:
-            return g.guid
+        g_name = g.metadata.name or None
+        if g_name == group_name:
+            return g.metadata.guid
 
     raise UserGroupNotFound()
 

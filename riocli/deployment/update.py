@@ -17,17 +17,15 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client, Deployment
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
-from riocli.deployment.model import Deployment
-from riocli.deployment.util import fetch_deployments
-from riocli.deployment.util import print_deployments_for_confirmation
+from riocli.constants import Colors, Symbols
+from riocli.deployment.util import fetch_deployments, print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(
@@ -192,7 +190,7 @@ def _apply_update(
     deployment: Deployment,
 ) -> None:
     try:
-        client.update_deployment(deployment.metadata.name, deployment)
+        client.update_deployment(body=deployment)
         result.put((deployment.metadata.name, True, "Restarted"))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))

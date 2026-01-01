@@ -38,7 +38,7 @@ def create_static_route(name: str, spinner=None) -> None:
     try:
         client = new_v2_client(with_project=True)
         payload = {"metadata": {"name": name}}
-        route = client.create_static_route(payload)
+        route = client.create_staticroute(payload)
         spinner.text = click.style(
             f"Static Route created successfully for URL {route.spec.url}",
             fg=Colors.GREEN,

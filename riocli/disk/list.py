@@ -47,8 +47,8 @@ def list_disks(labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        disks = client.list_disks(query={"labelSelector": labels})
-        display_disk_list(disks, show_header=True)
+        disks = client.list_disks(label_selector=labels)
+        display_disk_list(disks.items, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
