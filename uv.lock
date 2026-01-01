@@ -1585,7 +1585,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=feat%2Frbac-support#e5d42da336f50495cacfd703645002ebadfa9ab7" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=feat%2Frbac-support#b16bad99bc913611f06b394a1e9b8d6f5ae362d7" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
