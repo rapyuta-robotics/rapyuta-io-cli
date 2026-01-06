@@ -68,9 +68,9 @@ def _display_service_accounts_list(accounts: list[ServiceAccount]) -> None:
         description = acc.spec.description
 
         if description is not None:
-            description = description.replace('\n', ' ')
+            description = description.replace("\n", " ")
             if len(description) > 48:
-                    description = description[:48] + ".."
+                description = description[:48] + ".."
 
         data.append(
             [
