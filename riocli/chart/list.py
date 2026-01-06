@@ -33,7 +33,7 @@ def list_charts(wide: bool = False) -> None:
     if "entries" not in index:
         raise Exception("No entries found!")
     entries = []
-    for _, chart in index["entries"].items():
+    for chart in index["entries"].values():
         for version in chart:
             entries.append(version)
 
