@@ -14,7 +14,6 @@
 
 import click
 
-
 from riocli.constants import Colors
 from riocli.usergroup.delete import delete_usergroup
 from riocli.usergroup.inspect import inspect_usergroup
