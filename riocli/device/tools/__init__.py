@@ -13,14 +13,14 @@
 # limitations under the License.
 import click
 
-
 from riocli.device.tools.device_init import device_init
 from riocli.device.tools.forward import port_forward
 from riocli.device.tools.rapyuta_logs import rapyuta_agent_logs
 from riocli.device.tools.ssh import device_ssh, ssh_authorize_key
+from riocli.utils import AliasedGroup
+
 from .scp import scp
 from .service import service
-from riocli.utils import AliasedGroup
 
 
 @click.group(

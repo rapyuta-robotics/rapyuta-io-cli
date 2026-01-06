@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.device.config import device_config
 from riocli.device.create import create_device
 from riocli.device.delete import delete_device
