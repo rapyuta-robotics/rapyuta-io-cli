@@ -7,9 +7,3 @@ metadata:
     team: rbac-test
 spec:
   description: "Second managed service account for update/delete testing"
-  roles:
-  - domain:
-      kind: Project
-      name: test-project1
-    roleNames:
-    - rio-project_viewer
