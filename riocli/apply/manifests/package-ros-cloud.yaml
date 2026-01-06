@@ -25,7 +25,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
   environmentVars:
     - name: "key1" # Required
       default: "value1"

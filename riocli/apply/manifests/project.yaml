@@ -6,16 +6,19 @@ metadata:
     purpose: testing
     version: "1.0"
 spec:
-  users:
-    - emailID: "user1@example.com"
-      role: "admin"
-    - emailID: "user2@example.com"
-      role: "viewer"
-  userGroups:
-    - name: "dev-group"
-      role: "admin"
-    - name: "qa-group"
-      role: "viewer"
+  members:
+  - subject:
+      kind: User
+      name: "user1@example.com"
+    roleNames: [ "project_admin" ]
+  - subject:
+      kind: User
+      name: "user2@example.com"
+    roleNames: [ "project_viewer" ]
+  - subject:
+      kind: ServiceAccount
+      name: "service-account-1"
+    roleNames: [ "project_admin" ]
   features:
     vpn:
       enabled: true
