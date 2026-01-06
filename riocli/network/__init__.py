@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
 from riocli.network.delete import delete_network
 from riocli.network.inspect import inspect_network
