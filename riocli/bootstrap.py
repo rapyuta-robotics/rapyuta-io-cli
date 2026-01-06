@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,47 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "9.5.0"
+__version__ = "9.13.1"
 
 import os
 
 import click
-import rapyuta_io.version
+import rapyuta_io
 from click import Context
 
-from riocli.apply import apply, delete
-from riocli.apply.explain import list_examples, explain
+from riocli.apply import apply, delete, graph
+from riocli.apply.explain import explain, list_examples
 from riocli.apply.template import template
 from riocli.auth import auth
 from riocli.chart import chart
 from riocli.completion import completion
+from riocli.compose import compose
 from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
-from riocli.compose import compose
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
 from riocli.hwil import hwildevice
-from riocli.managedservice import managedservice
 from riocli.network import network
 from riocli.oauth2 import oauth2
 from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
 from riocli.project import project
+from riocli.role import role
 from riocli.secret import secret
+from riocli.service_account import service_account
 from riocli.shell import deprecated_repl, shell
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
 from riocli.utils import (
+    AliasedGroup,
     check_for_updates,
     is_pip_installation,
     pip_install_cli,
     update_appimage,
 )
-from riocli.utils import AliasedGroup
 from riocli.vpn import vpn
 
 
@@ -63,12 +64,13 @@ from riocli.vpn import vpn
         "o2": "oauth2",
         "sr": "static-route",
         "ug": "usergroup",
+        "sa": "service-account",
     },
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.pass_context
-def cli(ctx: Context, config: str = None):
+def cli(ctx: Context, config: str | None = None):
     """Manage rapyuta.io features on the command-line"""
     ctx.obj = Configuration(filepath=config)
 
@@ -127,11 +129,11 @@ def update(silent: bool) -> None:
     click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
 
     if not silent:
-        click.confirm("Do you want to update?", abort=True, default=False)
+        _ = click.confirm("Do you want to update?", abort=True, default=False)
 
     try:
         if is_pip_installation():
-            pip_install_cli(version=latest)
+            _ = pip_install_cli(version=latest)
         else:
             update_appimage(version=latest)
     except Exception as e:
@@ -145,6 +147,7 @@ cli.add_command(apply)
 cli.add_command(chart)
 cli.add_command(explain)
 cli.add_command(list_examples)
+cli.add_command(graph)
 cli.add_command(delete)
 cli.add_command(auth)
 cli.add_command(project)
@@ -159,7 +162,6 @@ cli.add_command(parameter)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
-cli.add_command(managedservice)
 cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
@@ -169,3 +171,5 @@ cli.add_command(hwildevice)
 cli.add_command(cli_context)
 cli.add_command(oauth2)
 cli.add_command(compose)
+cli.add_command(role)
+cli.add_command(service_account)
