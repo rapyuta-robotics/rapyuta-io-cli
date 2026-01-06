@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,81 +11,106 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+
+import graphlib
 import json
-import queue
-import threading
-import typing
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import click
 import yaml
 from benedict import benedict
-from graphlib import TopologicalSorter
 from munch import munchify
-from pathlib import Path
 
 from riocli.apply.util import (
-    get_model,
+    get_resource_class,
     init_jinja_environment,
     message_with_prompt,
-    print_resolved_objects,
+    print_objects_table,
 )
-from riocli.config import Configuration
-from riocli.constants import Colors, Symbols, ApplyResult
+from riocli.constants import ApplyResult, Colors, Symbols
 from riocli.exceptions import (
-    NoProjectSelected,
-    NoOrganizationSelected,
-    ResourceNotFound,
     LoggedOut,
+    NoOrganizationSelected,
+    NoProjectSelected,
+    ResourceNotFound,
 )
+from riocli.model.base import Model
 from riocli.utils import dump_all_yaml, print_centered_text, run_bash
-from riocli.utils.graph import Graphviz
+from riocli.utils.graph import GraphVisualizer, Graphviz
 from riocli.utils.spinner import with_spinner
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable, Mapping
+
+    from rapyuta_io import Client
+    from rapyuta_io_sdk_v2 import Client as v2Client
+    from yaspin.api import Yaspin
+
+    from riocli.config import Configuration
+
+DEFAULT_MAX_WORKERS = 6
+DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 
 class Applier:
-    DEFAULT_MAX_WORKERS = 6
-    DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
-
     def __init__(
         self,
-        files: list,
-        values: list,
-        secrets: list,
+        files: Iterable[str],
+        values: Iterable[str],
+        secrets: Iterable[str],
         config: Configuration,
     ):
-        self.files = {}
-        self.objects = {}
-        self.resolved_objects = {}
         self.input_file_paths = files
         self.config = config
-        self.graph = TopologicalSorter()
         self.environment = init_jinja_environment()
-        self.diagram = Graphviz(direction="LR", format="svg")
-        self._process_values_and_secrets(values, secrets)
-        self._process_file_list(files)
+        self.values = self._load_values_and_secrets(values, secrets)
+        self.objects, self.manifests = self._load_objects(files)
+        self.dependency_graph, self.diagram = self._get_dependency_graph(self.objects)
 
-    def print_resolved_manifests(self):
+    def print_summary(self) -> None:
+        """Prints a summary table with Resource list for the operation."""
+        print_centered_text("Parsed Resources")
+        print_objects_table(self.objects.keys())
+
+    def print_manifests(self):
         """Validates and prints the resolved manifests"""
-        manifests = []
-        for _, o in self.objects.items():
-            kls = get_model(o)
-            kls.validate(o)
-            manifests.append(o)
+        dump_all_yaml(self.manifests)
 
-        dump_all_yaml(manifests)
+    def show_dependency_graph(self, print_only: bool):
+        """Shows a GraphViz dependency graph of the objects."""
+        self.diagram.visualize(print_only=print_only)
 
     @with_spinner(text="Applying...", timer=True)
-    def apply(self, *args, **kwargs):
+    def apply(
+        self,
+        dryrun: bool,
+        retry_count: int,
+        retry_interval: int,
+        workers: int = DEFAULT_MAX_WORKERS,
+        spinner: Yaspin | None = None,
+    ):
         """Apply the resources defined in the manifest files"""
-        spinner = kwargs.get("spinner")
-        kwargs["workers"] = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
+        assert spinner is not None
 
-        apply_func = self.apply_async
-        if kwargs["workers"] == 1:
-            apply_func = self.apply_sync
+        client = self.config.new_client()
+        v2_client = self.config.new_v2_client()
+
+        apply_func = partial(
+            self._apply_manifest,
+            client=client,
+            v2_client=v2_client,
+            dryrun=dryrun,
+            retry_count=retry_count,
+            retry_interval=retry_interval,
+            spinner=spinner,
+        )
 
         try:
-            apply_func(*args, **kwargs)
+            self._start_work(op=apply_func, work=self._get_apply_order(), workers=workers)
             spinner.text = click.style("Apply successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
@@ -93,51 +118,35 @@ class Applier:
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
-    def apply_sync(self, *args, **kwargs):
-        self.graph.prepare()
-        while self.graph.is_active():
-            for obj in self.graph.get_ready():
-                if (
-                    obj in self.resolved_objects
-                    and "manifest" in self.resolved_objects[obj]
-                ):
-                    self._apply_manifest(obj, *args, **kwargs)
-                self.graph.done(obj)
+    @with_spinner(text="Deleting...", timer=True)
+    def delete(
+        self,
+        dryrun: bool,
+        retry_count: int,
+        retry_interval: int,
+        workers: int = DEFAULT_MAX_WORKERS,
+        spinner: Yaspin | None = None,
+    ):
+        """Delete resources defined in manifests."""
+        assert spinner is not None
 
-    def apply_async(self, *args, **kwargs):
-        task_queue = queue.Queue()
-        done_queue = queue.Queue()
+        client = self.config.new_client()
+        v2_client = self.config.new_v2_client()
 
-        self._start_apply_workers(
-            self._apply_manifest, task_queue, done_queue, *args, **kwargs
+        delete_func = partial(
+            self._delete_manifest,
+            client=client,
+            v2_client=v2_client,
+            dryrun=dryrun,
+            retry_count=retry_count,
+            retry_interval=retry_interval,
+            spinner=spinner,
         )
 
-        self.graph.prepare()
-        while self.graph.is_active():
-            for obj in self.graph.get_ready():
-                task_queue.put(obj)
-
-            done_obj = done_queue.get()
-            if isinstance(done_obj, Exception):
-                raise Exception(done_obj)
-
-            self.graph.done(done_obj)
-
-        # Block until the task_queue is empty.
-        task_queue.join()
-
-    @with_spinner(text="Deleting...", timer=True)
-    def delete(self, *args, **kwargs):
-        """Delete resources defined in manifests."""
-        spinner = kwargs.get("spinner")
-        kwargs["workers"] = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
-
-        delete_func = self.delete_async
-        if kwargs["workers"] == 1:
-            delete_func = self.delete_sync
-
         try:
-            delete_func(*args, **kwargs)
+            self._start_work(
+                op=delete_func, work=self._get_delete_order(), workers=workers
+            )
             spinner.text = click.style("Delete successful.", fg=Colors.BRIGHT_GREEN)
             spinner.green.ok(Symbols.SUCCESS)
         except Exception as e:
@@ -145,118 +154,25 @@ class Applier:
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
 
-    def delete_sync(self, *args, **kwargs) -> None:
-        delete_order = list(self.graph.static_order())
-        delete_order.reverse()
-        for o in delete_order:
-            if o in self.resolved_objects and "manifest" in self.resolved_objects[o]:
-                self._delete_manifest(o, *args, **kwargs)
-
-    def delete_async(self, *args, **kwargs) -> None:
-        task_queue = queue.Queue()
-        done_queue = queue.Queue()
-
-        self._start_apply_workers(
-            self._delete_manifest, task_queue, done_queue, *args, **kwargs
-        )
-
-        for nodes in self._get_async_delete_order():
-            for node in nodes:
-                task_queue.put(node)
-
-            done_obj = done_queue.get()
-            if isinstance(done_obj, Exception):
-                raise Exception(done_obj)
-
-            task_queue.join()
-
-    def _start_apply_workers(
+    def _apply_manifest(
         self,
-        func: typing.Callable,
-        tasks: queue.Queue,
-        done: queue.Queue,
-        *args,
-        **kwargs,
+        obj_key: str,
+        client: Client | None = None,
+        v2_client: v2Client | None = None,
+        dryrun: bool = False,
+        retry_count: int = 0,
+        retry_interval: int = 0,
+        spinner: Yaspin | None = None,
     ) -> None:
-        """A helper method to start workers for apply/delete operations
-
-        The `func` should have the following signature:
-            func(obj_key: str, *args, **kwargs) -> None
-
-        The `tasks` queue is used to pass objects to the workers for processing.
-        The `done` queue is used to pass the processed objects back to the main.
-        """
-
-        def _worker():
-            while True:
-                o = tasks.get()
-                if o in self.resolved_objects and "manifest" in self.resolved_objects[o]:
-                    try:
-                        func(o, *args, **kwargs)
-                    except Exception as ex:
-                        tasks.task_done()
-                        done.put(ex)
-                        continue
-
-                tasks.task_done()
-                done.put(o)
-
-        # Start the workers that will accept tasks from the task_queue
-        # and process them. Upon completion, they will put the object
-        # in the done_queue. The main thread will wait for the task_queue
-        # to be empty before exiting. The daemon threads will die with the
-        # main process.
-        n = int(kwargs.get("workers") or self.DEFAULT_MAX_WORKERS)
-        for i in range(n):
-            threading.Thread(target=_worker, daemon=True, name=f"worker-{i}").start()
-
-    def _get_async_delete_order(self):
-        """Returns the delete order for async delete operation
-
-        This method returns the delete order in a way that the
-        resources that are dependent on other resources are deleted
-        first while also ensuring that they can be processed concurrently.
-        """
-        stack = []
-        self.graph.prepare()
-        while self.graph.is_active():
-            nodes = self.graph.get_ready()
-            stack.append(nodes)
-            self.graph.done(*nodes)
-
-        while stack:
-            yield stack.pop()
-
-    def parse_dependencies(self, print_resources: bool = True):
-        for _, data in self.files.items():
-            for model in data:
-                key = self._get_object_key(model)
-                self._parse_dependency(key, model)
-                self._add_graph_node(key)
-
-        if print_resources:
-            print_centered_text("Parsed Resources")
-            print_resolved_objects(self.resolved_objects)
-
-    def show_dependency_graph(self):
-        """Lauches mermaid.live dependency graph"""
-        self.diagram.visualize()
-
-    def _apply_manifest(self, obj_key: str, *args, **kwargs) -> None:
         """Instantiate and apply the object manifest"""
-        spinner = kwargs.get("spinner")
-        dryrun = kwargs.get("dryrun", False)
+        assert client is not None
+        assert v2_client is not None
+        assert spinner is not None
+
+        if obj_key not in self.objects:
+            return
 
         obj = self.objects[obj_key]
-        kls = get_model(obj)
-
-        try:
-            kls.validate(obj)
-        except Exception as ex:
-            raise Exception(f"invalid manifest {obj_key}: {str(ex)}")
-
-        ist = kls(munchify(obj))
-
         obj_key = click.style(obj_key, bold=True)
 
         message_with_prompt(
@@ -268,7 +184,13 @@ class Applier:
         try:
             result = ApplyResult.CREATED
             if not dryrun:
-                result = ist.apply(*args, **kwargs)
+                result = obj.apply(
+                    client=client,
+                    v2_client=v2_client,
+                    config=self.config,
+                    retry_count=retry_count,
+                    retry_interval=retry_interval,
+                )
 
             if result == ApplyResult.EXISTS:
                 message_with_prompt(
@@ -291,21 +213,25 @@ class Applier:
             )
             raise Exception(f"{obj_key}: {str(ex)}")
 
-    def _delete_manifest(self, obj_key: str, *args, **kwargs) -> None:
+    def _delete_manifest(
+        self,
+        obj_key: str,
+        client: Client | None = None,
+        v2_client: v2Client | None = None,
+        dryrun: bool = False,
+        retry_count: int = 0,
+        retry_interval: int = 0,
+        spinner: Yaspin | None = None,
+    ) -> None:
         """Instantiate and delete the object manifest"""
-        spinner = kwargs.get("spinner")
-        dryrun = kwargs.get("dryrun", False)
+        assert client is not None
+        assert v2_client is not None
+        assert spinner is not None
+
+        if obj_key not in self.objects:
+            return
 
         obj = self.objects[obj_key]
-        kls = get_model(obj)
-
-        try:
-            kls.validate(obj)
-        except Exception as ex:
-            raise Exception(f"invalid manifest {obj_key}: {str(ex)}")
-
-        ist = kls(munchify(obj))
-
         obj_key = click.style(obj_key, bold=True)
 
         message_with_prompt(
@@ -314,10 +240,7 @@ class Applier:
             spinner=spinner,
         )
 
-        # If a resource has a label with DELETE_POLICY_LABEL set
-        # to 'retain', it should not be deleted.
-        labels = obj.get("metadata", {}).get("labels", {})
-        can_delete = labels.get(self.DELETE_POLICY_LABEL) != "retain"
+        can_delete = self._can_delete(obj)
 
         if not can_delete:
             message_with_prompt(
@@ -329,7 +252,13 @@ class Applier:
 
         try:
             if not dryrun and can_delete:
-                ist.delete(*args, **kwargs)
+                obj.delete(
+                    client=client,
+                    v2_client=v2_client,
+                    config=self.config,
+                    retry_count=retry_count,
+                    retry_interval=retry_interval,
+                )
 
             message_with_prompt(
                 f"{Symbols.SUCCESS} Deleted {obj_key}",
@@ -351,178 +280,279 @@ class Applier:
             )
             raise Exception(f"{obj_key}: {str(ex)}")
 
-    def _process_file_list(self, files):
+    def _get_dependency_graph(
+        self, objects: dict[str, Model]
+    ) -> tuple[graphlib.TopologicalSorter[str], GraphVisualizer]:
+        graph: graphlib.TopologicalSorter[str] = graphlib.TopologicalSorter()
+        diagram = Graphviz(direction="LR", format="svg")
+
+        for key, obj in objects.items():
+            dependencies = obj.list_dependencies()
+
+            graph.add(key)
+            diagram.node(key)
+
+            if dependencies is not None:
+                for d in dependencies:
+                    graph.add(key, d)
+                    diagram.edge(key, d)
+
+        return graph, diagram
+
+    def _load_objects(self, files) -> tuple[dict[str, Model], list[dict[str, Any]]]:
+        loaded_objects: dict[str, Model] = {}
+        loaded_manifests: list[dict[str, Any]] = []
+
         for f in files:
-            data = self._load_file_content(f)
-            if data:
-                for obj in data:
-                    self._register_object(obj)
+            objects = self._load_manifests(f)
+            if objects is not None:
+                for obj in objects:
+                    if obj is None:
+                        continue
+                    key, loaded = self._load_object(obj)
+                    loaded_objects[key] = loaded
+                    loaded_manifests.append(obj)
 
-            self.files[f] = data
+        return loaded_objects, loaded_manifests
 
-    def _register_object(self, data):
-        try:
-            key = self._get_object_key(data)
-            self.objects[key] = data
-            self.resolved_objects[key] = {"src": "local", "manifest": data}
-        except KeyError:
-            click.secho(f"Key error {data}", fg=Colors.RED)
-            return
-
-    def _load_file_content(self, file_name, is_value=False, is_secret=False):
-        """Load and optionally render a template file, then parse as JSON/YAML."""
-        ext, data = self._render_file(file_name, is_value, is_secret)
-
-        loaded_data = []
+    def _load_object(self, obj: Mapping[str, Any]) -> tuple[str, Model]:
+        key = Model.object_key(obj)
+        kls = get_resource_class(obj)
 
         try:
-            if ext == ".json":
-                raw_data = json.loads(data)
-                if type(raw_data) is not dict:
-                    raise Exception(
-                        "Top-level JSON must be an object. Avoid using Jinja loops to generate a list at the top level."
-                    )
-                loaded_data.append(raw_data)
-            elif ext in (".yaml", ".yml"):
-                loaded_data = list(yaml.safe_load_all(data))
-            else:
-                raise Exception(
-                    f"Unsupported file extension after template rendering: {ext}"
-                )
-        except (json.JSONDecodeError, yaml.YAMLError) as e:
-            raise Exception(f"Failed to parse {file_name}: {e}")
-
-        if not loaded_data:
-            click.secho(f"{file_name} file is empty")
-
-        return loaded_data
-
-    def _render_file(self, file_name, is_value=False, is_secret=False):
-        path = Path(file_name)
-        extension = path.suffix.lower()
-
-        try:
-            if is_secret:
-                data = run_bash(f"sops -d {file_name}")
-            else:
-                with open(file_name) as f:
-                    data = f.read()
+            ist = kls(munchify(obj))
         except Exception as e:
-            raise Exception(f"Error loading file {file_name}: {e}")
+            raise Exception(f"invalid manifest {key}: {str(e)}")
 
-        # Handle Jinja2 templating if needed
-        try:
-            template = self.environment.from_string(data)
-            if is_value or is_secret:
-                data = template.render()
-            else:
-                render_args = dict(self.values or {})
-                if self.secrets:
-                    render_args["secrets"] = self.secrets
-                data = template.render(**render_args)
-        except Exception as e:
-            raise Exception(f"Error rendering template {file_name}: {e}")
-        return extension, data
+        return key, ist
 
-    def _add_graph_node(self, key):
-        self.graph.add(key)
-        self.diagram.node(key)
+    def _load_manifests(self, file_name: str) -> list[dict[str, Any]] | None:
+        extension = self._get_file_extension(file_name)
 
-    def _add_graph_edge(self, dependent_key, key):
-        self.graph.add(dependent_key, key)
-        self.diagram.edge(key, dependent_key)
+        with open(file_name) as f:
+            content = f.read()
 
-    def _parse_dependency(self, dependent_key, model):
-        # TODO(pallab): let resources determine their own dependencies and return them
-        # kls = get_model(model)
-        # for dependency in kls.parse_dependencies(model):
-        #     self._resolve_dependency(dependent_key, dependency)
+        return self._parse_content(
+            file_name=file_name,
+            extension=extension,
+            content=content,
+            use_values=True,
+        )
 
-        for key, value in model.items():
-            if key == "depends":
-                if "kind" in value and value.get("kind"):
-                    self._resolve_dependency(dependent_key, value)
-                if isinstance(value, list):
-                    for each in value:
-                        if isinstance(each, dict) and each.get("kind"):
-                            self._resolve_dependency(dependent_key, each)
+    def _load_values_and_secrets(
+        self, value_files: Iterable[str] | None, secret_files: Iterable[str] | None
+    ) -> benedict:
+        """
+        Process the values and secrets files and inject them into the manifest files.
+        """
+        values: benedict = benedict({})
+        secrets: benedict = benedict({})
 
-                continue
+        if value_files is not None:
+            for v in value_files:
+                value = self._load_value(v)
+                if value is not None:
+                    values.merge(value)
 
-            if isinstance(value, dict):
-                self._parse_dependency(dependent_key, value)
-                continue
+        # The "rio" namespace exposes the commonly used fields from rio's
+        # Configuration file.
+        rio = self._get_rio_namespace()
 
-            if isinstance(value, list):
-                for each in value:
-                    if isinstance(each, dict):
-                        self._parse_dependency(dependent_key, each)
-
-    def _resolve_dependency(self, dependent_key, dependency):
-        kind = dependency.get("kind")
-        name_or_guid = dependency.get("nameOrGUID")
-        key = f"{kind}:{name_or_guid}"
-
-        self._add_graph_edge(dependent_key, key)
-
-    @staticmethod
-    def _get_object_key(obj: dict) -> str:
-        kind = obj.get("kind").lower()
-        name_or_guid = obj.get("metadata", {}).get("name")
-
-        if not name_or_guid:
-            raise ValueError(f"[kind:{kind}] name is required.")
-
-        return f"{kind}:{name_or_guid}"
-
-    def _inject_rio_namespace(self, values: dict | None = None) -> dict:
-        values = values or {}
-
-        try:
-            rio = {
-                "project": {
-                    "name": self.config.data.get("project_name"),
-                    "guid": self.config.project_guid,
-                },
-                "organization": {
-                    "name": self.config.data.get("organization_name"),
-                    "guid": self.config.organization_guid,
-                    "short_id": self.config.organization_short_id,
-                },
-                "email_id": self.config.data.get("email_id"),
-            }
-        except (LoggedOut, NoProjectSelected, NoOrganizationSelected):
-            rio = {
-                "project": {
-                    "name": "project-name",
-                    "guid": "project-guid",
-                },
-                "organization": {
-                    "name": "org-name",
-                    "guid": "org-guid",
-                    "short_id": "org-short",
-                },
-                "email_id": "user@rapyuta.io",
-            }
-
+        # If "rio" field already exists in the values, then merge otherwise set
+        # it.
         if "rio" in values:
             benedict(values["rio"]).merge(rio)
         else:
             values["rio"] = rio
 
+        if secret_files is not None:
+            for s in secret_files:
+                secret = self._load_secret(s)
+                if secret is not None:
+                    secrets.merge(secret)
+
+        if "secrets" in values:
+            benedict(values["secrets"]).merge(secrets.dict())
+        else:
+            values["secrets"] = secrets.dict()
+
         return values
 
-    def _process_values_and_secrets(self, values: list, secrets: list) -> None:
-        """Process the values and secrets files and inject them into the manifest files"""
-        self.values, self.secrets = benedict({}), benedict({})
+    def _get_rio_namespace(self) -> dict[str, Any]:
+        try:
+            project_name = self.config.data.get("project_name")
+            project_guid = self.config.project_guid
+            org_name = self.config.data.get("organization_name")
+            org_guid = self.config.organization_guid
+            org_short_guid = self.config.organization_short_id
+            email_id = self.config.data.get("email_id")
 
-        values = values or []
-        secrets = secrets or []
+        except (LoggedOut, NoProjectSelected, NoOrganizationSelected):
+            project_name = "project-name"
+            project_guid = "project-guid"
+            org_name = "org-name"
+            org_guid = "org-guid"
+            org_short_guid = "org-short"
+            email_id = "user@rapyuta.io"
 
-        for v in values:
-            benedict(self.values).merge(self._load_file_content(v, is_value=True)[0])
+        return {
+            "project": {
+                "name": project_name,
+                "guid": project_guid,
+            },
+            "organization": {
+                "name": org_name,
+                "guid": org_guid,
+                "short_id": org_short_guid,
+            },
+            "email_id": email_id,
+        }
 
-        self.values = self._inject_rio_namespace(self.values)
+    def _load_secret(self, file_name: str) -> dict[str, Any] | None:
+        extension = self._get_file_extension(file_name)
 
-        for s in secrets:
-            benedict(self.secrets).merge(self._load_file_content(s, is_secret=True)[0])
+        content = run_bash(f"sops -d {file_name}")
+
+        secrets = self._parse_content(
+            file_name=file_name,
+            extension=extension,
+            content=content,
+            use_values=False,
+        )
+
+        if secrets is None or len(secrets) == 0:
+            return
+
+        return secrets[0]
+
+    def _load_value(self, file_name: str) -> dict[str, Any] | None:
+        extension = self._get_file_extension(file_name)
+
+        with open(file_name) as f:
+            content = f.read()
+
+        values = self._parse_content(
+            file_name=file_name,
+            extension=extension,
+            content=content,
+            use_values=False,
+        )
+
+        if values is None or len(values) == 0:
+            return
+
+        return values[0]
+
+    def _parse_content(
+        self,
+        file_name: str,
+        extension: str,
+        content: str,
+        use_values: bool = True,
+    ) -> list[dict[str, Any]] | None:
+        try:
+            content = self._render_template(content=content, use_values=use_values)
+        except Exception as e:
+            raise Exception(f"Error rendering template {file_name}: {e}")
+
+        loaded = None
+
+        try:
+            if extension == ".json":
+                # TODO(ankit): Verify how this works.
+                # list() -> [] beacause list method make list of keys but [] itself wraps whole object
+                loaded = [json.loads(content)]
+            elif extension in (".yaml", ".yml"):
+                loaded = list(yaml.safe_load_all(content))
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            raise Exception(f"Failed to parse {file_name}: {e}")
+
+        if loaded is None:
+            click.secho(f"{file_name} file is empty")
+
+        return loaded
+
+    def _render_template(self, content: str, use_values: bool = False) -> str:
+        template = self.environment.from_string(content)
+
+        if use_values:
+            return template.render(**self.values)
+
+        return template.render()
+
+    def _get_apply_order(self) -> list[tuple[str, ...]]:
+        """
+        Generates the order to apply the Graph nodes.
+        """
+        self.dependency_graph.prepare()
+
+        order: list[tuple[str, ...]] = []
+
+        while self.dependency_graph.is_active():
+            nodes = self.dependency_graph.get_ready()
+            order.append(nodes)
+            self.dependency_graph.done(*nodes)
+
+        return order
+
+    def _get_delete_order(self) -> Iterable[tuple[str, ...]]:
+        """
+        Generates the order to delete the Graph nodes.
+        """
+        return reversed(self._get_apply_order())
+
+    @staticmethod
+    def _start_work(
+        op: Callable[[str], None],
+        work: Iterable[tuple[str, ...]],
+        workers: int,
+    ) -> None:
+        """
+        Performs the operation asynchronously with workers over the Work.
+        """
+
+        def worker_func(w: str) -> Exception | None:
+            try:
+                op(w)
+            except Exception as e:
+                return e
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            for tasks in work:
+                futures = executor.map(worker_func, tasks)
+
+                for f in futures:
+                    if isinstance(f, Exception):
+                        raise f
+
+    @staticmethod
+    def _can_delete(obj: Model) -> bool:
+        metadata = obj.get("metadata")
+        if metadata is None:
+            return True
+
+        labels: dict[str, str] = metadata.get("labels")
+        if labels is None:
+            return True
+
+        policy = labels.get(DELETE_POLICY_LABEL)
+        if policy is None:
+            return True
+
+        if not isinstance(policy, str):
+            return True
+
+        # If a resource has a label with DELETE_POLICY_LABEL set
+        # to 'retain', it should not be deleted.
+        return policy != "retain"
+
+    @staticmethod
+    def _get_file_extension(file_name: str) -> str:
+        path = Path(file_name)
+        extension = path.suffix.lower()
+
+        # Only YAML and JSON files are supported.
+        if extension not in (".json", ".yaml", ".yml"):
+            raise Exception(f"Unsupported file extension for {path}")
+
+        return extension

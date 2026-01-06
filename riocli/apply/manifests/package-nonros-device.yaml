@@ -37,7 +37,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
     - name: "exec-preInstalled"
       type: preInstalled # Options: [docker (default), preInstalled]
       command:

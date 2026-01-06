@@ -47,7 +47,7 @@ def list_examples() -> None:
 )
 @click.option("--templates", help="Alternate root for templates", default=None)
 @click.argument("resource")
-def explain(resource: str, templates: str = None) -> None:
+def explain(resource: str, templates: str | None = None) -> None:
     """Explain a resource manifest for the given type.
 
     The explain command can be used to generate a sample

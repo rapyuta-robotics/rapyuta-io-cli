@@ -33,7 +33,7 @@ from riocli.constants import Colors
     multiple=True,
     default=(),
     help="Path to values yaml file. key/values specified in the "
-    "values file can be used as variables in template YAMLs",
+    + "values file can be used as variables in template YAMLs",
 )
 @click.option(
     "--secrets",
@@ -41,7 +41,7 @@ from riocli.constants import Colors
     multiple=True,
     default=(),
     help="Secret files are sops encoded value files. riocli "
-    "expects sops to be authorized for decoding files on this computer",
+    + "expects sops to be authorized for decoding files on this computer",
 )
 @click.argument("files", nargs=-1)
 @click.pass_context
@@ -86,4 +86,4 @@ def template(
 
     config = get_config_from_context(ctx)
     applier = Applier(glob_files, abs_values, abs_secrets, config)
-    applier.print_resolved_manifests()
+    applier.print_manifests()
