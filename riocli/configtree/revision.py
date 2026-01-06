@@ -16,10 +16,12 @@ from __future__ import annotations
 import json
 import os
 from base64 import b64encode
+from datetime import date, datetime
 from hashlib import md5
 from typing import TYPE_CHECKING, Any
 
 import click
+import magic
 from click_help_colors import HelpColorsCommand
 from munch import munchify
 
@@ -110,7 +112,13 @@ class Revision:
     ) -> None:
         # Fix: Ensure non-string values are serialized to JSON
         if not isinstance(value, str):
-            value = json.dumps(value, ensure_ascii=False)
+            value = json.dumps(
+                value,
+                ensure_ascii=False,
+                default=lambda o: o.isoformat()
+                if isinstance(o, (datetime, date))  # noqa: UP038
+                else str(o),
+            )
         str_val = str(value)
         enc_val = str_val.encode("utf-8")
 
@@ -132,6 +140,7 @@ class Revision:
         key: str,
         file_path: str,
     ) -> None:
+        content_type = magic.from_file(file_path, mime=True)
         with open(file_path, "rb") as f:
             file_hash = md5()
             chunk = f.read(8192)
@@ -139,12 +148,16 @@ class Revision:
                 file_hash.update(chunk)
                 chunk = f.read(8192)
             f.seek(0)
-        self._client.put_key_in_revision(
-            tree_name=self._tree_name,
-            revision_id=self._rev_id,
-            key=key,
-            project_guid=self._project_guid,
-        )
+            x_checksum = file_hash.hexdigest()
+            self._client.put_key_in_revision(
+                tree_name=self._tree_name,
+                revision_id=self._rev_id,
+                key=key,
+                project_guid=self._project_guid,
+                x_checksum=x_checksum,
+                content_type=content_type,
+                body=f,
+            )
 
     def delete(self: Revision, key: str) -> None:
         self._client.delete_key_in_revision(
@@ -482,7 +495,7 @@ def put_file_in_revision(
         raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=(not with_org))
+        client = new_v2_client(config_inst=config, with_project=(not with_org))
         with Revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
