@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import typing
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import tabulate_data
 
@@ -32,10 +32,9 @@ from riocli.utils import tabulate_data
 def list_usergroup(ctx: click.Context) -> None:
     """List all user groups in current organization."""
     try:
-        client = new_client()
-        org_guid = ctx.obj.data.get("organization_id")
-        user_groups = client.list_usergroups(org_guid)
-        _display_usergroup_list(user_groups)
+        client = new_v2_client(with_project=False)
+        user_groups = client.list_user_groups()
+        _display_usergroup_list(user_groups.items)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -46,16 +45,15 @@ def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
     if show_header:
         headers = ("ID", "Name", "Creator", "Members", "Projects", "Description")
 
-    data = [
-        [
-            group.guid,
-            group.name,
-            group.creator,
-            len(group.members) if group.members else 0,
-            len(group.projects) if group.projects else 0,
-            group.description,
-        ]
-        for group in usergroups
-    ]
-
-    tabulate_data(data, headers)
+    rows = []
+    for g in usergroups:
+        rows.append(
+            [
+                g.metadata.guid,
+                g.metadata.name,
+                g.metadata.creatorGUID,
+                g.spec.members_count,
+                g.spec.description,
+            ]
+        )
+    tabulate_data(rows, headers)
