@@ -15,10 +15,10 @@
 import re
 
 from munch import Munch
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
-from riocli.v2client.client import Client
 
 
 class StaticRouteNotFound(Exception):
@@ -28,7 +28,7 @@ class StaticRouteNotFound(Exception):
 
 def find_static_route_guid(client: Client, name: str) -> str:
     client = new_v2_client(with_project=True)
-    static_route = client.get_static_route(name)
+    static_route = client.get_staticroute(name=name)
     if not static_route:
         raise StaticRouteNotFound()
     return static_route.metadata.guid
@@ -39,9 +39,9 @@ def fetch_static_routes(
     route_name_or_regex: str,
     include_all: bool,
 ) -> list[Munch]:
-    routes = client.list_static_routes()
+    routes = client.list_staticroutes()
     result = []
-    for route in routes:
+    for route in routes.items:
         if (
             include_all
             or route_name_or_regex == route.metadata.name

@@ -13,9 +13,7 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
-
 from riocli.secret.delete import delete_secret
 from riocli.secret.inspect import inspect_secret
 from riocli.secret.list import list_secrets

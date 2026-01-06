@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
 from riocli.static_route.create import create_static_route
 from riocli.static_route.delete import delete_static_route
