@@ -42,8 +42,8 @@ def list_secrets(labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        secrets = client.list_secrets(query={"labelSelector": labels})
-        secrets = sorted(secrets, key=lambda s: s.metadata.name.lower())
+        secrets = client.list_secrets(label_selector=labels)
+        secrets = sorted(secrets.items, key=lambda s: s.metadata.name.lower())
         _display_secret_list(secrets, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)

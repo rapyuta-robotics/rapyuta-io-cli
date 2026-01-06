@@ -15,9 +15,9 @@
 import re
 
 from munch import Munch
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.utils import tabulate_data
-from riocli.v2client.client import Client
 
 
 def fetch_secrets(
@@ -27,7 +27,7 @@ def fetch_secrets(
 ) -> list[Munch]:
     secrets = client.list_secrets()
     result = []
-    for secret in secrets:
+    for secret in secrets.items:
         if (
             include_all
             or secret_name_or_regex == secret.metadata.name
