@@ -16,6 +16,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
@@ -25,7 +26,6 @@ from riocli.network.util import fetch_networks, print_networks_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(
@@ -157,7 +157,7 @@ def delete_network(
 
 def _apply_delete(client: Client, result: Queue, network: Network) -> None:
     try:
-        client.delete_network(network_name=network.metadata.name)
+        client.delete_network(name=network.metadata.name)
         result.put((network.metadata.name, True, "Network Deleted Successfully"))
     except Exception as e:
         result.put((network.metadata.name, False, str(e)))
