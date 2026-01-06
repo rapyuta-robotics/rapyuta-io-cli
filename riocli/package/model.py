@@ -28,8 +28,6 @@ class Package(Model):
 
     @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        self._sanitize_command()
-
         return v2_client.create_package(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
