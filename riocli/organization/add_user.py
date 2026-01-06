@@ -15,7 +15,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
-from munch import Munch
+from rapyuta_io_sdk_v2.models.organization import Organization, OrganizationMember
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
@@ -32,9 +32,9 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option(
     "--role",
-    type=click.Choice(["admin", "viewer"]),
-    default="viewer",
-    help="Password for the rapyuta.io account",
+    type=list[str],
+    default=["rio-org_member"],
+    help="Roles should be assigned to users",
 )
 @click.argument("user-email", type=str, nargs=-1)
 @click.pass_context
@@ -76,8 +76,8 @@ def add_user(
 )
 @click.option(
     "--role",
-    type=click.Choice(["admin", "viewer"]),
-    default="viewer",
+    type=list[str],
+    default=["rio-org_member"],
     help="Password for the rapyuta.io account",
 )
 @click.argument("user-email", type=str, nargs=-1)
@@ -114,7 +114,7 @@ def invite_user(
 def add_user_to_organization(
     ctx: click.Context,
     user_emails: list[str],
-    role: str,
+    roles: list[str],
     spinner: Yaspin,
 ) -> None:
     if len(user_emails) == 0:
@@ -138,7 +138,7 @@ def add_user_to_organization(
     try:
         client = new_v2_client(config_inst=config)
         organization = client.get_organization(organization_guid=config.organization_guid)
-        update = add_user_emails(organization, user_emails, role)
+        update = add_user_emails(filter_org_members(organization), user_emails, roles)
         if not update:
             spinner.text = click.style(
                 "Users are already part of the organization.", fg=Colors.YELLOW
@@ -148,7 +148,7 @@ def add_user_to_organization(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
 
         spinner.text = click.style("Users added successfully.", fg=Colors.GREEN)
@@ -159,18 +159,30 @@ def add_user_to_organization(
         raise SystemExit(1) from e
 
 
-def add_user_emails(organization: Munch, user_emails: list[str], role: str) -> bool:
+def add_user_emails(
+    organization: Organization, user_emails: list[str], roles: list[str]
+) -> bool:
     update = False
-    existing_emails = map(lambda x: x.emailID, organization.spec.users)
+    existing_emails = []
+    for member in organization.spec.members:
+        if member.subject.kind == "User":
+            existing_emails.append(member.subject.name)
 
     for email in user_emails:
         if email not in existing_emails:
             update = True
-            organization.spec.users.append(
-                {
-                    "emailID": email,
-                    "roleInOrganization": role,
-                }
+            organization.spec.members.append(
+                OrganizationMember(
+                    roleNames=roles, subject={"kind": "User", "name": email}
+                )
             )
+    print(organization.model_dump_json(by_alias=True, exclude_none=True))
 
     return update
+
+
+def filter_org_members(org: Organization):
+    members = [m for m in org.spec.members if m.subject.kind == "User"]
+
+    org.spec.members = members
+    return org

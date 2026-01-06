@@ -32,10 +32,16 @@ from riocli.vpn.util import cleanup_hosts_file
 @click.argument("organization-name", type=str)
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
+    help="Make the selection interactive",
+)
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
     help="Make the selection interactive",
 )
 @click.pass_context
@@ -46,6 +52,7 @@ def select_organization(
     organization_guid: str,
     organization_short_id: str,
     interactive: bool,
+    silent: bool,
 ) -> None:
     """Set the current organization.
 
@@ -70,6 +77,7 @@ def select_organization(
         $ rio organization select 'Platform JP Staging' --silent
     """
     ctx = get_root_context(ctx)
+    interactive = interactive or not silent
 
     if ctx.obj.data.get("organization_id") == organization_guid:
         click.secho(
