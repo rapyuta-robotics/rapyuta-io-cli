@@ -1,0 +1,14 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "serviceaccount"
+metadata:
+  name: "escalation-test-sa"
+  labels:
+    environment: test
+spec:
+  description: "Should not be created by viewer"
+  roles:
+  - domain:
+      kind: Project
+      name: test-project1
+    roleNames:
+    - rio-project_viewer

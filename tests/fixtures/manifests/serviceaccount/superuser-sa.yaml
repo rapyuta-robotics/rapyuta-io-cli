@@ -1,0 +1,15 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "superuser-created-sa"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  description: "Service account created by superuser"
+  roles:
+  - domain:
+      kind: Project
+      name: test-project1
+    roleNames:
+    - rio-project_viewer

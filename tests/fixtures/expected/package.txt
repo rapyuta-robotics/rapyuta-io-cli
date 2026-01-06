@@ -1,0 +1,7 @@
+digraph {
+	graph [overlap=False rankdir=LR]
+	node [shape=box]
+	"package/package"
+	"secret/package-secret" -> "package/package"
+}
+

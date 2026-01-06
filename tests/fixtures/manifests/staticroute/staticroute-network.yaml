@@ -1,0 +1,22 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: network-gateway-route
+  region: jp
+  labels:
+    app: network-test
+spec:
+  sourceIPRange:
+  - 10.0.0.0/8
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: internal-network-route
+  region: jp
+  labels:
+    app: network-test
+spec:
+  sourceIPRange:
+  - 172.16.0.0/12

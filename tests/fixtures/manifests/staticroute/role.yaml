@@ -1,0 +1,106 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "staticroute-viewer"
+  labels:
+    persona: developer
+spec:
+  description: "Role to view static routes with name test-route.*"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - '^test-route.*'
+    actions:
+    - get
+    - create
+
+  - resource: "staticroute"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "staticroute-creator"
+  labels:
+    persona: developer
+spec:
+  description: "Role to create static routes with name user-route.*"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - '^user-route.*'
+    actions:
+    - create
+    - get
+
+  - resource: "staticroute"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "staticroute-manager"
+  labels:
+    persona: admin
+spec:
+  description: "Role to fully manage static routes with name managed-route.*"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - '^managed-route.*'
+    actions:
+    - create
+    - get
+    - update
+    - delete
+
+  - resource: "staticroute"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "staticroute-readonly"
+  labels:
+    persona: viewer
+spec:
+  description: "Role to only view all network static routes"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - ".*network.*"
+    actions:
+    - get
+
+  - resource: "staticroute"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "staticroute-deleter"
+  labels:
+    persona: cleanup
+spec:
+  description: "Role to delete temp static routes only"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - '^temp-route.*'
+    actions:
+    - delete
+    - get
+
+  - resource: "staticroute"
+    actions:
+    - list

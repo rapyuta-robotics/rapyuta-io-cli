@@ -1,0 +1,98 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "service-account-viewer"
+  labels:
+    persona: developer
+spec:
+  description: "Role to view service accounts with name test-sa.*"
+  rules:
+  - resource: "serviceaccount"
+    instances:
+    - '^test-sa.*'
+    actions:
+    - get
+  - resource: "serviceaccount"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "service-account-creator"
+  labels:
+    persona: developer
+spec:
+  description: "Role to create service accounts with name user-sa.*"
+  rules:
+  - resource: "serviceaccount"
+    instances:
+    - '^user-sa.*'
+    actions:
+    - create
+    - get
+  - resource: "serviceaccount"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "service-account-manager"
+  labels:
+    persona: admin
+spec:
+  description: "Role to fully manage service accounts with name managed-sa.*"
+  rules:
+  - resource: "serviceaccount"
+    instances:
+    - '^managed-sa.*'
+    actions:
+    - create
+    - get
+    - update
+    - delete
+  - resource: "serviceaccount"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "service-account-token-manager"
+  labels:
+    persona: devops
+spec:
+  description: "Role to manage tokens for service accounts with name token-sa.*"
+  rules:
+  - resource: "serviceaccount"
+    instances:
+    - '^token-sa.*'
+    actions:
+    - create_token
+    - delete_token
+    - list_token
+    - refresh_token
+    - get
+  - resource: "serviceaccount"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "service-account-deleter"
+  labels:
+    persona: cleanup
+spec:
+  description: "Role to delete temp service accounts only"
+  rules:
+  - resource: "serviceaccount"
+    instances:
+    - '^temp-sa.*'
+    actions:
+    - delete
+    - get
+  - resource: "serviceaccount"
+    actions:
+    - list
