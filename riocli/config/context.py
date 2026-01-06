@@ -19,9 +19,8 @@ import yaml
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import Configuration
-from riocli.constants import Symbols, Colors
-from riocli.utils import inspect_with_format
-from riocli.utils import AliasedGroup
+from riocli.constants import Colors, Symbols
+from riocli.utils import AliasedGroup, inspect_with_format
 
 
 @click.group(
