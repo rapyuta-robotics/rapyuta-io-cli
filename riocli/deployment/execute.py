@@ -114,7 +114,7 @@ def execute_command(
         if exec_name is None:
             package = client.get_package(
                 deployment.metadata.depends.nameOrGUID,
-                query={"version": deployment.metadata.depends.version},
+                version=deployment.metadata.depends.version,
             )
             executables = [e.name for e in package.spec.executables]
             if len(executables) == 1:
@@ -133,7 +133,17 @@ def execute_command(
                 device_name=deployment.spec.device.depends.nameOrGUID,
                 timeout=timeout,
             )
-        click.echo(response)
+        print_response(deployment_name, response)
     except Exception as e:
         click.secho(e, fg=Colors.RED)
         raise SystemExit(1)
+
+
+def print_response(dep_name, result):
+    """
+    Display the command output executed in the container in the terminal.
+    """
+    for _, output in result.items():
+        click.secho(f">>> {dep_name}", fg=Colors.YELLOW)
+        # Replace carriage returns and null characters for better display
+        click.echo(f"{output[2:]}\n")
