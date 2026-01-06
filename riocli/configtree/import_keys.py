@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 
 import click
 from benedict import benedict
@@ -208,10 +208,9 @@ def import_keys(
 
             for key, value in data.items():
                 key_metadata = metadata.get(key, None)
-                if key_metadata is not None and isinstance(key_metadata, Metadata):
+                if isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
-
-                rev.store(key=key, value=str(value), perms=644, metadata=key_metadata)
+                rev.store(key=key, value=value, perms=644, metadata=key_metadata)
                 spinner.write(
                     click.style(
                         f"\t{Symbols.SUCCESS} Key {key} added.",
@@ -233,7 +232,7 @@ def import_keys(
                 },
             }
 
-            client.set_revision_config_tree(tree_name, payload)
+            client.set_configtree_revision(name=tree_name, configtree=payload)
             spinner.text = click.style(
                 "Config tree HEAD updated successfully.", fg=Colors.CYAN
             )
