@@ -74,15 +74,12 @@ def update_owner(
             raise SystemExit(1) from e
 
         for u in project_users:
-            if u["emailID"] == user_email:
-                user_guid = u["userGUID"]
+            if u.emailID == user_email:
+                user_guid = u.userGUID
                 break
     else:
         ranger = {
-            u["userGUID"]: "{} {} ({})".format(
-                u["firstName"], u["lastName"], u["emailID"]
-            )
-            for u in project_users
+            u.userGUID: f"{u.firstName} {u.lastName} ({u.emailID})" for u in project_users
         }
         user_guid = show_selection(
             ranger,
@@ -97,7 +94,8 @@ def update_owner(
         raise SystemExit(1)
 
     try:
-        client.update_project_owner(project_guid, user_guid)
+        payload = {"metadata": {"creatorGUID": user_guid}}
+        client.update_project_owner(project_guid=project_guid, body=payload)
         click.secho(f"{Symbols.SUCCESS} Owner updated successfully", fg=Colors.GREEN)
     except Exception as e:
         click.secho(f"{Symbols.ERROR} Failed to update owner: {e}", fg=Colors.RED)

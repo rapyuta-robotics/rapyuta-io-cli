@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
 from riocli.project.features.dockercache import dockercache
 from riocli.project.features.vpn import vpn
