@@ -14,7 +14,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import get_token, api_refresh_token
+from riocli.auth.util import api_refresh_token, get_token
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
@@ -30,13 +30,19 @@ from riocli.exceptions import LoggedOut
 @click.option("--password", type=str, help="Password for the rapyuta.io account")
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
 )
-def refresh_token(ctx: click.Context, password: str, interactive: bool):
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
+)
+def refresh_token(ctx: click.Context, password: str, interactive: bool, silent: bool):
     """Refreshes the authentication token.
 
     If the stores auth token has expired, this command will prompt the
@@ -44,6 +50,7 @@ def refresh_token(ctx: click.Context, password: str, interactive: bool):
     """
     config = get_config_from_context(ctx)
     email = config.data.get("email_id", None)
+    interactive = interactive or not silent
 
     try:
         if not config.exists or email is None:
