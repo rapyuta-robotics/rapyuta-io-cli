@@ -26,11 +26,11 @@ from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import (
     create_binding,
     get_binding_labels,
+    install_vpn_tools,
     is_tailscale_up,
+    is_vpn_enabled_in_project,
     priviledged_command,
     stop_tailscale,
-    install_vpn_tools,
-    is_vpn_enabled_in_project,
     update_hosts_file,
 )
 
@@ -165,7 +165,9 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
         ctx, delta=timedelta(minutes=10), labels=get_binding_labels()
     )
     cmd = _TAILSCALE_CMD_FORMAT.format(
-        binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG
+        binding["HEADSCALE_PRE_AUTH_KEY"],
+        binding["HEADSCALE_URL"],
+        binding["HEADSCALE_ACL_TAG"],
     )
     cmd = priviledged_command(cmd)
 

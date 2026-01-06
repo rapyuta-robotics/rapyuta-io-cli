@@ -39,11 +39,17 @@ HWIL_LOGIN_SUCCESS = click.style(
 @click.option("--password", help="Password for HWIL API")
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
+)
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
 )
 @click.pass_context
 def login(
@@ -51,6 +57,7 @@ def login(
     username: str,
     password: str,
     interactive: bool = True,
+    silent: bool = False,
 ) -> None:
     """Authenticate with HWIL API.
 
@@ -62,6 +69,7 @@ def login(
     not providing any flags.
     """
     ctx = get_root_context(ctx)
+    interactive = interactive or not silent
 
     if interactive:
         username = username or click.prompt("Username")

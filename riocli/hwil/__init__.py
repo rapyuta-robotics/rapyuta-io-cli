@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.constants import Colors
 from riocli.hwil.create import create_device
 from riocli.hwil.delete import delete_device

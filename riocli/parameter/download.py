@@ -21,7 +21,6 @@ from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
-
 # -----------------------------------------------------------------------------
 #
 # Configurations

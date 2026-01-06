@@ -23,9 +23,9 @@ else:
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.utils import tabulate_data, print_separator
-from riocli.parameter.utils import list_trees
 from riocli.device.util import fetch_devices
+from riocli.parameter.utils import list_trees
+from riocli.utils import print_separator, tabulate_data
 
 
 @click.command(
