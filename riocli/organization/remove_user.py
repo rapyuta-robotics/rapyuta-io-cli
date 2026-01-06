@@ -70,7 +70,7 @@ def remove_user(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
         spinner.text = click.style("Users removed successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
@@ -84,13 +84,14 @@ def remove_user_emails(organization: Munch, user_emails: list[str]) -> bool:
     update = False
     updated_users = []
 
-    for user in organization.spec.users:
-        if user.emailID in user_emails:
-            update = True
-            continue
+    for member in organization.spec.members:
+        if member.subject.kind == "User":
+            if member.subject.name in user_emails:
+                update = True
+                continue
 
-        updated_users.append(user)
+            updated_users.append(member)
 
-    organization.spec.users = updated_users
+    organization.spec.members = updated_users
 
     return update
