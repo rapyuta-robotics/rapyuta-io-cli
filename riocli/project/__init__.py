@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 
-
 from riocli.project.create import create_project
 from riocli.project.delete import delete_project
 from riocli.project.features import features

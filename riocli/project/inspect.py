@@ -13,7 +13,6 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -45,7 +44,9 @@ def inspect_project(format_type: str, project_name: str, project_guid: str) -> N
     try:
         client = new_v2_client(with_project=False)
         project = client.get_project(project_guid)
-        inspect_with_format(unmunchify(project), format_type)
+        inspect_with_format(
+            project.model_dump(by_alias=True, exclude_none=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
