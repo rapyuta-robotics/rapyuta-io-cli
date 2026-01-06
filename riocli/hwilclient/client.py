@@ -16,14 +16,17 @@ from __future__ import annotations
 import http
 import json
 import time
+from typing import TYPE_CHECKING
 
-import requests
 from munch import Munch, munchify
 from rapyuta_io.utils import ConflictError, RetriesExhausted, UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
+
+if TYPE_CHECKING:
+    import requests
 
 
 def handle_server_errors(response: requests.Response):

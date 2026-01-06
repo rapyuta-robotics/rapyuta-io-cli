@@ -18,6 +18,7 @@ from abc import ABC, abstractmethod
 
 import click
 from graphviz import Digraph
+from typing_extensions import override
 
 
 class GraphVisualizer(ABC):
@@ -30,7 +31,7 @@ class GraphVisualizer(ABC):
         pass
 
     @abstractmethod
-    def visualize(self) -> None:
+    def visualize(self, print_only: bool = False) -> None:
         pass
 
 
@@ -39,20 +40,24 @@ class Mermaid(GraphVisualizer):
         self._diagram = [f"flowchart {direction}"]
         self._format = format
 
+    @override
     def node(self, key: str, label: str | None = None) -> None:
         if label is None:
             label = key
 
         self._diagram.append(f"\t{self._mermaid_safe(key)}[{label}]")
 
+    @override
     def edge(self, from_node: str, to_node: str) -> None:
         self._diagram.append(
             f"\t{self._mermaid_safe(from_node)} --> {self._mermaid_safe(to_node)}"
         )
 
-    def visualize(self) -> None:
+    @override
+    def visualize(self, print_only: bool = False) -> None:
         print("\n".join(self._diagram))
-        click.launch(self._mermaid_link())
+        if not print_only:
+            _ = click.launch(self._mermaid_link())
 
     def _mermaid_link(self):
         diagram = "\n".join(self._diagram).encode("ascii")
@@ -76,15 +81,20 @@ class Graphviz(GraphVisualizer):
         self._graph.attr("graph", overlap="False", rankdir=direction)
         self._graph.attr("node", shape=shape)
 
+    @override
     def node(self, key: str, label: str | None = None) -> None:
         self._graph.node(self._graphviz_safe(key), label=label)
 
+    @override
     def edge(self, from_node: str, to_node: str) -> None:
         self._graph.edge(self._graphviz_safe(from_node), self._graphviz_safe(to_node))
 
-    def visualize(self) -> None:
-        tmp_file = tempfile.mktemp(".gv")
-        self._graph.render(filename=tmp_file, view=True, cleanup=True)
+    @override
+    def visualize(self, print_only: bool = False) -> None:
+        with tempfile.NamedTemporaryFile() as f:
+            _ = self._graph.render(filename=f.name, view=not print_only, cleanup=False)
+            if print_only:
+                print(f.read().decode())
 
     def _graphviz_safe(self, s: str) -> str:
         return s.replace(":", "/")

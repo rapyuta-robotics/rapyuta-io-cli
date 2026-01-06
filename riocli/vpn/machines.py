@@ -20,10 +20,9 @@ from yaspin.core import Yaspin
 from riocli.config import new_v2_client
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import create_binding, get_binding_labels
-from riocli.utils import AliasedGroup
 
 
 @click.group(

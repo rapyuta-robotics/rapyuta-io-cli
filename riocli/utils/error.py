@@ -12,22 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
 
-from riocli.config import new_v2_client
+class RetriesExhausted(Exception):
+    def __init__(self, msg=None):
+        Exception.__init__(self, msg)
 
 
-@click.command("delete")
-@click.argument("instance-name", required=True)
-def delete_instance(instance_name: str):
-    """
-    Delete a managedservice instance
-    """
-    try:
-        client = new_v2_client()
-        r = client.delete_instance(instance_name)
-        if r.get("success", None):
-            click.secho(f"✅ Deleted instance '{instance_name}'", fg="green")
-    except Exception as e:
-        click.secho(str(e), fg="red")
-        raise SystemExit(1)
+class DeploymentNotRunning(Exception):
+    def __init__(self, msg=None):
+        Exception.__init__(self, msg)
+
+
+class ImagePullError(Exception):
+    def __init__(self, msg=None):
+        Exception.__init__(self, msg)

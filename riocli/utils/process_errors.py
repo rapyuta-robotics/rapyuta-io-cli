@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import http
-import json
 
 import click
-import requests
 
 from riocli.constants import Colors
-from riocli.v2client.constants import DEPLOYMENT_ERRORS as ERRORS
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
+from riocli.utils.constants import DEPLOYMENT_ERRORS as ERRORS
 
 
 def process_errors(errors: list[str], no_action: bool = False) -> str:
@@ -58,41 +54,3 @@ def process_errors(errors: list[str], no_action: bool = False) -> str:
             msgs.append(err_fmt.format(code, description, action))
 
     return "\n".join(msgs)
-
-
-def handle_server_errors(response: requests.Response):
-    status_code = response.status_code
-
-    if status_code < 400:
-        return
-
-    err = ""
-    try:
-        err = response.json().get("error")
-    except json.JSONDecodeError:
-        err = response.text
-
-    # 404 Not Found
-    if status_code == http.HTTPStatus.NOT_FOUND:
-        raise HttpNotFoundError(err)
-    # 409 Conflict
-    if status_code == http.HTTPStatus.CONFLICT:
-        raise HttpAlreadyExistsError()
-    # 500 Internal Server Error
-    if status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
-        raise Exception("internal server error")
-    # 501 Not Implemented
-    if status_code == http.HTTPStatus.NOT_IMPLEMENTED:
-        raise Exception("not implemented")
-    # 502 Bad Gateway
-    if status_code == http.HTTPStatus.BAD_GATEWAY:
-        raise Exception("bad gateway")
-    # 503 Service Unavailable
-    if status_code == http.HTTPStatus.SERVICE_UNAVAILABLE:
-        raise Exception("service unavailable")
-    # 504 Gateway Timeout
-    if status_code == http.HTTPStatus.GATEWAY_TIMEOUT:
-        raise Exception("gateway timeout")
-    # Anything else that is not known
-    if status_code > 504:
-        raise Exception("unknown server error")

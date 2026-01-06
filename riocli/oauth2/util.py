@@ -1,6 +1,5 @@
-from typing import Any
-
 import json
+from typing import Any
 
 
 def sanitize_parameters(params: dict[str, Any]) -> dict[str, Any]:

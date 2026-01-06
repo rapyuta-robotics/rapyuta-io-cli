@@ -15,7 +15,8 @@ import functools
 from pathlib import Path
 
 import yaml
-from jsonschema import validators, Draft7Validator
+
+from jsonschema import Draft7Validator, validators
 
 
 def extend_with_default(validator_class):

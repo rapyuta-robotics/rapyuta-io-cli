@@ -13,14 +13,13 @@
 # limitations under the License.
 import click
 
-
+from riocli.utils import AliasedGroup
 from riocli.vpn.connect import connect
 from riocli.vpn.disconnect import disconnect
 from riocli.vpn.flush import flush
 from riocli.vpn.machines import machines
 from riocli.vpn.ping import ping_all
 from riocli.vpn.status import status
-from riocli.utils import AliasedGroup
 
 
 @click.group(
