@@ -1,0 +1,29 @@
+# Format:
+# DOMAIN SUBJECT RESOURCE INSTANCE ACTION EXPECTED
+
+
+# -- Built-in Roles --
+
+# Admin in other organization
+
+## Project
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project "" list true
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project test-project get false
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com project test-project delete false 
+
+## Usergroup
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com usergroup "" list false
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com usergroup test-usergroup get false
+Organization:Rapyuta2 User:test.user11@rapyuta-robotics.com usergroup test-usergroup delete false
+
+# Org Member
+
+## Usergroup
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup "" list true
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup new-group create true
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup new-group get true
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup new-group update true
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup new-group update_group_roles false
+Organization:Rapyuta User:test.user11@rapyuta-robotics.com usergroup new-group update_group_roles true
+Organization:Rapyuta2 User:test.user12@rapyuta-robotics.com usergroup new-group delete false
+Organization:Rapyuta User:test.user12@rapyuta-robotics.com usergroup new-group delete true

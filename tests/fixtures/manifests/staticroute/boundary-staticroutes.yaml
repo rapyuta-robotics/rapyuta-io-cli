@@ -1,0 +1,55 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: user-route-test
+  region: jp
+  labels:
+    app: boundary-test
+spec:
+  sourceIPRange:
+  - 192.168.100.1
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: user-routes
+  region: jp
+  labels:
+    app: boundary-test
+spec:
+  sourceIPRange:
+  - 192.168.101.1
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: my-user-route-1
+  region: jp
+  labels:
+    app: boundary-test
+spec:
+  sourceIPRange:
+  - 192.168.102.1
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: test-route-boundary
+  region: jp
+  labels:
+    app: boundary-test
+spec:
+  sourceIPRange:
+  - 192.168.103.1
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: boundary-test-route
+  region: jp
+  labels:
+    app: boundary-test
+spec:
+  sourceIPRange:
+  - 192.168.104.1

@@ -1,0 +1,20 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: managed-package-2
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: managed-service-2
+    type: docker
+    docker:
+      image: redis:6-alpine
+      ports:
+      - containerPort: 6379
+        protocol: TCP

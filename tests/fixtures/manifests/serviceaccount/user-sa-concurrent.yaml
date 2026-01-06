@@ -1,0 +1,14 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "user-sa-concurrent"
+  labels:
+    environment: test
+spec:
+  description: "Concurrent test SA"
+  roles:
+  - domain:
+      kind: Project
+      name: test-project1
+    roleNames:
+    - rio-project_viewer
