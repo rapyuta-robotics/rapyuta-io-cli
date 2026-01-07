@@ -110,7 +110,17 @@ def _display_role_list(
     if show_header:
         headers = ["Role Name", "Description"]
 
-    data = [[r.metadata.name, getattr(r.spec, "description", "")] for r in roles]
+    data = []
+    for r in roles:
+        description = getattr(r.spec, "description", "")
+
+        description = description.replace("\n", " ")
+        if len(description) > 48:
+            description = description[:48] + ".."
+
+        data.append(
+            [r.metadata.name, description]
+        )
 
     tabulate_data(data, headers)
 
