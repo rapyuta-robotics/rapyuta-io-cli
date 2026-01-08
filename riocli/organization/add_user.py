@@ -176,7 +176,6 @@ def add_user_emails(
                     roleNames=roles, subject={"kind": "User", "name": email}
                 )
             )
-    print(organization.model_dump_json(by_alias=True, exclude_none=True))
 
     return update
 
