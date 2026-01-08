@@ -70,7 +70,9 @@ def create_config_tree(
                 "name": tree_name,
             },
         }
-        config_tree = munchify(client.create_configtree(body=payload, with_project=(not with_org)))
+        config_tree = munchify(
+            client.create_configtree(body=payload, with_project=(not with_org))
+        )
         spinner.text = click.style(
             f"Config tree {config_tree.metadata.name} created successfully.",
             fg=Colors.GREEN,

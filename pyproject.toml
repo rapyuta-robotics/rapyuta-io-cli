@@ -61,8 +61,8 @@ dependencies = [
     "python-benedict==0.30",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "sphinx",
     "sphinx-click",
     "furo",

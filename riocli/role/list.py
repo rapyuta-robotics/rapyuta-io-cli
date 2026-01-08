@@ -118,9 +118,7 @@ def _display_role_list(
         if len(description) > 48:
             description = description[:48] + ".."
 
-        data.append(
-            [r.metadata.name, description]
-        )
+        data.append([r.metadata.name, description])
 
     tabulate_data(data, headers)
 

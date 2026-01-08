@@ -232,7 +232,9 @@ def import_keys(
                 },
             }
 
-            client.set_configtree_revision(name=tree_name, configtree=payload, with_project=(not with_org))
+            client.set_configtree_revision(
+                name=tree_name, configtree=payload, with_project=(not with_org)
+            )
             spinner.text = click.style(
                 "Config tree HEAD updated successfully.", fg=Colors.CYAN
             )
