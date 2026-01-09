@@ -15,11 +15,12 @@ from pathlib import Path
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
 from riocli.configtree.util import export_to_files, unflatten_keys
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 
@@ -72,8 +73,13 @@ def export_keys(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(
-            tree_name=tree_name, rev_id=rev_id, include_data=True
+        tree = munchify(
+            client.get_configtree(
+                name=tree_name,
+                revision=rev_id,
+                include_data=True,
+                with_project=(not with_org),
+            )
         )
         if not tree.get("head"):
             raise Exception("Config tree does not have keys in the revision")
@@ -83,7 +89,6 @@ def export_keys(
             raise Exception("Keys are not a dictionary")
 
         data = unflatten_keys(keys)
-
         export_to_files(base_dir=export_directory, data=data, file_format=file_format)
 
         spinner.text = click.style(

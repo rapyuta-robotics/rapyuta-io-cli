@@ -21,15 +21,16 @@ from functools import lru_cache
 
 from click import get_app_dir
 from rapyuta_io import Client
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2 import Configuration as v2Config
 
 from riocli.exceptions import (
+    HwilLoggedOut,
     LoggedOut,
     NoOrganizationSelected,
     NoProjectSelected,
-    HwilLoggedOut,
 )
 from riocli.hwilclient import Client as HwilClient
-from riocli.v2client import Client as v2Client
 
 
 class Configuration:
@@ -101,22 +102,25 @@ class Configuration:
         return Client(auth_token=token, project=project)
 
     @lru_cache(maxsize=2)  # noqa: B019
-    def new_v2_client(self: Configuration, with_project: bool = True) -> v2Client:
+    def new_v2_client(
+        self: Configuration, with_project: bool = True, from_file: bool = True
+    ) -> v2Client:
         if "auth_token" not in self.data:
             raise LoggedOut
 
-        if "environment" in self.data:
+        environment = self.data.get("environment", "ga")
+        if environment:
             os.environ["RIO_CONFIG"] = self.filepath
 
-        token = self.data.get("auth_token", None)
-        project = self.data.get("project_id", None)
-        if with_project and project is None:
-            raise NoProjectSelected
+        if not with_project and not from_file:
+            return v2Client(
+                config=v2Config(
+                    auth_token=self.data["auth_token"],
+                    environment=self.data["environment"] or "ga",
+                )
+            )
 
-        if not with_project:
-            project = None
-
-        return v2Client(self, auth_token=token, project=project)
+        return v2Client(config=v2Config().from_file(self.filepath))
 
     def new_hwil_client(self: Configuration) -> HwilClient:
         if "hwil_auth_token" not in self.data:

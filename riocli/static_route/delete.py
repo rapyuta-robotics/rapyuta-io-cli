@@ -17,6 +17,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -24,7 +25,6 @@ from riocli.static_route.util import fetch_static_routes, print_routes_for_confi
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.client import Client
 
 
 @click.command(
@@ -52,9 +52,11 @@ from riocli.v2client.client import Client
     type=int,
     default=10,
 )
+@click.pass_context
 @click.argument("route-name-or-regex", type=str, default="")
 @with_spinner(text="Deleting static route...")
 def delete_static_route(
+    ctx: click.Context,
     route_name_or_regex: str,
     force: bool,
     delete_all: bool = False,
@@ -156,7 +158,7 @@ def delete_static_route(
 
 def _apply_delete(client: Client, result: Queue, route: typing.Any) -> None:
     try:
-        client.delete_static_route(name=route.metadata.name)
+        client.delete_staticroute(name=route.metadata.name)
         result.put((route.metadata.name, True, "Static route deleted successfully"))
     except Exception as e:
         result.put((route.metadata.name, False, str(e)))

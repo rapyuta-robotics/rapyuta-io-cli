@@ -5,18 +5,20 @@ from dataclasses import asdict
 from pathlib import Path
 
 import click
-from munch import munchify
 import yaml
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
+from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
-from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
-from riocli.compose.model import DockerCompose
-from riocli.compose.populate import populate
 from riocli.utils import print_centered_text
+
+if typing.TYPE_CHECKING:
+    from riocli.compose.model import DockerCompose
 
 
 # Expose the command for import

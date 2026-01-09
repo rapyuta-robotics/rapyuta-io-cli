@@ -14,8 +14,11 @@
 
 from enum import Enum
 
+from typing_extensions import override
+
 
 class Status(str, Enum):
+    @override
     def __str__(self):
         return str(self.value).lower()
 
@@ -24,6 +27,7 @@ class Status(str, Enum):
 
 
 class ApplyResult(str, Enum):
+    @override
     def __str__(self):
         return str(self.value)
 

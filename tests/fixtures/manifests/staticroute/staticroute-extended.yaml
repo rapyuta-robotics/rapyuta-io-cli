@@ -1,0 +1,33 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: user-route-1
+  region: jp
+  labels:
+    app: user-test
+spec:
+  sourceIPRange:
+  - 192.168.1.0/24
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: managed-route-1
+  region: jp
+  labels:
+    app: managed-test
+spec:
+  sourceIPRange:
+  - 192.168.2.0/24
+---
+apiVersion: api.rapyuta.io/v2
+kind: StaticRoute
+metadata:
+  name: temp-route-1
+  region: jp
+  labels:
+    app: temp-test
+spec:
+  sourceIPRange:
+  - 192.168.3.0/24

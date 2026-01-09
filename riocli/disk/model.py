@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,46 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from munch import unmunchify
+from munch import Munch
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2 import Disk as DiskModel
+from typing_extensions import override
 
-from riocli.config import new_v2_client
-from riocli.constants import ApplyResult
-from riocli.exceptions import ResourceNotFound
+from riocli.disk.util import poll_disk
 from riocli.model import Model
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Disk(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = DiskModel.model_validate(self)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
-        client = new_v2_client()
+    @override
+    def create_object(
+        self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
+    ) -> DiskModel:
+        created = v2_client.create_disk(body=self._obj)  # pyright:ignore[reportArgumentType]
+        return poll_disk(
+            client=v2_client,
+            name=created.metadata.name,
+            retry_count=retry_count,
+            sleep_interval=retry_interval,
+        )
 
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
+    @override
+    def update_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
-        retry_count = int(kwargs.get("retry_count"))
-        retry_interval = int(kwargs.get("retry_interval"))
+    @override
+    def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
+        _ = v2_client.delete_disk(self._obj.metadata.name)
 
-        try:
-            r = client.create_disk(unmunchify(self))
-            client.poll_disk(
-                r.metadata.name,
-                retry_count=retry_count,
-                sleep_interval=retry_interval,
-            )
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            return ApplyResult.EXISTS
-        except Exception as e:
-            raise e
-
-    def delete(self, *args, **kwargs) -> None:
-        client = new_v2_client()
-
-        try:
-            client.delete_disk(self.metadata.name)
-        except HttpNotFoundError:
-            raise ResourceNotFound
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        return None

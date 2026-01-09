@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from munch import unmunchify
 
 from riocli.config import new_v2_client
 from riocli.package.util import find_package
@@ -45,7 +44,10 @@ def inspect_package(format_type: str, package_name: str, package_version: str) -
             click.secho("package not found", fg="red")
             raise SystemExit(1)
 
-        inspect_with_format(unmunchify(package_obj), format_type)
+        inspect_with_format(
+            obj=package_obj.model_dump(exclude_none=True, by_alias=True),
+            format_type=format_type,
+        )
 
     except Exception as e:
         click.secho(str(e), fg="red")

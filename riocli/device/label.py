@@ -19,8 +19,7 @@ from rapyuta_io import Label
 from riocli.config import new_client
 from riocli.constants import Colors
 from riocli.device.util import name_to_guid
-from riocli.utils import tabulate_data
-from riocli.utils import AliasedGroup
+from riocli.utils import AliasedGroup, tabulate_data
 
 
 @click.group(

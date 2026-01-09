@@ -1,0 +1,9 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "managed-sa-2"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  description: "Second managed service account for update/delete testing"

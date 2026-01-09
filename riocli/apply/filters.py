@@ -15,8 +15,8 @@
 Filters to use in the manifests.
 """
 
-from functools import lru_cache
 import os
+from functools import lru_cache
 
 from riocli.config import new_client
 from riocli.device.util import find_device_guid

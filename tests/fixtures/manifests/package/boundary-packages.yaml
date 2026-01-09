@@ -1,0 +1,89 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: user-package-test
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: user-test-app
+    type: docker
+    docker:
+      image: alpine:latest
+      command: [ "echo", "User package test" ]
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: user-packages
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: user-packages-app
+    type: docker
+    docker:
+      image: busybox:latest
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: my-user-package-1
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: my-user-app
+    type: docker
+    docker:
+      image: nginx:latest
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: dockerized-app-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: device
+  device:
+    arch: amd64
+    restart: always
+  executables:
+  - name: dockerized-service
+    type: docker
+    docker:
+      image: postgres:13
+---
+apiVersion: api.rapyuta.io/v2
+kind: Package
+metadata:
+  name: non-docker-app-package
+  version: v1.0.0
+  labels:
+    app: test
+spec:
+  runtime: cloud
+  cloud:
+    replicas: 1
+  executables:
+  - name: non-docker-service
+    type: docker
+    docker:
+      image: alpine:latest

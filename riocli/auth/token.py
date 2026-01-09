@@ -14,7 +14,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import get_token, TOKEN_LEVELS
+from riocli.auth.util import TOKEN_LEVELS, get_token
 from riocli.config import Configuration
 from riocli.constants import Colors
 from riocli.exceptions import LoggedOut

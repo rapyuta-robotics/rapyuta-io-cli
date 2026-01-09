@@ -13,29 +13,34 @@
 # limitations under the License.
 from __future__ import annotations
 
+import json
 import os
 from base64 import b64encode
+from datetime import date, datetime
 from hashlib import md5
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
+import magic
 from click_help_colors import HelpColorsCommand
-from yaspin.core import Yaspin
+from munch import munchify
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
 from riocli.configtree.util import (
-    MILESTONE_LABEL_KEY,
     display_config_tree_keys,
     get_revision_from_state,
     save_revision,
 )
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
+from riocli.utils import AliasedGroup
 from riocli.utils.spinner import with_spinner
 from riocli.utils.state import StateFile
-from riocli.v2client import Client
-from riocli.utils import AliasedGroup
+
+if TYPE_CHECKING:
+    from rapyuta_io_sdk_v2 import Client
+    from yaspin.core import Yaspin
 
 
 class Revision:
@@ -63,6 +68,7 @@ class Revision:
         self._data = {}
         self._org_guid = self._config.organization_guid
         self._project_guid = None
+        self._with_org = with_org
         if not with_org:
             self._project_guid = self._config.project_guid
 
@@ -76,8 +82,10 @@ class Revision:
             self._rev_id = rev.rev_id
             msg = f"{Symbols.INFO}  Re-using revision {self._rev_id}."
         else:
-            self._rev = self._client.initialize_config_tree_revision(
-                tree_name=self._tree_name
+            self._rev = munchify(
+                self._client.create_revision(
+                    name=self._tree_name, with_project=(not self._with_org)
+                )
             )
             self._rev_id = self._rev.metadata.guid
             msg = f"{Symbols.SUCCESS} Revision {self._rev_id} created successfully."
@@ -102,6 +110,15 @@ class Revision:
         perms: int = 644,
         metadata: dict | None = None,
     ) -> None:
+        # Fix: Ensure non-string values are serialized to JSON
+        if not isinstance(value, str):
+            value = json.dumps(
+                value,
+                ensure_ascii=False,
+                default=lambda o: o.isoformat()
+                if isinstance(o, (datetime, date))  # noqa: UP038
+                else str(o),
+            )
         str_val = str(value)
         enc_val = str_val.encode("utf-8")
 
@@ -118,14 +135,33 @@ class Revision:
 
         self._data[key] = data
 
-    def store_file(self: Revision, key: str, file_path: str) -> None:
-        self._client.store_file_in_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, key=key, file_path=file_path
-        )
+    def store_file(
+        self: Revision,
+        key: str,
+        file_path: str,
+    ) -> None:
+        content_type = magic.from_file(file_path, mime=True)
+        with open(file_path, "rb") as f:
+            file_hash = md5()
+            chunk = f.read(8192)
+            while chunk:
+                file_hash.update(chunk)
+                chunk = f.read(8192)
+            f.seek(0)
+            x_checksum = file_hash.hexdigest()
+            self._client.put_key_in_revision(
+                tree_name=self._tree_name,
+                revision_id=self._rev_id,
+                key=key,
+                project_guid=self._project_guid,
+                x_checksum=x_checksum,
+                content_type=content_type,
+                body=f,
+            )
 
     def delete(self: Revision, key: str) -> None:
         self._client.delete_key_in_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, key=key
+            tree_name=self._tree_name, revision_id=self._rev_id, key=key
         )
 
     def commit(self: Revision, msg: str | None = None, author: str | None = None) -> None:
@@ -135,22 +171,12 @@ class Revision:
         if author is None:
             author = self._get_author()
 
-        payload: dict[str, Any] = {
-            "kind": "ConfigTreeRevision",
-            "apiVersion": "api.rapyuta.io/v2",
-            "message": msg,
-            "author": author,
-        }
-
-        if self._milestone is not None:
-            payload["metadata"] = {
-                "labels": {
-                    MILESTONE_LABEL_KEY: self._milestone,
-                }
-            }
-
-        self._client.commit_config_tree_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, payload=payload
+        self._client.commit_revision(
+            tree_name=self._tree_name,
+            revision_id=self._rev_id,
+            message=msg,
+            author=author,
+            with_project=(not self._with_org),
         )
         if not self._explicit:
             save_revision(
@@ -177,8 +203,11 @@ class Revision:
             raise val
 
         if self._data:
-            self._client.store_keys_in_revision(
-                tree_name=self._tree_name, rev_id=self._rev_id, payload=self._data
+            self._client.put_keys_in_revision(
+                name=self._tree_name,
+                revision_id=self._rev_id,
+                config_values=self._data,
+                with_project=(not self._with_org),
             )
 
         if self._commit and self._rev_id:
@@ -466,7 +495,7 @@ def put_file_in_revision(
         raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=(not with_org))
+        client = new_v2_client(config_inst=config, with_project=(not with_org))
         with Revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
@@ -594,7 +623,9 @@ def list_revision_keys(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
+        tree = client.get_configtree(
+            name=tree_name, revision=rev_id, with_project=(not with_org)
+        )
 
         keys = tree.get("keys")
         if not isinstance(keys, dict):

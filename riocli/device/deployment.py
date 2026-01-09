@@ -40,9 +40,9 @@ def list_deployments(device_name: str, device_guid: str) -> None:
     try:
         client = new_v2_client()
         deployments = client.list_deployments(
-            query={"deviceName": device_name, "phases": DEFAULT_PHASES}
+            device_name=device_name, phases=DEFAULT_PHASES
         )
-        display_deployment_list(deployments, show_header=True)
+        display_deployment_list(deployments.items, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

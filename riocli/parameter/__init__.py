@@ -14,7 +14,6 @@
 
 import click
 
-
 from riocli.constants import Colors
 from riocli.parameter.apply import apply_configurations
 from riocli.parameter.delete import delete_configurations
