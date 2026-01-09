@@ -4,6 +4,7 @@ Organization user management tests for rapyuta.io CLI.
 This module tests organization user management scenarios including
 adding and removing users from organizations.
 """
+from pathlib import Path
 
 import pytest
 
@@ -218,9 +219,11 @@ def test_allow_project_get_access(cli_runner, super_user, project, user_email):
     """Test granting project get access to users via role binding"""
     super_user.login(cli_runner, project_name="test-project1")
 
+    role_path = Path(__file__).parent.parent / "fixtures" / "manifests" / "organization" / "project-viewer-role.yaml"
+
     result = cli_runner.invoke(
         cli,
-        ["apply", "tests/fixtures/manifests/organization/project-viewer-role.yaml", "-f"],
+        ["apply", str(role_path), "-f"],
     )
     assert result.exit_code == 0, result.output
 
