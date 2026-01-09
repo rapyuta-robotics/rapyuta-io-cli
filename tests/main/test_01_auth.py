@@ -61,4 +61,4 @@ def test_login_success_with_project(cli_runner, test_config, test_projects, emai
         ],
     )
 
-    assert "Logged in successfully" in result.output
+    assert "Logged in successfully" in result.output, result.output

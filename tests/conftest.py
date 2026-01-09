@@ -132,6 +132,18 @@ def test_user_12():
 
 
 @pytest.fixture
+def test_user_11_email(test_user_11):
+    """Email address for test_user_11."""
+    return test_user_11.email
+
+
+@pytest.fixture
+def test_user_12_email(test_user_12):
+    """Email address for test_user_12."""
+    return test_user_12.email
+
+
+@pytest.fixture
 def test_projects():
     """List of test projects for testing."""
     return ["test-project1", "test-project2"]
