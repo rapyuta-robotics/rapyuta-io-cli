@@ -19,7 +19,6 @@ from riocli.project.features import features
 from riocli.project.inspect import inspect_project
 from riocli.project.list import list_projects
 from riocli.project.select import select_project
-from riocli.project.update_owner import update_owner
 from riocli.project.whoami import whoami
 from riocli.utils import AliasedGroup
 
@@ -44,4 +43,3 @@ project.add_command(select_project)
 project.add_command(inspect_project)
 project.add_command(features)
 project.add_command(whoami)
-project.add_command(update_owner)
