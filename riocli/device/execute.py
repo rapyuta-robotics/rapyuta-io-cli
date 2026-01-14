@@ -48,7 +48,7 @@ from riocli.device.util import fetch_devices
     hidden=True,
 )
 @click.argument("device-name-or-regex", type=str)
-@click.argument("command", nargs=-1)
+@click.argument("command", nargs=-1, type=str)
 def execute_command(
     device_name_or_regex: str,
     user: str,
@@ -83,7 +83,7 @@ def execute_command(
             $ rio device execute ".*" "ls -l"
     """
 
-    if command == ("",):
+    if not command or command == ("",):
         click.secho(f"{Symbols.ERROR} No command specified", fg=Colors.RED)
         raise SystemExit(1)
 
@@ -199,14 +199,13 @@ def print_response(result, device_guids, device_dict):
     devices_no_output = device_guids.copy()
 
     for device_guid, output in result.items():
-        if output:  # Only print if there's actual output
-            click.secho(
-                f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
-                fg=Colors.YELLOW,
-            )
-            click.echo(f"{output}\n")
-            if device_guid in devices_no_output:
-                devices_no_output.remove(device_guid)
+        click.secho(
+            f">>> {device_dict.get(device_guid, device_guid)}({device_guid})",
+            fg=Colors.YELLOW,
+        )
+        click.echo(f"{output}\n")
+        if device_guid in devices_no_output:
+            devices_no_output.remove(device_guid)
 
     return devices_no_output
 
