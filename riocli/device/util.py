@@ -19,6 +19,27 @@ import typing
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import hashlib
+import base64
+import secrets
+import base64
+import socket
+import webbrowser
+import urllib3
+import requests
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse, parse_qs
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import hashes
+
+import click
+from riocli.config import Configuration
+from riocli.constants import Colors
+
 import click
 from munch import Munch
 from rapyuta_io import Client
@@ -389,3 +410,140 @@ def wait_until_online(device: Device, timeout: int = 600) -> None:
 
     if not device.is_online() and counter >= timeout:
         raise Exception("timeout reached while waiting for the device to be online")
+
+
+# --- CONFIGURATION ---
+CA_URL = "https://step-ca.apps.okd4v2.okd4beta.rapyuta.io"
+OIDC_DISCOVERY_URL = "https://dev-oidc.apps.okd4v2.okd4beta.rapyuta.io/.well-known/openid-configuration"
+OIDC_CLIENT_ID = "214e1472-c49b-4694-831e-dbfaf7d7f149"
+OIDC_CLIENT_SECRET = "N2jMXSpFpt3xJ4wvlL5tJUr82j"
+CALLBACK_PORT = 10000
+REDIRECT_URI = f"http://127.0.0.1:{CALLBACK_PORT}"
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+class OIDCHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        query = parse_qs(urlparse(self.path).query)
+        self.server.auth_code = query.get('code', [None])[0]
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write(b"<h1>Authentication Successful</h1><p>You can close this window.</p>")
+
+    def log_message(self, format, *args) -> None:
+        return
+
+def get_ephemeral_creds(project_id: str) -> typing.Tuple[str, str]:
+    id_token = _get_oidc_token()
+    
+    # 1. Generate Key
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    
+    # 2. Get Public Key in OpenSSH format
+    public_key_full = private_key.public_key().public_bytes(
+        encoding=serialization.Encoding.OpenSSH,
+        format=serialization.PublicFormat.OpenSSH
+    ).decode('utf-8')
+
+    # 3. Sign the Certificate
+    ca_response = _sign_ssh_certificate(public_key_full, id_token, project_id)
+    
+    # FIX: Prepend the SSH certificate type prefix
+    # Step CA returns the raw base64. We add the prefix to make it a valid SSH file.
+    cert_base64 = ca_response['crt']
+    cert_full = f"ecdsa-sha2-nistp256-cert-v01@openssh.com {cert_base64} rapyuta-ssh"
+    
+    key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode('utf-8')
+
+    return key_pem, cert_full
+
+def _get_oidc_token() -> str:
+    # 1. Fetch OIDC Config
+    try:
+        config = requests.get(OIDC_DISCOVERY_URL, verify=False).json()
+        auth_endpoint = config["authorization_endpoint"]
+        token_endpoint = config["token_endpoint"]
+    except Exception as e:
+        raise Exception(f"Failed to fetch OIDC configuration: {e}")
+
+    # 2. Generate PKCE Verifier and Challenge (Matches 'step' behavior)
+    code_verifier = secrets.token_urlsafe(64)
+    code_challenge = base64.urlsafe_b64encode(
+        hashlib.sha256(code_verifier.encode('ascii')).digest()
+    ).decode('ascii').replace('=', '')
+
+    state = secrets.token_urlsafe(16)
+    nonce = secrets.token_urlsafe(16)
+
+    # 3. Start Local Server on a random port (just like 'step')
+    server = HTTPServer(('127.0.0.1', 0), OIDCHandler)
+    port = server.server_port
+    redirect_uri = f"http://127.0.0.1:{port}"
+    server.auth_code = None
+
+    # 4. Construct Auth URL
+    auth_url = (
+        f"{auth_endpoint}?client_id={OIDC_CLIENT_ID}"
+        f"&response_type=code"
+        f"&redirect_uri={redirect_uri}"
+        f"&scope=openid+email"
+        f"&state={state}"
+        f"&nonce={nonce}"
+        f"&code_challenge={code_challenge}"
+        f"&code_challenge_method=S256"
+    )
+    
+    click.secho(f"Opening browser for OIDC authentication (port {port})...", fg=Colors.YELLOW)
+    webbrowser.open(auth_url)
+    server.handle_request()
+    
+    if not server.auth_code:
+        raise Exception("Authentication failed: No code received.")
+
+    # 5. Token Exchange (Including Secret and Verifier)
+    payload = {
+        "grant_type": "authorization_code",
+        "code": server.auth_code,
+        "redirect_uri": redirect_uri,
+        "client_id": OIDC_CLIENT_ID,
+        "client_secret": OIDC_CLIENT_SECRET,  # Crucial for 'invalid_client' fix
+        "code_verifier": code_verifier        # Required for PKCE
+    }
+    
+    resp = requests.post(token_endpoint, data=payload, verify=False)
+    if resp.status_code != 200:
+        raise Exception(f"Token exchange failed: {resp.text}")
+        
+    return resp.json().get("id_token")
+
+def _sign_ssh_certificate(public_key: str, id_token: str, project_id: str) -> dict:
+    """
+    Calls the Step CA SSH signing endpoint.
+    """
+    url = f"{CA_URL}/1.0/ssh/sign"
+
+    parts = public_key.split()
+    if len(parts) < 2:
+        raise Exception("Invalid Public Key format generated.")
+    
+    # parts[0] is 'ecdsa-sha2-nistp256'
+    # parts[1] is the actual base64 key material 'AAAA...'
+    clean_public_key = parts[1]
+    
+    payload = {
+        "publicKey": clean_public_key, # OpenSSH formatted public key
+        "ott": id_token,
+        "principals": [f"project:{project_id}"],
+        "certType": "user"
+    }
+    
+    response = requests.post(url, json=payload, verify=False)
+    if response.status_code != 201:
+        raise Exception(f"SSH Signing Error {response.status_code}: {response.text}")
+    
+    return response.json()
