@@ -54,7 +54,6 @@ spec:
     actions:
     - create
     - get
-    - update
     - delete
 
   - resource: package
