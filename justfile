@@ -23,12 +23,12 @@ run-all COVERAGE="false":
     fi
     
     # Run tests in a specific order to manage dependencies
-    echo "=== Running Authentication Tests ==="
-    {{PYTEST}} {{DIR}}/main/test_01_auth.py -v $COVERAGE_FLAGS
-
     echo "=== Running Organization Tests ==="
-    {{PYTEST}} {{DIR}}/main/test_02_organization.py -v $COVERAGE_FLAGS
-    
+    {{PYTEST}} {{DIR}}/main/test_01_organization.py -v $COVERAGE_FLAGS
+
+    echo "=== Running Authentication Tests ==="
+    {{PYTEST}} {{DIR}}/main/test_02_auth.py -v $COVERAGE_FLAGS
+
     echo "=== Running Project Tests ==="  
     {{PYTEST}} {{DIR}}/main/test_03_project.py -v $COVERAGE_FLAGS
     

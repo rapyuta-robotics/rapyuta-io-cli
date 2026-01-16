@@ -643,16 +643,16 @@ wheels = [
 
 [[package]]
 name = "etcd3gw"
-version = "2.4.2"
+version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "futurist" },
     { name = "pbr" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/56/db0e19678af91d9213cf21c72e7d82a3494d6fc7da16d61c6ba578fd8648/etcd3gw-2.4.2.tar.gz", hash = "sha256:6c6e9e42b810ee9a9455dd342de989f1fab637a94daa4fc34cacb248a54473fa", size = 29840, upload-time = "2024-08-27T16:21:35.772Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/39/e78e60f6485ab4d0b10d039753383493af069ba28894d380f64e781b64de/etcd3gw-2.5.0.tar.gz", hash = "sha256:7255f0ae1213d34a3bdb1081830ab25afb9b263250875e3e61e46ba586adaeba", size = 30810, upload-time = "2026-01-14T19:53:42.225Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/11/79f09e0d1195d455bdf0542d4fec4ddc80a4f496d090244bba9fc7113834/etcd3gw-2.4.2-py3-none-any.whl", hash = "sha256:b907bd2dc702eabbeba3f9c15666e94e92961bfe685429a0e415ce44097f5c22", size = 24092, upload-time = "2024-08-27T16:21:34.556Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/f6/549c418d6c889420a763f9e3418c4f603d09c2553db57fd4e3909c60199d/etcd3gw-2.5.0-py3-none-any.whl", hash = "sha256:447d9b4a55eec7a40737d960bbd1348a8620d4c51ad163ec050e1f5a748b1817", size = 24234, upload-time = "2026-01-14T19:53:41.354Z" },
 ]
 
 [[package]]
@@ -1585,7 +1585,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=feat%2Frbac-support#bf3075da0d29a3e34dbd45ab08760bd71378a923" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=feat%2Frbac-support#d519d90e0f9981118948693c3aff8fde40de0a8f" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
