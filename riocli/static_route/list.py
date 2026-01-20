@@ -58,7 +58,7 @@ def list_static_routes(labels: list[str]) -> None:
 
 
 def _display_routes_list(routes: list[munch.Munch]) -> None:
-    headers = ["Route ID", "Name", "URL", "Creator", "CreatedAt"]
+    headers = ["ID", "Name", "URL"]
 
     data = []
     for route in routes:
@@ -66,9 +66,7 @@ def _display_routes_list(routes: list[munch.Munch]) -> None:
             [
                 route.metadata.guid,
                 route.metadata.name,
-                route.spec.url,
-                route.metadata.creatorGUID,
-                route.metadata.createdAt,
+                f"https://{route.spec.url}",
             ]
         )
 
