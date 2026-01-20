@@ -1,0 +1,17 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "custom-staticroute-creator"
+  labels:
+    persona: developer
+    purpose: rbac-testing
+spec:
+  description: "Custom role to create static routes with name custom-route.*"
+  rules:
+
+  - resource: "staticroute"
+    instances:
+    - '^custom-route.*'
+    actions:
+    - create
