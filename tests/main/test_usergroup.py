@@ -62,6 +62,10 @@ class TestUsergroupPredefinedRoleRBAC:
         self.test_packages = self.usergroup_manifest_dir / "test-packages.yaml"
         self.test_staticroutes = self.usergroup_manifest_dir / "test-staticroutes.yaml"
         self.test_secrets_proj2 = self.usergroup_manifest_dir / "test-secrets-proj2.yaml"
+        self.custom_role = self.usergroup_manifest_dir / "custom-staticroute-role.yaml"
+        self.staticroute_usergroups_with_custom = (
+            self.usergroup_manifest_dir / "staticroute-usergroups-with-custom-role.yaml"
+        )
 
     @pytest.fixture
     def logged_in_user_11(self, cli_runner, test_user_11, test_projects):
@@ -251,6 +255,79 @@ class TestUsergroupPredefinedRoleRBAC:
         assert result.exit_code == 0
 
     # =================
+    # CUSTOM ROLE TESTS
+    # =================
+
+    def test_24_super_user_creates_custom_role(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Test super user creates a custom role with StaticRoute create permissions"""
+        super_user.login(cli_runner, project_name="test-project2")
+
+        # Create custom role from manifest
+        result = cli_runner.invoke(cli, ["apply", str(self.custom_role), "-f"])
+        assert result.exit_code == 0, result.output
+
+        # Verify role was created
+        result = cli_runner.invoke(cli, ["role", "list"])
+        assert result.exit_code == 0
+        assert "custom-staticroute-creator" in result.output
+
+    def test_25_super_user_updates_usergroup_with_custom_role(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Test super user updates usergroup to include custom role"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        # Update usergroup to include custom role
+        result = cli_runner.invoke(
+            cli, ["apply", str(self.staticroute_usergroups_with_custom), "-f"]
+        )
+        assert result.exit_code == 0, result.output
+
+        # Verify usergroup still exists
+        result = cli_runner.invoke(cli, ["usergroup", "list"])
+        assert result.exit_code == 0
+        assert "test-staticroute-viewers" in result.output
+
+    def test_26_user12_custom_create_permissions(self, logged_in_user_12):
+        """Test user12 can create static routes with custom-route.* pattern"""
+        runner, user = logged_in_user_12
+
+        # User12 should be able to create this static route
+        result = runner.invoke(cli, ["static-route", "create", "custom-route-test-user12"])
+        assert result.exit_code == 0, result.output
+
+        # Verify the route was created
+        result = runner.invoke(cli, ["static-route", "list"])
+        assert result.exit_code == 0
+        assert "custom-route-test-user12" in result.output
+
+        # User12 should not be able to delete the static route
+        result = runner.invoke(cli, ["static-route", "delete", "custom-route-test-user12-clitest"])
+        assert result.exit_code != 0, (
+            f"StaticRoute deletion should fail with unauthorized. "
+            f"Exit code: {result.exit_code}, Output: {result.output}"
+        )
+
+    def test_27_user12_retains_view_permissions(self, logged_in_user_12):
+        """Test user12 still has view permissions for all static routes"""
+        runner, user = logged_in_user_12
+
+        # Should be able to list all static routes (from rio-project_viewer)
+        result = runner.invoke(cli, ["static-route", "list"])
+        assert result.exit_code == 0, result.output
+
+        # Should be able to inspect existing test routes
+        result = runner.invoke(cli, ["static-route", "inspect", "test-route-1-clitest"])
+        assert result.exit_code == 0, result.output
+
+        # Should be able to inspect the custom route created in previous test
+        result = runner.invoke(cli, ["static-route", "inspect", "custom-route-test-user12-clitest"])
+        assert result.exit_code == 0, result.output
+
+
+    # =================
     # CLEANUP TESTS - ROLES ARE EMBEDDED IN USERGROUP MANIFESTS
     # =================
 
@@ -258,6 +335,17 @@ class TestUsergroupPredefinedRoleRBAC:
         """Cleanup test resources"""
         super_user.login(cli_runner, project_name="test-project1")
 
+        # Delete custom static route created by user12
+        result = cli_runner.invoke(
+            cli, ["static-route", "delete", "custom-route-test-user12-clitest", "--force", "--silent"]
+        )
+        # Allow this to fail if the route doesn't exist
+
+        # Delete custom role
+        result = cli_runner.invoke(cli, ["delete", "--silent", str(self.custom_role)])
+        # Continue even if this fails
+
+        # Delete all usergroups and other resources
         result = cli_runner.invoke(
             cli, ["delete", "--silent", str(self.usergroup_manifest_dir)]
         )

@@ -37,10 +37,6 @@ spec:
       kind: User
       name: cli.test1@rapyuta-robotics.com
     roleNames: [ rio-group_admin ]
-  - subject:
-      kind: User
-      name: cli.test2@rapyuta-robotics.com
-    roleNames: [ rio-group_admin ]
   roles:
   - domain:
       kind: Project
