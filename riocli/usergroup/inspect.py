@@ -47,9 +47,10 @@ def inspect_usergroup(
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        usergroup = client.list_user_groups(name=group_name)
+        usergroup_list = client.list_user_groups(name=group_name)
+        usergroup = client.get_user_group(group_name=usergroup_list.items[0].metadata.name, group_guid=usergroup_list.items[0].metadata.guid)
         inspect_with_format(
-            usergroup.items[0].model_dump(exclude_none=True, by_alias=True), format_type
+            usergroup.model_dump(exclude_none=True, by_alias=True), format_type
         )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
