@@ -14,6 +14,7 @@
 import re
 
 from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.role.model import Role
 
@@ -23,15 +24,17 @@ def fetch_roles(
     role_name_or_regex: str,
     include_all: bool,
 ) -> list[Role]:
-    roles = client.list_roles()
-
-    if include_all:
-        return roles
+    roles = walk_pages(client.list_roles)
 
     result = []
-    for r in roles:
-        if re.search(role_name_or_regex, r.metadata.name):
-            result.append(r)
+    for page in roles:
+        if include_all:
+            result.extend(page)
+            continue
+
+        for r in page:
+            if re.search(role_name_or_regex, r.metadata.name):
+                result.append(r)
 
     return result
 

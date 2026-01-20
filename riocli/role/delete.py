@@ -128,7 +128,7 @@ def delete_role(
     try:
         f = functools.partial(_delete_role, client)
         result = apply_func_with_result(
-            f=f, items=roles, workers=workers, key=lambda x: x.metadata.name
+            f=f, items=roles, workers=workers, key=lambda x: x
         )
 
         data, fg = [], Colors.GREEN
@@ -144,7 +144,7 @@ def delete_role(
                 fg = Colors.RED
                 icon = Symbols.ERROR
                 failed_count += 1
-                msg = get_error_message(response, name)
+                msg = get_error_message(response)
 
             data.append(
                 [click.style(name, fg), click.style(icon, fg), click.style(msg, fg)]
@@ -174,7 +174,7 @@ def delete_role(
         spinner.ok(spinner_char)
         raise SystemExit(failed_count)
     except Exception as e:
-        spinner.text = click.style(f"Failed to roles devices: {e}", Colors.RED)
+        spinner.text = click.style(f"Failed to delete roles: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
