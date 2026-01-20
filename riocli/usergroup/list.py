@@ -43,17 +43,22 @@ def list_usergroup(ctx: click.Context) -> None:
 def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ("ID", "Name", "Creator", "Members", "Projects", "Description")
+        headers = ("ID", "Name", "Members", "Description")
 
     rows = []
     for g in usergroups:
+        description = getattr(g.spec, "description", "")
+
+        description = description.replace("\n", " ")
+        if len(description) > 48:
+            description = description[:48] + ".."
+
         rows.append(
             [
                 g.metadata.guid,
                 g.metadata.name,
-                g.metadata.creatorGUID,
                 g.spec.members_count,
-                g.spec.description,
+                description,
             ]
         )
     tabulate_data(rows, headers)
