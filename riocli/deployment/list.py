@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from rapyuta_io_sdk_v2 import walk_pages
-
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -96,7 +95,9 @@ def list_deployments(
     try:
         client = new_v2_client(with_project=True)
         deployments = []
-        for page in walk_pages(client.list_deployments, label_selector=labels, phases=phase):
+        for page in walk_pages(
+            client.list_deployments, label_selector=labels, phases=phase
+        ):
             deployments.extend(page)
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True, wide=wide)
