@@ -16,6 +16,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
+from riocli.usergroup.util import UserGroupNotFound
 from riocli.utils import inspect_with_format
 
 
@@ -48,7 +49,13 @@ def inspect_usergroup(
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
         usergroup_list = client.list_user_groups(name=group_name)
-        usergroup = client.get_user_group(group_name=usergroup_list.items[0].metadata.name, group_guid=usergroup_list.items[0].metadata.guid)
+        if len(usergroup_list.items) == 0:
+            raise UserGroupNotFound
+
+        usergroup = client.get_user_group(
+            group_name=usergroup_list.items[0].metadata.name,
+            group_guid=usergroup_list.items[0].metadata.guid,
+        )
         inspect_with_format(
             usergroup.model_dump(exclude_none=True, by_alias=True), format_type
         )
