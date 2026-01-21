@@ -66,6 +66,12 @@ class TestUsergroupPredefinedRoleRBAC:
         self.staticroute_usergroups_with_custom = (
             self.usergroup_manifest_dir / "staticroute-usergroups-with-custom-role.yaml"
         )
+        self.test_secret_managers_modified = (
+            self.usergroup_manifest_dir / "test-secret-managers-modified.yaml"
+        )
+        self.custom_usergroup_modify_role = (
+            self.usergroup_manifest_dir / "custom-usergroup-modify-role.yaml"
+        )
 
     @pytest.fixture
     def logged_in_user_11(self, cli_runner, test_user_11, test_projects):
@@ -295,7 +301,9 @@ class TestUsergroupPredefinedRoleRBAC:
         runner, user = logged_in_user_12
 
         # User12 should be able to create this static route
-        result = runner.invoke(cli, ["static-route", "create", "custom-route-test-user12"])
+        result = runner.invoke(
+            cli, ["static-route", "create", "custom-route-test-user12"]
+        )
         assert result.exit_code == 0, result.output
 
         # Verify the route was created
@@ -304,7 +312,9 @@ class TestUsergroupPredefinedRoleRBAC:
         assert "custom-route-test-user12" in result.output
 
         # User12 should not be able to delete the static route
-        result = runner.invoke(cli, ["static-route", "delete", "custom-route-test-user12-clitest"])
+        result = runner.invoke(
+            cli, ["static-route", "delete", "custom-route-test-user12-clitest"]
+        )
         assert result.exit_code != 0, (
             f"StaticRoute deletion should fail with unauthorized. "
             f"Exit code: {result.exit_code}, Output: {result.output}"
@@ -323,25 +333,164 @@ class TestUsergroupPredefinedRoleRBAC:
         assert result.exit_code == 0, result.output
 
         # Should be able to inspect the custom route created in previous test
-        result = runner.invoke(cli, ["static-route", "inspect", "custom-route-test-user12-clitest"])
+        result = runner.invoke(
+            cli, ["static-route", "inspect", "custom-route-test-user12-clitest"]
+        )
         assert result.exit_code == 0, result.output
 
+    # =================
+    # MODIFY_RULES PERMISSION TESTS
+    # =================
+
+    def test_28_user11_cannot_modify_usergroup_without_modify_role(
+        self, logged_in_user_11
+    ):
+        """Test user11 (rio-group_admin) cannot modify usergroup roles without modify_rules permission"""
+        runner, user = logged_in_user_11
+
+        # User11 is rio-group_admin in test-secret-managers, but should not be able to
+        # modify the usergroup's project role bindings without modify_rules permission
+        result = runner.invoke(
+            cli, ["apply", str(self.test_secret_managers_modified), "-f"]
+        )
+        assert result.exit_code != 0, (
+            f"Usergroup modification should fail without modify_rules permission. "
+            f"Exit code: {result.exit_code}, Output: {result.output}"
+        )
+
+    def test_29_super_user_creates_custom_modify_role(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Test super user creates a custom role with modify_rules permission for usergroups"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        # Create custom role with modify_rules permission
+        result = cli_runner.invoke(
+            cli, ["apply", str(self.custom_usergroup_modify_role), "-f"]
+        )
+        assert result.exit_code == 0, result.output
+
+        # Verify role was created
+        result = cli_runner.invoke(cli, ["role", "list"])
+        assert result.exit_code == 0
+        assert "custom-usergroup-modifier" in result.output
+
+    def test_30_super_user_binds_custom_role_to_user11(
+        self, cli_runner, super_user, test_user_11, test_projects
+    ):
+        """Test super user binds custom modify_rules role to user11 at project level"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        result = cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "bind",
+                "rio-org_viewer",
+                "Organization:CliTest",
+                f"User:{test_user_11.email}",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+
+        # Bind custom role to user11 at project level
+        result = cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "bind",
+                "custom-usergroup-modifier",
+                "UserGroup:test-secret-managers",
+                f"User:{test_user_11.email}",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+
+    def test_31_user11_can_modify_usergroup_with_modify_rules(self, logged_in_user_11):
+        """Test user11 can now modify usergroup roles with modify_rules permission"""
+        runner, user = logged_in_user_11
+
+        # User11 should now be able to modify test-secret-managers with additional roles
+        result = runner.invoke(
+            cli, ["apply", str(self.test_secret_managers_modified), "-f"]
+        )
+        assert result.exit_code == 0, result.output
+
+        # Verify the usergroup was modified by inspecting it
+        result = runner.invoke(cli, ["usergroup", "inspect", "test-secret-managers"])
+        assert result.exit_code == 0, result.output
+        # The modified manifest adds test-project2 viewer role
+        assert "test-project2" in result.output
+
+    def test_32_user11_cannot_modify_other_usergroup_without_permission(
+        self, logged_in_user_11
+    ):
+        """Test user11 cannot modify another usergroup where they don't have modify_rules"""
+        runner, user = logged_in_user_11
+
+        # User11 has modify_rules only for test-secret-managers (via pattern '^test-secret-managers$')
+        # Try to modify test-package-managers which is a different usergroup
+        # First, let's create a modified version inline or expect it to fail
+        result = runner.invoke(cli, ["apply", str(self.package_usergroups), "-f"])
+        assert result.exit_code != 0, (
+            f"Modifying other usergroups should fail without modify_rules permission. "
+            f"Exit code: {result.exit_code}, Output: {result.output}"
+        )
 
     # =================
     # CLEANUP TESTS - ROLES ARE EMBEDDED IN USERGROUP MANIFESTS
     # =================
 
-    def test_90_cleanup_resources(self, cli_runner, super_user, test_projects):
+    def test_90_cleanup_resources(
+        self, cli_runner, super_user, test_user_11, test_projects
+    ):
         """Cleanup test resources"""
         super_user.login(cli_runner, project_name="test-project1")
 
         # Delete custom static route created by user12
         result = cli_runner.invoke(
-            cli, ["static-route", "delete", "custom-route-test-user12-clitest", "--force", "--silent"]
+            cli,
+            [
+                "static-route",
+                "delete",
+                "custom-route-test-user12-clitest",
+                "--force",
+                "--silent",
+            ],
         )
         # Allow this to fail if the route doesn't exist
 
-        # Delete custom role
+        # Unbind custom-usergroup-modifier role from user11
+        result = cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "unbind",
+                "custom-usergroup-modifier",
+                "UserGroup:test-secret-managers",
+                f"User:{test_user_11.email}",
+            ],
+        )
+        # Allow this to fail if the binding doesn't exist
+
+        result = cli_runner.invoke(
+            cli,
+            [
+                "role",
+                "unbind",
+                "rio-org_viewer",
+                "Organization:CliTest",
+                f"User:{test_user_11.email}",
+            ],
+        )
+
+        # Delete custom usergroup modify role
+        result = cli_runner.invoke(
+            cli, ["delete", "--silent", str(self.custom_usergroup_modify_role)]
+        )
+        # Continue even if this fails
+
+        # Delete custom staticroute role
         result = cli_runner.invoke(cli, ["delete", "--silent", str(self.custom_role)])
         # Continue even if this fails
 
