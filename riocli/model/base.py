@@ -18,7 +18,11 @@ from typing import Any
 from munch import Munch
 from rapyuta_io import Client
 from rapyuta_io_sdk_v2 import Client as v2Client
-from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import (
+    HttpAlreadyExistsError,
+    HttpNotFoundError,
+    UnauthorizedAccessError,
+)
 
 from riocli.config.config import Configuration
 from riocli.constants import ApplyResult
@@ -153,7 +157,10 @@ class Model(ABC, Munch):
                 retry_interval=retry_interval,
             )
             return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
+        except (HttpAlreadyExistsError, UnauthorizedAccessError) as e:
+            # In case of Unauthorized, still try to update. The user might only
+            # have Update permission, and will get Unauthorized error on
+            # creation.
             try:
                 _ = self.update_object(
                     client=client,
@@ -164,6 +171,11 @@ class Model(ABC, Munch):
                 )
                 return ApplyResult.UPDATED
             except NotImplementedError:
+                # Handle the case where the resource does not implement Update.
+                # If we received Unauthorized in creation, raise it again.
+                if isinstance(e, UnauthorizedAccessError):
+                    raise e
+
                 return ApplyResult.EXISTS
 
     def delete(
