@@ -47,7 +47,7 @@ def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
 
     rows = []
     for g in usergroups:
-        description = getattr(g.spec, "description", "")
+        description = g.spec.description or ""
 
         description = description.replace("\n", " ")
         if len(description) > 48:
