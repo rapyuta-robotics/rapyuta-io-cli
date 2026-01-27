@@ -88,7 +88,7 @@ def list_role_bindings(ctx: click.Context, labels: list[str] | None = None):
 
     Usage:
 
-        $ rio rolebinding list
+        $ rio role list-bindings
     """
     try:
         config = get_config_from_context(ctx)
