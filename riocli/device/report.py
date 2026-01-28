@@ -100,7 +100,7 @@ def report_device(
             public_url = generate_shared_url(
                 device_guid, response["response"]["data"]["request_uuid"], expiry
             )
-            click.secho(f"\nURL: {public_url.url}", fg=Colors.GREEN)
+            click.secho(f"\nURL: {public_url.spec.signed_url}", fg=Colors.GREEN)
 
         spinner.text = click.style("Device reported successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
