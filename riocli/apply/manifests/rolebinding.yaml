@@ -1,0 +1,16 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "RoleBinding"
+metadata:
+  name: "role-name"
+  labels:
+    persona: developer
+spec:
+  roleRef:
+    kind: Role
+    name: role-name
+  subject:
+    kind: User  # Options: [User, UserGroup, ServiceAccount]
+    name: random.user@rapyuta-robotics.com
+  domain:
+    kind: Project # Options: [Organization, Project, UserGroup
+    name: project01

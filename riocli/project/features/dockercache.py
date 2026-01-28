@@ -89,20 +89,19 @@ def dockercache(
     try:
         project = client.get_project(project_guid)
     except Exception as e:
-        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
-    project["spec"]["features"]["dockerCache"] = {
-        "enabled": enable,
-        "proxyDevice": proxy_device,
-        "proxyInterface": proxy_interface,
-        "registryURL": registry_url,
-        "registrySecret": registry_secret,
-        "dataDirectory": data_directory,
-    }
+    docker_cache = project.spec.features.docker_cache
+    docker_cache.enabled = enable
+    docker_cache.proxy_device = proxy_device
+    docker_cache.proxy_interface = proxy_interface
+    docker_cache.registry_url = registry_url
+    docker_cache.registry_secret = registry_secret
+    docker_cache.data_directory = data_directory
 
-    is_enabled = project["spec"]["features"]["dockerCache"].get("enabled", False)
+    is_enabled = project.spec.features.docker_cache.enabled or False
 
     status = "Enabling DockerCache..." if enable else "Disabling DockerCache..."
     if is_enabled and enable:
@@ -110,10 +109,10 @@ def dockercache(
     spinner.text = status
 
     try:
-        client.update_project(project_guid, project)
+        client.update_project(project_guid=project_guid, body=project)
         spinner.text = click.style("Done", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e

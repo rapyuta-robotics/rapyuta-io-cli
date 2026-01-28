@@ -13,21 +13,20 @@
 # limitations under the License.
 import json
 from pathlib import Path
-from typing import Optional
 
 import click
 import yaml
-from click_help_colors import HelpColorsGroup, HelpColorsCommand
+from click_help_colors import HelpColorsCommand
 
 from riocli.config import Configuration
-from riocli.constants import Symbols, Colors
-from riocli.utils import inspect_with_format
+from riocli.constants import Colors, Symbols
+from riocli.utils import AliasedGroup, inspect_with_format
 
 
 @click.group(
     name="context",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
@@ -54,7 +53,7 @@ def cli_context() -> None:
     default="yaml",
     type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
-def view_cli_context(format_type: Optional[str]) -> None:
+def view_cli_context(format_type: str | None) -> None:
     """View the current CLI context.
 
     This command prints the current CLI context to the console.

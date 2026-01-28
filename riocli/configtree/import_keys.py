@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Optional
 
 import click
 from benedict import benedict
@@ -112,13 +112,13 @@ def import_keys(
     files: Iterable[str],
     commit: bool,
     update_head: bool,
-    milestone: Optional[str],
-    export_directory: Optional[str],
-    export_format: Optional[str],
-    etcd_endpoint: Optional[str],
-    etcd_port: Optional[int],
-    etcd_prefix: Optional[str],
-    overrides: Optional[Iterable[str]],
+    milestone: str | None,
+    export_directory: str | None,
+    export_format: str | None,
+    etcd_endpoint: str | None,
+    etcd_port: int | None,
+    etcd_prefix: str | None,
+    overrides: Iterable[str] | None,
     with_org: bool,
     spinner: Yaspin,
 ) -> None:
@@ -208,13 +208,13 @@ def import_keys(
 
             for key, value in data.items():
                 key_metadata = metadata.get(key, None)
-                if key_metadata is not None and isinstance(key_metadata, Metadata):
+                if isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
 
                 rev.store(key=key, value=value, perms=644, metadata=key_metadata)
                 spinner.write(
                     click.style(
-                        "\t{} Key {} added.".format(Symbols.SUCCESS, key),
+                        f"\t{Symbols.SUCCESS} Key {key} added.",
                         fg=Colors.CYAN,
                     )
                 )
@@ -233,7 +233,9 @@ def import_keys(
                 },
             }
 
-            client.set_revision_config_tree(tree_name, payload)
+            client.set_configtree_revision(
+                name=tree_name, configtree=payload, with_project=(not with_org)
+            )
             spinner.text = click.style(
                 "Config tree HEAD updated successfully.", fg=Colors.CYAN
             )
@@ -295,7 +297,7 @@ def _process_files_with_overrides(
         data[file_prefix] = benedict(f, format=file_format)
         spinner.write(
             click.style(
-                "{} File {} processed.".format(Symbols.SUCCESS, f),
+                f"{Symbols.SUCCESS} File {f} processed.",
                 fg=Colors.CYAN,
             )
         )
@@ -314,7 +316,7 @@ def _process_files_with_overrides(
 
         spinner.write(
             click.style(
-                "{} Override file {} processed.".format(Symbols.SUCCESS, f),
+                f"{Symbols.SUCCESS} Override file {f} processed.",
                 fg=Colors.CYAN,
             )
         )

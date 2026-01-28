@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable
+import sys
+from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -38,20 +39,13 @@ from riocli.utils import print_centered_text
     help="Dry run the yaml files without applying any change",
 )
 @click.option(
-    "--show-graph",
-    "-g",
-    is_flag=True,
-    default=False,
-    help="Opens a mermaid.live dependency graph",
-)
-@click.option(
     "--values",
     "-v",
     multiple=True,
     default=(),
     help="Path to values yaml file. Key/values "
-    "specified in the values file can be "
-    "used as variables in template YAMLs",
+    + "specified in the values file can be "
+    + "used as variables in template YAMLs",
 )
 @click.option(
     "--secrets",
@@ -59,13 +53,13 @@ from riocli.utils import print_centered_text
     multiple=True,
     default=(),
     help="Secret files are sops encoded value files. "
-    "rio-cli expects sops to be authorized for "
-    "decoding files on this computer",
+    + "rio-cli expects sops to be authorized for "
+    + "decoding files on this computer",
 )
 @click.option(
     "--workers",
     "-w",
-    help="Number of parallel workers while running apply command. defaults to 6.",
+    help="Number of parallel workers while running " + "apply command. defaults to 6.",
     type=int,
 )
 @click.option(
@@ -113,7 +107,6 @@ def apply(
     dryrun: bool = False,
     workers: int = 6,
     silent: bool = False,
-    show_graph: bool = False,
 ) -> None:
     """Apply resource manifests.
 
@@ -129,9 +122,6 @@ def apply(
 
     You can provide value files with the ``--values`` option and
     sops encrypted secret files with ``--secret`` option.
-
-    You can use the ``--show-graph`` option to visualize the
-    dependency graph of the resources defined in the manifests.
 
     The --dryrun option can be used to execute the manifests without
     actually creating the resources. This is useful to validate the
@@ -174,33 +164,23 @@ def apply(
     )
 
     if len(glob_files) == 0:
-        click.secho("No files specified", fg=Colors.RED)
+        click.secho("No files specified", fg=Colors.RED, file=sys.stderr)
         raise SystemExit(1)
 
     print_centered_text("Files Processed")
     for file in glob_files:
-        click.secho(file, fg=Colors.YELLOW)
+        click.secho(file, fg=Colors.YELLOW, file=sys.stderr)
 
     config = get_config_from_context(ctx)
 
     applier = Applier(glob_files, abs_values, abs_secrets, config)
-    applier.parse_dependencies()
-
-    if show_graph and dryrun:
-        click.secho("You cannot dry run and launch the graph together.", fg="yellow")
-        return
-
-    if show_graph:
-        applier.show_dependency_graph()
-        return
+    applier.print_summary()
 
     if not silent and not dryrun:
-        click.confirm("\nDo you want to proceed?", default=True, abort=True)
+        _ = click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     if delete_existing:
         deleter = Applier(glob_files, abs_values, abs_secrets, config)
-        deleter.parse_dependencies(print_resources=False)
-
         print_centered_text("Deleting Resources")
         deleter.delete(
             dryrun=dryrun,
@@ -237,7 +217,7 @@ def apply(
     multiple=True,
     default=(),
     help="Path to values yaml file. key/values specified in the"
-    " values file can be used as variables in template YAMLs",
+    + " values file can be used as variables in template YAMLs",
 )
 @click.option(
     "--secrets",
@@ -245,7 +225,7 @@ def apply(
     multiple=True,
     default=(),
     help="Secret files are sops encoded value files. riocli expects "
-    "sops to be authorized for decoding files on this computer",
+    + "sops to be authorized for decoding files on this computer",
 )
 @click.option(
     "-f",
@@ -342,20 +322,20 @@ def delete(
     )
 
     if len(glob_files) == 0:
-        click.secho("no files specified", fg=Colors.RED)
+        click.secho("no files specified", fg=Colors.RED, file=sys.stderr)
         raise SystemExit(1)
 
     print_centered_text("Files Processed")
     for file in glob_files:
-        click.secho(file, fg=Colors.YELLOW)
+        click.secho(file, fg=Colors.YELLOW, file=sys.stderr)
 
     config = get_config_from_context(ctx)
 
     applier = Applier(glob_files, abs_values, abs_secrets, config)
-    applier.parse_dependencies()
+    applier.print_summary()
 
     if not silent and not dryrun:
-        click.confirm("\nDo you want to proceed?", default=True, abort=True)
+        _ = click.confirm("\nDo you want to proceed?", default=True, abort=True)
 
     print_centered_text("Deleting Resources")
     applier.delete(
@@ -364,3 +344,82 @@ def delete(
         retry_count=retry_count,
         retry_interval=retry_interval,
     )
+
+
+@click.command(
+    "graph",
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.option(
+    "--values",
+    "-v",
+    multiple=True,
+    default=(),
+    help="Path to values yaml file. key/values specified in the"
+    + " values file can be used as variables in template YAMLs",
+)
+@click.option(
+    "--secrets",
+    "-s",
+    multiple=True,
+    default=(),
+    help="Secret files are sops encoded value files. riocli expects "
+    + "sops to be authorized for decoding files on this computer",
+)
+@click.option(
+    "--print-only",
+    default=False,
+    is_flag=True,
+    help="Print the raw Graphviz output.",
+)
+@click.argument("files", nargs=-1)
+@click.pass_context
+def graph(
+    ctx: click.Context,
+    values: str,
+    secrets: str,
+    files: Iterable[str],
+    print_only: bool,
+) -> None:
+    """Shows the dependency graph of the Objects.
+
+    You can provide value files with the ``--values`` option and
+    sops encrypted secret files with ``--secret`` option.
+
+    Usage Examples:
+
+        Single manifest file with secret and values file.
+
+            $ rio graph -v values.yaml -s secrets.yaml manifest.yaml
+
+        Manifests from a directory with secret and values file.
+
+            $ rio graph -v values.yaml -s secrets.yaml templates/
+
+        Manifests from a directory without confirmation prompt.
+
+            $ rio graph -f templates/
+
+        Manifests with multiple value files.
+
+            $ rio graph -v values1.yaml -v values2.yaml templates/**
+
+    """
+    glob_files, abs_values, abs_secrets = process_files_values_secrets(
+        files, values, secrets
+    )
+
+    if len(glob_files) == 0:
+        click.secho("no files specified", fg=Colors.RED, file=sys.stderr)
+        raise SystemExit(1)
+
+    print_centered_text("Files Processed")
+    for file in glob_files:
+        click.secho(file, fg=Colors.YELLOW, file=sys.stderr)
+
+    config = get_config_from_context(ctx)
+
+    applier = Applier(glob_files, abs_values, abs_secrets, config)
+    applier.show_dependency_graph(print_only)

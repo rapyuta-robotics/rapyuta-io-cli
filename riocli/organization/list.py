@@ -36,7 +36,7 @@ def list_organizations(ctx: click.Context) -> None:
     try:
         config = get_config_from_context(ctx)
         client = new_v2_client(config_inst=config, with_project=False)
-        user = client.get_user()
+        user = client.get_myself()
         organizations = user.spec.organizations
         current = ctx.obj.data.get("organization_id")
         print_organizations(organizations, current)
@@ -59,7 +59,7 @@ def print_organizations(organizations, current):
         data.append(
             [
                 click.style(v, fg=fg, bold=bold)
-                for v in (org.name, org.guid, org.creator, org.shortGUID)
+                for v in (org.name, org.guid, org.creator, org.short_guid)
             ]
         )
 

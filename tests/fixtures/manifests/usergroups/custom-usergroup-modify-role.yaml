@@ -1,0 +1,16 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "custom-usergroup-modifier"
+  labels:
+    persona: developer
+    purpose: rbac-testing
+spec:
+  description: "Custom role to modify rules in usergroups"
+  rules:
+  - resource: "usergroup"
+    instances:
+    - '^test-secret-managers$'
+    actions:
+    - modify_role

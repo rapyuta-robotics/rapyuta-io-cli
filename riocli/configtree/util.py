@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import os
 from base64 import b64decode
-from typing import Optional, Iterable
+from typing import TYPE_CHECKING
 
 import yaml
 from benedict import benedict
@@ -25,6 +25,9 @@ from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
 from riocli.utils.graph import Graphviz
 from riocli.utils.state import StateFile
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
 
@@ -49,8 +52,8 @@ MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
 
 
 def get_revision_from_state(
-    org_guid: str, project_guid: Optional[str], tree_name: str
-) -> Optional[Munch]:
+    org_guid: str, project_guid: str | None, tree_name: str
+) -> Munch | None:
     s = StateFile()
 
     if not s.state.get("configtrees"):
@@ -74,7 +77,7 @@ def get_revision_from_state(
 
 def save_revision(
     org_guid: str,
-    project_guid: Optional[str],
+    project_guid: str | None,
     tree_name: str,
     rev_id: str,
     committed: bool = False,
@@ -177,7 +180,7 @@ def display_config_tree_revision_graph(tree_name: str, revisions: Iterable) -> N
         if not rev.get("committed", False):
             message = "Uncommitted"
 
-        g.node(key=rev_id, label="{} {}".format(rev_id, message))
+        g.node(key=rev_id, label=f"{rev_id} {message}")
 
         if parent is not None:
             g.edge(from_node=parent, to_node=rev_id)
@@ -185,7 +188,7 @@ def display_config_tree_revision_graph(tree_name: str, revisions: Iterable) -> N
     g.visualize()
 
 
-class Metadata(object):
+class Metadata:
     def __init__(self: Metadata, d: dict):
         self.data = d
 
@@ -197,7 +200,7 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
-        file_path = os.path.join(base_dir, "{}.{}".format(file_name, file_format))
+        file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
         final_data = benedict(file_data)
         if file_format == "yaml":
             final_data.to_yaml(filepath=file_path)
@@ -207,7 +210,7 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
             raise Exception("file_format is not supported")
 
 
-def parse_ref(input: str) -> (bool, str, Optional[str]):
+def parse_ref(input: str) -> (bool, str, str | None):
     """
     The input can be a slash ('/') separated string.
 
@@ -234,10 +237,10 @@ def parse_ref(input: str) -> (bool, str, Optional[str]):
     splits = input.split("/", maxsplit=2)
 
     if len(splits) < 2:
-        raise Exception("ref {} is invalid".format(input))
+        raise Exception(f"ref {input} is invalid")
 
     if splits[0] not in ("org", "proj"):
-        raise Exception("ref scope {} is invalid".format(splits[0]))
+        raise Exception(f"ref scope {splits[0]} is invalid")
 
     is_org = splits[0] == "org"
 
@@ -253,7 +256,7 @@ def parse_ref(input: str) -> (bool, str, Optional[str]):
     return is_org, splits[1], revision, milestone
 
 
-def unflatten_keys(keys: Optional[dict]) -> benedict:
+def unflatten_keys(keys: dict | None) -> benedict:
     if keys is None:
         return benedict()
 
@@ -285,9 +288,9 @@ def combine_metadata(keys: dict) -> dict:
     return result
 
 
-def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> Optional[dict]:
+def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> dict | None:
     client = new_v2_client(with_project=(not is_org))
-    revisions = client.list_config_tree_revisions(tree_name=tree_name)
+    revisions = client.list_revisions(tree_name=tree_name)
     if len(revisions) == 0:
         return
 
@@ -309,8 +312,8 @@ def fetch_ref_keys(ref: str) -> dict:
 def fetch_tree_keys(
     is_org: bool,
     tree_name: str,
-    rev_id: Optional[str] = None,
-    milestone: Optional[str] = None,
+    rev_id: str | None = None,
+    milestone: str | None = None,
 ) -> dict:
     if milestone:
         rev_id = fetch_milestone_revision_id(
@@ -318,15 +321,20 @@ def fetch_tree_keys(
         )
 
     client = new_v2_client(with_project=(not is_org))
-    tree = client.get_config_tree(
-        tree_name=tree_name,
-        rev_id=rev_id,
-        include_data=True,
-        filter_content_types=["kv"],
+    tree = munchify(
+        client.get_configtree(
+            name=tree_name,
+            revision=rev_id,
+            include_data=True,
+            content_types=["kv"],
+            with_project=(not is_org),
+        )
     )
 
     if not tree.get("head"):
-        raise Exception("Config tree {} does not have keys in the revision".format(tree))
+        raise Exception(
+            f"Config tree {tree.metadata.name} does not have keys in the revision"
+        )
 
     keys = tree.get("keys")
     if not isinstance(keys, dict):
@@ -337,21 +345,19 @@ def fetch_tree_keys(
 
 def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) -> str:
     client = new_v2_client(with_project=(not is_org))
-    labels = "{}={}".format(MILESTONE_LABEL_KEY, milestone)
+    labels = f"{MILESTONE_LABEL_KEY}={milestone}"
 
-    revisions = client.list_config_tree_revisions(tree_name=tree_name, labels=labels)
+    revisions = client.list_revisions(tree_name=tree_name, label_selector=[labels])
     if len(revisions) == 0:
-        raise Exception("Revision with milestone {} not found".format(milestone))
+        raise Exception(f"Revision with milestone {milestone} not found")
 
     if len(revisions) > 1:
-        raise Exception(
-            "More than one revision with milestone {} exists".format(milestone)
-        )
+        raise Exception(f"More than one revision with milestone {milestone} exists")
 
     return revisions[0].metadata.guid
 
 
-def get_revision_milestone(rev: dict) -> Optional[str]:
+def get_revision_milestone(rev: dict) -> str | None:
     metadata = rev.get("metadata", None)
     if metadata is None:
         return

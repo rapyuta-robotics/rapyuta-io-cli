@@ -14,7 +14,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.config import Configuration
+from riocli.config import Configuration, get_config_from_context
 from riocli.constants import Colors
 from riocli.exceptions import LoggedOut
 from riocli.project.util import name_to_guid
@@ -37,11 +37,13 @@ def whoami(ctx: click.Context, project_name: str, project_guid: str) -> None:
     If you do not specify the project name, the command will use the project
     set in the CLI context.
     """
-    if not ctx.obj.data.get("email_id"):
+    config = get_config_from_context(ctx)
+
+    if not config.data.get("email_id"):
         raise LoggedOut
 
     try:
-        role = find_role(ctx.obj, project_guid)
+        role = find_role(config, project_guid)
         click.echo(role)
     except SystemExit as e:
         click.secho(str(e), fg=Colors.RED)
@@ -50,8 +52,8 @@ def whoami(ctx: click.Context, project_name: str, project_guid: str) -> None:
 
 def find_role(
     config: Configuration,
-    project_guid: str = None,
-) -> str:
+    project_guid: str | None = None,
+) -> list[str]:
     """
     Find the role of the user in the project.
 
@@ -61,58 +63,16 @@ def find_role(
     :return: Role of the user in the project
     :raises: SystemExit
     """
-    v1_client = config.new_client()
     v2_client = config.new_v2_client()
 
-    # The user email comes from the config
-    user_email = config.data.get("email_id")
-    if not user_email:
-        raise ValueError("User email cannot be found in the config.")
-
     # Default to the config values if not provided
-    if not project_guid:
+    if project_guid is None:
         project_guid = config.data.get("project_id")
 
-    if not project_guid:
-        raise ValueError("Project GUID cannot be found.")
+    user = v2_client.get_myself()
 
-    try:
-        project = v2_client.get_project(project_guid)
-    except Exception as e:
-        raise e
+    for project in user.spec.projects:
+        if project.guid == project_guid:
+            return project.role_names
 
-    role = None
-
-    # If user is present in the users list, check if they are and admin
-    for user in project.spec.get("users", []):
-        if user["emailID"] == user_email:
-            role = user["role"]
-            break
-
-    if role and role == ADMIN_ROLE:
-        return role
-
-    # Else, the membership may be via a group. Lookup the groups the user
-    # has access to and compare them with the list of groups where the project
-    # is included.
-    try:
-        user_groups = v1_client.list_usergroups(project.metadata.get("organizationGUID"))
-        user_groups = {g.name: True for g in user_groups}
-    except Exception as e:
-        raise e
-
-    for group in project.spec.get("userGroups", []):
-        if group["name"] not in user_groups:
-            continue
-
-        # If the user is part of a group that has admin access then no
-        # need to check further.
-        if role != ADMIN_ROLE and group["role"] == ADMIN_ROLE:
-            return ADMIN_ROLE
-
-        role = group["role"]
-
-    if not role:
-        raise Exception("User does not have access to the project")
-
-    return role
+    raise Exception("User does not have access to the project")

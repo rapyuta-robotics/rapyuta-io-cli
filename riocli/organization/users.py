@@ -35,25 +35,30 @@ def list_users(ctx: click.Context) -> None:
     current_user_email = config.data.get("email_id")
 
     try:
-        organization_guid = config.organization_guid
+        org_guid = config.organization_guid
         client = new_v2_client(config_inst=config)
-        organization = client.get_organization(organization_guid)
+        result = client.list_users(organization_guid=org_guid)
+        users = result.items or []
     except Exception as e:
         click.secho(
-            "{} Failed to get organization details".format(Symbols.ERROR), fg=Colors.RED
+            f"{Symbols.ERROR} Failed to get user details. Error: {e}", fg=Colors.RED
         )
         raise SystemExit(1) from e
 
-    users = organization.spec.users
-    users.sort(key=lambda u: u["emailID"])
+    users.sort(key=lambda u: u.spec.email_id)
 
     data = []
     for u in users:
         fg, bold = None, False
-        if u["emailID"] == current_user_email:
+        if u.spec.email_id == current_user_email:
             fg, bold = Colors.GREEN, True
-        full_name = "{} {}".format(u.firstName, u.lastName)
-        row = [u.guid, full_name, u.emailID, u.roleInOrganization]
+        full_name = f"{u.spec.first_name} {u.spec.last_name}"
+        row = [
+            u.metadata.guid,
+            full_name,
+            u.spec.email_id,
+            u.spec.organizations[0].role_names,
+        ]
         data.append([click.style(v, fg=fg, bold=bold) for v in row])
 
     tabulate_data(data, headers=["GUID", "Name", "EmailID", "Role"])

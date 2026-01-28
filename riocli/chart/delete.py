@@ -64,9 +64,19 @@ from riocli.constants import Colors
         "this computer"
     ),
 )
+@click.option(
+    "--workers",
+    "-w",
+    help="number of parallel workers while running delete command. defaults to 6.",
+)
 @click.argument("chart", type=str)
 def delete_chart(
-    chart: str, values: str, secrets: str, dryrun: bool = False, silent: bool = False
+    chart: str,
+    values: str,
+    secrets: str,
+    dryrun: bool = False,
+    silent: bool = False,
+    workers: int = 6,
 ) -> None:
     """Delete a chart.
 
@@ -99,10 +109,12 @@ def delete_chart(
     versions = find_chart(chart)
     if len(versions) > 1:
         click.secho(
-            "More than one charts are available, " "please specify the version!",
+            "More than one charts are available, please specify the version!",
             fg=Colors.YELLOW,
         )
 
     chart = Chart(**versions[0])
-    chart.delete_chart(values=values, secrets=secrets, dryrun=dryrun, silent=silent)
+    chart.delete_chart(
+        values=values, secrets=secrets, dryrun=dryrun, silent=silent, workers=workers
+    )
     chart.cleanup()

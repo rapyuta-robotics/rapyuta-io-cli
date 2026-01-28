@@ -1,0 +1,31 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "user-sa-test"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  description: "Boundary test service account that matches user-sa pattern"
+  roles:
+  - domain:
+      kind: Project
+      name: test-project1
+    roleNames:
+    - rio-project_viewer
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "my-user-sa-1"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  description: "Boundary test service account that should NOT match user-sa pattern"
+  roles:
+  - domain:
+      kind: Project
+      name: test-project1
+    roleNames:
+    - rio-project_viewer

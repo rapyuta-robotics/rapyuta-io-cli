@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
+
 from riocli.oauth2.create import create_oauth2_client
 from riocli.oauth2.delete import delete_oauth2_client
 from riocli.oauth2.inspect import inspect_oauth2_client
 from riocli.oauth2.list import list_oauth2_clients
 from riocli.oauth2.update import update_oauth2_client, update_oauth2_client_uri
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )
@@ -36,7 +37,7 @@ def oauth2() -> None:
 @click.group(
     "client",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

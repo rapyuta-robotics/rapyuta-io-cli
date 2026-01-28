@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
+from riocli.organization.add_user import add_user, invite_user
 from riocli.organization.inspect import inspect_organization
-
-from riocli.organization.add_user import invite_user, add_user
 from riocli.organization.list import list_organizations
 from riocli.organization.remove_user import remove_user
 from riocli.organization.select import select_organization
 from riocli.organization.users import list_users
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -56,7 +55,7 @@ def execute_command(
     exec_name: str,
     run_async: bool,
     deployment_name: str,
-    command: typing.List[str],
+    command: list[str],
 ) -> None:
     """Execute a command on a device deployment
 
@@ -115,7 +114,7 @@ def execute_command(
         if exec_name is None:
             package = client.get_package(
                 deployment.metadata.depends.nameOrGUID,
-                query={"version": deployment.metadata.depends.version},
+                version=deployment.metadata.depends.version,
             )
             executables = [e.name for e in package.spec.executables]
             if len(executables) == 1:
@@ -123,7 +122,7 @@ def execute_command(
             else:
                 exec_name = show_selection(executables, "\nSelect executable")
 
-        with Spinner(text="Executing command `{}`...".format(command)):
+        with Spinner(text=f"Executing command `{command}`..."):
             response = run_on_device(
                 user=user,
                 shell=shell,
@@ -134,7 +133,17 @@ def execute_command(
                 device_name=deployment.spec.device.depends.nameOrGUID,
                 timeout=timeout,
             )
-        click.echo(response)
+        print_response(deployment_name, response)
     except Exception as e:
         click.secho(e, fg=Colors.RED)
         raise SystemExit(1)
+
+
+def print_response(dep_name, result):
+    """
+    Display the command output executed in the container in the terminal.
+    """
+    for _, output in result.items():
+        click.secho(f">>> {dep_name}", fg=Colors.YELLOW)
+        # Replace carriage returns and null characters for better display
+        click.echo(f"{output[2:]}\n")

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -40,7 +39,7 @@ from riocli.utils.spinner import with_spinner
 )
 @with_spinner(text="Deleting device(s)...")
 def delete_device(
-    devices: typing.List,
+    devices: list,
     force: bool,
     spinner: Yaspin = None,
 ) -> None:
@@ -84,7 +83,7 @@ def delete_device(
 
     if not final:
         spinner.text = click.style(
-            f'No devices found with name(s): {", ".join(devices)}', fg=Colors.RED
+            f"No devices found with name(s): {', '.join(devices)}", fg=Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
@@ -92,7 +91,7 @@ def delete_device(
     with spinner.hidden():
         if not force:
             click.confirm(
-                f'Do you want to delete {", ".join(final.values())}?', abort=True
+                f"Do you want to delete {', '.join(final.values())}?", abort=True
             )
 
     try:

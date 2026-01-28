@@ -1,0 +1,100 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-viewer
+  labels:
+    app: cli-test
+spec:
+  description: "Role to view packages with name test-package.*"
+  rules:
+  - resource: package
+    instances:
+    - "^test-package.*"
+    actions:
+    - create
+    - get
+
+  - resource: package
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-creator
+  labels:
+    app: cli-test
+spec:
+  description: "Role to create packages with name user-package.*"
+  rules:
+  - resource: package
+    instances:
+    - "^user-package.*"
+    actions:
+    - create
+    - get
+
+  - resource: package
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-manager
+  labels:
+    app: cli-test
+spec:
+  description: "Role to fully manage packages with name managed-package.*"
+  rules:
+  - resource: package
+    instances:
+    - "^managed-package.*"
+    actions:
+    - create
+    - get
+    - delete
+
+  - resource: package
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-readonly
+  labels:
+    app: cli-test
+spec:
+  description: "Role to only view all docker packages"
+  rules:
+  - resource: package
+    instances:
+    - ".*docker.*"
+    actions:
+    - get
+
+  - resource: package
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: package-deleter
+  labels:
+    app: cli-test
+spec:
+  description: "Role to delete temp packages only"
+  rules:
+  - resource: package
+    instances:
+    - "^temp-package.*"
+    actions:
+    - delete
+    - get
+
+  - resource: package
+    actions:
+    - list

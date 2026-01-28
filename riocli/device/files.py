@@ -14,20 +14,20 @@
 from datetime import datetime, timedelta
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
-from rapyuta_io.clients import LogUploads, LogsUploadRequest, SharedURL
+from click_help_colors import HelpColorsCommand
+from rapyuta_io.clients import LogsUploadRequest, LogUploads, SharedURL
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid, name_to_request_id
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 from riocli.utils.spinner import with_spinner
 
 
 @click.group(
     "uploads",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.RED,
 )
@@ -142,9 +142,7 @@ def create_upload(
         spinner.text = click.style("File upload requested successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to request upload: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to request upload: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -198,7 +196,7 @@ def delete_upload(
         spinner.text = click.style("Deleted upload successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to delete upload: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to delete upload: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -306,9 +304,7 @@ def shared_url(
         spinner.text = click.style(public_url.url, fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create shared URL: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create shared URL: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

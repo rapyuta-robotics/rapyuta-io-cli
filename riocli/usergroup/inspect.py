@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients import UserGroup
 
-from riocli.config import new_client
+from riocli.config import get_config_from_context
 from riocli.constants import Colors
-from riocli.usergroup.util import name_to_guid
+from riocli.usergroup.util import UserGroupNotFound
 from riocli.utils import inspect_with_format
 
 
@@ -38,9 +35,10 @@ from riocli.utils import inspect_with_format
 )
 @click.argument("group-name")
 @click.pass_context
-@name_to_guid
 def inspect_usergroup(
-    ctx: click.Context, format_type: str, group_name: str, group_guid: str, spinner=None
+    ctx: click.Context,
+    format_type: str,
+    group_name: str,
 ) -> None:
     """Print the details of a usergroup
 
@@ -48,42 +46,19 @@ def inspect_usergroup(
     The supported formats are ``json`` and ``yaml``. Default is ``yaml``.
     """
     try:
-        client = new_client()
-        org_guid = ctx.obj.data.get("organization_id")
-        usergroup = client.get_usergroup(org_guid, group_guid)
-        inspect_with_format(to_manifest(usergroup, org_guid), format_type)
+        config = get_config_from_context(ctx)
+        client = config.new_v2_client(with_project=False)
+        usergroup_list = client.list_user_groups(name=group_name)
+        if len(usergroup_list.items) == 0:
+            raise UserGroupNotFound
+
+        usergroup = client.get_user_group(
+            group_name=usergroup_list.items[0].metadata.name,
+            group_guid=usergroup_list.items[0].metadata.guid,
+        )
+        inspect_with_format(
+            usergroup.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
-
-
-def to_manifest(usergroup: UserGroup, org_guid: str) -> typing.Dict:
-    """
-    Transform a usergroup resource to a rio apply manifest construct
-    """
-    role_map = {
-        i["projectGUID"]: i["groupRole"] for i in (usergroup.role_in_projects or [])
-    }
-    members = {m.email_id for m in usergroup.members}
-    admins = {a.email_id for a in usergroup.admins}
-    projects = [
-        {"name": p.name, "role": role_map.get(p.guid)}
-        for p in (usergroup.projects or [])
-        if p.guid in role_map
-    ]
-
-    return {
-        "apiVersion": "api.rapyuta.io/v2",
-        "kind": "UserGroup",
-        "metadata": {
-            "name": usergroup.name,
-            "creator": usergroup.creator,
-            "organization": org_guid,
-        },
-        "spec": {
-            "description": usergroup.description,
-            "members": [{"emailID": m} for m in list(members - admins)],
-            "admins": [{"emailID": a} for a in list(admins)],
-            "projects": projects,
-        },
-    }

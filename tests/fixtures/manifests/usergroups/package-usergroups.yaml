@@ -1,0 +1,64 @@
+---
+apiVersion: api.rapyuta.io/v2
+kind: UserGroup
+metadata:
+  name: test-package-viewers
+  labels:
+    app: test
+    purpose: rbac-testing
+spec:
+  description: "Test usergroup for package viewer permissions"
+  members:
+  - subject:
+      kind: User
+      name: cli.test1@rapyuta-robotics.com
+    roleNames: [ rio-group_viewer ]
+  - subject:
+      kind: User
+      name: cli.test2@rapyuta-robotics.com
+    roleNames: [ rio-group_viewer ]
+  roles:
+  - domain:
+      kind: Project
+      name: "test-project1"
+    roleName: rio-project_viewer
+---
+apiVersion: api.rapyuta.io/v2
+kind: UserGroup
+metadata:
+  name: test-package-managers
+  labels:
+    app: test
+    purpose: rbac-testing
+spec:
+  description: "Test usergroup for package manager permissions"
+  members:
+  - subject:
+      kind: User
+      name: cli.test1@rapyuta-robotics.com
+    roleNames: [ rio-group_admin ]
+  roles:
+  - domain:
+      kind: Project
+      name: "test-project1"
+    roleName: rio-project_admin
+---
+apiVersion: api.rapyuta.io/v2
+kind: UserGroup
+metadata:
+  name: test-package-creators
+  labels:
+    app: test
+    purpose: rbac-testing
+spec:
+  description: "Test usergroup for package creator permissions"
+  members:
+  - subject:
+      kind: User
+      name: cli.test2@rapyuta-robotics.com
+    roleNames: [ rio-group_viewer ]
+  roles:
+  - domain:
+      kind: Project
+      name: "test-project1"
+    roleName: rio-org_member

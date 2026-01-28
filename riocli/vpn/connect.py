@@ -26,11 +26,11 @@ from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import (
     create_binding,
     get_binding_labels,
+    install_vpn_tools,
     is_tailscale_up,
+    is_vpn_enabled_in_project,
     priviledged_command,
     stop_tailscale,
-    install_vpn_tools,
-    is_vpn_enabled_in_project,
     update_hosts_file,
 )
 
@@ -87,9 +87,9 @@ def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin
         if not is_vpn_enabled_in_project(client, config.project_guid):
             spinner.write(
                 click.style(
-                    "{} VPN is not enabled in the project. "
+                    f"{Symbols.WAITING} VPN is not enabled in the project. "
                     "Please ask the organization or project "
-                    "creator to enable VPN".format(Symbols.WAITING),
+                    "creator to enable VPN",
                     fg=Colors.YELLOW,
                 )
             )
@@ -99,9 +99,9 @@ def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin
             if is_tailscale_up():
                 if not force:
                     click.confirm(
-                        "{} The VPN client is already running. "
+                        f"{Symbols.WARNING} The VPN client is already running. "
                         "Do you want to stop it and connect to the VPN of "
-                        "the current project?".format(Symbols.WARNING),
+                        "the current project?",
                         default=False,
                         abort=True,
                     )
@@ -109,9 +109,9 @@ def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin
                 success = stop_tailscale()
                 if not success:
                     msg = (
-                        "{} Failed to stop tailscale. Please run the "
+                        f"{Symbols.ERROR} Failed to stop tailscale. Please run the "
                         "following commands manually\n sudo tailscale down\n "
-                        "sudo tailscale logout".format(Symbols.ERROR)
+                        "sudo tailscale logout"
                     )
                     click.secho(msg, fg=Colors.YELLOW)
                     raise SystemExit(1)
@@ -127,7 +127,7 @@ def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin
 
         if not start_tailscale(ctx, spinner):
             click.secho(
-                "{} Failed to connect to the project VPN".format(Symbols.ERROR),
+                f"{Symbols.ERROR} Failed to connect to the project VPN",
                 fg=Colors.RED,
             )
             raise SystemExit(1)
@@ -165,7 +165,9 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
         ctx, delta=timedelta(minutes=10), labels=get_binding_labels()
     )
     cmd = _TAILSCALE_CMD_FORMAT.format(
-        binding.HEADSCALE_PRE_AUTH_KEY, binding.HEADSCALE_URL, binding.HEADSCALE_ACL_TAG
+        binding["HEADSCALE_PRE_AUTH_KEY"],
+        binding["HEADSCALE_URL"],
+        binding["HEADSCALE_ACL_TAG"],
     )
     cmd = priviledged_command(cmd)
 
@@ -174,9 +176,7 @@ def start_tailscale(ctx: click.Context, spinner: Yaspin) -> bool:
 
     if code != 0:
         spinner.write(
-            click.style(
-                "{} Failed to start vpn client".format(Symbols.ERROR), fg=Colors.RED
-            )
+            click.style(f"{Symbols.ERROR} Failed to start vpn client", fg=Colors.RED)
         )
         return False
 

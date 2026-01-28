@@ -1,83 +1,45 @@
-# Copyright 2024 Rapyuta Robotics
+# copyright 2025 rapyuta robotics
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# licensed under the apache license, version 2.0 (the "license");
+# you may not use this file except in compliance with the license.
+# you may obtain a copy of the license at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/license-2.0
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-import typing
+# unless required by applicable law or agreed to in writing, software
+# distributed under the license is distributed on an "as is" basis,
+# without warranties or conditions of any kind, either express or implied.
+# see the license for the specific language governing permissions and
+# limitations under the license.
 
-from munch import unmunchify
+from munch import Munch
+from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Package as PackageModel
+from typing_extensions import override
 
-from riocli.config import new_v2_client
-from riocli.constants import ApplyResult
-from riocli.exceptions import ResourceNotFound
 from riocli.model import Model
-from riocli.package.enum import RestartPolicy
-from riocli.v2client.error import HttpAlreadyExistsError, HttpNotFoundError
 
 
 class Package(Model):
-    RESTART_POLICY = {
-        "always": RestartPolicy.Always,
-        "never": RestartPolicy.Never,
-        "onfailure": RestartPolicy.OnFailure,
-    }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self._obj = PackageModel.model_validate(self)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
-        client = new_v2_client()
+    @override
+    def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
+        return v2_client.create_package(body=self._obj)  # pyright:ignore[reportArgumentType]
 
-        package = self._sanitize_package()
+    @override
+    def update_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
-        try:
-            client.create_package(package)
-            return ApplyResult.CREATED
-        except HttpAlreadyExistsError:
-            return ApplyResult.EXISTS
+    @override
+    def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
+        _ = v2_client.delete_package(
+            self._obj.metadata.name, version=self._obj.metadata.version
+        )
 
-    def delete(self, *args, **kwargs) -> None:
-        client = new_v2_client()
-
-        try:
-            client.delete_package(
-                self.metadata.name, query={"version": self.metadata.version}
-            )
-        except HttpNotFoundError:
-            raise ResourceNotFound
-
-    def _sanitize_package(self) -> typing.Dict:
-        # Unset createdAt and updatedAt to avoid timestamp parsing issue.
-        self.metadata.createdAt = None
-        self.metadata.updatedAt = None
-
-        self._sanitize_command()
-
-        return unmunchify(self)
-
-    def _sanitize_command(self):
-        for e in self.spec.executables:
-            # Skip if command is not set.
-            if e.get("command") is None:
-                continue
-
-            c = []
-
-            if e.get("runAsBash"):
-                c = ["/bin/bash", "-c"]
-
-            if isinstance(e.command, list):
-                c.extend(e.command)
-            else:
-                c.append(e.command)
-
-            e.command = c
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        return self._obj.list_dependencies()

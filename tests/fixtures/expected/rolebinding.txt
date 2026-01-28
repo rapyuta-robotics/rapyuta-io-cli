@@ -1,0 +1,17 @@
+digraph {
+	graph [overlap=False rankdir=LR]
+	node [shape=box]
+	"rolebinding/project-role"
+	"role/role-name" -> "rolebinding/project-role"
+	"user/qa.rapyuta+e2e@gmail.com" -> "rolebinding/project-role"
+	"project/project01" -> "rolebinding/project-role"
+	"rolebinding/group-role"
+	"role/role-name" -> "rolebinding/group-role"
+	"serviceaccount/deployer" -> "rolebinding/group-role"
+	"usergroup/usergroup" -> "rolebinding/group-role"
+	"rolebinding/org-role"
+	"role/role-name" -> "rolebinding/org-role"
+	"serviceaccount/deployer" -> "rolebinding/org-role"
+	"organization/warehouse" -> "rolebinding/org-role"
+}
+

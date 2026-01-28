@@ -11,23 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Iterable
+from collections.abc import Iterable
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
+from click_help_colors import HelpColorsCommand
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 from riocli.utils.spinner import with_spinner
 from riocli.vpn.util import create_binding, get_binding_labels
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
@@ -96,11 +96,11 @@ def register_machine(
             labels=labels,
         )
         spinner.text = click.style(
-            "Machine {} registered successfully.".format(name), fg=Colors.GREEN
+            f"Machine {name} registered successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to register: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to register: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -119,11 +119,11 @@ def deregister_machine(name: str, spinner: Yaspin) -> None:
         client = new_v2_client()
         client.delete_instance_binding("rio-internal-headscale", name)
         spinner.text = click.style(
-            "Machine {} de-registered successfully.".format(name), fg=Colors.GREEN
+            f"Machine {name} de-registered successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to de-register: {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to de-register: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -144,7 +144,7 @@ def sanitize_node_key(node_key: str) -> str:
     if node_key.startswith("nodekey:"):
         return node_key
 
-    return "nodekey:{}".format(node_key)
+    return f"nodekey:{node_key}"
 
 
 machines.add_command(register_machine)

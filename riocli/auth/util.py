@@ -13,7 +13,6 @@
 # limitations under the License.
 import json
 import os
-from typing import Optional, Tuple
 
 import click
 from munch import munchify
@@ -21,14 +20,14 @@ from rapyuta_io import Client
 from rapyuta_io.clients.rip_client import AuthTokenLevel
 from rapyuta_io.utils import UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
+from rapyuta_io_sdk_v2 import Client as v2Client
+from rapyuta_io_sdk_v2.utils import handle_server_errors, walk_pages
 
 from riocli.config import Configuration
 from riocli.constants import Colors, Symbols
+from riocli.exceptions import OrganizationNotFound, ProjectNotFound
 from riocli.utils.selector import show_selection
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client as v2Client
-from riocli.v2client.util import handle_server_errors
-from riocli.exceptions import ProjectNotFound, OrganizationNotFound
 
 TOKEN_LEVELS = {0: AuthTokenLevel.LOW, 1: AuthTokenLevel.MED, 2: AuthTokenLevel.HIGH}
 
@@ -60,7 +59,7 @@ def select_organization(
         return org_guid
 
     # fetch user organizations and sort them on their name
-    user = client.get_user()
+    user = client.get_myself()
     organizations = sorted(user.spec.organizations, key=lambda org: org.name.lower())
 
     if len(organizations) == 0:
@@ -73,7 +72,7 @@ def select_organization(
 
     for o in organizations:
         org_map[o.guid] = o.name
-        org_short_guids[o.guid] = o.shortGUID
+        org_short_guids[o.guid] = o.short_guid
 
     if not org_guid:
         org_guid = show_selection(org_map, "Select an organization:")
@@ -109,7 +108,10 @@ def select_project(
             else find_project_guid(client, project, organization=organization)
         )
 
-    projects = client.list_projects(organization_guid=organization)
+    # Fetch all projects in the organization using walk_pages
+    projects = []
+    for page in walk_pages(client.list_projects, organizations=[organization], limit=100):
+        projects.extend(page)
     if len(projects) == 0:
         config.data["project_id"] = ""
         config.data["project_name"] = ""
@@ -186,7 +188,7 @@ def api_refresh_token(
     config = Configuration()
     client = config.new_client(with_project=False)
     rip_host = client._get_api_endpoints("rip_host")
-    url = "{}/refreshtoken".format(rip_host)
+    url = f"{rip_host}/refreshtoken"
 
     response = RestClient(url).method(HttpMethod.POST).execute(payload={"token": token})
     handle_server_errors(response)
@@ -201,21 +203,26 @@ def api_refresh_token(
 
 
 @with_spinner(text="Validating token...")
-def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool:
+def validate_and_set_token(
+    ctx: click.Context,
+    config: Configuration,
+    interactive: bool,
+    spinner=None,
+) -> bool:
     """Validates an auth token."""
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
-    client = Client(auth_token=token)
+    v2_client = config.new_v2_client(with_project=False, from_file=False)
 
     try:
-        user = client.get_authenticated_user()
+        user = v2_client.get_myself()
         spinner.text = click.style(
-            "Token belongs to user {}".format(user.email_id), fg=Colors.CYAN
+            f"Token belongs to user {user.spec.email_id}", fg=Colors.CYAN
         )
         # Save the token and user email_id in the context
-        ctx.obj.data["auth_token"] = token
-        ctx.obj.data["email_id"] = user.email_id
+        ctx.obj.data["auth_token"] = config.data["auth_token"]
+        ctx.obj.data["email_id"] = user.spec.email_id
         spinner.ok(Symbols.INFO)
         return True
     except UnauthorizedError:
@@ -227,36 +234,36 @@ def validate_and_set_token(ctx: click.Context, token: str, spinner=None) -> bool
         spinner.red.fail(Symbols.ERROR)
         return False
 
+
 def find_project_guid(
-    client: v2Client, name: str, organization: Optional[str] = None
+    client: v2Client, name: str, organization: str | None = None
 ) -> str:
     projects = client.list_projects(
-        query={"name": name},
-        organization_guid=organization,
+        name=name,
+        organizations=[organization],
     )
 
-    if projects and projects[0].metadata.name == name:
-        return projects[0].metadata.guid
+    if projects.items and projects.items[0].metadata.name == name:
+        return projects.items[0].metadata.guid
 
     raise ProjectNotFound()
 
 
-def find_organization_guid(client: Client, name: str) -> Tuple[str, str]:
-    user = client.get_user()
+def find_organization_guid(client: v2Client, name: str) -> tuple[str, str]:
+    user = client.get_myself()
 
     for organization in user.spec.organizations:
         if organization.name == name:
-            return organization.guid, organization.shortGUID
+            return organization.guid, organization.short_guid
 
-    raise OrganizationNotFound("User is not part of organization: {}".format(name))
+    raise OrganizationNotFound(f"User is not part of organization: {name}")
 
 
-def get_organization_name(client: Client, guid: str) -> Tuple[str, str]:
-    user = client.get_user()
+def get_organization_name(client: v2Client, guid: str) -> tuple[str, str]:
+    user = client.get_myself()
 
     for organization in user.spec.organizations:
         if organization.guid == guid:
-            return organization.name, organization.shortGUID
+            return organization.name, organization.short_guid
 
-    raise OrganizationNotFound("User is not part of organization: {}".format(guid))
-
+    raise OrganizationNotFound(f"User is not part of organization: {guid}")

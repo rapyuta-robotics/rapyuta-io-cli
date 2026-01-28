@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Any
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -206,7 +206,7 @@ from riocli.utils.spinner import with_spinner
 )
 @click.pass_context
 @with_spinner(text="Creating OAuth2 Client...")
-def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: Dict[str, Any]):
+def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: dict[str, Any]):
     params = sanitize_parameters(params)
 
     try:
@@ -218,8 +218,6 @@ def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: Dict[str
         spinner.text = click.style("OAuth2 Client created successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create OAuth2 Client: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create OAuth2 Client: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

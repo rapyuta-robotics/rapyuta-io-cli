@@ -16,14 +16,17 @@ from __future__ import annotations
 import http
 import json
 import time
+from typing import TYPE_CHECKING
 
-import requests
 from munch import Munch, munchify
 from rapyuta_io.utils import ConflictError, RetriesExhausted, UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 
 from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
+
+if TYPE_CHECKING:
+    import requests
 
 
 def handle_server_errors(response: requests.Response):
@@ -58,7 +61,7 @@ def handle_server_errors(response: requests.Response):
         raise Exception("unknown server error")
 
 
-class Client(object):
+class Client:
     """
     HWILv3 API Client
     """
@@ -126,7 +129,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -147,7 +150,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -174,7 +177,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -187,7 +190,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 
@@ -205,7 +208,7 @@ class Client(object):
 
             data = json.loads(response.text)
             if not response.ok:
-                raise Exception("hwil: {}".format(response.text))
+                raise Exception(f"hwil: {response.text}")
 
             device = munchify(data)
             if device.status != "IDLE":
@@ -232,7 +235,7 @@ class Client(object):
 
         data = json.loads(response.text)
         if not response.ok:
-            raise Exception("hwil: {}".format(response.text))
+            raise Exception(f"hwil: {response.text}")
 
         return munchify(data)
 

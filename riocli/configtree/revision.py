@@ -16,40 +16,45 @@ from __future__ import annotations
 import json
 import os
 from base64 import b64encode
+from datetime import date, datetime
 from hashlib import md5
-from typing import Optional, Type, Any
+from typing import TYPE_CHECKING, Any
 
 import click
-from click_help_colors import HelpColorsCommand, HelpColorsGroup
-from yaspin.core import Yaspin
+import magic
+from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
 from riocli.configtree.util import (
-    MILESTONE_LABEL_KEY,
     display_config_tree_keys,
     get_revision_from_state,
     save_revision,
 )
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
+from riocli.utils import AliasedGroup
 from riocli.utils.spinner import with_spinner
 from riocli.utils.state import StateFile
-from riocli.v2client import Client
+
+if TYPE_CHECKING:
+    from rapyuta_io_sdk_v2 import Client
+    from yaspin.core import Yaspin
 
 
-class Revision(object):
+class Revision:
     _DEFAULT_COMMIT_MSG = "imported through rio-cli"
 
     def __init__(
         self,
         tree_name: str,
         client: Client,
-        rev_id: Optional[str] = None,
-        milestone: Optional[str] = None,
+        rev_id: str | None = None,
+        milestone: str | None = None,
         commit: bool = False,
         force_new: bool = False,
-        spinner: Optional[Yaspin] = None,
+        spinner: Yaspin | None = None,
         with_org: bool = True,
     ):
         self._tree_name = tree_name
@@ -63,6 +68,7 @@ class Revision(object):
         self._data = {}
         self._org_guid = self._config.organization_guid
         self._project_guid = None
+        self._with_org = with_org
         if not with_org:
             self._project_guid = self._config.project_guid
 
@@ -71,18 +77,18 @@ class Revision(object):
         if rev_id is not None:
             self._rev_id = rev_id
             self._explicit = True
-            msg = "{} Using revision {}.".format(Symbols.INFO, self._rev_id)
+            msg = f"{Symbols.INFO} Using revision {self._rev_id}."
         elif not force_new and rev and not rev.committed:
             self._rev_id = rev.rev_id
-            msg = "{}  Re-using revision {}.".format(Symbols.INFO, self._rev_id)
+            msg = f"{Symbols.INFO}  Re-using revision {self._rev_id}."
         else:
-            self._rev = self._client.initialize_config_tree_revision(
-                tree_name=self._tree_name
+            self._rev = munchify(
+                self._client.create_revision(
+                    name=self._tree_name, with_project=(not self._with_org)
+                )
             )
             self._rev_id = self._rev.metadata.guid
-            msg = "{} Revision {} created successfully.".format(
-                Symbols.SUCCESS, self._rev_id
-            )
+            msg = f"{Symbols.SUCCESS} Revision {self._rev_id} created successfully."
             save_revision(
                 org_guid=self._org_guid,
                 project_guid=self._project_guid,
@@ -102,11 +108,17 @@ class Revision(object):
         key: str,
         value: str,
         perms: int = 644,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         # Fix: Ensure non-string values are serialized to JSON
         if not isinstance(value, str):
-            value = json.dumps(value, ensure_ascii=False)
+            value = json.dumps(
+                value,
+                ensure_ascii=False,
+                default=lambda o: o.isoformat()
+                if isinstance(o, (datetime, date))  # noqa: UP038
+                else str(o),
+            )
         str_val = str(value)
         enc_val = str_val.encode("utf-8")
 
@@ -123,41 +135,48 @@ class Revision(object):
 
         self._data[key] = data
 
-    def store_file(self: Revision, key: str, file_path: str) -> None:
-        self._client.store_file_in_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, key=key, file_path=file_path
-        )
+    def store_file(
+        self: Revision,
+        key: str,
+        file_path: str,
+    ) -> None:
+        content_type = magic.from_file(file_path, mime=True)
+        with open(file_path, "rb") as f:
+            file_hash = md5()
+            chunk = f.read(8192)
+            while chunk:
+                file_hash.update(chunk)
+                chunk = f.read(8192)
+            f.seek(0)
+            x_checksum = file_hash.hexdigest()
+            self._client.put_key_in_revision(
+                tree_name=self._tree_name,
+                revision_id=self._rev_id,
+                key=key,
+                project_guid=self._project_guid,
+                x_checksum=x_checksum,
+                content_type=content_type,
+                body=f,
+            )
 
     def delete(self: Revision, key: str) -> None:
         self._client.delete_key_in_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, key=key
+            tree_name=self._tree_name, revision_id=self._rev_id, key=key
         )
 
-    def commit(
-        self: Revision, msg: Optional[str] = None, author: Optional[str] = None
-    ) -> None:
+    def commit(self: Revision, msg: str | None = None, author: str | None = None) -> None:
         if msg is None:
             msg = self._DEFAULT_COMMIT_MSG
 
         if author is None:
             author = self._get_author()
 
-        payload: dict[str, Any] = {
-            "kind": "ConfigTreeRevision",
-            "apiVersion": "api.rapyuta.io/v2",
-            "message": msg,
-            "author": author,
-        }
-
-        if self._milestone is not None:
-            payload["metadata"] = {
-                "labels": {
-                    MILESTONE_LABEL_KEY: self._milestone,
-                }
-            }
-
-        self._client.commit_config_tree_revision(
-            tree_name=self._tree_name, rev_id=self._rev_id, payload=payload
+        self._client.commit_revision(
+            tree_name=self._tree_name,
+            revision_id=self._rev_id,
+            message=msg,
+            author=author,
+            with_project=(not self._with_org),
         )
         if not self._explicit:
             save_revision(
@@ -171,7 +190,7 @@ class Revision(object):
         if self._spinner:
             self._spinner.write(
                 click.style(
-                    "{} Revision {} committed.".format(Symbols.SUCCESS, self._rev_id),
+                    f"{Symbols.SUCCESS} Revision {self._rev_id} committed.",
                     fg=Colors.CYAN,
                 )
             )
@@ -179,13 +198,16 @@ class Revision(object):
     def __enter__(self: Revision) -> Revision:
         return self
 
-    def __exit__(self: Revision, typ: Type, val: Any, _: Any) -> None:
+    def __exit__(self: Revision, typ: type, val: Any, _: Any) -> None:
         if typ:
             raise val
 
         if self._data:
-            self._client.store_keys_in_revision(
-                tree_name=self._tree_name, rev_id=self._rev_id, payload=self._data
+            self._client.put_keys_in_revision(
+                name=self._tree_name,
+                revision_id=self._rev_id,
+                config_values=self._data,
+                with_project=(not self._with_org),
             )
 
         if self._commit and self._rev_id:
@@ -202,7 +224,7 @@ class Revision(object):
 @click.group(
     name="revision",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
@@ -254,10 +276,8 @@ def init_revision(
 
     if not force and rev is not None and not rev.committed:
         spinner.text = click.style(
-            "Revision {} is already present. Subsequent commands will re-use it. \n"
-            "If you want to force create a new revision use the --force flag.".format(
-                rev.rev_id
-            ),
+            f"Revision {rev.rev_id} is already present. Subsequent commands will re-use it. \n"
+            "If you want to force create a new revision use the --force flag.",
             fg=Colors.CYAN,
         )
         spinner.green.ok(Symbols.INFO)
@@ -274,7 +294,7 @@ def init_revision(
         )
     except Exception as e:
         spinner.text = click.style(
-            "Failed to initialize Config tree revision: {}".format(e), Colors.RED
+            f"Failed to initialize Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -310,7 +330,7 @@ def commit_revision(
     tree_name: str,
     rev_id: str,
     message: str,
-    milestone: Optional[str],
+    milestone: str | None,
     with_org: bool,
     spinner: Yaspin,
 ) -> None:
@@ -351,7 +371,7 @@ def commit_revision(
         rev.commit(msg=message)
     except Exception as e:
         spinner.text = click.style(
-            "Failed to commit Config tree revision: {}".format(e), Colors.RED
+            f"Failed to commit Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -414,10 +434,10 @@ def put_key_in_revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.store(key=key, value=value)
-            spinner.write(click.style("\t{} Key {} added.".format(Symbols.SUCCESS, key)))
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} Key {key} added."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to put key in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to put key in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -475,15 +495,15 @@ def put_file_in_revision(
         raise SystemExit(1)
 
     try:
-        client = new_v2_client(with_project=(not with_org))
+        client = new_v2_client(config_inst=config, with_project=(not with_org))
         with Revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.store_file(key=key, file_path=file_path)
-            spinner.write(click.style("\t{} File {} added.".format(Symbols.SUCCESS, key)))
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} File {key} added."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to put-file in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to put-file in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -543,12 +563,10 @@ def delete_key_in_revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
             rev.delete(key=key)
-            spinner.write(
-                click.style("\t{} Key {} removed.".format(Symbols.SUCCESS, key))
-            )
+            spinner.write(click.style(f"\t{Symbols.SUCCESS} Key {key} removed."))
     except Exception as e:
         spinner.text = click.style(
-            "Failed to delete key in Config tree revision: {}".format(e), Colors.RED
+            f"Failed to delete key in Config tree revision: {e}", Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -574,7 +592,7 @@ def delete_key_in_revision(
 def list_revision_keys(
     ctx: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
 ) -> None:
     """
@@ -605,7 +623,9 @@ def list_revision_keys(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(tree_name=tree_name, rev_id=rev_id)
+        tree = client.get_configtree(
+            name=tree_name, revision=rev_id, with_project=(not with_org)
+        )
 
         keys = tree.get("keys")
         if not isinstance(keys, dict):

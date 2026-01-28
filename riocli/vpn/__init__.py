@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
+from riocli.utils import AliasedGroup
 from riocli.vpn.connect import connect
 from riocli.vpn.disconnect import disconnect
 from riocli.vpn.flush import flush
@@ -24,7 +24,7 @@ from riocli.vpn.status import status
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

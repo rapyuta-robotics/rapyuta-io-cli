@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-from typing import List
 
 import click
 import munch
@@ -38,7 +36,7 @@ from riocli.utils import tabulate_data
     default=(),
     help="Filter the deployment list by labels",
 )
-def list_static_routes(labels: typing.List[str]) -> None:
+def list_static_routes(labels: list[str]) -> None:
     """List the static routes in the current project.
 
     You can filter the list by providing labels using
@@ -52,15 +50,15 @@ def list_static_routes(labels: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        routes = client.list_static_routes(query={"labelSelector": labels})
-        _display_routes_list(routes)
+        routes = client.list_staticroutes(label_selector=labels)
+        _display_routes_list(routes.items)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
 
-def _display_routes_list(routes: List[munch.Munch]) -> None:
-    headers = ["Route ID", "Name", "URL", "Creator", "CreatedAt"]
+def _display_routes_list(routes: list[munch.Munch]) -> None:
+    headers = ["ID", "Name", "URL"]
 
     data = []
     for route in routes:
@@ -68,9 +66,7 @@ def _display_routes_list(routes: List[munch.Munch]) -> None:
             [
                 route.metadata.guid,
                 route.metadata.name,
-                route.spec.url,
-                route.metadata.creatorGUID,
-                route.metadata.createdAt,
+                f"https://{route.spec.url}",
             ]
         )
 

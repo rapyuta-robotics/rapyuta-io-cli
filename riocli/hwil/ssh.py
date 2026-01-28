@@ -41,7 +41,7 @@ def ssh(device_name: str, device_id: str, spinner=None) -> None:
     try:
         device = new_hwil_client().get_device(device_id)
 
-        if not device.get("static_ip"):
+        if not device.get("ip_address"):
             click.secho(
                 f"{Symbols.ERROR} Device does not have a static IP address",
                 fg=Colors.RED,
@@ -52,7 +52,7 @@ def ssh(device_name: str, device_id: str, spinner=None) -> None:
             f"{Symbols.INFO} Enter this password when prompted: {device.password}",
             fg=Colors.BRIGHT_CYAN,
         )
-        os.system(f'ssh {device.username}@{device["static_ip"]}')
+        os.system(f"ssh {device.username}@{device['ip_address']}")
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

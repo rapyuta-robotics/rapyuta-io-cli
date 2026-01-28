@@ -16,6 +16,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -24,7 +25,6 @@ from riocli.deployment.util import fetch_deployments, print_deployments_for_conf
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(
@@ -99,9 +99,7 @@ def delete_deployment(
     try:
         deployments = fetch_deployments(client, deployment_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -131,9 +129,7 @@ def delete_deployment(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -150,12 +146,10 @@ def delete_deployment(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Deployment(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Deployment(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

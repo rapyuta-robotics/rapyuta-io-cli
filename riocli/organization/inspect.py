@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
 
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.constants import Colors
@@ -56,28 +54,30 @@ def inspect_organization(
         config = get_config_from_context(ctx)
         client = new_v2_client(config_inst=config)
         organization = client.get_organization(organization_guid)
-        inspect_with_format(unmunchify(organization), format_type)
+        inspect_with_format(
+            organization.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
 
 
-def make_organization_inspectable(organization: typing.Dict) -> typing.Dict:
+def make_organization_inspectable(organization: dict) -> dict:
     creator = None
-    for user in organization["users"]:
-        if user["guid"] == organization["creator"]:
-            creator = user["emailID"]
+    for user in organization.users:
+        if user.guid == organization.creator:
+            creator = user.emailID
             break
 
     return {
-        "name": organization["name"],
-        "created_at": organization["CreatedAt"],
-        "updated_at": organization["UpdatedAt"],
-        "guid": organization["guid"],
-        "url": organization["url"],
+        "name": organization.name,
+        "created_at": organization.CreatedAt,
+        "updated_at": organization.UpdatedAt,
+        "guid": organization.guid,
+        "url": organization.url,
         "creator": creator,
-        "short_guid": organization["shortGUID"],
-        "state": organization["state"],
-        "users": len(organization["users"]),
-        "country": organization["country"]["code"],
+        "short_guid": organization.shortGUID,
+        "state": organization.state,
+        "users": len(organization.users),
+        "country": organization.country.code,
     }

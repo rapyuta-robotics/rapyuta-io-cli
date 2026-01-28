@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
@@ -27,7 +28,7 @@ from riocli.configtree.util import (
     fetch_tree_keys,
     get_revision_from_state,
 )
-from riocli.constants import Symbols, Colors
+from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
 
@@ -69,16 +70,16 @@ def create_config_tree(
                 "name": tree_name,
             },
         }
-        config_tree = client.create_config_tree(payload)
+        config_tree = munchify(
+            client.create_configtree(body=payload, with_project=(not with_org))
+        )
         spinner.text = click.style(
-            "Config tree {} created successfully.".format(config_tree.metadata.name),
+            f"Config tree {config_tree.metadata.name} created successfully.",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to create Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to create Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -112,13 +113,11 @@ def delete_config_tree(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        client.delete_config_tree(tree_name)
+        client.delete_configtree(tree_name)
         spinner.text = click.style("Config tree deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to delete Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to delete Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -162,7 +161,9 @@ def clone_tree(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        tree = client.get_config_tree(tree_name=tree_name)
+        tree = munchify(
+            client.get_configtree(name=tree_name, with_project=(not with_org))
+        )
         head = tree.get("head")
 
         if head is not None:
@@ -178,16 +179,14 @@ def clone_tree(
         # We always clone into the current project.
         # Thus, we recreate the client with_project=True.
         client = new_v2_client(with_project=True)
-        config_tree = client.create_config_tree(payload)
+        config_tree = munchify(client.create_configtree(body=payload))
         spinner.text = click.style(
-            "Config tree {} cloned successfully.".format(config_tree.metadata.name),
+            f"Config tree {config_tree.metadata.name} cloned successfully.",
             fg=Colors.GREEN,
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to clone Config tree: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to clone Config tree: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -213,7 +212,7 @@ def clone_tree(
 def set_tree_revision(
     ctx: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
     spinner: Yaspin,
 ) -> None:
@@ -258,15 +257,15 @@ def set_tree_revision(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        client.set_revision_config_tree(tree_name, payload)
+        client.set_configtree_revision(
+            name=tree_name, configtree=payload, with_project=(not with_org)
+        )
         spinner.text = click.style(
             "Config tree head updated successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update config-tree Head: {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update config-tree Head: {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -296,7 +295,8 @@ def list_config_trees(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        trees = client.list_config_trees()
+        result = client.list_configtrees(with_project=(not with_org))
+        trees = munchify(result.get("items", []))
         if not isinstance(trees, Iterable):
             raise Exception("List items are not iterable")
 
@@ -326,7 +326,7 @@ def list_config_trees(
 def list_config_tree_keys(
     _: click.Context,
     tree_name: str,
-    rev_id: Optional[str],
+    rev_id: str | None,
     with_org: bool,
 ) -> None:
     """
@@ -368,7 +368,8 @@ def list_tree_revisions(
     """
     try:
         client = new_v2_client(with_project=(not with_org))
-        revisions = client.list_config_tree_revisions(tree_name=tree_name)
+        result = client.list_revisions(tree_name=tree_name, with_project=(not with_org))
+        revisions = munchify(result.get("items", []))
         if not isinstance(revisions, Iterable):
             raise Exception("List items are not iterable")
 

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -22,9 +21,10 @@ if sys.stdout.isatty():
     from yaspin import kbi_safe_yaspin as Spinner
 else:
     from riocli.utils.spinner import DummySpinner as Spinner
+from riocli.apply.util import print_context
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.parameter.utils import filter_trees, display_trees
+from riocli.parameter.utils import display_trees, filter_trees
 
 
 @click.command(
@@ -57,9 +57,11 @@ from riocli.parameter.utils import filter_trees, display_trees
     help="Skip confirmation",
 )
 @click.argument("path", type=click.Path(exists=True))
+@click.pass_context
 def upload_configurations(
+    ctx: click.Context,
     path: str,
-    tree_names: typing.Tuple[str] = None,
+    tree_names: tuple[str] = None,
     delete_existing: bool = False,
     silent: bool = False,
 ) -> None:
@@ -95,12 +97,12 @@ def upload_configurations(
     try:
         trees = filter_trees(path, tree_names)
     except Exception as e:
-        click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
+        click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
         raise SystemExit(1)
 
     if not trees:
         click.secho(
-            "{} No configuration trees to upload.".format(Symbols.INFO),
+            f"{Symbols.INFO} No configuration trees to upload.",
             fg=Colors.BRIGHT_CYAN,
         )
         return
@@ -108,6 +110,8 @@ def upload_configurations(
     click.secho("Following configuration trees will be uploaded")
     click.secho()
     display_trees(path, trees)
+
+    print_context(ctx=ctx)
 
     if not silent:
         click.confirm("Do you want to proceed?", default=True, abort=True)

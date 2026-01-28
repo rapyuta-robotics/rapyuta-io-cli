@@ -18,7 +18,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_hwil_client
 from riocli.constants import Colors
-from riocli.hwil.util import name_to_id, execute_command
+from riocli.hwil.util import execute_command, name_to_id
 
 
 @click.command(

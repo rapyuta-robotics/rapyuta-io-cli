@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
 from rapyuta_io import TopicsStatus
 from rapyuta_io.clients.device import QoS, TopicKind
 
 from riocli.config import new_client
 from riocli.device.util import name_to_guid
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 
 
 @click.group(
     "topics",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

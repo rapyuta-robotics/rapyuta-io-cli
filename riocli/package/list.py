@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-
 import click
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.package.model import Package
@@ -34,7 +33,9 @@ def list_packages(filter_word: str) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        packages = client.list_packages()
+        packages = []
+        for page in walk_pages(client.list_packages):
+            packages.extend(page)
         _display_package_list(packages, filter_word, show_header=True)
     except Exception as e:
         click.secho(str(e), fg="red")
@@ -42,7 +43,7 @@ def list_packages(filter_word: str) -> None:
 
 
 def _display_package_list(
-    packages: typing.List[Package],
+    packages: list[Package],
     filter_word: str,
     show_header: bool = True,
     truncate_limit: int = 48,
@@ -62,9 +63,9 @@ def _display_package_list(
         package_dict[pkgName] = filtered_pkg
 
     data = []
-    for _, pkgVersionList in package_dict.items():
+    for pkgVersionList in package_dict.values():
         for package in pkgVersionList:
-            description = package.metadata.get("description", "")
+            description = package.metadata.description
             name = package.metadata.name
 
             # check if filter word was passed.
@@ -72,7 +73,7 @@ def _display_package_list(
             if filter_word and not package.metadata.name.find(filter_word):
                 continue
 
-            if truncate_limit:
+            if truncate_limit and description is not None:
                 if len(description) > truncate_limit:
                     description = description[:truncate_limit] + ".."
                 if len(name) > truncate_limit:

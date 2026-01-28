@@ -17,7 +17,7 @@ import os
 from munch import Munch, munchify
 
 
-class StateFile(object):
+class StateFile:
     _MARKERS = [".git", ".project"]
     _STATE_FILE = ".rio"
 

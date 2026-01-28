@@ -1,0 +1,16 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: Role
+metadata:
+  name: project-viewer-only
+  labels:
+    app: cli-rbac-test
+    resource: "project"
+spec:
+  description: "Basic viewer role for projects."
+  rules:
+  - resource: "project"
+    instances:
+    - ".*"
+    actions:
+    - get

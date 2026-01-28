@@ -18,6 +18,7 @@ from yaspin.api import Yaspin
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Regions, Symbols
 from riocli.disk.enum import DiskCapacity
+from riocli.disk.util import poll_disk
 from riocli.utils.spinner import with_spinner
 
 SUPPORTED_CAPACITIES = [
@@ -82,12 +83,12 @@ def create_disk(
 
     try:
         client.create_disk(payload)
-        client.poll_disk(disk_name)
+        poll_disk(client=client, name=disk_name)
         spinner.text = click.style(
-            "Disk {} created successfully.".format(disk_name), fg=Colors.GREEN
+            f"Disk {disk_name} created successfully.", fg=Colors.GREEN
         )
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to create disk: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to create disk: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)

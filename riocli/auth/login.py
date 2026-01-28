@@ -13,21 +13,19 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.auth.util import (
     get_token,
     select_organization,
     select_project,
-    validate_and_set_token,
 )
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
 
-LOGIN_SUCCESS = click.style(
-    "{} Logged in successfully!".format(Symbols.SUCCESS), fg=Colors.GREEN
-)
+LOGIN_SUCCESS = click.style(f"{Symbols.SUCCESS} Logged in successfully!", fg=Colors.GREEN)
 
 
 @click.command(
@@ -52,11 +50,17 @@ LOGIN_SUCCESS = click.style(
 )
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
+)
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
 )
 @click.option("--auth-token", type=str, default=None, help="Login with auth token only")
 @click.pass_context
@@ -67,6 +71,7 @@ def login(
     organization: str,
     project: str,
     interactive: bool,
+    silent: bool,
     auth_token: str,
 ) -> None:
     """Log into your rapyuta.io account.
@@ -118,9 +123,17 @@ def login(
     ctx = get_root_context(ctx)
     config = get_config_from_context(ctx)
 
+    interactive = interactive and not silent
+
     if auth_token:
-        if not validate_and_set_token(ctx, auth_token):
-            raise SystemExit(1)
+        config.data["auth_token"] = auth_token
+        # if not validate_and_set_token(ctx, config, interactive=interactive):
+        #     raise SystemExit(1)
+        v2_cli = config.new_v2_client()
+
+        subject = munchify(v2_cli.get_subject(auth_token))
+
+        config.data["email_id"] = subject.data.email
     else:
         if interactive:
             email = email or click.prompt("Email")
@@ -138,14 +151,13 @@ def login(
         config.data["auth_token"] = get_token(email, password)
 
     # Save if the file does not already exist
-    if not config.exists or not interactive:
-        config.save()
-    else:
+    if config.exists and interactive:
         click.confirm(
-            "{} Config already exists. Do you want to override"
-            " the existing config?".format(Symbols.WARNING),
+            f"{Symbols.WARNING} Config already exists. Do you want to override"
+            " the existing config?",
             abort=True,
         )
+    config.save()
 
     if not interactive:
         # When just the email and password are provided

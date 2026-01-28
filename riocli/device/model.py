@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2025 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from munch import Munch
+from rapyuta_io import Client
 from rapyuta_io.clients.device import Device as v1Device
+from typing_extensions import override
 
 from riocli.config import new_client
 from riocli.constants import ApplyResult
@@ -33,10 +36,26 @@ class Device(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        self.validate(self)
 
-    def apply(self, *args, **kwargs) -> ApplyResult:
-        client = new_client()
+    @override
+    def create_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
 
+    @override
+    def update_object(self, *args, **kwargs) -> Munch | None:
+        raise NotImplementedError
+
+    @override
+    def delete_object(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+
+    @override
+    def list_dependencies(self) -> list[str] | None:
+        return None
+
+    @override
+    def apply(self, client: Client, *args, **kwargs) -> ApplyResult:
         device = None
 
         try:
@@ -49,7 +68,7 @@ class Device(Model):
         # If the device is not virtual, create it and return.
         if not virtual.get("enabled", False):
             if device is None:
-                client.create_device(self.to_v1())
+                _ = client.create_device(self.to_v1())
                 return ApplyResult.CREATED
 
             return ApplyResult.EXISTS
@@ -94,6 +113,7 @@ class Device(Model):
 
         return result
 
+    @override
     def delete(self, *args, **kwargs) -> None:
         client = new_client()
 
@@ -135,5 +155,5 @@ class Device(Model):
             ros_workspace=ros_workspace,
             config_variables=config_variables,
             labels=labels,
-            python_version="3"
+            python_version="3",
         )

@@ -14,7 +14,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.auth.util import get_token, TOKEN_LEVELS
+from riocli.auth.util import TOKEN_LEVELS, get_token
 from riocli.config import Configuration
 from riocli.constants import Colors
 from riocli.exceptions import LoggedOut
@@ -51,7 +51,7 @@ def token(email: str, password: str, level: int = 0):
 
     if level not in TOKEN_LEVELS:
         click.secho(
-            "Invalid token level. Valid levels are {0}".format(list(TOKEN_LEVELS.keys())),
+            f"Invalid token level. Valid levels are {list(TOKEN_LEVELS.keys())}",
             fg=Colors.RED,
         )
         raise SystemExit(1)

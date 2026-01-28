@@ -17,10 +17,10 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.constants import Colors, Symbols
 from riocli.vpn.util import (
+    cleanup_hosts_file,
     install_vpn_tools,
     is_tailscale_up,
     stop_tailscale,
-    cleanup_hosts_file,
 )
 
 
@@ -46,8 +46,8 @@ def disconnect(ctx: click.Context):
 
         if is_tailscale_up() and not stop_tailscale():
             click.secho(
-                "{} Failed to disconnect from VPN. "
-                "Although, trying again may work.".format(Symbols.ERROR),
+                f"{Symbols.ERROR} Failed to disconnect from VPN. "
+                "Although, trying again may work.",
                 fg=Colors.RED,
             )
             raise SystemExit(1)
@@ -56,14 +56,12 @@ def disconnect(ctx: click.Context):
             cleanup_hosts_file()
         except Exception as e:
             click.secho(
-                f"{Symbols.WARNING} Could not clean " f"up hosts file: {str(e)}",
+                f"{Symbols.WARNING} Could not clean up hosts file: {str(e)}",
                 fg=Colors.YELLOW,
             )
 
         click.secho(
-            "{} You have been disconnected from the project's VPN".format(
-                Symbols.SUCCESS
-            ),
+            f"{Symbols.SUCCESS} You have been disconnected from the project's VPN",
             fg=Colors.GREEN,
         )
     except Exception as e:

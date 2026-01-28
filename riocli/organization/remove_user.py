@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
@@ -36,24 +35,21 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Removing users...")
 def remove_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     spinner: Yaspin,
 ) -> None:
     """Remove a user from the current organization."""
     if len(user_email) == 0:
-        spinner.text = click.style(
-            "No user specified.", fg=Colors.RED
-        )
+        spinner.text = click.style("No user specified.", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
-
 
     for email in user_email:
         try:
             validate_email(email)
         except EmailNotValidError as e:
             spinner.text = click.style(
-                "{} is not a valid email address".format(email), fg=Colors.RED
+                f"{email} is not a valid email address", fg=Colors.RED
             )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
@@ -74,27 +70,28 @@ def remove_user(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
         spinner.text = click.style("Users removed successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to remove users: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to remove users: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def remove_user_emails(organization: Munch, user_emails: List[str]) -> bool:
+def remove_user_emails(organization: Munch, user_emails: list[str]) -> bool:
     update = False
     updated_users = []
 
-    for user in organization.spec.users:
-        if user.emailID in user_emails:
-            update = True
-            continue
+    for member in organization.spec.members:
+        if member.subject.kind == "User":
+            if member.subject.name in user_emails:
+                update = True
+                continue
 
-        updated_users.append(user)
+            updated_users.append(member)
 
-    organization.spec.users = updated_users
+    organization.spec.members = updated_users
 
     return update

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -59,7 +58,7 @@ from riocli.utils import tabulate_data
     help="Advertise subnets configured in project to VPN peers",
 )
 def toggle_vpn(
-    devices: typing.List,
+    devices: list,
     enable: bool,
     silent: bool = False,
     advertise_routes: bool = False,
@@ -104,8 +103,7 @@ def toggle_vpn(
         final = process_devices(all_devices, devices)
 
         click.secho(
-            "\nSetting the state of VPN client = {} on "
-            "the following devices\n".format(enable),
+            f"\nSetting the state of VPN client = {enable} on the following devices\n",
             fg="yellow",
         )
 
@@ -114,10 +112,8 @@ def toggle_vpn(
         if not silent:
             if advertise_routes and len(final) > 1:
                 msg = (
-                    "\n{} More than one device in the project will advertise routes. "
-                    "You may not want to do that. Please review the devices.".format(
-                        Symbols.WARNING
-                    )
+                    f"\n{Symbols.WARNING} More than one device in the project will advertise routes. "
+                    "You may not want to do that. Please review the devices."
                 )
                 click.secho(msg, fg="yellow")
 
@@ -128,9 +124,7 @@ def toggle_vpn(
         result = []
         with Spinner() as spinner:
             for device in final:
-                spinner.text = "Updating VPN state on device {}".format(
-                    click.style(device.name, bold=True, fg=Colors.CYAN)
-                )
+                spinner.text = f"Updating VPN state on device {click.style(device.name, bold=True, fg=Colors.CYAN)}"
                 r = client.toggle_features(
                     device.uuid,
                     [("vpn", enable)],
@@ -146,7 +140,7 @@ def toggle_vpn(
         raise SystemExit(1) from e
 
 
-def process_devices(all_devices, devices) -> typing.List:
+def process_devices(all_devices, devices) -> list:
     if len(devices) == 0:
         click.secho(
             "\n(No devices specified. State will be applied"
@@ -169,6 +163,7 @@ def process_devices(all_devices, devices) -> typing.List:
             final.append(uuid_map[device])
 
     return final
+
 
 def print_final_devices(final) -> None:
     data = [[device.uuid, device.name, device.status] for device in final]

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.project.create import create_project
 from riocli.project.delete import delete_project
@@ -20,13 +19,13 @@ from riocli.project.features import features
 from riocli.project.inspect import inspect_project
 from riocli.project.list import list_projects
 from riocli.project.select import select_project
-from riocli.project.update_owner import update_owner
 from riocli.project.whoami import whoami
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )
@@ -44,4 +43,3 @@ project.add_command(select_project)
 project.add_command(inspect_project)
 project.add_command(features)
 project.add_command(whoami)
-project.add_command(update_owner)

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -24,9 +23,9 @@ else:
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.utils import tabulate_data, print_separator
-from riocli.parameter.utils import list_trees
 from riocli.device.util import fetch_devices
+from riocli.parameter.utils import list_trees
+from riocli.utils import print_separator, tabulate_data
 
 
 @click.command(
@@ -68,8 +67,8 @@ from riocli.device.util import fetch_devices
     help="Skip confirmation",
 )
 def apply_configurations(
-    devices: typing.List,
-    tree_names: typing.List[str] = None,
+    devices: list,
+    tree_names: list[str] = None,
     retry_limit: int = 0,
     device_name_pattern: str = None,
     silent: bool = False,
@@ -124,9 +123,7 @@ def apply_configurations(
 
         if not device_ids:
             click.secho(
-                "{} No device(s) found online. Please check the name or pattern".format(
-                    Symbols.ERROR
-                ),
+                f"{Symbols.ERROR} No device(s) found online. Please check the name or pattern",
                 fg=Colors.RED,
             )
             raise SystemExit(1)
@@ -137,7 +134,7 @@ def apply_configurations(
 
         printable_tree_names = ",".join(tree_names) if tree_names != "" else "*all*"
 
-        click.secho("Config Trees: {}".format(printable_tree_names), fg=Colors.GREEN)
+        click.secho(f"Config Trees: {printable_tree_names}", fg=Colors.GREEN)
 
         if not silent:
             click.confirm(
@@ -159,13 +156,11 @@ def apply_configurations(
 
         tabulate_data(result, headers=["Device", "Success"])
     except Exception as e:
-        click.secho(
-            "{} Failed to apply configs: {}".format(Symbols.ERROR, e), fg=Colors.RED
-        )
+        click.secho(f"{Symbols.ERROR} Failed to apply configs: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
 
 
-def validate_trees(tree_names: typing.List[str]) -> None:
+def validate_trees(tree_names: list[str]) -> None:
     available_trees = set(list_trees())
     if not set(tree_names).issubset(available_trees):
         raise Exception("one or more specified tree names are invalid")

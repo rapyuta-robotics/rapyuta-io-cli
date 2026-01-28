@@ -18,4 +18,4 @@ import click
 def prompt_callback(ctx: click.Context) -> str:
     organization_name = ctx.obj.data["organization_name"]
     project_name = ctx.obj.data["project_name"]
-    return "{}:{} > ".format(organization_name, project_name)
+    return f"{organization_name}:{project_name} > "

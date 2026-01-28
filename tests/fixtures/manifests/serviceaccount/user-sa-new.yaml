@@ -1,0 +1,9 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "user-sa-new"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  description: "New user service account created by creator role"

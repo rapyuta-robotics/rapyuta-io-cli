@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.configtree.diff import diff_revisions
 from riocli.configtree.export_keys import export_keys
@@ -29,12 +28,13 @@ from riocli.configtree.tree import (
     set_tree_revision,
 )
 from riocli.constants.colors import Colors
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     name="configtree",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

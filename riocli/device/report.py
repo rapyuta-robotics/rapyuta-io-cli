@@ -13,10 +13,11 @@
 # limitations under the License.
 import click
 from click_help_colors import HelpColorsCommand
-from riocli.config import new_client
 from rapyuta_io.clients.device import DeviceStatus
+
+from riocli.config import new_client
 from riocli.constants import Colors, Symbols
-from riocli.device.util import name_to_guid, generate_shared_url, upload_debug_logs
+from riocli.device.util import generate_shared_url, name_to_guid, upload_debug_logs
 from riocli.utils.spinner import with_spinner
 
 
@@ -99,10 +100,10 @@ def report_device(
             public_url = generate_shared_url(
                 device_guid, response["response"]["data"]["request_uuid"], expiry
             )
-            click.secho("\nURL: {}".format(public_url.url), fg=Colors.GREEN)
+            click.secho(f"\nURL: {public_url.url}", fg=Colors.GREEN)
 
         spinner.text = click.style("Device reported successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to report device: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to report device: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)

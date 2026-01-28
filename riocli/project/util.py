@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import functools
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 import click
+from rapyuta_io_sdk_v2 import Client as v2Client
 
+from riocli.auth.util import find_project_guid
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.exceptions import LoggedOut
-from riocli.v2client import Client as v2Client
-from riocli.auth.util import find_project_guid
 
 
 def name_to_guid(f: Callable) -> Callable:
@@ -51,7 +52,7 @@ def name_to_guid(f: Callable) -> Callable:
                 organization = ctx.obj.data.get("organization_id")
                 guid = find_project_guid(client, name, organization)
             except Exception as e:
-                click.secho("{} {}".format(Symbols.ERROR, e), fg=Colors.RED)
+                click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
                 raise SystemExit(1)
 
         kwargs["project_name"] = name
@@ -60,7 +61,7 @@ def name_to_guid(f: Callable) -> Callable:
 
     return decorated
 
+
 def get_project_name(client: v2Client, guid: str) -> str:
     project = client.get_project(guid)
     return project.metadata.name
-

@@ -52,15 +52,18 @@ class ResourceNotFound(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class OperationNotSupported(Exception):
     def __init__(self, message="operation not supported"):
         self.message = message
         super().__init__(self.message)
 
+
 class OrganizationNotFound(Exception):
     def __init__(self, message="organization not found"):
         self.message = message
         super().__init__(self.message)
+
 
 class ProjectNotFound(Exception):
     def __init__(self, message="project not found"):

@@ -1,0 +1,8 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "user-sa-concurrent"
+  labels:
+    environment: test
+spec:
+  description: "Concurrent test SA"

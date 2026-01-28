@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from shlex import join
 from time import sleep
-import typing
+
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io import Command
+
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import fetch_devices
-from rapyuta_io import Command
-from shlex import join
 
 
 @click.command(
@@ -47,7 +48,7 @@ from shlex import join
     hidden=True,
 )
 @click.argument("device-name-or-regex", type=str)
-@click.argument("command", nargs=-1)
+@click.argument("command", nargs=-1, type=str)
 def execute_command(
     device_name_or_regex: str,
     user: str,
@@ -55,7 +56,7 @@ def execute_command(
     shell: str,
     run_async: bool,
     bg: bool,
-    command: typing.List[str],
+    command: list[str],
 ) -> None:
     """Execute commands on one or more devices.
 
@@ -82,7 +83,7 @@ def execute_command(
             $ rio device execute ".*" "ls -l"
     """
 
-    if command == ("",):
+    if not command or command == ("",):
         click.secho(f"{Symbols.ERROR} No command specified", fg=Colors.RED)
         raise SystemExit(1)
 

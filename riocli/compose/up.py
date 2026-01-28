@@ -1,12 +1,12 @@
 from pathlib import Path
-import typing
+
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.constants.colors import Colors
-from riocli.compose.generate import generate_compose_file
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
+from riocli.compose.generate import generate_compose_file
+from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
 
 
@@ -63,12 +63,12 @@ from riocli.utils import print_centered_text
 def up(
     ctx: click.Context,
     file_name: str,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
     path: Path,
     detach: bool,
     build: bool,
-    files: typing.Tuple[str, ...],
+    files: tuple[str, ...],
 ):
     """
     Generate and start services using Docker Compose.

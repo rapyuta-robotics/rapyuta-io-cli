@@ -17,17 +17,15 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client, Deployment
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
-from riocli.constants import Symbols, Colors
-from riocli.deployment.model import Deployment
-from riocli.deployment.util import fetch_deployments
-from riocli.deployment.util import print_deployments_for_confirmation
+from riocli.constants import Colors, Symbols
+from riocli.deployment.util import fetch_deployments, print_deployments_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(
@@ -138,9 +136,7 @@ def _update(
     try:
         deployments = fetch_deployments(client, deployment_name_or_regex, update_all)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -170,9 +166,7 @@ def _update(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -182,12 +176,10 @@ def _update(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Deployment(s) updated {}.".format(text), fg)
+        spinner.text = click.style(f"Deployment(s) updated {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to update deployment(s): {}".format(e), Colors.RED
-        )
+        spinner.text = click.style(f"Failed to update deployment(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -198,7 +190,7 @@ def _apply_update(
     deployment: Deployment,
 ) -> None:
     try:
-        client.update_deployment(deployment.metadata.name, deployment)
+        client.update_deployment(body=deployment)
         result.put((deployment.metadata.name, True, "Restarted"))
     except Exception as e:
         result.put((deployment.metadata.name, False, str(e)))

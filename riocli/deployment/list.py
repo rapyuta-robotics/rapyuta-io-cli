@@ -11,16 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
-
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.deployment.model import Deployment
 from riocli.utils import tabulate_data
-from riocli.v2client.util import process_errors
+from riocli.utils.process_errors import process_errors
 
 ALL_PHASES = [
     "InProgress",
@@ -73,8 +72,8 @@ DEFAULT_PHASES = [
 )
 def list_deployments(
     device: str,
-    phase: typing.List[str],
-    labels: typing.List[str],
+    phase: list[str],
+    labels: list[str],
     wide: bool = False,
 ) -> None:
     """List the deployments in the current project
@@ -93,14 +92,13 @@ def list_deployments(
 
       $ rio deployment list --label key1=value1 --label key2=value2
     """
-    query = {
-        "phases": phase,
-        "labelSelector": labels,
-    }
-
     try:
         client = new_v2_client(with_project=True)
-        deployments = client.list_deployments(query=query)
+        deployments = []
+        for page in walk_pages(
+            client.list_deployments, label_selector=labels, phases=phase
+        ):
+            deployments.extend(page)
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())
         display_deployment_list(deployments, show_header=True, wide=wide)
     except Exception as e:
@@ -109,7 +107,7 @@ def list_deployments(
 
 
 def display_deployment_list(
-    deployments: typing.List[Deployment],
+    deployments: list[Deployment],
     show_header: bool = True,
     wide: bool = False,
 ):
@@ -123,16 +121,17 @@ def display_deployment_list(
     data = []
     for d in deployments:
         package_name_version = (
-            f"{d.metadata.depends.nameOrGUID} ({d.metadata.depends.version})"
+            f"{d.metadata.depends.name_or_guid} ({d.metadata.depends.version})"
         )
-        phase = d.get("status", {}).get("phase", "")
+        phase = d.status.phase
 
         status = ""
 
         if d.status:
-            if d.status.get("error_codes"):
+            error_codes = getattr(d.status, "error_codes", None)
+            if error_codes:
                 status = click.style(
-                    process_errors(d.status.error_codes, no_action=True), fg=Colors.RED
+                    process_errors(error_codes, no_action=True), fg=Colors.RED
                 )
             else:
                 status = d.status.status
@@ -146,7 +145,7 @@ def display_deployment_list(
         ]
 
         if wide:
-            row.extend([d.metadata.guid, d.metadata.get("deletedAt")])
+            row.extend([d.metadata.guid, d.metadata.deletedAt])
 
         data.append(row)
 

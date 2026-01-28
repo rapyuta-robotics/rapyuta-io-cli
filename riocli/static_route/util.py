@@ -13,13 +13,12 @@
 # limitations under the License.
 
 import re
-from typing import List
 
 from munch import Munch
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
-from riocli.v2client.client import Client
 
 
 class StaticRouteNotFound(Exception):
@@ -29,7 +28,7 @@ class StaticRouteNotFound(Exception):
 
 def find_static_route_guid(client: Client, name: str) -> str:
     client = new_v2_client(with_project=True)
-    static_route = client.get_static_route(name)
+    static_route = client.get_staticroute(name=name)
     if not static_route:
         raise StaticRouteNotFound()
     return static_route.metadata.guid
@@ -39,17 +38,17 @@ def fetch_static_routes(
     client: Client,
     route_name_or_regex: str,
     include_all: bool,
-) -> List[Munch]:
-    routes = client.list_static_routes()
+) -> list[Munch]:
+    routes = client.list_staticroutes()
     result = []
-    for route in routes:
+    for route in routes.items:
         if (
             include_all
             or route_name_or_regex == route.metadata.name
             or route_name_or_regex == route.metadata.guid
             or (
                 route_name_or_regex not in route.metadata.name
-                and re.search(r"^{}$".format(route_name_or_regex), route.metadata.name)
+                and re.search(rf"^{route_name_or_regex}$", route.metadata.name)
             )
         ):
             result.append(route)
@@ -57,7 +56,7 @@ def fetch_static_routes(
     return result
 
 
-def print_routes_for_confirmation(routes: List[Munch]):
+def print_routes_for_confirmation(routes: list[Munch]):
     data = []
     for route in routes:
         data.append(

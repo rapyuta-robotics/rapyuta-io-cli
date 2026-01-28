@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 import munch
 from click_help_colors import HelpColorsCommand
-from munch import unmunchify
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -40,7 +39,7 @@ from riocli.utils import tabulate_data
     multiple=True,
     type=click.STRING,
     default=(),
-    help="Filter the deployment list by labels",
+    help="Filter the project list by labels",
 )
 @click.option(
     "--wide", "-w", is_flag=True, default=False, help="Print more details", type=bool
@@ -52,7 +51,7 @@ def list_projects(
     organization_guid: str = None,
     organization_name: str = None,
     organization_short_id: str = None,
-    labels: typing.List[str] = (),
+    labels: list[str] = (),
     wide: bool = False,
 ) -> None:
     """List all the projects you are a part of in current organization.
@@ -75,11 +74,13 @@ def list_projects(
     # If organization is not passed in the options, use
     organization_guid = organization_guid or ctx.obj.data.get("organization_id")
 
-    query = {"labelSelector": labels}
-
     try:
         client = new_v2_client(with_project=False)
-        projects = client.list_projects(organization_guid=organization_guid, query=query)
+        projects = []
+        for page in walk_pages(
+            client.list_projects, organizations=[organization_guid], limit=100
+        ):
+            projects.extend(page)
         projects = sorted(projects, key=lambda p: p.metadata.name.lower())
         current = ctx.obj.data.get("project_id", None)
         _display_project_list(projects, current, show_header=True, wide=wide)
@@ -89,7 +90,7 @@ def list_projects(
 
 
 def _display_project_list(
-    projects: typing.List[munch.Munch],
+    projects: list[munch.Munch],
     current: str = None,
     show_header: bool = True,
     wide: bool = False,
@@ -113,7 +114,9 @@ def _display_project_list(
                 [
                     metadata.createdAt,
                     metadata.creatorGUID,
-                    unmunchify(project.spec.features),
+                    project.spec.features.model_dump(
+                        by_alias=True, exclude_none=True, exclude_defaults=True
+                    ),
                 ]
             )
         data.append([click.style(v, fg=fg, bold=bold) for v in row])

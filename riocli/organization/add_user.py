@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 import click
 from click_help_colors import HelpColorsCommand
 from email_validator import EmailNotValidError, validate_email
-from munch import Munch
+from rapyuta_io_sdk_v2.models.organization import Organization, OrganizationMember
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
@@ -33,16 +32,16 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option(
     "--role",
-    type=click.Choice(["admin", "viewer"]),
-    default="viewer",
-    help="Password for the rapyuta.io account",
+    type=list[str],
+    default=["rio-org_member"],
+    help="Roles should be assigned to users",
 )
 @click.argument("user-email", type=str, nargs=-1)
 @click.pass_context
 @with_spinner(text="Adding users...")
 def add_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     role: str,
     spinner: Yaspin,
 ) -> None:
@@ -77,8 +76,8 @@ def add_user(
 )
 @click.option(
     "--role",
-    type=click.Choice(["admin", "viewer"]),
-    default="viewer",
+    type=list[str],
+    default=["rio-org_member"],
     help="Password for the rapyuta.io account",
 )
 @click.argument("user-email", type=str, nargs=-1)
@@ -86,7 +85,7 @@ def add_user(
 @with_spinner(text="Adding users...")
 def invite_user(
     ctx: click.Context,
-    user_email: List[str],
+    user_email: list[str],
     role: str,
     spinner: Yaspin,
 ) -> None:
@@ -114,14 +113,12 @@ def invite_user(
 
 def add_user_to_organization(
     ctx: click.Context,
-    user_emails: List[str],
-    role: str,
+    user_emails: list[str],
+    roles: list[str],
     spinner: Yaspin,
 ) -> None:
     if len(user_emails) == 0:
-        spinner.text = click.style(
-            "No user specified.", fg=Colors.RED
-        )
+        spinner.text = click.style("No user specified.", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
 
@@ -130,7 +127,7 @@ def add_user_to_organization(
             validate_email(user_email)
         except EmailNotValidError as e:
             spinner.text = click.style(
-                "{} is not a valid email address".format(user_email), fg=Colors.RED
+                f"{user_email} is not a valid email address", fg=Colors.RED
             )
             spinner.red.fail(Symbols.ERROR)
             raise SystemExit(1) from e
@@ -141,7 +138,7 @@ def add_user_to_organization(
     try:
         client = new_v2_client(config_inst=config)
         organization = client.get_organization(organization_guid=config.organization_guid)
-        update = add_user_emails(organization, user_emails, role)
+        update = add_user_emails(filter_org_members(organization), user_emails, roles)
         if not update:
             spinner.text = click.style(
                 "Users are already part of the organization.", fg=Colors.YELLOW
@@ -151,29 +148,40 @@ def add_user_to_organization(
 
         client.update_organization(
             organization_guid=config.organization_guid,
-            data=organization,
+            body=organization,
         )
 
         spinner.text = click.style("Users added successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style("Failed to add users: {}".format(e), fg=Colors.RED)
+        spinner.text = click.style(f"Failed to add users: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
-def add_user_emails(organization: Munch, user_emails: List[str], role: str) -> bool:
+def add_user_emails(
+    organization: Organization, user_emails: list[str], roles: list[str]
+) -> bool:
     update = False
-    existing_emails = map(lambda x: x.emailID, organization.spec.users)
+    existing_emails = []
+    for member in organization.spec.members:
+        if member.subject.kind == "User":
+            existing_emails.append(member.subject.name)
 
     for email in user_emails:
         if email not in existing_emails:
             update = True
-            organization.spec.users.append(
-                {
-                    "emailID": email,
-                    "roleInOrganization": role,
-                }
+            organization.spec.members.append(
+                OrganizationMember(
+                    roleNames=roles, subject={"kind": "User", "name": email}
+                )
             )
 
     return update
+
+
+def filter_org_members(org: Organization):
+    members = [m for m in org.spec.members if m.subject.kind == "User"]
+
+    org.spec.members = members
+    return org

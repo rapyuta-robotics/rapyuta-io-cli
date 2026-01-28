@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any
-from typing import Union
 
 import click
 from click import types
@@ -22,7 +21,7 @@ from riocli.utils import tabulate_data
 
 
 def show_selection(
-    ranger: Union[list, dict],
+    ranger: list | dict,
     header: str = "",
     prompt: str = "Select the option",
     show_keys: bool = True,
@@ -55,7 +54,7 @@ def _show_selection_list(
     click.secho(header, fg=Colors.YELLOW)
     data = []
     for idx, opt in enumerate(ranger):
-        idx_column = f"{idx+1})"
+        idx_column = f"{idx + 1})"
         opt_column = opt
         if highlight_item is not None and opt == highlight_item:
             idx_column = click.style(idx_column, bold=True, italic=True)

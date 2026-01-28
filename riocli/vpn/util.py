@@ -17,21 +17,20 @@ import os
 import socket
 import tempfile
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os.path import exists, join
 from shutil import move, which
 from sys import platform
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 import click
 from munch import Munch
 from python_hosts import Hosts, HostsEntry
+from rapyuta_io_sdk_v2 import Client as v2Client
 
 from riocli.config import get_config_from_context, new_client, new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
-from riocli.v2client import Client as v2Client
 
 HOSTS_FILE_COMMENT = "riovpn"
 
@@ -94,9 +93,7 @@ def install_vpn_tools() -> None:
 
     click.confirm(
         click.style(
-            "{} VPN tools are not installed. Do you want " "to install them now?".format(
-                Symbols.INFO
-            ),
+            f"{Symbols.INFO} VPN tools are not installed. Do you want to install them now?",
             fg=Colors.YELLOW,
         ),
         default=True,
@@ -127,16 +124,16 @@ def install_vpn_tools() -> None:
         if not exists(script_path):
             raise FileNotFoundError
 
-        run_bash("sh {}".format(script_path))
+        run_bash(f"sh {script_path}")
 
     if not is_tailscale_installed():
-        raise Exception("{} Failed to install VPN tools".format(Symbols.ERROR))
+        raise Exception(f"{Symbols.ERROR} Failed to install VPN tools")
 
-    click.secho("{} VPN tools installed".format(Symbols.SUCCESS), fg=Colors.GREEN)
+    click.secho(f"{Symbols.SUCCESS} VPN tools installed", fg=Colors.GREEN)
 
 
 def tailscale_ping(tailscale_peer_ip):
-    cmd = "tailscale ping --icmp --tsmp --peerapi {}".format(tailscale_peer_ip)
+    cmd = f"tailscale ping --icmp --tsmp --peerapi {tailscale_peer_ip}"
     return run_bash_with_return_code(cmd)
 
 
@@ -153,7 +150,7 @@ def priviledged_command(cmd: str) -> str:
     if is_windows() or (is_linux() and os.geteuid() == 0):
         return cmd
 
-    return "sudo {}".format(cmd)
+    return f"sudo {cmd}"
 
 
 def create_binding(
@@ -161,13 +158,13 @@ def create_binding(
     name: str = "",
     machine: str = "",
     labels: dict = None,
-    delta: Optional[timedelta] = None,
+    delta: timedelta | None = None,
     ephemeral: bool = True,
     throwaway: bool = True,
 ) -> Munch:
     vpn_instance = "rio-internal-headscale"
     if name == "":
-        name = "{}-{}".format(ctx.obj.machine_id, int(time.time()))
+        name = f"{ctx.obj.machine_id}-{int(time.time())}"
 
     body = {
         "metadata": {
@@ -190,16 +187,16 @@ def create_binding(
 
     # We may end up creating multiple throwaway tokens in the database.
     # But that's okay and something that we can live with
-    binding = client.create_instance_binding(vpn_instance, binding=body)
-    return binding.spec.get("environment", {})
+    binding = client.create_instance_binding(vpn_instance, body=body)
+    return getattr(binding.spec, "environment", {})
 
 
-def get_key_expiry_time(delta: Optional[timedelta]) -> Optional[str]:
+def get_key_expiry_time(delta: timedelta | None) -> str | None:
     if delta is None:
         return None
 
-    expiry = datetime.utcnow() + delta
-    return expiry.isoformat("T") + "Z"
+    expiry = datetime.now(timezone.utc) + delta
+    return expiry.isoformat("T").replace("+00:00", "Z")
 
 
 def get_binding_labels() -> dict:
@@ -229,7 +226,11 @@ def update_hosts_file():
     for device in v1_client.get_all_devices(online_device=True):
         device_daemon = v2_client.get_device_daemons(device_guid=device.get("uuid"))
         vpn_status = device_daemon.status.get("vpn")
-        if vpn_status is not None and vpn_status.get("enable", False) and vpn_status.get("status") == "running":
+        if (
+            vpn_status is not None
+            and vpn_status.get("enable", False)
+            and vpn_status.get("status") == "running"
+        ):
             device_host_to_name[device.get("host")] = device.name
 
     status = get_tailscale_status()
@@ -241,7 +242,7 @@ def update_hosts_file():
     hosts.remove_all_matching(comment=HOSTS_FILE_COMMENT)
 
     entries = []
-    for _, node in peers.items():
+    for node in peers.values():
         if not node.get("Online"):
             continue
 

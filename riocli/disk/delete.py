@@ -16,6 +16,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import new_v2_client
@@ -25,7 +26,6 @@ from riocli.disk.util import display_disk_list, fetch_disks
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client import Client
 
 
 @click.command(
@@ -100,7 +100,7 @@ def delete_disk(
     try:
         disks = fetch_disks(client, disk_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style("Failed to find disk(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to find disk(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -131,9 +131,7 @@ def delete_disk(
             icon = Symbols.SUCCESS if status else Symbols.ERROR
 
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -149,10 +147,10 @@ def delete_disk(
         fg = Colors.GREEN if all(statuses) else Colors.YELLOW
         text = "successfully" if all(statuses) else "partially"
 
-        spinner.text = click.style("Disk(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Disk(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style("Failed to delete disk(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete disk(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 

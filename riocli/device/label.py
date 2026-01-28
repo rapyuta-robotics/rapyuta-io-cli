@@ -11,23 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
-from click_help_colors import HelpColorsGroup
 from click_spinner import spinner
 from rapyuta_io import Label
 
 from riocli.config import new_client
 from riocli.constants import Colors
 from riocli.device.util import name_to_guid
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 
 
 @click.group(
     "labels",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color=Colors.GREEN,
 )
@@ -103,7 +101,7 @@ def delete_label(device_name: str, device_guid: str, key: str) -> None:
         raise SystemExit(1)
 
 
-def _display_label_list(labels: typing.List[Label], show_header: bool = True) -> None:
+def _display_label_list(labels: list[Label], show_header: bool = True) -> None:
     headers = []
     if show_header:
         headers = ("Key", "Value")
@@ -128,7 +126,7 @@ def _delete_label(device_guid: str, key: str) -> None:
     device.delete_label(label.id)
 
 
-def _find_label(labels: typing.List[Label], key: str) -> Label:
+def _find_label(labels: list[Label], key: str) -> Label:
     for label in labels:
         if label.key == key:
             return label

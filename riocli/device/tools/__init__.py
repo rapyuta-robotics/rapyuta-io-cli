@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.device.tools.device_init import device_init
 from riocli.device.tools.forward import port_forward
 from riocli.device.tools.rapyuta_logs import rapyuta_agent_logs
 from riocli.device.tools.ssh import device_ssh, ssh_authorize_key
+from riocli.utils import AliasedGroup
+
 from .scp import scp
 from .service import service
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color="yellow",
     help_options_color="green",
 )

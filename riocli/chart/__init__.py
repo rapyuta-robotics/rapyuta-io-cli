@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.chart.apply import apply_chart
 from riocli.chart.delete import delete_chart
@@ -20,11 +19,12 @@ from riocli.chart.info import info_chart
 from riocli.chart.list import list_charts
 from riocli.chart.search import search_chart
 from riocli.constants import Colors
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import wraps, lru_cache
 import json
 import re
 import time
 import typing
 from datetime import datetime, timedelta
+from functools import lru_cache, wraps
 from pathlib import Path
 
 import click
@@ -26,6 +26,7 @@ from rapyuta_io.clients import LogUploads, SharedURL
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import get_config_from_context, new_client, new_hwil_client
 from riocli.config.config import Configuration
@@ -33,7 +34,6 @@ from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
 from riocli.hwil.util import execute_command, find_device_id
 from riocli.utils import is_valid_uuid, trim_prefix, trim_suffix
-from riocli.v2client.util import handle_server_errors
 
 
 def name_to_guid(f: typing.Callable) -> typing.Callable:
@@ -81,9 +81,7 @@ def upload_debug_logs(device_guid: str) -> dict:
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
 
-    url = "{}/api/device-manager/v0/error_handler/upload_debug_logs/{}".format(
-        coreapi_host, device_guid
-    )
+    url = f"{coreapi_host}/api/device-manager/v0/error_handler/upload_debug_logs/{device_guid}"
 
     headers = config.get_auth_header()
     response = (
@@ -165,7 +163,7 @@ def fetch_devices(
     device_name_or_regex: str,
     include_all: bool,
     online_devices: bool = False,
-) -> typing.List[Device]:
+) -> list[Device]:
     devices = client.get_all_devices(online_device=online_devices)
     result = []
     for device in devices:
@@ -175,7 +173,7 @@ def fetch_devices(
             or device_name_or_regex == device.uuid
             or (
                 device_name_or_regex not in device.name
-                and re.search(r"^{}$".format(device_name_or_regex), device.name)
+                and re.search(rf"^{device_name_or_regex}$", device.name)
             )
         ):
             result.append(device)
@@ -190,7 +188,7 @@ def migrate_device_to_project(
     host = config.data.get(
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
-    url = "{}/api/device-manager/v0/devices/{}/migrate".format(host, device_id)
+    url = f"{host}/api/device-manager/v0/devices/{device_id}/migrate"
     headers = config.get_auth_header()
     payload = {"project": dest_project_id}
 
@@ -203,7 +201,7 @@ def migrate_device_to_project(
         raise Exception(err_msg)
 
 
-def find_request_id(requests: typing.List[LogUploads], file_name: str) -> (str, str):
+def find_request_id(requests: list[LogUploads], file_name: str) -> (str, str):
     for request in requests:
         if request.filename == file_name or request.request_uuid == file_name:
             return request.filename, request.request_uuid
@@ -231,14 +229,17 @@ def sanitize_hwil_device_name(name: str) -> str:
     if len(name) == 0:
         return name
 
+    name = name.lower()
     name = name[0:50]
     name = trim_suffix(name)
     name = trim_prefix(name)
-
-    r = ""
+    sanitized = []
     for c in name:
-        if c.isalnum() or c in ["-", "_"]:
-            r = r + c
+        if ("a" <= c <= "z") or ("0" <= c <= "9") or c == "-":
+            sanitized.append(c)
+
+    r = "".join(sanitized)
+    r = r.strip("-")
 
     return r
 
@@ -279,8 +280,11 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
         device = client.get_device(device_id)
         if device:
             if device.status == "DELETING":
-                    client.poll_till_device_ready_or_deleted(device_id, sleep_interval=5,
-                                                             retry_limit=60 if labels.get("vm", False) else 12)
+                client.poll_till_device_ready_or_deleted(
+                    device_id,
+                    sleep_interval=5,
+                    retry_limit=60 if labels.get("vm", False) else 12,
+                )
             if device.status != "FAILED":
                 return device
     except DeviceNotFound:
@@ -293,7 +297,9 @@ def create_hwil_device(spec: dict, metadata: dict) -> Munch:
             raise Exception("cannot delete previously failed device")
 
     response = client.create_device(device_name, arch, os, codename, labels)
-    client.poll_till_device_ready_or_deleted(response.id, sleep_interval=5, retry_limit=60 if labels.get("vm", False) else 12)
+    client.poll_till_device_ready_or_deleted(
+        response.id, sleep_interval=5, retry_limit=60 if labels.get("vm", False) else 12
+    )
 
     if response.status == "FAILED":
         raise Exception("device has failed")
@@ -329,7 +335,7 @@ def execute_onboard_command(device_id: int, onboard_command: str) -> None:
         raise e
 
 
-def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
+def make_hwil_labels(spec: dict, device_name: str) -> dict:
     data = Configuration().data
     user_email = data["email_id"]
     user_email = user_email.split("@")[0]
@@ -342,7 +348,7 @@ def make_hwil_labels(spec: dict, device_name: str) -> typing.Dict:
         "expiry_after": spec["expireAfter"],
         "vm": spec["vm"],
         "cpu": spec["cpu"],
-        "private_ip": spec["private_ip"]
+        "private_ip": spec["private_ip"],
     }
 
     if "product" in spec:

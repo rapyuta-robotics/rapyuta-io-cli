@@ -47,7 +47,7 @@ def list_examples() -> None:
 )
 @click.option("--templates", help="Alternate root for templates", default=None)
 @click.argument("resource")
-def explain(resource: str, templates: str = None) -> None:
+def explain(resource: str, templates: str | None = None) -> None:
     """Explain a resource manifest for the given type.
 
     The explain command can be used to generate a sample
@@ -77,7 +77,5 @@ def explain(resource: str, templates: str = None) -> None:
                 click.echo_via_pager(f.readlines())
                 raise SystemExit(0)
 
-    click.secho(
-        '{} Resource "{}" not found'.format(Symbols.ERROR, resource), fg=Colors.RED
-    )
+    click.secho(f'{Symbols.ERROR} Resource "{resource}" not found', fg=Colors.RED)
     raise SystemExit(1)

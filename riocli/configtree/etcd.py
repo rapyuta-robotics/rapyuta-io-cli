@@ -14,7 +14,6 @@
 
 import time
 from base64 import b64encode
-from typing import Optional
 
 from etcd3gw import Etcd3Client
 
@@ -22,8 +21,8 @@ from etcd3gw import Etcd3Client
 def import_in_etcd(
     data: dict,
     endpoint: str,
-    port: Optional[int] = 2379,
-    prefix: Optional[str] = None,
+    port: int | None = 2379,
+    prefix: str | None = None,
 ) -> None:
     cli = Etcd3Client(host=endpoint, port=port)
 
@@ -42,7 +41,7 @@ def import_in_etcd(
     prefix = prefix or ""
 
     for key, val in data.items():
-        key = "{}/{}".format(prefix, key)
+        key = f"{prefix}/{key}"
 
         enc_key = b64encode(str(key).encode("utf-8")).decode()
         enc_val = b64encode(str(val).encode("utf-8")).decode()
@@ -56,8 +55,8 @@ def import_in_etcd(
         )
         failures.append({"request_put": {"key": enc_key, "value": enc_val}})
 
-    sentinel_key = b64encode("/sentinel_key".encode("utf-8")).decode()
-    sentinel_val = b64encode(f"{time.time_ns()}|riocli-import".encode("utf-8")).decode()
+    sentinel_key = b64encode(b"/sentinel_key").decode()
+    sentinel_val = b64encode(f"{time.time_ns()}|riocli-import".encode()).decode()
 
     compares.append(
         {

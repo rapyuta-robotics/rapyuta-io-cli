@@ -38,13 +38,11 @@ def device_init(device_name: str, device_guid: str, spinner=None) -> None:
         _setup_device(device_guid=device_guid, spinner=spinner)
         _setup_local(spinner=spinner)
 
-        spinner.text = click.style(
-            "Initialized device {}".format(device_name), fg=Colors.GREEN
-        )
+        spinner.text = click.style(f"Initialized device {device_name}", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(
-            "Failed to initialize device. Error: {}".format(e), fg=Colors.RED
+            f"Failed to initialize device. Error: {e}", fg=Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
@@ -91,8 +89,8 @@ def _setup_local(spinner=None) -> None:
 
     # TODO: Add support for non-linux and non-amd64 machines
     spinner.write("> Installing pre-requisites locally...")
-    run_bash("""/bin/bash -c 'mkdir -p {}'""".format(path))
+    run_bash(f"""/bin/bash -c 'mkdir -p {path}'""")
     run_bash(
-        """/bin/bash -c 'pushd {} && curl -sSLO https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-linux-amd64.tar.gz && tar xf piping-tunnel-0.10.1-linux-amd64.tar.gz && rm CHANGELOG.md LICENSE piping-tunnel-0.10.1-linux-amd64.tar.gz README.md && popd'
-    """.format(path)
+        f"""/bin/bash -c 'pushd {path} && curl -sSLO https://github.com/nwtgck/go-piping-tunnel/releases/download/v0.10.1/piping-tunnel-0.10.1-linux-amd64.tar.gz && tar xf piping-tunnel-0.10.1-linux-amd64.tar.gz && rm CHANGELOG.md LICENSE piping-tunnel-0.10.1-linux-amd64.tar.gz README.md && popd'
+    """
     )

@@ -5,18 +5,20 @@ from dataclasses import asdict
 from pathlib import Path
 
 import click
-from munch import munchify
 import yaml
 from click_help_colors import HelpColorsCommand
+from munch import munchify
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
+from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
-from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
-from riocli.compose.model import DockerCompose
-from riocli.compose.populate import populate
 from riocli.utils import print_centered_text
+
+if typing.TYPE_CHECKING:
+    from riocli.compose.model import DockerCompose
 
 
 # Expose the command for import
@@ -61,10 +63,10 @@ from riocli.utils import print_centered_text
 def generate(
     ctx: click.Context,
     file_name: str,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
     path: Path,
-    files: typing.Tuple[str, ...],
+    files: tuple[str, ...],
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -102,9 +104,9 @@ def generate(
 def generate_compose_file(
     ctx: click.Context,
     compose_path: Path,
-    values: typing.Tuple[str, ...],
-    secrets: typing.Tuple[str, ...],
-    files: typing.Tuple[str, ...],
+    values: tuple[str, ...],
+    secrets: tuple[str, ...],
+    files: tuple[str, ...],
 ):
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -130,7 +132,7 @@ def generate_compose_file(
 
 def get_deployment_package(
     applier: Applier,
-) -> typing.Tuple[typing.Dict[str, dict], typing.Dict[str, dict]]:
+) -> tuple[dict[str, dict], dict[str, dict]]:
     """
     Sorts applier objects into deployments and packages for device runtime.
 

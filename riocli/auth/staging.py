@@ -24,19 +24,26 @@ _NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
 @click.command("environment", hidden=True)
 @click.option(
     "--interactive/--no-interactive",
-    "--interactive/--silent",
     is_flag=True,
     type=bool,
     default=True,
     help="Make login interactive",
 )
+@click.option(
+    "--silent",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Make login non-interactive",
+)
 @click.argument("name", type=str)
 @click.pass_context
-def environment(ctx: click.Context, interactive: bool, name: str):
+def environment(ctx: click.Context, interactive: bool, silent: bool, name: str):
     """
     Sets the Rapyuta.io environment to use (Internal use only)
     """
     ctx = get_root_context(ctx)
+    interactive = interactive or not silent
 
     if name == "ga":
         ctx.obj.data.pop("environment", None)
@@ -54,15 +61,15 @@ def environment(ctx: click.Context, interactive: bool, name: str):
     ctx.obj.save()
 
     success_msg = click.style(
-        "{} Your Rapyuta.io environment is set to {}".format(Symbols.SUCCESS, name),
+        f"{Symbols.SUCCESS} Your Rapyuta.io environment is set to {name}",
         fg=Colors.GREEN,
     )
 
     if not interactive:
         click.echo(success_msg)
         click.secho(
-            "{} Please set your organization and project with"
-            " `rio organization select ORGANIZATION_NAME`".format(Symbols.WARNING),
+            f"{Symbols.WARNING} Please set your organization and project with"
+            " `rio organization select ORGANIZATION_NAME`",
             fg=Colors.YELLOW,
         )
         return
@@ -82,17 +89,15 @@ def _configure_environment(config: Configuration, name: str) -> None:
     is_valid_env = name in _NAMED_ENVIRONMENTS or name.startswith("pr")
 
     if not is_valid_env:
-        click.secho(
-            "{} Invalid environment: {}".format(Symbols.ERROR, name), fg=Colors.RED
-        )
+        click.secho(f"{Symbols.ERROR} Invalid environment: {name}", fg=Colors.RED)
         raise SystemExit(1)
 
     subdomain = _STAGING_ENVIRONMENT_SUBDOMAIN
 
-    catalog = "https://{}catalog.{}".format(name, subdomain)
-    core = "https://{}apiserver.{}".format(name, subdomain)
-    rip = "https://{}rip.{}".format(name, subdomain)
-    v2api = "https://{}api.{}".format(name, subdomain)
+    catalog = f"https://{name}catalog.{subdomain}"
+    core = f"https://{name}apiserver.{subdomain}"
+    rip = f"https://{name}rip.{subdomain}"
+    v2api = f"https://{name}api.{subdomain}"
 
     config.data["environment"] = name
     config.data["catalog_host"] = catalog

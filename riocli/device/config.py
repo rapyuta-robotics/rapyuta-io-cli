@@ -11,24 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from click_help_colors import HelpColorsGroup
 from rapyuta_io import DeviceConfig
 
 from riocli.config import new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid
-from riocli.utils import tabulate_data
+from riocli.utils import AliasedGroup, tabulate_data
 from riocli.utils.spinner import with_spinner
 
 
 @click.group(
     "config",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
@@ -89,9 +87,7 @@ def create_config(
         spinner.text = click.style("Config variable added successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
-        spinner.text = click.style(
-            "Failed to add config variable: {}".format(e), fg=Colors.RED
-        )
+        spinner.text = click.style(f"Failed to add config variable: {e}", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -125,7 +121,7 @@ def update_config(
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(
-            "Failed to update config variable: {}".format(e), fg=Colors.RED
+            f"Failed to update config variable: {e}", fg=Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
@@ -153,14 +149,14 @@ def delete_config(device_name: str, device_guid: str, key: str, spinner=None) ->
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(
-            "Failed to delete config variable: {}".format(e), fg=Colors.RED
+            f"Failed to delete config variable: {e}", fg=Colors.RED
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
 def _display_config_list(
-    config_variables: typing.List[DeviceConfig], show_header: bool = True
+    config_variables: list[DeviceConfig], show_header: bool = True
 ) -> None:
     headers = []
     if show_header:
@@ -186,9 +182,7 @@ def _delete_config_variable(device_guid: str, key: str) -> None:
     device.delete_config_variable(config_variable.id)
 
 
-def _find_config_variable(
-    config_variables: typing.List[DeviceConfig], key: str
-) -> DeviceConfig:
+def _find_config_variable(config_variables: list[DeviceConfig], key: str) -> DeviceConfig:
     for cfg in config_variables:
         if cfg.key == key:
             return cfg

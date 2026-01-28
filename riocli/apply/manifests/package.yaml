@@ -25,7 +25,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
   environmentVars:
     - name: "key1" # Required
       default: "value1"
@@ -115,7 +115,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
   environmentVars:
     - name: "key1" # Required
       default: "value1"
@@ -191,7 +191,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
     - name: "exec-docker-02"
       type: docker # Options: [docker (default), preInstalled]
       runAsBash: True
@@ -262,7 +262,7 @@ spec:
         pullSecret:
           depends:
             kind: secret
-            nameOrGUID: "secret-docker"
+            nameOrGUID: "docker-secret"
     - name: "exec-preInstalled"
       type: preInstalled # Options: [docker (default), preInstalled]
       command:

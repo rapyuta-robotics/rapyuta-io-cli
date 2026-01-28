@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
 from riocli.hwil.create import create_device
@@ -22,12 +21,13 @@ from riocli.hwil.inspect import inspect_device
 from riocli.hwil.list import list_devices
 from riocli.hwil.login import login
 from riocli.hwil.ssh import ssh
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     name="hwil",
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

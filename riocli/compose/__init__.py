@@ -13,17 +13,17 @@
 # limitations under the License.
 
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.compose.down import down
 from riocli.compose.generate import generate
 from riocli.compose.up import up
 from riocli.constants.colors import Colors
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

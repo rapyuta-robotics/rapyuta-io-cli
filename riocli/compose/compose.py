@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 import click
 
@@ -108,7 +107,7 @@ class DockerComposeManager:
             )
             return False
 
-    def status(self) -> Optional[str]:
+    def status(self) -> str | None:
         # Get the status of Docker Compose services.
         if not self.file_exists():
             return None

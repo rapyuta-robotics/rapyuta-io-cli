@@ -17,6 +17,7 @@ from queue import Queue
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import Client
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
@@ -24,7 +25,6 @@ from riocli.secret.util import fetch_secrets, print_secrets_for_confirmation
 from riocli.utils import tabulate_data
 from riocli.utils.execute import apply_func_with_result
 from riocli.utils.spinner import with_spinner
-from riocli.v2client.client import Client
 
 
 @click.command(
@@ -99,7 +99,7 @@ def delete_secret(
     try:
         secrets = fetch_secrets(client, secret_name_or_regex, delete_all)
     except Exception as e:
-        spinner.text = click.style("Failed to delete secret(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete secret(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
@@ -129,9 +129,7 @@ def delete_secret(
             fg = Colors.GREEN if status else Colors.RED
             icon = Symbols.SUCCESS if status else Symbols.ERROR
             statuses.append(status)
-            data.append(
-                [click.style(name, fg), click.style("{}  {}".format(icon, msg), fg)]
-            )
+            data.append([click.style(name, fg), click.style(f"{icon}  {msg}", fg)])
 
         with spinner.hidden():
             tabulate_data(data, headers=["Name", "Status"])
@@ -148,17 +146,17 @@ def delete_secret(
         text = "successfully" if all(statuses) else "partially"
 
         spinner.write("")
-        spinner.text = click.style("Secret(s) deleted {}.".format(text), fg)
+        spinner.text = click.style(f"Secret(s) deleted {text}.", fg)
         spinner.ok(click.style(icon, fg))
     except Exception as e:
-        spinner.text = click.style("Failed to delete secret(s): {}".format(e), Colors.RED)
+        spinner.text = click.style(f"Failed to delete secret(s): {e}", Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1) from e
 
 
 def _apply_delete(client: Client, result: Queue, secret: typing.Any) -> None:
     try:
-        client.delete_secret(secret.metadata.name)
+        client.delete_secret(name=secret.metadata.name)
         result.put((secret.metadata.name, True, "Secret deleted successfully"))
     except Exception as e:
         result.put((secret.metadata.name, False, str(e)))

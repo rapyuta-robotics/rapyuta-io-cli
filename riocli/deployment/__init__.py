@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
-from click_help_colors import HelpColorsGroup
 
 from riocli.constants import Colors
 from riocli.deployment.delete import delete_deployment
@@ -21,13 +20,14 @@ from riocli.deployment.inspect import inspect_deployment
 from riocli.deployment.list import list_deployments
 from riocli.deployment.logs import deployment_logs
 from riocli.deployment.status import status
-from riocli.deployment.update import update_deployment, restart_deployment
+from riocli.deployment.update import restart_deployment, update_deployment
 from riocli.deployment.wait import wait_for_deployment
+from riocli.utils import AliasedGroup
 
 
 @click.group(
     invoke_without_command=False,
-    cls=HelpColorsGroup,
+    cls=AliasedGroup,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )

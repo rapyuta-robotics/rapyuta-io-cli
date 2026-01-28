@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
-from munch import Munch
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -43,7 +41,7 @@ from riocli.utils import tabulate_data
     default=(),
     help="Filter the deployment list by labels",
 )
-def list_networks(network: str, labels: typing.List[str]) -> None:
+def list_networks(network: str, labels: list[str]) -> None:
     """List the networks in the current project.
 
     You can also filter the list by specifying labels using
@@ -57,13 +55,11 @@ def list_networks(network: str, labels: typing.List[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-
-        query = {"labelSelector": labels}
         if network not in ("both", ""):
-            query.update({"networkType": network})
-
-        networks = client.list_networks(query=query)
-        networks = sorted(networks, key=lambda n: n.metadata.name.lower())
+            result = client.list_networks(label_selector=labels, network_type=network)
+        else:
+            result = client.list_networks(label_selector=labels)
+        networks = sorted(result.items, key=lambda n: n.metadata.name.lower())
         _display_network_list(networks, show_header=True)
     except Exception as e:
         click.secho(str(e), fg="red")
@@ -71,7 +67,7 @@ def list_networks(network: str, labels: typing.List[str]) -> None:
 
 
 def _display_network_list(
-    networks: typing.List[Munch],
+    networks: list,
     show_header: bool = True,
 ) -> None:
     headers = []
