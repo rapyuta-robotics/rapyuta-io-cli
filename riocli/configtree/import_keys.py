@@ -210,6 +210,7 @@ def import_keys(
                 key_metadata = metadata.get(key, None)
                 if isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
+
                 rev.store(key=key, value=value, perms=644, metadata=key_metadata)
                 spinner.write(
                     click.style(

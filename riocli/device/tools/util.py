@@ -13,13 +13,16 @@
 # limitations under the License.
 import os
 import time
+from shlex import join
 
 import click
-from rapyuta_io.clients import LogsUploadRequest
+from rapyuta_io.clients import LogsUploadRequest, Command
 
 from riocli.config import Configuration, new_client
-from riocli.utils import random_string, run_bash
+from riocli.constants import Colors
+from riocli.utils import run_bash, random_string
 from riocli.utils.execute import run_on_device
+from riocli.device.execute import execute_async
 
 
 def run_tunnel_on_device(device_guid: str, remote_port: int, path: str) -> None:
@@ -71,11 +74,68 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
     run_bash(f'curl -o "{dest}" "{url}"')
 
 
-def copy_to_device(device_guid: str, src: str, dest: str) -> None:
+def copy_to_device(
+    device_guid: str,
+    device_name: str,
+    src: str,
+    dest: str,
+    run_async: bool = False,
+    timeout: int = 600,
+) -> None:
+    """Copy a local file to the device.
+
+    Reuses async command execution logic from execute.py to avoid duplication.
+
+    Steps:
+      1. Start background upload (local -> piping server) via curl -T.
+      2. Execute curl on device to download file to destination path.
+      3. If run_async=True, delegate streaming to execute_async from execute.py.
+         (We allow empty output as success; execute_async may raise if device returns nothing.)
+      4. If run_async=False, perform synchronous execution and print output if any.
+
+    Note: File transfer command (curl -s -o) typically produces no stdout on success.
+          We treat empty output as success for sync mode.
+    """
     config = Configuration()
     path = random_string(8, 5)
+    remote_cmd = f"curl -s -o {dest} {config.piping_server}/{path} && echo '__RIO_COPY_SUCCESS__'"
+
+    # Start background upload from local machine to piping server.
     run_bash(f"curl -sT {src} {config.piping_server}/{path}", bg=True)
-    run_on_device(
-        device_guid=device_guid,
-        command=["curl", "-s", "-o", dest, f"{config.piping_server}/{path}"],
+
+    client = new_client()
+    # Build command similarly to execute.py (bash -c wrapping) for consistency.
+    cmd_obj = Command(
+        cmd=join(("bash", "-c", remote_cmd)),
+        shell="/bin/bash",
+        bg=False,
+        run_async=run_async,
+        runas="root",
+        timeout=timeout,
     )
+
+    try:
+        if run_async:
+            # Delegates execution + streaming to existing async helper
+            execute_async(
+                client=client,
+                device_guids=[device_guid],
+                device_dict={device_guid: device_name},
+                command=cmd_obj,
+                timeout=timeout,
+            )
+        else:
+            # Synchronous execution: directly invoke execute_command and print output
+            result = client.execute_command(
+                device_ids=[device_guid],
+                command=cmd_obj,
+                timeout=timeout,
+            )
+            output = result.get(device_guid, "")
+            click.secho(f">>> {device_name}({device_guid})", fg=Colors.YELLOW)
+            if output:
+                click.echo(f"{output}\n")
+            # Empty output is normal for quiet curl success
+    except Exception as e:
+        click.secho(str(e), fg=Colors.RED)
+        raise SystemExit(1) from e

@@ -145,7 +145,7 @@ def ssh_authorize_key(
 
         spinner.write("> Uploading public SSH key to device")
         with spinner.hidden():
-            copy_to_device(device_guid, str(public_key_file), temp_path)
+            copy_to_device(device_guid, device_name, str(public_key_file), temp_path)
 
         if user != "root":
             command = [

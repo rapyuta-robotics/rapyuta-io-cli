@@ -111,6 +111,7 @@ definitions:
                   - 4
                   - 8
                   - 16
+                  - 32
                 default: 2
               private_ip:
                 type: string

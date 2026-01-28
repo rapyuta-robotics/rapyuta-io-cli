@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any 
+import shlex
 
 import click
 from munch import Munch
@@ -94,9 +95,13 @@ def _process_deployment_services(
     package = find_package(packages, pkg_dep.nameOrGUID, pkg_dep.version)
 
     # Get restart policy with normalization
-    restart_policy = package.spec.get("device", {}).get("restart", "always")
+    restart_policy = deployment.spec.get("restart", None)
+    restart_policy = restart_policy or package.spec.get("device", {}).get("restart", "always")
+
     if restart_policy == "onfailure":
         restart_policy = "on-failure"
+    elif restart_policy == "never":
+        restart_policy = "no"
 
     # Build volume mounts, dependencies, and environment variables
     volume_mounts = build_volume_mounts(deployment)
@@ -190,13 +195,15 @@ def build_volume_mounts(deployment: dict) -> list[str]:
 
         # Determine volume mode based on permissions
         perm = volume.get("perm")
-        mode = VOLUME_PERMISSIONS.get(perm, "rslave")
-        service_volumes.append(f"{src}:{dst}:{mode}")
+        mode = ""
+        if perm in VOLUME_PERMISSIONS:
+            mode = f":{VOLUME_PERMISSIONS.get(perm)}"
+        service_volumes.append(f"{src}:{dst}{mode}")
 
     return service_volumes
 
 
-def populate_command(exe: dict) -> list[str] | None:
+def populate_command(exe: dict) -> list[str] | str | None:
     """
     Constructs the command to run for a container from the executable definition.
     If runAsBash is True, wraps the command in a shell invocation.
@@ -206,11 +213,33 @@ def populate_command(exe: dict) -> list[str] | None:
     if not cmd_raw:
         return None
 
+    result: list[str] | str | None = None
+
     if exe.get("runAsBash") in (True, "true"):
         cmd_str = cmd_raw if isinstance(cmd_raw, str) else " ".join(cmd_raw)
-        return ["/bin/bash", "-c", cmd_str]
+        result = ["/bin/bash", "-c", cmd_str]
+    elif isinstance(cmd_raw, list) and len(cmd_raw) == 1:
+        result = cmd_raw[0]
     else:
-        return cmd_raw if isinstance(cmd_raw, list) else [cmd_raw]
+        result = cmd_raw
+
+    return sanitize_command(result)
+
+
+def sanitize_command(input: list[str] | str | None) -> list[str] | str | None:
+    # Docker compose tries to render the $VAR before running the container.
+    # Escape all the $VAR -> $$VAR.
+    # But there might already be escaped vars, avoid them.
+    if isinstance(input, list):
+        out = []
+        for each in input:
+            replaced = each.replace("$", "$$").replace("$$$$", "$$")
+            out.append(replaced)
+
+        return out
+
+    if isinstance(input, str):
+        return input.replace("$", "$$").replace("$$$$", "$$")
 
 
 def find_package(packages: dict[str, dict], name: str, version: str) -> dict:
@@ -268,7 +297,7 @@ def populate_depends_on(
         depends_on["ros-master"] = DependsCondition()
 
     for dep in deployment.spec.get("depends", {}):
-        if deployment.kind != "deployment":
+        if dep.kind != "deployment":
             continue
 
         dep_name = dep.nameOrGUID
@@ -286,7 +315,11 @@ def populate_depends_on(
         # Generate service names for each executable in the dependent package
         for exe in pkg.get("spec", {}).get("executables", []):
             service_name = f"{dep_name}_{exe['name']}"
-            depends_on[service_name] = DependsCondition()
+            condition = DependsCondition()
+            if hasattr(exe, "livenessProbe") and hasattr(exe.livenessProbe, "exec"):
+                condition.condition = "service_healthy"
+
+            depends_on[service_name] = condition
 
     return depends_on
 
@@ -304,7 +337,7 @@ def populate_healthcheck(exe: dict) -> HealthCheck | None:
         return None
 
     return HealthCheck(
-        test=" ".join(command),
+        test=" ".join(shlex.quote(part) for part in command),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
         interval=f"{probe.get('periodSeconds', 10)}s",
         retries=probe.get("failureThreshold", 3),
