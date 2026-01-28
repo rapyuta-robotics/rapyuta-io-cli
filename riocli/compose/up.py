@@ -47,9 +47,9 @@ from riocli.utils import print_centered_text
     ),
 )
 @click.option(
-    "--no-detach",
-    "-nd",
-    "no_detach",
+    "--detach",
+    "-d",
+    "detach",
     is_flag=True,
     help="Detached mode: Run containers in the background",
 )
@@ -65,8 +65,8 @@ def up(
     file_name: str,
     values: tuple[str, ...],
     secrets: tuple[str, ...],
-    path: str,
-    no_detach: bool,
+    path: Path,
+    detach: bool,
     build: bool,
     files: tuple[str, ...],
 ):
@@ -111,8 +111,6 @@ def up(
 
     if not compose_manager.validate_docker_availability():
         raise SystemExit(1)
-
-    detach = not no_detach
 
     print_centered_text("Starting docker services")
     if not compose_manager.up(detached=detach, build=build):

@@ -1,3 +1,191 @@
+## [9.13.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.3...v9.13.4) (2025-12-23)
+
+
+### Bug Fixes
+
+* **jsonschema:** update organizationGUID regex to match the newer format ([#479](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/479)) ([472c13f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/472c13f42aa4bb9e08a44c16fd183c5169ef449c))
+
+## [9.13.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.2...v9.13.3) (2025-11-27)
+
+
+### Bug Fixes
+
+* **configtrees:** serialise non-string values to JSON before storing in configtrees ([faaf19d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/faaf19d8c13945be397d031b15e33ed31a51ae84))
+
+## [9.13.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.1...v9.13.2) (2025-11-05)
+
+
+### Bug Fixes
+
+* **compose:** handle restart policy "never" and deployment overriding ([1b187c8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1b187c857cf3332b067a054c70cb01238289cb9d)), closes [rapyuta-robotics/rapyuta_io#1138](https://github.com/rapyuta-robotics/rapyuta_io/issues/1138)
+
+## [9.13.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.0...v9.13.1) (2025-10-21)
+
+
+### Bug Fixes
+
+* **tools:** fixes scp timeout for large files ([7b534f5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7b534f568f89dded9e142201e890f0a47b1d680d))
+
+# [9.13.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.3...v9.13.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* **compose:** handle deployment dependencies correctly ([b6369de](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b6369def77322a787946e1e978bcc415782b9b21))
+* **compose:** handle quoting command correctly for healthchecks ([3ae4b89](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3ae4b897443b45548457295a70ac2cc63fd78a55))
+* **compose:** replace --no-detach with --detach ([b9af823](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b9af823331f4a44a2f174d8d5520cb27f3a41b52))
+* **compose:** sanitize volume permissions and commands ([8fd2f71](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8fd2f7160d2effb9f59bd7a7d240b08dce446a03))
+* **compose:** use service_healthy condition if liveness probe present ([c7f5092](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c7f50928ff740fbe15858a2843a96df74e25ed83))
+
+
+### Features
+
+* **device:** support 32 core VMs ([098114c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/098114c73eeae3c6650beee44ca3273641046544))
+
+## [9.12.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.2...v9.12.3) (2025-09-02)
+
+
+### Bug Fixes
+
+* **apply:** reduce device poll time for get_intf_ip filter ([0e0e92b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0e0e92b9b2324d9f9a195bc221dd1631a7cf0f69))
+* **ssh:** expand tilde to user home folder ([a2e503c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a2e503c89482260b76958913bc46634672387511))
+
+## [9.12.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.1...v9.12.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* **devices:** handle no-output for execute commands ([3ed1ed2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3ed1ed2b28e7e18d058ca515371782591f9640a7))
+
+## [9.12.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.12.0...v9.12.1) (2025-08-12)
+
+
+### Bug Fixes
+
+* **apply:** fix the `default` behaviour in the templates ([#457](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/457)) ([4d02f47](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4d02f473f4bfa0f026ecb0affed80cb366702363))
+* **device:** fixes default python-version to 3 ([c75018c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c75018c179f89025d6097609c9d49b51cd5bdd03))
+* **device:** improve async logic ([dbaa927](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dbaa927903a8572fc63ac67a618138b614abe053))
+
+# [9.12.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.11.0...v9.12.0) (2025-07-30)
+
+
+### Bug Fixes
+
+* **apply:** support both APIVersion strings ([a7f1466](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a7f1466cb2314c2c07a1b8406261fa79b05a8b74)), closes [rapyuta-robotics/rapyuta_io#865](https://github.com/rapyuta-robotics/rapyuta_io/issues/865)
+* fix cyclic dependency between auth, project and organization modules ([#452](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/452)) ([e635011](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e635011db2bee0414f21f28a4318be7ca1c485ed)), closes [rapyuta-robotics/rapyuta_io#888](https://github.com/rapyuta-robotics/rapyuta_io/issues/888)
+* remove deprecated pkg_resources module ([92aaa05](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/92aaa0548653467a8d1561fe031869544447492f)), closes [rapyuta-robotics/rapyuta_io#887](https://github.com/rapyuta-robotics/rapyuta_io/issues/887)
+
+
+### Features
+
+* add compose commands to generate compose files from manifests ([692a92b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/692a92b656a27827f07a1347c30d857a510d3523))
+* **packages:** support specifying UID/GID per executable ([a9b860f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a9b860f8e9daf3b4dfa1037bfd6afc5a76972c3b)), closes [rapyuta-robotics/rapyuta_io#868](https://github.com/rapyuta-robotics/rapyuta_io/issues/868)
+
+# [9.11.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.10.0...v9.11.0) (2025-06-27)
+
+
+### Bug Fixes
+
+* **deployment:** remove unnecessary required fields from deployment schema ([#442](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/442)) ([c0f2745](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c0f274589967dacfea1a78ac7b3a29713877bcdd))
+* **disk:** fix the delete command with --all flag ([3e4ba3d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3e4ba3d6cc5cd72dd6f2c167c6cb741ac1cada85)), closes [rapyuta-robotics/rapyuta_io#861](https://github.com/rapyuta-robotics/rapyuta_io/issues/861)
+* **network:** fix the delete command with --all flag ([245eb54](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/245eb54b72972e0bb892e84bc5552b9a7db11664)), closes [rapyuta-robotics/rapyuta_io#860](https://github.com/rapyuta-robotics/rapyuta_io/issues/860)
+
+
+### Features
+
+* **apply:** support jinja templating in values files ([20f7ac2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/20f7ac231e674cd89aebd5ccc2659099a3ae7cb6))
+* old bg replaced by async and new fucntionality ([2e350b8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2e350b80ff6df199080ba8b5edf782bf31f36d8c))
+* **projects:** support user-defined data directory for docker cache ([f133ca1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f133ca1078553129dde1f3970d4fc647ce6be2bb))
+
+# [9.10.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.3...v9.10.0) (2025-06-04)
+
+
+### Features
+
+* **device:** add support for native hwil azure vms ([6d3215c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6d3215cdabc6ebe0cdf2267b9903be176061356a))
+
+## [9.9.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.2...v9.9.3) (2025-05-28)
+
+
+### Bug Fixes
+
+* add libmagic binary package for windows ([c359b2b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c359b2bd79a5ef1eb75862528713ce632b8517db))
+* **apply:** lazy load ansible modules ([5b57c31](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b57c312ccb0013f0c1fea8d1698fe9d72a5e1cf))
+
+## [9.9.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.1...v9.9.2) (2025-05-16)
+
+
+### Bug Fixes
+
+* **oauth2:** fix compatibility with Python3.8 ([1faf3d0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1faf3d0486c9a7c82a79b74bc3286e412c217999))
+
+## [9.9.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.9.0...v9.9.1) (2025-05-13)
+
+
+### Bug Fixes
+
+* pin click to 8.0.x ([acbd0ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/acbd0ce28530f19e250afca4cc281be823a08452))
+
+# [9.9.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.8.0...v9.9.0) (2025-05-07)
+
+
+### Bug Fixes
+
+* **oauth2:** increase default pagination limit to 50 to speed up list ([7ab1d64](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7ab1d6415f0b82f9daec661384e9abb94850823b))
+* **project:** fixes the list and inspect project functionality when no organization is selected ([80908c1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/80908c175cb75e51fecdc158efcb1bd7b797dbc6))
+* **usergroup:** handle case-insensitive email support ([15719f0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/15719f007f79a63438dea63059b1d2ab05984d9c))
+
+
+### Features
+
+* **apply:** add context in the output for apply-family of commands ([f2ddad4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f2ddad48099c63f115e0ca6e4d0e400575469654)), closes [AB#59533](https://github.com/AB/issues/59533)
+* **oauth2:** add oauth2 commands ([1cce2d1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cce2d1d92de202fa0af43387764462ecb209c0f))
+* **vpn:** support --force flag for vpn connect command ([e9aa3b4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e9aa3b4b622d093106fd07416e739a79e1094a6c)), closes [AB#48205](https://github.com/AB/issues/48205)
+
+# [9.8.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.7.0...v9.8.0) (2025-04-09)
+
+
+### Bug Fixes
+
+* **device:** handle empty command in device execute ([84a5c9c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/84a5c9cb1c8bc6b6973fffc14fb741615bd9d0e1))
+* **device:** return non-zero exit code if delete fails for atleast one device ([dfcc7d7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dfcc7d739f581b709f11241777e198d902990b71)), closes [AB#51601](https://github.com/AB/issues/51601)
+* **devices:** update device schema to support noble ([730e747](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/730e747dd72eb51ef3bb61b6ab4cb1911b57c3e2))
+* **organization:** handle no user in add/remove user commands ([1741823](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1741823007c792b9a5f3f3423f426d4ea359733c))
+* **parameter:** raise exception when binary upload fails ([e327ec3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e327ec3749bb16b2c011c0911f621120cd016ed5))
+* **usergroup:** allow empty description in manifest ([c9f2ee2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c9f2ee2ca0b192303ccdb845fb86e45cb4d73d79))
+
+
+### Features
+
+* **apply:** add support for `--delete-existing` flag ([3939d01](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3939d013f0440e03fb5c1724185bb1ef0e724fe9))
+* **device:** enable vpn on all devices if not provided ([f9ae920](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f9ae920276924fabf7497b60434ff5907d00b8bf))
+* **device:** execute command on multiple devices ([fd6fb25](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fd6fb253e8e47c27533a02c4ab86abb869f47eb5))
+* **vpn:** add flush command ([5ea02ee](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5ea02ee6d34200478b67d1b7e69c41bc8ad5b0e6))
+
+# [9.7.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.6.0...v9.7.0) (2025-01-29)
+
+
+### Bug Fixes
+
+* **cli:** returns success in case deployment, package, secret, route, device, disk, network not found while deleting ([2e7e377](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2e7e37778c9a7b1931723f9f53c8a4f5594333d0))
+* **device:** keep device inspect backwards compatible ([5b198b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b198b626a60e723d34e1ce7ec46151c97ce3dab)), closes [AB#47896](https://github.com/AB/issues/47896)
+* **vpn:** fix connect command with --update-hosts flag ([dadab65](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dadab65fc596be6341f56b4e90b03ac7ee7770a9))
+
+
+### Features
+
+* **project:** add support for docker-cache feature ([37aba6c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/37aba6cf3fc78ba78b1a014fd1dc311741d2228c)), closes [AB#43805](https://github.com/AB/issues/43805)
+* **projects:** add dockercache subcommand in features command ([4b78076](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4b780762ef01280ae0f570178d5fafd6c0e5fa07))
+* **vpn:** add device-hostname entry in hosts file ([bd4abe4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bd4abe45b1c77f932be186c3dbcd2d42c3f24d81))
+
+# [9.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.5.0...v9.6.0) (2025-01-09)
+
+
+### Features
+
+* **apply:** add support for multiple interfaces in get_intf_ip filter ([589b53c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/589b53ca78ae259c18a749ed26750a998cc378ff))
+* **package:** supports hostPID for package ([519790a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/519790a76129de81d4968715d8aaeda47f0029c0))
+
 # [9.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.4.0...v9.5.0) (2024-12-11)
 
 

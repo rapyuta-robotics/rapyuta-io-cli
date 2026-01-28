@@ -1,0 +1,622 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: Package
+$ref: "#/definitions/package"
+definitions:
+  package:
+    type: object
+    properties:
+      apiVersion:
+        default: api.rapyuta.io/v2
+        oneOf:
+          - const: apiextensions.rapyuta.io/v1
+          - const: api.rapyuta.io/v2
+      kind:
+        const: Package
+        default: Package
+      metadata:
+        "$ref": "#/definitions/metadata"
+      spec:
+        "$ref": "#/definitions/componentSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+
+  metadata:
+    type: object
+    properties:
+      name:
+        type: string
+      version:
+        type: string
+      description:
+        type: string
+      guid:
+        "$ref": "#/definitions/packageGUID"
+      creator:
+        "$ref": "#/definitions/uuid"
+      project:
+        "$ref": "#/definitions/projectGUID"
+      labels:
+        "$ref": "#/definitions/stringMap"
+        uniqueItems: true
+    required:
+      - name
+      - version
+
+  componentSpec:
+    type: object
+    properties:
+      runtime:
+        type: string
+        enum:
+          - device
+          - cloud
+      ros:
+        type: object
+        "$ref": "#/definitions/rosComponentSpec"
+    dependencies:
+      runtime:
+        oneOf:
+          - properties:
+              runtime:
+                enum:
+                  - device
+              device:
+                type: object
+                "$ref": "#/definitions/deviceComponentInfoSpec"
+              executables:
+                type: array
+                minItems: 1
+                items:
+                  "$ref": "#/definitions/deviceExecutableSpec"
+              environmentArgs:
+                type: array
+                items:
+                  "$ref": "#/definitions/environmentSpec"
+              hostPID:
+                type: boolean
+
+          - properties:
+              runtime:
+                enum:
+                  - cloud
+              cloud:
+                type: object
+                "$ref": "#/definitions/cloudComponentInfoSpec"
+
+              executables:
+                type: array
+                minItems: 1
+                items:
+                  "$ref": "#/definitions/cloudExecutableSpec"
+
+              environmentVars:
+                type: array
+                items:
+                  "$ref": "#/definitions/environmentSpec"
+
+              endpoints:
+                type: array
+                items:
+                  "$ref": "#/definitions/endpointSpec"
+
+            required:
+              - cloud
+    required:
+      - runtime
+
+  deviceExecutableSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: docker
+        enum:
+          - docker
+          - preInstalled
+      command:
+        "$ref": "#/definitions/commandSpec"
+      runAsBash:
+        type: boolean
+        default: True
+      limits:
+        type: object
+        properties:
+          cpu:
+            type: number
+            minimum: 0
+            maximum: 256
+          memory:
+            type: number
+            minimum: 0
+      livenessProbe:
+        type: object
+        "$ref": "#/definitions/livenessProbe"
+      uid:
+        type: integer
+      gid:
+        type: integer
+    required:
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - docker
+              docker:
+                type: object
+                properties:
+                  image:
+                    "$ref": "#/definitions/imageName"
+                  imagePullPolicy:
+                    "$ref": "#/definitions/imagePullPolicy"
+                  pullSecret:
+                    "$ref": "#/definitions/secretDepends"
+                required:
+                  - image
+          - properties:
+              type:
+                enum:
+                  - preInstalled
+
+  cloudExecutableSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: docker
+        enum:
+          - docker
+      command:
+        "$ref": "#/definitions/commandSpec"
+      runAsBash:
+        type: boolean
+        default: True
+      limits:
+        type: object
+        properties:
+          cpu:
+            type: number
+            default: 0.025
+            min: 0.025
+            max: 8.000
+            multipleOf: 0.025
+          memory:
+            type: number
+            default: 128
+            min: 128
+            max: 32768
+            multipleOf: 128
+    required:
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - docker
+              docker:
+                type: object
+                properties:
+                  image:
+                    "$ref": "#/definitions/imageName"
+                  pullSecret:
+                    type: object
+                    properties:
+                      depends:
+                        "$ref": "#/definitions/secretDepends"
+                    required:
+                      - depends
+                required:
+                  - image
+
+  commandSpec:
+    type: ["array", "string", "null"]
+    items:
+      type: string
+
+  portNumber:
+    type: integer
+    min: 1
+    max: 65531
+
+  endpointSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: external-http
+        enum:
+          - external-http
+          - external-https
+          - external-tls-tcp
+          - internal-tcp
+          - internal-udp
+          - internal-tcp-range
+          - internal-udp-range
+    required:
+      - name
+      - type
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - external-http
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - external-https
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 443
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - external-tls-tcp
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 443
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - internal-tcp
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+
+          - properties:
+              type:
+                enum:
+                  - internal-udp
+              port:
+                "$ref": "#/definitions/portNumber"
+                default: 80
+              targetPort:
+                "$ref": "#/definitions/portNumber"
+            required:
+              - port
+              - targetPort
+          - properties:
+              type:
+                enum:
+                  - internal-tcp-range
+              portRange:
+                type: string
+            required:
+              - portRange
+          - properties:
+              type:
+                enum:
+                  - internal-udp-range
+              portRange:
+                type: string
+            required:
+              - portRange
+
+  environmentSpec:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      default:
+        type: string
+      exposed:
+        type: boolean
+        default: False
+    required:
+      - name
+    dependencies:
+      exposed:
+        oneOf:
+          - properties:
+              exposed:
+                enum:
+                  - True
+              exposedName:
+                type: string
+            required:
+              - exposedName
+          - properties:
+              exposed:
+                enum:
+                  - False
+
+  cloudComponentInfoSpec:
+    type: object
+    properties:
+      replicas:
+        type: number
+        default: 1
+
+  deviceComponentInfoSpec:
+    type: object
+    properties:
+      arch:
+        type: string
+        enum:
+          - arm32v7
+          - arm64v8
+          - amd64
+        default: amd64
+      restart:
+        type: string
+        default: always
+        enum:
+          - always
+          - never
+          - onfailure
+
+  rosComponentSpec:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        default: False
+    dependencies:
+      enabled:
+        oneOf:
+          - properties:
+              enabled:
+                enum:
+                  - False
+          - properties:
+              enabled:
+                type: boolean
+                enum:
+                  - True
+              version:
+                type: string
+                enum:
+                  - kinetic
+                  - melodic
+                  - noetic
+                  - foxy
+                default: melodic
+              inboundScopedTargeted:
+                type: boolean
+                default: false
+              rosEndpoints:
+                type: array
+                items:
+                  "$ref": "#/definitions/rosEndpointSpec"
+            required:
+              - version
+
+  rosEndpointSpec:
+    type: object
+    properties:
+      type:
+        type: string
+        default: topic
+        enum:
+          - topic
+          - service
+          - action
+      name:
+        type: string
+      compression:
+        type: boolean
+        default: false
+      scoped:
+        type: boolean
+        default: false
+      targeted:
+        type: boolean
+        default: false
+    required:
+      - type
+      - name
+    dependencies:
+      type:
+        oneOf:
+          - properties:
+              type:
+                enum:
+                  - topic
+              qos:
+                type: string
+                enum:
+                  - low
+                  - med
+                  - hi
+                  - max
+                default: low
+          - properties:
+              type:
+                enum:
+                  - service
+              timeout:
+                type: number
+                default: 120
+                min: 0
+          - properties:
+              type:
+                enum:
+                  - action
+    allOf:
+      - anyOf:
+          - not:
+              properties:
+                scoped:
+                  const: true
+                targeted:
+                  const: true
+
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+  organizationGUID:
+    type: string
+    pattern: "^org-([a-z0-9]{20}|[a-z]{24})$"
+  projectGUID:
+    type: string
+    pattern: "^project-([a-z0-9]{20}|[a-z]{24})$"
+  packageGUID:
+    type: string
+    pattern: "^pkg-([a-z0-9]{20}|[a-z]{24})$"
+  uuid:
+    type: string
+    pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+  imageName:
+    type: string
+    pattern: ^(?:(?=[^:\/]{1,253})(?!-)[a-zA-Z0-9-]{1,63}(?<!-)(?:\.(?!-)[a-zA-Z0-9-]{1,63}(?<!-))*(?::[0-9]{1,5})?/)?((?![._-])(?:[a-z0-9._-]*)(?<![._-])(?:/(?![._-])[a-z0-9._-]*(?<![._-]))*)(?::(?![.-])[+a-zA-Z0-9_.-]{1,128})?$
+  imagePullPolicy:
+    type: string
+    enum:
+      - Always
+      - IfNotPresent
+      - Never
+    default: IfNotPresent
+
+  packageDepends:
+    properties:
+      kind:
+        const: package
+        default: package
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  deviceDepends:
+    properties:
+      kind:
+        const: device
+        default: device
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  networkDepends:
+    properties:
+      kind:
+        const: network
+        default: network
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  secretDepends:
+    properties:
+      nameOrGUID:
+        type: string
+  diskDepends:
+    properties:
+      kind:
+        const: disk
+        default: disk
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+  staticRouteDepends:
+    properties:
+      kind:
+        const: static-route
+        default: static-route
+      nameOrGUID:
+        type: string
+      guid:
+        type: string
+
+  livenessProbe:
+    type: object
+    properties:
+      httpGet:
+        type: object
+        properties:
+          path:
+            type: string
+            description: Path to access for the HTTP probe.
+          port:
+            type: integer
+            description: Port number for the HTTP probe.
+          scheme:
+            type: string
+            default: HTTP
+            description: Scheme to use for connecting to the host.
+        required:
+          - path
+          - port
+      exec:
+        type: object
+        properties:
+          command:
+            type: array
+            items:
+              type: string
+            description: Command to execute for the Exec probe.
+        required:
+          - command
+      tcpSocket:
+        type: object
+        properties:
+          port:
+            type: integer
+            description: Port number for the TCP probe.
+        required:
+          - port
+      initialDelaySeconds:
+        type: integer
+        minimum: 1
+        default: 1
+        description: Number of seconds after the container has started before liveness probes are initiated.
+      timeoutSeconds:
+        type: integer
+        minimum: 10
+        default: 10
+        description: Number of seconds after which the probe times out.
+      periodSeconds:
+        type: integer
+        minimum: 1
+        default: 1
+        description: How often (in seconds) to perform the probe.
+      successThreshold:
+        type: integer
+        default: 3
+        minimum: 1
+        description: Minimum consecutive successes for the probe to be considered successful after having failed.
+      failureThreshold:
+        type: integer
+        default: 3
+        minimum: 1
+        description: Minimum consecutive failures for the probe to be considered failed after having succeeded.
