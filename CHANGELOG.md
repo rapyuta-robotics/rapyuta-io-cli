@@ -1,3 +1,61 @@
+# [10.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.4...v10.0.0) (2026-01-28)
+
+
+### Bug Fixes
+
+* **configtrees:** fix organization tree handling ([52626b2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/52626b244181986e075a4ae8f2fcad40e0048be7))
+* correct license field format in pyproject.toml ([933ab8a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/933ab8ae1e16d290886cc0b971803746164dfc92))
+* **device:** sanitize hwil device names with DNS-1123 rules ([b80e1b6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b80e1b6d5cccc906cd6ed05c7cffae1bf94127d3))
+* **hwil:** fix ssh for vm-backed devices ([ce1d935](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ce1d93585ae0fffeb0e8b084ba4526e9d82f5b22))
+* **model:** try update when unauthorized to create ([879151e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/879151edbbc0e1ca7954080a56c5c22c479ef8bc))
+* **project:** use myself API for finding role in project ([7328350](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/73283504924032f706ed33f5bec3a7653cb930dd))
+* **role:** expose delete command ([0dbe8ee](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0dbe8eee7d3c7eb1740eb34a72c6b1f75f48774d))
+* **role:** fix role list-bindings docstring ([3fa884b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3fa884b97ed45301da57b3edeac09ad413e0a01a))
+* **roles:** truncate long descriptions in list output ([47260a5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47260a53cd9274262b0997d58deb672558c3fd2c))
+* **serviceaccount:** truncate long descriptions in list output ([46d8010](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/46d80104b18b3003da54082a159fb9b3f035c009))
+* **staticroute:** remove unnecessary fields from list output ([47ad219](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47ad21932a3639703a1028a62929ecdc2ae330a7))
+* **usergroup:** fix list output to fit the terminal width ([21ac798](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/21ac79889e9196fc637ffbd47757a91968f21486))
+* **usergroup:** handle `None` description in the list ([c21aacf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c21aacf2fc995416570b7c066b6660db423ea20a))
+* **usergroup:** handle usergroup not found during inspect ([8d11d28](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8d11d288bb62c2db6ef7554557b6600ccb994cd6))
+* **usergroup:** usergroup inspect returns full object ([4be3fd5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4be3fd5e2dd1e6c4a7f9382b85b55a307ebd2fb7))
+
+
+### chore
+
+* bump Python min version to 3.10 and refactor deprecated typing usage ([56ba5ff](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/56ba5ffe42d82005c33a49ecfebffdd0ed08438b))
+
+
+### Features
+
+* add AliasedGroup for command aliases and abbreviations ([7325c2f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7325c2f602698e772268e057c2490ee33b47fb58))
+* Add comprehensive RBAC tests ([4390ba5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4390ba59a140d50ec7da2ccf20b89973bb6049f9))
+* add Emacs package for rio ([8e1faeb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8e1faeb475ac218f6d2a3cca1cd4c35bb283e8e9))
+* Add role management commands including delete, inspect, list, and unbind ([8c73bfc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8c73bfcd630ec4f6eef4800850883494551281f7))
+* **auth:** updated auth implementation to use new v2 methods ([1a749e3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1a749e3332511c54a1cca4204e9452ea06bbf926))
+* **chart:** add workers option to delete command and refactor chart listing ([0b0fcb5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0b0fcb551035c4500971df1205ee501fcc99eb69))
+* **config:** enhance v2 client integration and improve import organization ([8ab1d0d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8ab1d0dcb73914cd1f8987275802119502f683f0))
+* **deployment:** refactor imports and enhance deployment commands with new v2 client methods ([107d357](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/107d357ae1034bae81d242a64c5cffa5f9dbecf4))
+* **device:** refactor imports and enhance device handling across multiple files ([07280e8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/07280e8fb8ba341de8dd091e02442f4023c586cb))
+* **disk:** refactor disk operations to utilize new v2 client methods and improve code structure ([82a02e3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/82a02e3c6e2ed9fd379ddf5b5b7c60c785e7d0d9))
+* enhance JSON serialization and update file handling in Revision class ([a497784](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a497784cad55f0143527728b6c8ad73dea57eaea))
+* **network:** refactor network handling to utilize new v2 client methods and improve code structure ([0ad4d6a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0ad4d6a2c9cc0aaf2b7c6dba7f409cc0e619a317))
+* **organization:** refactor organization handling to utilize new v2 client methods and improve code structure ([bf400a8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/bf400a81521ec56ae49f4547e4ee2184e7737b2c))
+* **package:** refactor package handling to utilize new v2 client methods and improve code readability ([f0cc992](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f0cc992afeb56c45b638dc8209505bc131a9d89d))
+* **project:** refactor project handling to utilize new v2 client methods and improve code structure ([5b5e0e3](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5b5e0e3ec2ef05e5fe75c70187a17b83c49389d3))
+* Refactor config tree handling to utilize new v2 client methods and improve code structure ([84566d5](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/84566d57bf400f996f03908a2ae0f37adc47b715))
+* Remove unnecessary command sanitization in create_object method ([f4dbf3e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/f4dbf3ede628605cded9f4152e5cabc1181a5d53))
+* removed jsonschemas for v2 resources and update code for few resources ([7243b8f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7243b8f63ff3b8bde2cad46f6d83c5f9a5eb9d3e))
+* **static_route, secret:** refactor to utilize new v2 client methods and improve code structure ([a51f348](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a51f3482725a488e9b0b93926e81c9edaa12abe5))
+* **tests:** Enhance RBAC support with comprehensive tests and role management ([61e81a7](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/61e81a7fa6ebdf24adfb8be548df027c085fc032))
+* Update AppImage build script to use Python 3.13.7 and adjust related paths ([fcb1445](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fcb1445d3c0f174731c7dc1b8e8fe26716c08d8d))
+* updated manifest examples and refactored parsing of manifests ([26cd72e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/26cd72efdbec6044607025e08198afbd9bc4fa94))
+* **usergroup:** refactor usergroup handling to utilize new v2 client methods ([a9e6d6e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a9e6d6e636d919c54427882e101107a8933d52b3))
+
+
+### BREAKING CHANGES
+
+* Dropped support for Python versions < 3.10
+
 ## [9.13.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.3...v9.13.4) (2025-12-23)
 
 
