@@ -22,13 +22,18 @@ from pathlib import Path
 import click
 from munch import Munch
 from rapyuta_io import Client
-from rapyuta_io.clients import LogUploads, SharedURL
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
+from rapyuta_io_sdk_v2.models import FileUploadList, SharedURL, SharedURLRequest
 from rapyuta_io_sdk_v2.utils import handle_server_errors
 
-from riocli.config import get_config_from_context, new_client, new_hwil_client
+from riocli.config import (
+    get_config_from_context,
+    new_client,
+    new_hwil_client,
+    new_v2_client,
+)
 from riocli.config.config import Configuration
 from riocli.constants import Colors
 from riocli.exceptions import DeviceNotFound
@@ -81,7 +86,10 @@ def upload_debug_logs(device_guid: str) -> dict:
         "core_api_host", "https://gaapiserver.apps.okd4v2.prod.rapyuta.io"
     )
 
-    url = f"{coreapi_host}/api/device-manager/v0/error_handler/upload_debug_logs/{device_guid}"
+    url = (
+        f"{coreapi_host}/api/device-manager/v0/error_handler/"
+        f"upload_debug_logs/{device_guid}"
+    )
 
     headers = config.get_auth_header()
     response = (
@@ -98,14 +106,13 @@ def upload_debug_logs(device_guid: str) -> dict:
 
 def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=None):
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
+        client = new_v2_client()
         expiry_time = datetime.now() + timedelta(days=expiry)
 
         # Create the shared URL
-        public_url = device.create_shared_url(
-            SharedURL(request_id, expiry_time=expiry_time)
-        )
+        shared_url_request = SharedURLRequest(expiry_time=expiry_time)
+        shared_url = SharedURL(spec=shared_url_request.model_dump(by_alias=True))
+        public_url = client.create_sharedurl(fileupload_guid=request_id, body=shared_url)
         return public_url
     except Exception as e:
         raise Exception(f"Failed to create shared URL: {e}")
@@ -138,18 +145,16 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
     @wraps(f)
     def decorated(**kwargs):
         try:
-            client = new_client()
+            client = new_v2_client()
         except Exception as e:
             click.secho(str(e), fg=Colors.RED)
             raise SystemExit(1)
 
         file_name = kwargs.pop("file_name")
-
         device_guid = kwargs.get("device_guid")
-        device = client.get_device(device_id=device_guid)
-        requests = device.list_uploaded_files_for_device(filter_by_filename=file_name)
 
-        file_name, request_id = find_request_id(requests, file_name)
+        uploads = client.list_fileuploads(device_guid=device_guid)
+        file_name, request_id = find_request_id(uploads, file_name)
 
         kwargs["file_name"] = file_name
         kwargs["request_id"] = request_id
@@ -201,10 +206,10 @@ def migrate_device_to_project(
         raise Exception(err_msg)
 
 
-def find_request_id(requests: list[LogUploads], file_name: str) -> (str, str):
-    for request in requests:
-        if request.filename == file_name or request.request_uuid == file_name:
-            return request.filename, request.request_uuid
+def find_request_id(uploads: FileUploadList, file_name: str) -> (str, str):
+    for upload in uploads.items:
+        if upload.spec.file_name == file_name or upload.metadata.guid == file_name:
+            return upload.spec.file_name, upload.metadata.guid
 
     click.secho("file not found", fg=Colors.RED)
     raise SystemExit(1)
