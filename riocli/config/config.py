@@ -103,7 +103,7 @@ class Configuration:
 
     @lru_cache(maxsize=2)  # noqa: B019
     def new_v2_client(
-        self: Configuration, with_project: bool = True, from_file: bool = True
+        self: Configuration, with_project: bool = True, from_file: bool = True # from_file parameter is deprecated
     ) -> v2Client:
         if "auth_token" not in self.data:
             raise LoggedOut
@@ -112,15 +112,24 @@ class Configuration:
         if environment:
             os.environ["RIO_CONFIG"] = self.filepath
 
-        if not with_project and not from_file:
+        if not with_project:
             return v2Client(
                 config=v2Config(
                     auth_token=self.data["auth_token"],
-                    environment=self.data["environment"] or "ga",
+                    environment=self.data.get("environment", "ga"),
+                    organization_guid=self.data.get("organization_id", None),
                 )
             )
 
-        return v2Client(config=v2Config().from_file(self.filepath))
+        return v2Client(
+            config=v2Config(
+                auth_token=self.data["auth_token"],
+                environment=self.data.get("environment", "ga"),
+                organization_guid=self.data.get("organization_id", None),
+                project_guid=self.data.get("project_id", None),
+                email=self.data.get("email_id", None),
+            )
+        )
 
     def new_hwil_client(self: Configuration) -> HwilClient:
         if "hwil_auth_token" not in self.data:
