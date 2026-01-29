@@ -517,7 +517,7 @@ class Applier:
             except Exception as e:
                 return e
 
-        with ThreadPoolExecutor(max_workers=workers) as executor:
+        with ThreadPoolExecutor(max_workers=int(workers)) as executor:
             for tasks in work:
                 futures = executor.map(worker_func, tasks)
 

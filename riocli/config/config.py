@@ -116,7 +116,7 @@ class Configuration:
             return v2Client(
                 config=v2Config(
                     auth_token=self.data["auth_token"],
-                    environment=self.data["environment"] or "ga",
+                    environment=self.data.get("environment", "ga"),
                 )
             )
 
