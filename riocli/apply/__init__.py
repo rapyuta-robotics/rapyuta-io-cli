@@ -157,7 +157,8 @@ def apply(
             $ rio apply -v values.yaml --delete-existing templates/
 
     """
-    print_context(ctx)
+    if not dryrun:
+        print_context(ctx)
 
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
