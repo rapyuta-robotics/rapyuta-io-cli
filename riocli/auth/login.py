@@ -129,7 +129,7 @@ def login(
         config.data["auth_token"] = auth_token
         # if not validate_and_set_token(ctx, config, interactive=interactive):
         #     raise SystemExit(1)
-        v2_cli = config.new_v2_client()
+        v2_cli = config.new_v2_client(with_project=False, from_file=False)
 
         subject = munchify(v2_cli.get_subject(auth_token))
 

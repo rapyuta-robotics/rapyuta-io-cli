@@ -113,7 +113,7 @@ def execute_command(
 
         if exec_name is None:
             package = client.get_package(
-                deployment.metadata.depends.nameOrGUID,
+                deployment.metadata.depends.name_or_guid,
                 version=deployment.metadata.depends.version,
             )
             executables = [e.name for e in package.spec.executables]
@@ -130,7 +130,7 @@ def execute_command(
                 background=run_async,
                 deployment=deployment,
                 exec_name=exec_name,
-                device_name=deployment.spec.device.depends.nameOrGUID,
+                device_name=deployment.spec.device.depends.name_or_guid,
                 timeout=timeout,
             )
         print_response(deployment_name, response)

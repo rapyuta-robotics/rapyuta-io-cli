@@ -77,7 +77,7 @@ def select_organization(
         $ rio organization select 'Platform JP Staging' --silent
     """
     ctx = get_root_context(ctx)
-    interactive = interactive or not silent
+    interactive = interactive and not silent
 
     if ctx.obj.data.get("organization_id") == organization_guid:
         click.secho(
