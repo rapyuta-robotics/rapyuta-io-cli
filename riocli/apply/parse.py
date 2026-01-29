@@ -96,8 +96,12 @@ class Applier:
         """Apply the resources defined in the manifest files"""
         assert spinner is not None
 
-        client = self.config.new_client()
-        v2_client = self.config.new_v2_client()
+        if dryrun:
+            client = None
+            v2_client = None
+        else:
+            client = self.config.new_client()
+            v2_client = self.config.new_v2_client()
 
         apply_func = partial(
             self._apply_manifest,
@@ -130,8 +134,12 @@ class Applier:
         """Delete resources defined in manifests."""
         assert spinner is not None
 
-        client = self.config.new_client()
-        v2_client = self.config.new_v2_client()
+        if dryrun:
+            client = None
+            v2_client = None
+        else:
+            client = self.config.new_client()
+            v2_client = self.config.new_v2_client()
 
         delete_func = partial(
             self._delete_manifest,
@@ -165,8 +173,6 @@ class Applier:
         spinner: Yaspin | None = None,
     ) -> None:
         """Instantiate and apply the object manifest"""
-        assert client is not None
-        assert v2_client is not None
         assert spinner is not None
 
         if obj_key not in self.objects:
@@ -224,8 +230,6 @@ class Applier:
         spinner: Yaspin | None = None,
     ) -> None:
         """Instantiate and delete the object manifest"""
-        assert client is not None
-        assert v2_client is not None
         assert spinner is not None
 
         if obj_key not in self.objects:
