@@ -1,3 +1,16 @@
+## [10.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.0...v10.0.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* **apply:** allow dryrun without login ([a23d625](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a23d625ffb379d665fec39b6db44de04e4f00ebd))
+* **apply:** conditionally print context only when not in dryrun mode ([3d4f0ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3d4f0ce8e0f3ee7c58f16a5650fd06d50c47a077))
+* **apply:** conditionally print context only when not in dryrun mode ([ab760af](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ab760af0b831342a1722f4b36c39b3f606a6558d))
+* **deployments:** fix nameOrGUID field for deployment depends ([a1c2585](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a1c258505d6f9fa4a5f0e4186db276820ce24cbc))
+* deprecate from_file parameter and enhance v2 client configuration ([ae4b757](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ae4b757001c7060a2227a36bacd81b38cfaacfc1))
+* improve error handling in secret loading and update login client initialization ([24f03f4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/24f03f4ccd21ac3bf930433d7967d34867c9a8ad))
+* **parse:** use a variable for max_workers in ThreadPoolExecutor ([d95656c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d95656cf70f0b44708ce9d41f9306b2cd293416a))
+
 # [10.0.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v9.13.4...v10.0.0) (2026-01-28)
 
 
