@@ -225,11 +225,14 @@ def update_hosts_file():
     device_host_to_name = {}
     for device in v1_client.get_all_devices(online_device=True):
         device_daemon = v2_client.get_device_daemons(device_guid=device.get("uuid"))
-        vpn_status = device_daemon.status.get("vpn")
+        if device_daemon.status is None:
+            continue
+
+        vpn_status = device_daemon.status.get('vpn', None)
         if (
             vpn_status is not None
-            and vpn_status.get("enable", False)
-            and vpn_status.get("status") == "running"
+            and vpn_status.enable
+            and vpn_status.status == "running"
         ):
             device_host_to_name[device.get("host")] = device.name
 
