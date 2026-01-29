@@ -1,3 +1,10 @@
+## [10.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.1...v10.0.2) (2026-01-29)
+
+
+### Bug Fixes
+
+* **vpn:** fix the --update-hosts handling for online devices ([82a6d3e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/82a6d3ee3ea5fe2b75aff1fad519b580e826ded4))
+
 ## [10.0.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.0...v10.0.1) (2026-01-29)
 
 
