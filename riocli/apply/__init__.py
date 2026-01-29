@@ -315,8 +315,8 @@ def delete(
             $ rio delete -v values1.yaml -v values2.yaml templates/**
 
     """
-
-    print_context(ctx)
+    if not dryrun:
+        print_context(ctx)
 
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
