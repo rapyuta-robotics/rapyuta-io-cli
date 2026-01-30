@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import typing
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -33,8 +33,8 @@ def list_usergroup(ctx: click.Context) -> None:
     """List all user groups in current organization."""
     try:
         client = new_v2_client(with_project=False)
-        user_groups = client.list_user_groups()
-        _display_usergroup_list(user_groups.items)
+        user_groups = walk_pages(client.list_user_groups, limit=500)
+        _display_usergroup_list(user_groups)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
@@ -46,19 +46,20 @@ def _display_usergroup_list(usergroups: typing.Any, show_header: bool = True):
         headers = ("ID", "Name", "Members", "Description")
 
     rows = []
-    for g in usergroups:
-        description = g.spec.description or ""
+    for page in usergroups:
+        for g in page:
+            description = g.spec.description or ""
 
-        description = description.replace("\n", " ")
-        if len(description) > 48:
-            description = description[:48] + ".."
+            description = description.replace("\n", " ")
+            if len(description) > 48:
+                description = description[:48] + ".."
+            rows.append(
+                [
+                    g.metadata.guid,
+                    g.metadata.name,
+                    g.spec.members_count,
+                    description,
+                ]
+            )
 
-        rows.append(
-            [
-                g.metadata.guid,
-                g.metadata.name,
-                g.spec.members_count,
-                description,
-            ]
-        )
     tabulate_data(rows, headers)
