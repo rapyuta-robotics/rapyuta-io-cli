@@ -15,7 +15,7 @@ import json
 import re
 import time
 import typing
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache, wraps
 from pathlib import Path
 
@@ -107,7 +107,7 @@ def upload_debug_logs(device_guid: str) -> dict:
 def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=None):
     try:
         client = new_v2_client()
-        expiry_time = datetime.now() + timedelta(days=expiry)
+        expiry_time = datetime.now(timezone.utc) + timedelta(days=expiry)
 
         # Create the shared URL
         shared_url_request = SharedURLRequest(expiry_time=expiry_time)
