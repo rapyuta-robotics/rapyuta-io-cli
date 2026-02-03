@@ -115,9 +115,11 @@ class Revision:
             value = json.dumps(
                 value,
                 ensure_ascii=False,
-                default=lambda o: o.isoformat()
-                if isinstance(o, (datetime, date))  # noqa: UP038
-                else str(o),
+                default=lambda o: (
+                    o.isoformat()
+                    if isinstance(o, (datetime, date))  # noqa: UP038
+                    else str(o)
+                ),
             )
         str_val = str(value)
         enc_val = str_val.encode("utf-8")

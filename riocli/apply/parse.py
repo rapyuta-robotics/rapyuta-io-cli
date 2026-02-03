@@ -520,7 +520,7 @@ class Applier:
                 op(w)
             except Exception as e:
                 return e
-            
+
         max_workers = int(workers) if workers is not None else None
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
