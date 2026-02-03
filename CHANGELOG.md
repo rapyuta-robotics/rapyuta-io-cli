@@ -1,3 +1,10 @@
+## [10.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.2...v10.0.3) (2026-02-03)
+
+
+### Bug Fixes
+
+* oauth2 endpoints ([a8411cf](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a8411cf19c847d1c4def8ad1fc81a3e7a3326931))
+
 ## [10.0.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.1...v10.0.2) (2026-01-29)
 
 
