@@ -18,6 +18,7 @@ from click_help_colors import HelpColorsCommand
 from munch import unmunchify
 from yaspin.core import Yaspin
 
+from rapyuta_io_sdk_v2.models import OAuth2UpdateURI
 from riocli.config import get_config_from_context
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
@@ -217,7 +218,7 @@ def update_oauth2_client(
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        oauth2_client = client.update_oauth2_client(client_id=client_id, client=params)
+        oauth2_client = client.update_oauth2_client(client_id=client_id, body=params)
         with spinner.hidden():
             inspect_with_format(unmunchify(oauth2_client), format_type="json")
         spinner.text = click.style("OAuth2 Client updated successfully.", fg=Colors.GREEN)
@@ -261,17 +262,15 @@ def update_oauth2_client_uri(
     redirect_uris: tuple[str] | None,
     spinner: Yaspin,
 ):
-    payload = {
-        "redirectURIs": redirect_uris,
-        "postLogoutRedirectURIs": post_logout_redirect_uris,
-    }
-
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
         oauth2_client = client.update_oauth2_client_uris(
             client_id=client_id,
-            payload=payload,
+            update=OAuth2UpdateURI(
+                redirectURIs=redirect_uris,
+                postLogoutRedirectURIs=post_logout_redirect_uris,
+            ),
         )
         with spinner.hidden():
             inspect_with_format(unmunchify(oauth2_client), format_type="json")

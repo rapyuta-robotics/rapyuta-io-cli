@@ -40,7 +40,7 @@ def list_oauth2_clients(
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
         oauth2_clients = munchify(client.list_oauth2_clients())
-        _display_oauth2_client_list(oauth2_clients, wide=wide)
+        _display_oauth2_client_list(oauth2_clients.get("items", []), wide=wide)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
