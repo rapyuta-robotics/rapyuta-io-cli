@@ -39,7 +39,9 @@ from riocli.utils.spinner import with_spinner
     help="Run the command asynchronously.",
 )
 @with_spinner(text="Copying files...")
-def scp(source: str, destination: str, timeout: int, run_async: bool, spinner: Yaspin = None) -> None:
+def scp(
+    source: str, destination: str, timeout: int, run_async: bool, spinner: Yaspin = None
+) -> None:
     """SCP like interface to copy files to and from a device.
 
     Usage Examples:
@@ -69,9 +71,18 @@ def scp(source: str, destination: str, timeout: int, run_async: bool, spinner: Y
                 copy_from_device(src_device_guid, src, dest)
 
         if dest_device_guid is not None:
-            device_name = next((d.name for d in devices if d.uuid == dest_device_guid), None)
+            device_name = next(
+                (d.name for d in devices if d.uuid == dest_device_guid), None
+            )
             with spinner.hidden():
-                copy_to_device(dest_device_guid, device_name, src, dest, run_async=run_async, timeout=timeout)
+                copy_to_device(
+                    dest_device_guid,
+                    device_name,
+                    src,
+                    dest,
+                    run_async=run_async,
+                    timeout=timeout,
+                )
 
         spinner.text = click.style("Files copied successfully", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)

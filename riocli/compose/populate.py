@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Any 
 import shlex
+from typing import Any
 
 import click
 from munch import Munch
@@ -96,7 +96,9 @@ def _process_deployment_services(
 
     # Get restart policy with normalization
     restart_policy = deployment.spec.get("restart", None)
-    restart_policy = restart_policy or package.spec.get("device", {}).get("restart", "always")
+    restart_policy = restart_policy or package.spec.get("device", {}).get(
+        "restart", "always"
+    )
 
     if restart_policy == "onfailure":
         restart_policy = "on-failure"

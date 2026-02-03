@@ -16,9 +16,9 @@ from typing import Any
 import click
 from click_help_colors import HelpColorsCommand
 from munch import unmunchify
+from rapyuta_io_sdk_v2.models import OAuth2UpdateURI
 from yaspin.core import Yaspin
 
-from rapyuta_io_sdk_v2.models import OAuth2UpdateURI
 from riocli.config import get_config_from_context
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
@@ -122,7 +122,9 @@ from riocli.utils.spinner import with_spinner
     help="Base64 encoded PGP encryption key for encrypting client secret.",
 )
 @click.option(
-    "--pgp-key-url", type=str, help="PGP encryption key URL for encrypting client secret."
+    "--pgp-key-url",
+    type=str,
+    help="PGP encryption key URL for encrypting client secret.",
 )
 @click.option(
     "--policy-uri",
@@ -165,7 +167,10 @@ from riocli.utils.spinner import with_spinner
     help="A list of allowed response types.",
 )
 @click.option(
-    "--scope", multiple=True, type=str, help="The scope the client is allowed to request."
+    "--scope",
+    multiple=True,
+    type=str,
+    help="The scope the client is allowed to request.",
 )
 @click.option("--secret", type=str, help="Provide the client's secret.")
 @click.option(
