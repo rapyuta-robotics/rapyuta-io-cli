@@ -16,6 +16,7 @@ from typing import Any
 import click
 from click_help_colors import HelpColorsCommand
 from munch import unmunchify
+from rapyuta_io_sdk_v2.models import OAuth2UpdateURI
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context
@@ -121,7 +122,9 @@ from riocli.utils.spinner import with_spinner
     help="Base64 encoded PGP encryption key for encrypting client secret.",
 )
 @click.option(
-    "--pgp-key-url", type=str, help="PGP encryption key URL for encrypting client secret."
+    "--pgp-key-url",
+    type=str,
+    help="PGP encryption key URL for encrypting client secret.",
 )
 @click.option(
     "--policy-uri",
@@ -164,7 +167,10 @@ from riocli.utils.spinner import with_spinner
     help="A list of allowed response types.",
 )
 @click.option(
-    "--scope", multiple=True, type=str, help="The scope the client is allowed to request."
+    "--scope",
+    multiple=True,
+    type=str,
+    help="The scope the client is allowed to request.",
 )
 @click.option("--secret", type=str, help="Provide the client's secret.")
 @click.option(
@@ -217,7 +223,7 @@ def update_oauth2_client(
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        oauth2_client = client.update_oauth2_client(client_id=client_id, client=params)
+        oauth2_client = client.update_oauth2_client(client_id=client_id, body=params)
         with spinner.hidden():
             inspect_with_format(unmunchify(oauth2_client), format_type="json")
         spinner.text = click.style("OAuth2 Client updated successfully.", fg=Colors.GREEN)
@@ -261,17 +267,15 @@ def update_oauth2_client_uri(
     redirect_uris: tuple[str] | None,
     spinner: Yaspin,
 ):
-    payload = {
-        "redirectURIs": redirect_uris,
-        "postLogoutRedirectURIs": post_logout_redirect_uris,
-    }
-
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
         oauth2_client = client.update_oauth2_client_uris(
             client_id=client_id,
-            payload=payload,
+            update=OAuth2UpdateURI(
+                redirectURIs=redirect_uris,
+                postLogoutRedirectURIs=post_logout_redirect_uris,
+            ),
         )
         with spinner.hidden():
             inspect_with_format(unmunchify(oauth2_client), format_type="json")

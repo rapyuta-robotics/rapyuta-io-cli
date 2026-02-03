@@ -103,7 +103,9 @@ class Configuration:
 
     @lru_cache(maxsize=2)  # noqa: B019
     def new_v2_client(
-        self: Configuration, with_project: bool = True, from_file: bool = True # from_file parameter is deprecated
+        self: Configuration,
+        with_project: bool = True,
+        from_file: bool = True,  # from_file parameter is deprecated
     ) -> v2Client:
         if "auth_token" not in self.data:
             raise LoggedOut

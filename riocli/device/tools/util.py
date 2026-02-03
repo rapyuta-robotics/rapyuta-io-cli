@@ -16,13 +16,13 @@ import time
 from shlex import join
 
 import click
-from rapyuta_io.clients import LogsUploadRequest, Command
+from rapyuta_io.clients import Command, LogsUploadRequest
 
 from riocli.config import Configuration, new_client
 from riocli.constants import Colors
-from riocli.utils import run_bash, random_string
-from riocli.utils.execute import run_on_device
 from riocli.device.execute import execute_async
+from riocli.utils import random_string, run_bash
+from riocli.utils.execute import run_on_device
 
 
 def run_tunnel_on_device(device_guid: str, remote_port: int, path: str) -> None:
@@ -98,7 +98,9 @@ def copy_to_device(
     """
     config = Configuration()
     path = random_string(8, 5)
-    remote_cmd = f"curl -s -o {dest} {config.piping_server}/{path} && echo '__RIO_COPY_SUCCESS__'"
+    remote_cmd = (
+        f"curl -s -o {dest} {config.piping_server}/{path} && echo '__RIO_COPY_SUCCESS__'"
+    )
 
     # Start background upload from local machine to piping server.
     run_bash(f"curl -sT {src} {config.piping_server}/{path}", bg=True)

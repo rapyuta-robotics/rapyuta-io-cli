@@ -228,7 +228,7 @@ def update_hosts_file():
         if device_daemon.status is None:
             continue
 
-        vpn_status = device_daemon.status.get('vpn', None)
+        vpn_status = device_daemon.status.get("vpn", None)
         if (
             vpn_status is not None
             and vpn_status.enable

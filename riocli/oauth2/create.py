@@ -212,7 +212,7 @@ def create_oauth2_client(ctx: click.Context, spinner: Yaspin, **params: dict[str
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
-        oauth2_client = client.create_oauth2_client(client=params)
+        oauth2_client = client.create_oauth2_client(body=params)
         with spinner.hidden():
             inspect_with_format(unmunchify(oauth2_client), format_type="json")
         spinner.text = click.style("OAuth2 Client created successfully.", fg=Colors.GREEN)
