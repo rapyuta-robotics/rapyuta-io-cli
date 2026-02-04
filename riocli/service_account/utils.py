@@ -24,21 +24,21 @@ def parse_human_readable_time_to_iso(time_str: str | None) -> str | None:
 
     Args:
         time_str (str | None): Time specification with two possible cases:
-            - None for no expiry (infinite duration)
+            - None for default expiry (90 days)
+            - 0 for no expiry.
             - String with relative time (e.g., '3 days', 'in 2 hours') or ISO 8601 timestamp
 
     Returns:
         str | None: ISO 8601 formatted string in UTC, or None for no expiry case
     """
-    # Handle None - no expiry (infinite duration)
+
     if time_str is None:
         return None
 
-    time_str = time_str.strip()
+    if time_str == "0":
+        return "0001-01-01T00:00:00Z"
 
-    # Handle empty string - treat as no expiry
-    if not time_str:
-        return None
+    time_str = time_str.strip()
 
     # Handle human-readable time
     cal = pdt.Calendar()

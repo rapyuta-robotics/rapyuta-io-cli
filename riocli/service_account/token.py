@@ -120,13 +120,14 @@ def create_token(
     """
     Create a token for a service account.
 
-    The EXPIRY-AT argument supports two formats:
+    The EXPIRY-AT argument supports three formats:
+
+    1. Default expiry (90 days): Leave empty.
 
     1. Custom expiry: Specify a relative time (e.g., '3 days', '2 hours')
        or an ISO 8601 timestamp (e.g., '2025-12-31T23:59:59+00:00')
 
-    2. No expiry: Leave empty or omit the argument to create a token
-       with infinite duration
+    2. No expiry: Specify "0" to create a token with infinite duration.
     """
     try:
         client = new_v2_client()
