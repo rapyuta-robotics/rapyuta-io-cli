@@ -1,0 +1,3632 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#"><link rel="search" title="Search" href="search.html">
+        <link rel="prefetch" href="_static/logo-light-mode.svg" as="image">
+        <link rel="prefetch" href="_static/logo-dark-mode.svg" as="image">
+
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 --><title>Index - CLI documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="_static/css/rio-sphinx.css?v=b645b6b6" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">CLI  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo-light-mode.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo-dark-mode.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">CLI  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="apply.html">Apply</a><input aria-label="Toggle navigation of Apply" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Authentication</a><input aria-label="Toggle navigation of Authentication" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="chart.html">Chart</a><input aria-label="Toggle navigation of Chart" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="completion.html">Completion</a><input aria-label="Toggle navigation of Completion" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="config_tree.html">ConfigTree</a><input aria-label="Toggle navigation of ConfigTree" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="deployment.html">Deployment</a><input aria-label="Toggle navigation of Deployment" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="device.html">Device</a><input aria-label="Toggle navigation of Device" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="disk.html">Disk</a><input aria-label="Toggle navigation of Disk" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hwil.html">Hardware-in-Loop</a><input aria-label="Toggle navigation of Hardware-in-Loop" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="network.html">Network</a><input aria-label="Toggle navigation of Network" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="organization.html">Organization</a><input aria-label="Toggle navigation of Organization" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="package.html">Package</a><input aria-label="Toggle navigation of Package" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="parameter.html">Parameter</a><input aria-label="Toggle navigation of Parameter" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="project.html">Project</a><input aria-label="Toggle navigation of Project" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="secret.html">Secret</a><input aria-label="Toggle navigation of Secret" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="static_route.html">Static Route</a><input aria-label="Toggle navigation of Static Route" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="usergroup.html">User Group</a><input aria-label="Toggle navigation of User Group" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="vpn.html">VPN</a><input aria-label="Toggle navigation of VPN" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#Symbols"><strong>Symbols</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a></div>
+</section>
+<section id="Symbols" class="genindex-section">
+  <h2>Symbols</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    --advertise-routes
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-migrate-advertise-routes">rio-device-migrate command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-advertise-routes">rio-device-vpn command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --all
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-a">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-a">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-a">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-a">rio-device-delete command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-a">rio-disk-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-a">rio-network-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-a">rio-package-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-a">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-a">rio-static-route-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --arch
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-arch">rio-hwil-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --async
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-async">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-async">rio-device-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-async">rio-device-tools-scp command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --auth-token
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-auth-token">rio-auth-login command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --capacity
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-create-capacity">rio-disk-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --codename
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-codename">rio-hwil-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --commit
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-commit">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --data-directory
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-data-directory">rio-project-features-dockercache command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --delete-existing
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-recreate">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-recreate">rio-chart-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-overwrite">rio-parameter-download command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-recreate">rio-parameter-upload command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --device
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-device">rio-deployment-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --device-name-pattern
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-device-name-pattern">rio-parameter-apply command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --devices
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-vpn-devices">rio-device-vpn command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-devices">rio-parameter-apply command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --dryrun
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-d">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-d">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-d">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-d">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --email
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-email">rio-auth-login command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-token-email">rio-auth-token command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --enable-vpn
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-migrate-enable-vpn">rio-device-migrate command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --etcd-endpoint
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-endpoint">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --etcd-port
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-port">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --etcd-prefix
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-prefix">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --exec
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-exec">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-exec">rio-deployment-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --expire-after
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-expire-after">rio-hwil-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --expiry
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-report-e">rio-device-report command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-expiry">rio-device-uploads-share command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --export-directory
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-export-directory">rio-configtree-export command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-export-directory">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --export-format
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-export-format">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --filter
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-list-filter">rio-package-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --force
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-f">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">rio-chart-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-force">rio-configtree-revision-init command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">rio-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">rio-device-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">rio-device-report command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">rio-device-vpn command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-f">rio-disk-delete command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">rio-hwil-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-f">rio-network-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">rio-package-delete command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">rio-parameter-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">rio-parameter-delete command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">rio-parameter-upload command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">rio-project-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">rio-static-route-delete command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">rio-usergroup-delete command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">rio-vpn-connect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --format
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-f">rio-configtree-export command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-f">rio-deployment-inspect command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-inspect-f">rio-device-inspect command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-f">rio-hwil-inspect command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-inspect-f">rio-network-inspect command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-f">rio-organization-inspect command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-f">rio-package-inspect command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-inspect-f">rio-project-inspect command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-f">rio-secret-inspect command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-f">rio-static-route-inspect command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-f">rio-usergroup-inspect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --graph
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-graph">rio-configtree-history command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --ignore-conflict
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-ignore-conflict">rio-configtree-merge command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --interactive
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-interactive">rio-auth-login command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-interactive">rio-auth-refresh-token command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-interactive">rio-hwil-login command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-interactive">rio-organization-select command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --label
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-l">rio-deployment-list command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-list-l">rio-disk-list command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-list-l">rio-network-list command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-l">rio-project-list command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-list-l">rio-secret-list command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-list-l">rio-static-route-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --level
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-token-level">rio-auth-token command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --local-port
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-L">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --max-upload-rate
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-max-upload-rate">rio-device-uploads-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --message
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-m">rio-configtree-revision-commit command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --milestone
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-milestone">rio-configtree-import command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-milestone">rio-configtree-merge command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-milestone">rio-configtree-revision-commit command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --network
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-list-network">rio-network-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --no-commit
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-commit">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --no-interactive
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-interactive">rio-auth-login command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-interactive">rio-auth-refresh-token command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-interactive">rio-hwil-login command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-interactive">rio-organization-select command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --no-update-head
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-update-head">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --no-x-forward
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --organization
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-organization">rio-auth-login command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-organization">rio-configtree-clone command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-create-organization">rio-configtree-create command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-delete-organization">rio-configtree-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-organization">rio-configtree-export command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-organization">rio-configtree-history command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-organization">rio-configtree-import command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-organization">rio-configtree-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-list-organization">rio-configtree-list command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-organization">rio-configtree-merge command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-organization">rio-configtree-revision-commit command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-organization">rio-configtree-revision-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-organization">rio-configtree-revision-init command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-organization">rio-configtree-revision-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-organization">rio-configtree-revision-put command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-organization">rio-configtree-revision-put-file command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-organization">rio-configtree-set-revision command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-create-organization">rio-project-create command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-organization">rio-project-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --os
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-os">rio-hwil-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --override
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-override">rio-configtree-import command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-override">rio-device-uploads-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --overwrite
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-overwrite">rio-parameter-download command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --password
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-password">rio-auth-login command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-password">rio-auth-refresh-token command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-token-password">rio-auth-token command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-password">rio-hwil-login command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --phase
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-phase">rio-deployment-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --project
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-project">rio-auth-login command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --project-name
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-whoami-p">rio-project-whoami command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --proxy-device
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-proxy-device">rio-project-features-dockercache command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --proxy-interface
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-proxy-interface">rio-project-features-dockercache command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --purge
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-purge">rio-device-uploads-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --recreate
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-recreate">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-recreate">rio-chart-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-recreate">rio-parameter-upload command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --region
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-create-region">rio-disk-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --registry-secret
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-registry-secret">rio-project-features-dockercache command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --registry-url
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-registry-url">rio-project-features-dockercache command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --remote-port
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-R">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --replica
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-replica">rio-deployment-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --retry-count
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-rc">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-rc">rio-chart-apply command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-rc">rio-delete command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    --retry-interval
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-ri">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-ri">rio-chart-apply command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-ri">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --retry-limit
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-retry-limit">rio-parameter-apply command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --role
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-add-user-role">rio-organization-add-user command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --secrets
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-s">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-s">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-s">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-s">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --share
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-report-s">rio-device-report command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --shell
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-shell">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-shell">rio-device-execute command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --silent
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-f">rio-apply command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-silent">rio-auth-login command line option</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-silent">rio-auth-refresh-token command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">rio-chart-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-silent">rio-configtree-merge command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">rio-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">rio-device-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">rio-device-report command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">rio-device-vpn command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">rio-hwil-delete command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-silent">rio-hwil-login command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-silent">rio-organization-select command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">rio-package-delete command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">rio-parameter-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">rio-parameter-delete command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">rio-parameter-upload command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">rio-project-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">rio-static-route-delete command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">rio-usergroup-delete command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">rio-vpn-connect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --subnets
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-subnets">rio-project-features-vpn command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --timeout
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-timeout">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-timeout">rio-device-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-timeout">rio-device-tools-scp command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --tree-names
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-tree-names">rio-parameter-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-diff-tree-names">rio-parameter-diff command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-tree-names">rio-parameter-download command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-tree-names">rio-parameter-upload command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --update-head
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-update-head">rio-configtree-import command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --update-hosts
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-update-hosts">rio-vpn-connect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --user
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-user">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-user">rio-device-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-u">rio-device-tools-ssh command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-u">rio-device-tools-ssh-authorize command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --username
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-username">rio-hwil-login command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --values
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-v">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-v">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-v">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-v">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --version
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-delete-version">rio-package-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-deployments-version">rio-package-deployments command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-version">rio-package-inspect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --wide
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-list-w">rio-chart-list command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-search-w">rio-chart-search command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-w">rio-deployment-list command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-w">rio-project-list command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-status-w">rio-vpn-status command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --workers
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-w">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-w">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-w">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-w">rio-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-w">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-w">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-w">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-w">rio-device-delete command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-w">rio-disk-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-w">rio-network-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-w">rio-package-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-w">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-w">rio-static-route-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --x-forward
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -a
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-a">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-a">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-a">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-a">rio-device-delete command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-a">rio-disk-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-a">rio-network-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-a">rio-package-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-a">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-a">rio-static-route-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -d
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-d">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-d">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-d">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-d">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -e
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-report-e">rio-device-report command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -f
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-f">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">rio-chart-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-f">rio-configtree-export command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">rio-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-f">rio-deployment-inspect command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">rio-device-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-inspect-f">rio-device-inspect command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">rio-device-report command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">rio-device-vpn command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-f">rio-disk-delete command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">rio-hwil-delete command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-f">rio-hwil-inspect command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-f">rio-network-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-inspect-f">rio-network-inspect command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-f">rio-organization-inspect command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">rio-package-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-f">rio-package-inspect command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">rio-parameter-apply command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">rio-parameter-delete command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">rio-parameter-upload command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">rio-project-delete command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-inspect-f">rio-project-inspect command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">rio-secret-delete command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-f">rio-secret-inspect command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">rio-static-route-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-f">rio-static-route-inspect command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">rio-usergroup-delete command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-f">rio-usergroup-inspect command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">rio-vpn-connect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -L
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-L">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -l
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-l">rio-deployment-list command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-list-l">rio-disk-list command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-list-l">rio-network-list command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-l">rio-project-list command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-list-l">rio-secret-list command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-list-l">rio-static-route-list command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -m
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-m">rio-configtree-revision-commit command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -p
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-whoami-p">rio-project-whoami command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -R
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-R">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -rc
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-rc">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-rc">rio-chart-apply command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-rc">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -ri
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-ri">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-ri">rio-chart-apply command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-ri">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -s
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-s">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-s">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-s">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-s">rio-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-s">rio-device-report command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -u
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-u">rio-device-tools-ssh command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-u">rio-device-tools-ssh-authorize command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -v
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-v">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-v">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-v">rio-chart-delete command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-v">rio-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -w
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-w">rio-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-w">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-w">rio-chart-delete command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-list-w">rio-chart-list command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-search-w">rio-chart-search command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-w">rio-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-w">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-w">rio-deployment-list command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-w">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-w">rio-deployment-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-w">rio-device-delete command line option</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-w">rio-disk-delete command line option</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-w">rio-network-delete command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-w">rio-package-delete command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-w">rio-project-list command line option</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-w">rio-secret-delete command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-w">rio-static-route-delete command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-status-w">rio-vpn-status command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -X
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">rio-device-tools-ssh command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="B" class="genindex-section">
+  <h2>B</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    BASE_TREE_NAME
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-arg-BASE_TREE_NAME">rio-configtree-merge command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="C" class="genindex-section">
+  <h2>C</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    CHART
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-arg-CHART">rio-chart-apply command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-arg-CHART">rio-chart-delete command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-info-arg-CHART">rio-chart-info command line option</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-search-arg-CHART">rio-chart-search command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    COMMAND
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-arg-COMMAND">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-arg-COMMAND">rio-device-execute command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-execute-arg-COMMAND">rio-hwil-execute command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    DEPLOYMENT_NAME
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-arg-DEPLOYMENT_NAME">rio-deployment-execute command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-arg-DEPLOYMENT_NAME">rio-deployment-inspect command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-arg-DEPLOYMENT_NAME">rio-deployment-logs command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-status-arg-DEPLOYMENT_NAME">rio-deployment-status command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-wait-arg-DEPLOYMENT_NAME">rio-deployment-wait command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DEPLOYMENT_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-arg-DEPLOYMENT_NAME_OR_REGEX">rio-deployment-delete command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-arg-DEPLOYMENT_NAME_OR_REGEX">rio-deployment-restart command line option</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-arg-DEPLOYMENT_NAME_OR_REGEX">rio-deployment-update command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DESTINATION
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-arg-DESTINATION">rio-device-tools-scp command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DEVICE_NAME
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-DEVICE_NAME">rio-device-config-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-delete-arg-DEVICE_NAME">rio-device-config-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-list-arg-DEVICE_NAME">rio-device-config-list command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-DEVICE_NAME">rio-device-config-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-deployments-arg-DEVICE_NAME">rio-device-deployments command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-inspect-arg-DEVICE_NAME">rio-device-inspect command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-DEVICE_NAME">rio-device-labels-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-delete-arg-DEVICE_NAME">rio-device-labels-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-list-arg-DEVICE_NAME">rio-device-labels-list command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-DEVICE_NAME">rio-device-labels-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-migrate-arg-DEVICE_NAME">rio-device-migrate command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-onboard-arg-DEVICE_NAME">rio-device-onboard command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-arg-DEVICE_NAME">rio-device-report command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-init-arg-DEVICE_NAME">rio-device-tools-init command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-DEVICE_NAME">rio-device-tools-port-forward command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-arg-DEVICE_NAME">rio-device-tools-ssh command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-arg-DEVICE_NAME">rio-device-tools-ssh-authorize command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-list-arg-DEVICE_NAME">rio-device-topics-list command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-DEVICE_NAME">rio-device-topics-subscribe command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-DEVICE_NAME">rio-device-topics-unsubscribe command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-cancel-arg-DEVICE_NAME">rio-device-uploads-cancel command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-DEVICE_NAME">rio-device-uploads-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-delete-arg-DEVICE_NAME">rio-device-uploads-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-download-arg-DEVICE_NAME">rio-device-uploads-download command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-list-arg-DEVICE_NAME">rio-device-uploads-list command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-arg-DEVICE_NAME">rio-device-uploads-share command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-status-arg-DEVICE_NAME">rio-device-uploads-status command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-arg-DEVICE_NAME">rio-hwil-create command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-execute-arg-DEVICE_NAME">rio-hwil-execute command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-arg-DEVICE_NAME">rio-hwil-inspect command line option</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-ssh-arg-DEVICE_NAME">rio-hwil-ssh command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    DEVICE_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-delete-arg-DEVICE_NAME_OR_REGEX">rio-device-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-arg-DEVICE_NAME_OR_REGEX">rio-device-execute command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DEVICES
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-arg-DEVICES">rio-hwil-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DISK_NAME
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-create-arg-DISK_NAME">rio-disk-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    DISK_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-arg-DISK_NAME_OR_REGEX">rio-disk-delete command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    ENABLE
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-vpn-arg-ENABLE">rio-device-vpn command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-arg-ENABLE">rio-project-features-dockercache command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-arg-ENABLE">rio-project-features-vpn command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    FILE_NAME
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-cancel-arg-FILE_NAME">rio-device-uploads-cancel command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-delete-arg-FILE_NAME">rio-device-uploads-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-download-arg-FILE_NAME">rio-device-uploads-download command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-arg-FILE_NAME">rio-device-uploads-share command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-status-arg-FILE_NAME">rio-device-uploads-status command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    FILE_PATH
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-FILE_PATH">rio-configtree-revision-put-file command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-FILE_PATH">rio-device-uploads-create command line option</a>
+</li>
+        </ul></li>
+        <li>
+    FILES
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-arg-FILES">rio-apply command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-arg-FILES">rio-configtree-import command line option</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-arg-FILES">rio-delete command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    GROUP_NAME
+
+        <ul>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-arg-GROUP_NAME">rio-usergroup-delete command line option</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-arg-GROUP_NAME">rio-usergroup-inspect command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="K" class="genindex-section">
+  <h2>K</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    KEY
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-arg-KEY">rio-configtree-revision-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-KEY">rio-configtree-revision-put command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-KEY">rio-configtree-revision-put-file command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-KEY">rio-device-config-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-delete-arg-KEY">rio-device-config-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-KEY">rio-device-config-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-KEY">rio-device-labels-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-delete-arg-KEY">rio-device-labels-delete command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-KEY">rio-device-labels-update command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    KIND
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-KIND">rio-device-topics-subscribe command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-KIND">rio-device-topics-unsubscribe command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="L" class="genindex-section">
+  <h2>L</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    LOCAL_PORT
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-LOCAL_PORT">rio-device-tools-port-forward command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    NAME
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-create-arg-NAME">rio-static-route-create command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-deregister-arg-NAME">rio-vpn-machines-deregister command line option</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-register-arg-NAME">rio-vpn-machines-register command line option</a>
+</li>
+        </ul></li>
+        <li>
+    NETWORK_NAME
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-inspect-arg-NETWORK_NAME">rio-network-inspect command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    NETWORK_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-delete-arg-NETWORK_NAME_OR_REGEX">rio-network-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    NEW_TREE
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-arg-NEW_TREE">rio-configtree-clone command line option</a>
+</li>
+        </ul></li>
+        <li>
+    NODE_KEY
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-register-arg-NODE_KEY">rio-vpn-machines-register command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="O" class="genindex-section">
+  <h2>O</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    ORGANIZATION_NAME
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-arg-ORGANIZATION_NAME">rio-organization-inspect command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-arg-ORGANIZATION_NAME">rio-organization-select command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="P" class="genindex-section">
+  <h2>P</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    PACKAGE_NAME
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-deployments-arg-PACKAGE_NAME">rio-package-deployments command line option</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-arg-PACKAGE_NAME">rio-package-inspect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    PACKAGE_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-delete-arg-PACKAGE_NAME_OR_REGEX">rio-package-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    PATH
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-diff-arg-PATH">rio-parameter-diff command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-arg-PATH">rio-parameter-download command line option</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-arg-PATH">rio-parameter-upload command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    PROJECT_NAME
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-migrate-arg-PROJECT_NAME">rio-device-migrate command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-create-arg-PROJECT_NAME">rio-project-create command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-arg-PROJECT_NAME">rio-project-delete command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-arg-PROJECT_NAME">rio-project-features-dockercache command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-arg-PROJECT_NAME">rio-project-features-vpn command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-inspect-arg-PROJECT_NAME">rio-project-inspect command line option</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-select-arg-PROJECT_NAME">rio-project-select command line option</a>
+</li>
+        </ul></li>
+        <li>
+    PUBLIC_KEY_FILE
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-arg-PUBLIC_KEY_FILE">rio-device-tools-ssh-authorize command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    REF
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-arg-REF">rio-configtree-merge command line option</a>
+</li>
+        </ul></li>
+        <li>
+    REF_1
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-diff-arg-REF_1">rio-configtree-diff command line option</a>
+</li>
+        </ul></li>
+        <li>
+    REF_2
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-diff-arg-REF_2">rio-configtree-diff command line option</a>
+</li>
+        </ul></li>
+        <li>
+    REMOTE_PORT
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-REMOTE_PORT">rio-device-tools-port-forward command line option</a>
+</li>
+        </ul></li>
+        <li>
+    REV_ID
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-arg-REV_ID">rio-configtree-export command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-arg-REV_ID">rio-configtree-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-arg-REV_ID">rio-configtree-revision-commit command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-arg-REV_ID">rio-configtree-revision-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-arg-REV_ID">rio-configtree-set-revision command line option</a>
+</li>
+        </ul></li>
+        <li>
+    rio-apply command line option
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-apply-recreate">--delete-existing</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-d">--dryrun</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-f">--force</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-recreate">--recreate</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-rc">--retry-count</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-ri">--retry-interval</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-s">--secrets</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-f">--silent</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-v">--values</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-w">--workers</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-d">-d</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-f">-f</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-rc">-rc</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-ri">-ri</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-s">-s</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-v">-v</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-w">-w</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-apply-arg-FILES">FILES</a>
+</li>
+        </ul></li>
+        <li>
+    rio-auth-login command line option
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-login-auth-token">--auth-token</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-email">--email</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-interactive">--interactive</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-interactive">--no-interactive</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-organization">--organization</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-password">--password</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-project">--project</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-login-silent">--silent</a>
+</li>
+        </ul></li>
+        <li>
+    rio-auth-refresh-token command line option
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-interactive">--interactive</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-interactive">--no-interactive</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-password">--password</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-refresh-token-silent">--silent</a>
+</li>
+        </ul></li>
+        <li>
+    rio-auth-token command line option
+
+        <ul>
+          <li><a href="auth.html#cmdoption-rio-auth-token-email">--email</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-token-level">--level</a>
+</li>
+          <li><a href="auth.html#cmdoption-rio-auth-token-password">--password</a>
+</li>
+        </ul></li>
+        <li>
+    rio-chart-apply command line option
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-recreate">--delete-existing</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-d">--dryrun</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">--force</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-recreate">--recreate</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-rc">--retry-count</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-ri">--retry-interval</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-s">--secrets</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">--silent</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-v">--values</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-w">--workers</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-d">-d</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-f">-f</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-rc">-rc</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-ri">-ri</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-s">-s</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-v">-v</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-w">-w</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-apply-arg-CHART">CHART</a>
+</li>
+        </ul></li>
+        <li>
+    rio-chart-delete command line option
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-d">--dryrun</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">--force</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-s">--secrets</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">--silent</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-v">--values</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-w">--workers</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-d">-d</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-f">-f</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-s">-s</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-v">-v</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-w">-w</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-delete-arg-CHART">CHART</a>
+</li>
+        </ul></li>
+        <li>
+    rio-chart-info command line option
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-info-arg-CHART">CHART</a>
+</li>
+        </ul></li>
+        <li>
+    rio-chart-list command line option
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-list-w">--wide</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-list-w">-w</a>
+</li>
+        </ul></li>
+        <li>
+    rio-chart-search command line option
+
+        <ul>
+          <li><a href="chart.html#cmdoption-rio-chart-search-w">--wide</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-search-w">-w</a>
+</li>
+          <li><a href="chart.html#cmdoption-rio-chart-search-arg-CHART">CHART</a>
+</li>
+        </ul></li>
+        <li>
+    rio-completion command line option
+
+        <ul>
+          <li><a href="completion.html#cmdoption-rio-completion-arg-SHELL_NAME">SHELL_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-clone command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-arg-NEW_TREE">NEW_TREE</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-create command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-create-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-create-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-delete command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-delete-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-delete-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-diff command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-diff-arg-REF_1">REF_1</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-diff-arg-REF_2">REF_2</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-export command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-export-directory">--export-directory</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-f">--format</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-f">-f</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-arg-REV_ID">REV_ID</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-history command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-graph">--graph</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-import command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-commit">--commit</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-endpoint">--etcd-endpoint</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-port">--etcd-port</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-etcd-prefix">--etcd-prefix</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-export-directory">--export-directory</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-export-format">--export-format</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-milestone">--milestone</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-commit">--no-commit</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-update-head">--no-update-head</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-override">--override</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-update-head">--update-head</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-arg-FILES">FILES</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-keys command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-arg-REV_ID">REV_ID</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-list command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-list-organization">--organization</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-merge command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-ignore-conflict">--ignore-conflict</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-milestone">--milestone</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-silent">--silent</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-arg-BASE_TREE_NAME">BASE_TREE_NAME</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-merge-arg-REF">REF</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-commit command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-m">--message</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-milestone">--milestone</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-m">-m</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-arg-REV_ID">REV_ID</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-delete command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-arg-KEY">KEY</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-init command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-force">--force</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-keys command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-arg-REV_ID">REV_ID</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-put command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-KEY">KEY</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-TREE_NAME">TREE_NAME</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-VALUE">VALUE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-revision-put-file command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-FILE_PATH">FILE_PATH</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-KEY">KEY</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-configtree-set-revision command line option
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-organization">--organization</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-arg-REV_ID">REV_ID</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-arg-TREE_NAME">TREE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-delete command line option
+
+        <ul>
+          <li><a href="apply.html#cmdoption-rio-delete-d">--dryrun</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">--force</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-rc">--retry-count</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-ri">--retry-interval</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-s">--secrets</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">--silent</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-v">--values</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-w">--workers</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-d">-d</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-f">-f</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-rc">-rc</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-ri">-ri</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-s">-s</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-v">-v</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-w">-w</a>
+</li>
+          <li><a href="apply.html#cmdoption-rio-delete-arg-FILES">FILES</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-delete command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-a">--all</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">--force</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">--silent</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-w">--workers</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-a">-a</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-f">-f</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-w">-w</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-delete-arg-DEPLOYMENT_NAME_OR_REGEX">DEPLOYMENT_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-execute command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-async">--async</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-exec">--exec</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-shell">--shell</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-timeout">--timeout</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-user">--user</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-arg-COMMAND">COMMAND</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-execute-arg-DEPLOYMENT_NAME">DEPLOYMENT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-inspect command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-f">--format</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-f">-f</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-inspect-arg-DEPLOYMENT_NAME">DEPLOYMENT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-list command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-device">--device</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-l">--label</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-phase">--phase</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-w">--wide</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-l">-l</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-list-w">-w</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-logs command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-exec">--exec</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-replica">--replica</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-logs-arg-DEPLOYMENT_NAME">DEPLOYMENT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-restart command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-a">--all</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">--force</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">--silent</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-w">--workers</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-a">-a</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-f">-f</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-w">-w</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-restart-arg-DEPLOYMENT_NAME_OR_REGEX">DEPLOYMENT_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-status command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-status-arg-DEPLOYMENT_NAME">DEPLOYMENT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-update command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-a">--all</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">--force</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">--silent</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-w">--workers</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-a">-a</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-f">-f</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-w">-w</a>
+</li>
+          <li><a href="deployment.html#cmdoption-rio-deployment-update-arg-DEPLOYMENT_NAME_OR_REGEX">DEPLOYMENT_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-deployment-wait command line option
+
+        <ul>
+          <li><a href="deployment.html#cmdoption-rio-deployment-wait-arg-DEPLOYMENT_NAME">DEPLOYMENT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-config-create command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-KEY">KEY</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-VALUE">VALUE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-config-delete command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-config-delete-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-delete-arg-KEY">KEY</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-config-list command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-config-list-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-config-update command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-KEY">KEY</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-VALUE">VALUE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-delete command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-delete-a">--all</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">--force</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">--silent</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-w">--workers</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-a">-a</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-f">-f</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-w">-w</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-delete-arg-DEVICE_NAME_OR_REGEX">DEVICE_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-deployments command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-deployments-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-execute command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-execute-async">--async</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-shell">--shell</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-timeout">--timeout</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-user">--user</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-arg-COMMAND">COMMAND</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-execute-arg-DEVICE_NAME_OR_REGEX">DEVICE_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-inspect command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-inspect-f">--format</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-inspect-f">-f</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-inspect-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-labels-create command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-KEY">KEY</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-VALUE">VALUE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-labels-delete command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-labels-delete-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-delete-arg-KEY">KEY</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-labels-list command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-labels-list-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-labels-update command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-KEY">KEY</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-VALUE">VALUE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-migrate command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-migrate-advertise-routes">--advertise-routes</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-migrate-enable-vpn">--enable-vpn</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-migrate-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-migrate-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    rio-device-onboard command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-onboard-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-report command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-report-e">--expiry</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">--force</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-s">--share</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">--silent</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-e">-e</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-f">-f</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-s">-s</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-report-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-tools-init command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-init-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-tools-port-forward command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-LOCAL_PORT">LOCAL_PORT</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-port-forward-arg-REMOTE_PORT">REMOTE_PORT</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-tools-scp command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-async">--async</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-timeout">--timeout</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-arg-DESTINATION">DESTINATION</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-arg-SOURCE">SOURCE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-tools-ssh command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-L">--local-port</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">--no-x-forward</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-R">--remote-port</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-u">--user</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">--x-forward</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-L">-L</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-R">-R</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-u">-u</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-X">-X</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-tools-ssh-authorize command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-u">--user</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-u">-u</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-tools-ssh-authorize-arg-PUBLIC_KEY_FILE">PUBLIC_KEY_FILE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-topics-list command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-topics-list-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-topics-subscribe command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-KIND">KIND</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-TOPIC">TOPIC</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-topics-unsubscribe command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-KIND">KIND</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-TOPIC">TOPIC</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-cancel command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-cancel-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-cancel-arg-FILE_NAME">FILE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-create command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-max-upload-rate">--max-upload-rate</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-override">--override</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-purge">--purge</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-FILE_PATH">FILE_PATH</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-UPLOAD_NAME">UPLOAD_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-delete command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-delete-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-delete-arg-FILE_NAME">FILE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-download command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-download-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-download-arg-FILE_NAME">FILE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-list command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-list-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-share command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-expiry">--expiry</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-share-arg-FILE_NAME">FILE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-uploads-status command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-status-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-uploads-status-arg-FILE_NAME">FILE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-device-vpn command line option
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-vpn-advertise-routes">--advertise-routes</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-devices">--devices</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">--force</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">--silent</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-f">-f</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-vpn-arg-ENABLE">ENABLE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-disk-create command line option
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-create-capacity">--capacity</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-create-region">--region</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-create-arg-DISK_NAME">DISK_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-disk-delete command line option
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-a">--all</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-f">--force</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-w">--workers</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-a">-a</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-f">-f</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-w">-w</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-delete-arg-DISK_NAME_OR_REGEX">DISK_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-disk-list command line option
+
+        <ul>
+          <li><a href="disk.html#cmdoption-rio-disk-list-l">--label</a>
+</li>
+          <li><a href="disk.html#cmdoption-rio-disk-list-l">-l</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-create command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-arch">--arch</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-codename">--codename</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-expire-after">--expire-after</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-os">--os</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-create-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-delete command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">--force</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">--silent</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-f">-f</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-delete-arg-DEVICES">DEVICES</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-execute command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-execute-arg-COMMAND">COMMAND</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-execute-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-inspect command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-f">--format</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-f">-f</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-inspect-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-login command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-interactive">--interactive</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-interactive">--no-interactive</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-password">--password</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-silent">--silent</a>
+</li>
+          <li><a href="hwil.html#cmdoption-rio-hwil-login-username">--username</a>
+</li>
+        </ul></li>
+        <li>
+    rio-hwil-ssh command line option
+
+        <ul>
+          <li><a href="hwil.html#cmdoption-rio-hwil-ssh-arg-DEVICE_NAME">DEVICE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-network-delete command line option
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-delete-a">--all</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-f">--force</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-w">--workers</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-a">-a</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-f">-f</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-w">-w</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-delete-arg-NETWORK_NAME_OR_REGEX">NETWORK_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-network-inspect command line option
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-inspect-f">--format</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-inspect-f">-f</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-inspect-arg-NETWORK_NAME">NETWORK_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-network-list command line option
+
+        <ul>
+          <li><a href="network.html#cmdoption-rio-network-list-l">--label</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-list-network">--network</a>
+</li>
+          <li><a href="network.html#cmdoption-rio-network-list-l">-l</a>
+</li>
+        </ul></li>
+        <li>
+    rio-organization-add-user command line option
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-add-user-role">--role</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-add-user-arg-USER_EMAIL">USER_EMAIL</a>
+</li>
+        </ul></li>
+        <li>
+    rio-organization-inspect command line option
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-f">--format</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-f">-f</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-inspect-arg-ORGANIZATION_NAME">ORGANIZATION_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-organization-remove-user command line option
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-remove-user-arg-USER_EMAIL">USER_EMAIL</a>
+</li>
+        </ul></li>
+        <li>
+    rio-organization-select command line option
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-select-interactive">--interactive</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-interactive">--no-interactive</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-silent">--silent</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-select-arg-ORGANIZATION_NAME">ORGANIZATION_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-package-delete command line option
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-delete-a">--all</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">--force</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">--silent</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-version">--version</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-w">--workers</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-a">-a</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-f">-f</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-w">-w</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-delete-arg-PACKAGE_NAME_OR_REGEX">PACKAGE_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-package-deployments command line option
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-deployments-version">--version</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-deployments-arg-PACKAGE_NAME">PACKAGE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-package-inspect command line option
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-inspect-f">--format</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-version">--version</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-f">-f</a>
+</li>
+          <li><a href="package.html#cmdoption-rio-package-inspect-arg-PACKAGE_NAME">PACKAGE_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-package-list command line option
+
+        <ul>
+          <li><a href="package.html#cmdoption-rio-package-list-filter">--filter</a>
+</li>
+        </ul></li>
+        <li>
+    rio-parameter-apply command line option
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-device-name-pattern">--device-name-pattern</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-devices">--devices</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">--force</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-retry-limit">--retry-limit</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">--silent</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-tree-names">--tree-names</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-apply-f">-f</a>
+</li>
+        </ul></li>
+        <li>
+    rio-parameter-delete command line option
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">--force</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">--silent</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-f">-f</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-arg-TREE">TREE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-parameter-diff command line option
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-diff-tree-names">--tree-names</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-diff-arg-PATH">PATH</a>
+</li>
+        </ul></li>
+        <li>
+    rio-parameter-download command line option
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-overwrite">--delete-existing</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-overwrite">--overwrite</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-tree-names">--tree-names</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-download-arg-PATH">PATH</a>
+</li>
+        </ul></li>
+        <li>
+    rio-parameter-upload command line option
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-recreate">--delete-existing</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">--force</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-recreate">--recreate</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">--silent</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-tree-names">--tree-names</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-f">-f</a>
+</li>
+          <li><a href="parameter.html#cmdoption-rio-parameter-upload-arg-PATH">PATH</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-create command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-create-organization">--organization</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-create-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-delete command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">--force</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">--silent</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-f">-f</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-delete-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-features-dockercache command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-data-directory">--data-directory</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-proxy-device">--proxy-device</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-proxy-interface">--proxy-interface</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-registry-secret">--registry-secret</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-registry-url">--registry-url</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-arg-ENABLE">ENABLE</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-dockercache-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-features-vpn command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-subnets">--subnets</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-arg-ENABLE">ENABLE</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-features-vpn-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-inspect command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-inspect-f">--format</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-inspect-f">-f</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-inspect-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-list command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-list-l">--label</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-organization">--organization</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-w">--wide</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-l">-l</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-list-w">-w</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-select command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-select-arg-PROJECT_NAME">PROJECT_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-project-whoami command line option
+
+        <ul>
+          <li><a href="project.html#cmdoption-rio-project-whoami-p">--project-name</a>
+</li>
+          <li><a href="project.html#cmdoption-rio-project-whoami-p">-p</a>
+</li>
+        </ul></li>
+        <li>
+    rio-secret-delete command line option
+
+        <ul>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-a">--all</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">--force</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">--silent</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-w">--workers</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-a">-a</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-f">-f</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-w">-w</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-arg-SECRET_NAME_OR_REGEX">SECRET_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-secret-inspect command line option
+
+        <ul>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-f">--format</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-f">-f</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-arg-SECRET_NAME">SECRET_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-secret-list command line option
+
+        <ul>
+          <li><a href="secret.html#cmdoption-rio-secret-list-l">--label</a>
+</li>
+          <li><a href="secret.html#cmdoption-rio-secret-list-l">-l</a>
+</li>
+        </ul></li>
+        <li>
+    rio-static-route-create command line option
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-create-arg-NAME">NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-static-route-delete command line option
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-a">--all</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">--force</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">--silent</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-w">--workers</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-a">-a</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-f">-f</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-w">-w</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-arg-ROUTE_NAME_OR_REGEX">ROUTE_NAME_OR_REGEX</a>
+</li>
+        </ul></li>
+        <li>
+    rio-static-route-inspect command line option
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-f">--format</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-f">-f</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-arg-STATIC_ROUTE">STATIC_ROUTE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-static-route-list command line option
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-list-l">--label</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-list-l">-l</a>
+</li>
+        </ul></li>
+        <li>
+    rio-static-route-open command line option
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-open-arg-STATIC_ROUTE">STATIC_ROUTE</a>
+</li>
+        </ul></li>
+        <li>
+    rio-usergroup-delete command line option
+
+        <ul>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">--force</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">--silent</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-f">-f</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-delete-arg-GROUP_NAME">GROUP_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-usergroup-inspect command line option
+
+        <ul>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-f">--format</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-f">-f</a>
+</li>
+          <li><a href="usergroup.html#cmdoption-rio-usergroup-inspect-arg-GROUP_NAME">GROUP_NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-vpn-connect command line option
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">--force</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">--silent</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-update-hosts">--update-hosts</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-connect-f">-f</a>
+</li>
+        </ul></li>
+        <li>
+    rio-vpn-machines-deregister command line option
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-deregister-arg-NAME">NAME</a>
+</li>
+        </ul></li>
+        <li>
+    rio-vpn-machines-register command line option
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-register-arg-NAME">NAME</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-machines-register-arg-NODE_KEY">NODE_KEY</a>
+</li>
+        </ul></li>
+        <li>
+    rio-vpn-status command line option
+
+        <ul>
+          <li><a href="vpn.html#cmdoption-rio-vpn-status-w">--wide</a>
+</li>
+          <li><a href="vpn.html#cmdoption-rio-vpn-status-w">-w</a>
+</li>
+        </ul></li>
+        <li>
+    ROUTE_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-delete-arg-ROUTE_NAME_OR_REGEX">rio-static-route-delete command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    SECRET_NAME
+
+        <ul>
+          <li><a href="secret.html#cmdoption-rio-secret-inspect-arg-SECRET_NAME">rio-secret-inspect command line option</a>
+</li>
+        </ul></li>
+        <li>
+    SECRET_NAME_OR_REGEX
+
+        <ul>
+          <li><a href="secret.html#cmdoption-rio-secret-delete-arg-SECRET_NAME_OR_REGEX">rio-secret-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    SHELL_NAME
+
+        <ul>
+          <li><a href="completion.html#cmdoption-rio-completion-arg-SHELL_NAME">rio-completion command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    SOURCE
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-tools-scp-arg-SOURCE">rio-device-tools-scp command line option</a>
+</li>
+        </ul></li>
+        <li>
+    STATIC_ROUTE
+
+        <ul>
+          <li><a href="static_route.html#cmdoption-rio-static-route-inspect-arg-STATIC_ROUTE">rio-static-route-inspect command line option</a>
+</li>
+          <li><a href="static_route.html#cmdoption-rio-static-route-open-arg-STATIC_ROUTE">rio-static-route-open command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    TOPIC
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-topics-subscribe-arg-TOPIC">rio-device-topics-subscribe command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-topics-unsubscribe-arg-TOPIC">rio-device-topics-unsubscribe command line option</a>
+</li>
+        </ul></li>
+        <li>
+    TREE
+
+        <ul>
+          <li><a href="parameter.html#cmdoption-rio-parameter-delete-arg-TREE">rio-parameter-delete command line option</a>
+</li>
+        </ul></li>
+        <li>
+    TREE_NAME
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-clone-arg-TREE_NAME">rio-configtree-clone command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-create-arg-TREE_NAME">rio-configtree-create command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-delete-arg-TREE_NAME">rio-configtree-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-export-arg-TREE_NAME">rio-configtree-export command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-history-arg-TREE_NAME">rio-configtree-history command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-import-arg-TREE_NAME">rio-configtree-import command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-keys-arg-TREE_NAME">rio-configtree-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-commit-arg-TREE_NAME">rio-configtree-revision-commit command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-delete-arg-TREE_NAME">rio-configtree-revision-delete command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-init-arg-TREE_NAME">rio-configtree-revision-init command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-keys-arg-TREE_NAME">rio-configtree-revision-keys command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-TREE_NAME">rio-configtree-revision-put command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-file-arg-TREE_NAME">rio-configtree-revision-put-file command line option</a>
+</li>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-set-revision-arg-TREE_NAME">rio-configtree-set-revision command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    UPLOAD_NAME
+
+        <ul>
+          <li><a href="device.html#cmdoption-rio-device-uploads-create-arg-UPLOAD_NAME">rio-device-uploads-create command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    USER_EMAIL
+
+        <ul>
+          <li><a href="organization.html#cmdoption-rio-organization-add-user-arg-USER_EMAIL">rio-organization-add-user command line option</a>
+</li>
+          <li><a href="organization.html#cmdoption-rio-organization-remove-user-arg-USER_EMAIL">rio-organization-remove-user command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="V" class="genindex-section">
+  <h2>V</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    VALUE
+
+        <ul>
+          <li><a href="config_tree.html#cmdoption-rio-configtree-revision-put-arg-VALUE">rio-configtree-revision-put command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-create-arg-VALUE">rio-device-config-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-config-update-arg-VALUE">rio-device-config-update command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-create-arg-VALUE">rio-device-labels-create command line option</a>
+</li>
+          <li><a href="device.html#cmdoption-rio-device-labels-update-arg-VALUE">rio-device-labels-update command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Rapyuta Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/js/rio-sphinx.js?v=5215d7cd"></script>
+    </body>
+</html>
