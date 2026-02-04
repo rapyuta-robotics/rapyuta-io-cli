@@ -146,4 +146,5 @@ def print_response(dep_name, result):
     for _, output in result.items():
         click.secho(f">>> {dep_name}", fg=Colors.YELLOW)
         # Replace carriage returns and null characters for better display
-        click.echo(f"{output[2:]}\n")
+        output = str(output).replace("^@", "")
+        click.echo(f"{output}\n")
