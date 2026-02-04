@@ -1,3 +1,13 @@
+## [10.0.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.3...v10.0.4) (2026-02-04)
+
+
+### Bug Fixes
+
+* improve output display by removing unwanted characters ([60f17e4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/60f17e4ce64df6275054b5e8c1484456771484d5))
+* refactor user group functions for improved clarity and functionality ([3fccdde](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/3fccdde6c26e250b84a7ede1b0aee691be088808))
+* update token expiry documentation and handling for clarity ([6b62887](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6b628878aa15aaaa6785aafa5052f941c993c145))
+* **usergroup:** walk through pages for listing ([7947c23](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7947c23258ce8332d58df821e77f3edddf517075))
+
 ## [10.0.3](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.2...v10.0.3) (2026-02-03)
 
 
