@@ -1551,7 +1551,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
     { name = "rapyuta-io", specifier = ">=3.0.0" },
-    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=fix%2Frbac-issues" },
+    { name = "rapyuta-io-sdk-v2", specifier = ">=0.4.0" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1579,13 +1579,17 @@ dev = [
 
 [[package]]
 name = "rapyuta-io-sdk-v2"
-version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=fix%2Frbac-issues#4b0afb152078d02c3faaf13fc26dc40fa9802e5e" }
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
     { name = "python-benedict" },
     { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f5/33/93fb818139fbf62f8826dba41e8a09723df1f4491a77f9f935483bc7340e/rapyuta_io_sdk_v2-0.4.0.tar.gz", hash = "sha256:50b0715f9649188fa8e42fb8ae2017ae455a9c72301f4461751ad2ed803afe62", size = 122939, upload-time = "2026-02-04T13:46:11.467Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/22/ad922a3db7a1463da63dda849dc82538aec251dc3e9ed5bcce272843d509/rapyuta_io_sdk_v2-0.4.0-py3-none-any.whl", hash = "sha256:3d11294bda9977774e8c2a83188e14b399a518583d0e43f2ecc203f9872a09df", size = 54939, upload-time = "2026-02-04T13:46:10.574Z" },
 ]
 
 [[package]]

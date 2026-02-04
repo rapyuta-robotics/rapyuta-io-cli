@@ -56,7 +56,7 @@ dependencies = [
     "waiting>=1.4.1",
     "yaspin==2.5.0",
     "ansible-core>=2.13.13",
-    "rapyuta-io-sdk-v2@git+https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git@fix/rbac-issues",
+    "rapyuta-io-sdk-v2>=0.4.0",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
 ]
