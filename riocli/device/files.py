@@ -11,13 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.clients import LogsUploadRequest, LogUploads, SharedURL
+from rapyuta_io_sdk_v2 import walk_pages
+from rapyuta_io_sdk_v2.models import (
+    FileUpload,
+    FileUploadRequest,
+    SharedURL,
+    SharedURLRequest,
+)
 
-from riocli.config import new_client
+from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import name_to_guid, name_to_request_id
 from riocli.utils import AliasedGroup, tabulate_data
@@ -55,9 +61,10 @@ def list_uploads(device_name: str, device_guid: str) -> None:
     with their size and status.
     """
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        uploads = device.list_uploaded_files_for_device()
+        client = new_v2_client()
+        uploads = []
+        for page in walk_pages(client.list_fileuploads, device_guid=device_guid):
+            uploads.extend(page)
         _display_upload_list(uploads=uploads, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
@@ -129,16 +136,17 @@ def create_upload(
         $ rio device uploads create DEVICE_NAME FILE_NAME FILE_PATH --override
     """
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        upload_request = LogsUploadRequest(
+        client = new_v2_client()
+        upload_request = FileUploadRequest(
             device_path=file_path,
             file_name=upload_name,
             max_upload_rate=max_upload_rate,
             override=override,
             purge_after=purge,
         )
-        device.upload_log_file(upload_request)
+        # Create FileUpload with the request data
+        file_upload = FileUpload(spec=upload_request.model_dump(by_alias=True))
+        client.create_fileupload(device_guid=device_guid, body=file_upload)
         spinner.text = click.style("File upload requested successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
@@ -165,10 +173,9 @@ def upload_status(
 ) -> None:
     """Check the status of a file upload."""
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        status = device.get_log_upload_status(request_uuid=request_id)
-        click.secho(status.status)
+        client = new_v2_client()
+        upload = client.get_fileupload(device_guid=device_guid, guid=request_id)
+        click.secho(upload.status.status)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
@@ -190,9 +197,8 @@ def delete_upload(
 ) -> None:
     """Delete an uploaded file."""
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        device.delete_uploaded_log_file(request_uuid=request_id)
+        client = new_v2_client()
+        client.delete_fileupload(device_guid=device_guid, guid=request_id)
         spinner.text = click.style("Deleted upload successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
@@ -217,9 +223,9 @@ def download_log(
 ) -> None:
     """Download a file from the device."""
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        url = device.download_log_file(request_uuid=request_id)
+        client = new_v2_client()
+        response = client.download_fileupload(device_guid=device_guid, guid=request_id)
+        url = response.get("url", "")
         spinner.text = click.style(url, fg=Colors.BLUE)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
@@ -244,9 +250,8 @@ def cancel_upload(
 ) -> None:
     """Cancel an ongoing upload operation."""
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        device.cancel_log_file_upload(request_uuid=request_id)
+        client = new_v2_client()
+        client.cancel_fileupload(device_guid=device_guid, guid=request_id)
         spinner.text = click.style("Cancelled upload.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
@@ -295,13 +300,17 @@ def shared_url(
       $ rio device uploads share DEVICE_NAME FILE_NAME --expiry 10
     """
     try:
-        client = new_client()
-        device = client.get_device(device_id=device_guid)
-        expiry_time = datetime.now() + timedelta(days=expiry)
-        public_url = device.create_shared_url(
-            SharedURL(request_id, expiry_time=expiry_time)
+        client = new_v2_client()
+        expiry_time = datetime.now(timezone.utc) + timedelta(days=expiry)
+        shared_url_request = SharedURLRequest(expiry_time=expiry_time)
+        shared_url_body = SharedURL(spec=shared_url_request.model_dump(by_alias=True))
+        public_url = client.create_sharedurl(
+            fileupload_guid=request_id, body=shared_url_body
         )
-        spinner.text = click.style(public_url.url, fg=Colors.GREEN)
+
+        url = f"{client.v2api_host}/v2/devices/fileuploads/sharedurls/{public_url.metadata.guid}/"
+
+        spinner.text = click.style(url, fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
         spinner.text = click.style(f"Failed to create shared URL: {e}", fg=Colors.RED)
@@ -309,11 +318,19 @@ def shared_url(
         raise SystemExit(1) from e
 
 
-def _display_upload_list(uploads: LogUploads, show_header: bool = True) -> None:
+def _display_upload_list(uploads: list[FileUpload], show_header: bool = True) -> None:
     headers = []
     if show_header:
         headers = ("Upload ID", "Name", "Status", "Total Size")
 
-    data = [[u.request_uuid, u.filename, u.status, u.total_size] for u in uploads]
+    data = [
+        [
+            u.metadata.guid,
+            u.spec.file_name,
+            u.status.status if u.status else "N/A",
+            u.status.total_size if u.status else "N/A",
+        ]
+        for u in uploads
+    ]
 
     tabulate_data(data, headers)
