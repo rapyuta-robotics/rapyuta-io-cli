@@ -1226,16 +1226,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pytest-dependency"
-version = "0.6.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-    { name = "setuptools" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/3b/317cc04e77d707d338540ca67b619df8f247f3f4c9f40e67bf5ea503ad94/pytest-dependency-0.6.0.tar.gz", hash = "sha256:934b0e6a39d95995062c193f7eaeed8a8ffa06ff1bcef4b62b0dc74a708bacc1", size = 19499, upload-time = "2023-12-31T20:38:54.991Z" }
-
-[[package]]
 name = "pytest-html"
 version = "4.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1512,7 +1502,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-click" },
     { name = "pytest-cov" },
-    { name = "pytest-dependency" },
     { name = "pytest-html" },
     { name = "pytest-mock" },
     { name = "pytest-xdist" },
@@ -1569,7 +1558,6 @@ dev = [
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-click", specifier = ">=1.1.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "pytest-dependency", specifier = ">=0.6.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
