@@ -35,7 +35,7 @@ from riocli.vpn.util import (
 )
 
 _TAILSCALE_CMD_FORMAT = (
-    "tailscale up --auth-key={} --login-server={} --reset --force-reauth "
+    "tailscale login --auth-key={} --login-server={} --nickname rio "
     "--accept-routes --accept-dns --advertise-tags={} --timeout=30s"
 )
 
