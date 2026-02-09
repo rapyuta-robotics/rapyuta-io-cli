@@ -17,7 +17,7 @@ from shlex import join
 
 import click
 from rapyuta_io.clients import Command
-from rapyuta_io_sdk_v2.models import FileUpload, FileUploadRequest
+from rapyuta_io_sdk_v2.models import FileUpload, FileUploadSpec
 
 from riocli.config import Configuration, new_client, new_v2_client
 from riocli.constants import Colors
@@ -58,8 +58,8 @@ def run_tunnel_on_local(local_port: int, path: str, background: bool = False) ->
 def copy_from_device(device_guid: str, src: str, dest: str) -> None:
     file = f"{src}-{random_string(7, 5)}".lstrip("/").replace("/", "-")
     client = new_v2_client()
-    upload_request = FileUploadRequest(device_path=src, file_name=file)
-    file_upload = FileUpload(spec=upload_request.model_dump(by_alias=True))
+    upload_spec = FileUploadSpec(file_path=src, file_name=file)
+    file_upload = FileUpload(spec=upload_spec)
     upload = client.create_fileupload(device_guid=device_guid, body=file_upload)
     request_uuid = upload.metadata.guid
 

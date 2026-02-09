@@ -18,9 +18,9 @@ from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import walk_pages
 from rapyuta_io_sdk_v2.models import (
     FileUpload,
-    FileUploadRequest,
+    FileUploadSpec,
     SharedURL,
-    SharedURLRequest,
+    SharedURLSpec,
 )
 
 from riocli.config import new_v2_client
@@ -137,15 +137,14 @@ def create_upload(
     """
     try:
         client = new_v2_client()
-        upload_request = FileUploadRequest(
-            device_path=file_path,
+        upload_spec = FileUploadSpec(
+            file_path=file_path,
             file_name=upload_name,
             max_upload_rate=max_upload_rate,
             override=override,
             purge_after=purge,
         )
-        # Create FileUpload with the request data
-        file_upload = FileUpload(spec=upload_request.model_dump(by_alias=True))
+        file_upload = FileUpload(spec=upload_spec)
         client.create_fileupload(device_guid=device_guid, body=file_upload)
         spinner.text = click.style("File upload requested successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
@@ -302,8 +301,8 @@ def shared_url(
     try:
         client = new_v2_client()
         expiry_time = datetime.now(timezone.utc) + timedelta(days=expiry)
-        shared_url_request = SharedURLRequest(expiry_time=expiry_time)
-        shared_url_body = SharedURL(spec=shared_url_request.model_dump(by_alias=True))
+        shared_url_spec = SharedURLSpec(expiry_time=expiry_time)
+        shared_url_body = SharedURL(spec=shared_url_spec)
         public_url = client.create_sharedurl(
             fileupload_guid=request_id, body=shared_url_body
         )

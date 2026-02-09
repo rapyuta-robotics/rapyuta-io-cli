@@ -25,7 +25,7 @@ from rapyuta_io import Client
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
-from rapyuta_io_sdk_v2.models import FileUploadList, SharedURL, SharedURLRequest
+from rapyuta_io_sdk_v2.models import FileUploadList, SharedURL, SharedURLSpec
 from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import (
@@ -110,8 +110,8 @@ def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=
         expiry_time = datetime.now(timezone.utc) + timedelta(days=expiry)
 
         # Create the shared URL
-        shared_url_request = SharedURLRequest(expiry_time=expiry_time)
-        shared_url = SharedURL(spec=shared_url_request.model_dump(by_alias=True))
+        shared_url_spec = SharedURLSpec(expiry_time=expiry_time)
+        shared_url = SharedURL(spec=shared_url_spec)
         public_url = client.create_sharedurl(fileupload_guid=request_id, body=shared_url)
         return public_url
     except Exception as e:
