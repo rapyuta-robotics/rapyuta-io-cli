@@ -174,7 +174,11 @@ def upload_status(
     try:
         client = new_v2_client()
         upload = client.get_fileupload(device_guid=device_guid, guid=request_id)
-        click.secho(upload.status.status)
+        status_str = getattr(getattr(upload, "status", None), "status", None)
+        if status_str is None:
+            click.secho("Upload status is not available.", fg=Colors.RED)
+            raise SystemExit(1)
+        click.secho(status_str)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
@@ -224,7 +228,12 @@ def download_log(
     try:
         client = new_v2_client()
         response = client.download_fileupload(device_guid=device_guid, guid=request_id)
-        url = response.get("url", "")
+        url = response.get("url")
+        if not url:
+            message = "Failed to download file: missing download URL in server response."
+            spinner.text = click.style(message, fg=Colors.RED)
+            spinner.red.fail(Symbols.ERROR)
+            raise SystemExit(1)
         spinner.text = click.style(url, fg=Colors.BLUE)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:

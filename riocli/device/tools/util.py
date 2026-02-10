@@ -65,11 +65,17 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
 
     while True:
         upload_status = client.get_fileupload(device_guid=device_guid, guid=request_uuid)
+        if not upload_status.status:
+            raise Exception("File upload status is missing from API response")
+
         if upload_status.status.status not in ["IN PROGRESS", "PENDING"]:
             break
 
         time.sleep(10)
         continue
+
+    if not upload_status.status:
+        raise Exception("File upload status is missing from API response")
 
     if upload_status.status.status != "COMPLETED":
         error_msg = upload_status.status.error_message
@@ -79,6 +85,12 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
 
     response = client.download_fileupload(device_guid=device_guid, guid=request_uuid)
     url = response.get("url", "")
+    if not url:
+        raise Exception(
+            f"Failed to obtain download URL for file upload request '{request_uuid}'. "
+            f"Response: {response!r}"
+        )
+
     run_bash(f'curl -o "{dest}" "{url}"')
 
 
