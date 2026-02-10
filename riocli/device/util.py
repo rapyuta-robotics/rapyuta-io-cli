@@ -25,7 +25,8 @@ from rapyuta_io import Client
 from rapyuta_io.clients.device import Device, DeviceStatus
 from rapyuta_io.utils import RestClient
 from rapyuta_io.utils.rest_client import HttpMethod
-from rapyuta_io_sdk_v2.models import FileUploadList, SharedURL, SharedURLSpec
+from rapyuta_io_sdk_v2 import walk_pages
+from rapyuta_io_sdk_v2.models import SharedURL, SharedURLSpec
 from rapyuta_io_sdk_v2.utils import handle_server_errors
 
 from riocli.config import (
@@ -115,7 +116,7 @@ def generate_shared_url(device_guid: str, request_id: str, expiry: int, spinner=
         public_url = client.create_sharedurl(fileupload_guid=request_id, body=shared_url)
         return public_url
     except Exception as e:
-        raise Exception(f"Failed to create shared URL: {e}")
+        raise Exception(f"Failed to create shared URL: {e}") from e
 
 
 def get_device_name(client: Client, guid: str) -> str:
@@ -153,8 +154,11 @@ def name_to_request_id(f: typing.Callable) -> typing.Callable:
         file_name = kwargs.pop("file_name")
         device_guid = kwargs.get("device_guid")
 
-        uploads = client.list_fileuploads(device_guid=device_guid)
-        file_name, request_id = find_request_id(uploads, file_name)
+        # Collect all file uploads across pages to avoid missing entries due to pagination
+        all_uploads = []
+        for page in walk_pages(client.list_fileuploads, device_guid=device_guid):
+            all_uploads.extend(page)
+        file_name, request_id = find_request_id(all_uploads, file_name)
 
         kwargs["file_name"] = file_name
         kwargs["request_id"] = request_id
@@ -206,9 +210,9 @@ def migrate_device_to_project(
         raise Exception(err_msg)
 
 
-def find_request_id(uploads: FileUploadList, file_name: str) -> (str, str):
-    for upload in uploads.items:
-        if upload.spec.file_name == file_name or upload.metadata.guid == file_name:
+def find_request_id(uploads: list, file_name: str) -> tuple[str, str]:
+    for upload in uploads:
+        if upload.spec.file_name == file_name:
             return upload.spec.file_name, upload.metadata.guid
 
     click.secho("file not found", fg=Colors.RED)
