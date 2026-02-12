@@ -16,9 +16,10 @@ import time
 from shlex import join
 
 import click
-from rapyuta_io.clients import Command, LogsUploadRequest
+from rapyuta_io.clients import Command
+from rapyuta_io_sdk_v2.models import FileUpload, FileUploadSpec
 
-from riocli.config import Configuration, new_client
+from riocli.config import Configuration, new_client, new_v2_client
 from riocli.constants import Colors
 from riocli.device.execute import execute_async
 from riocli.utils import random_string, run_bash
@@ -56,21 +57,40 @@ def run_tunnel_on_local(local_port: int, path: str, background: bool = False) ->
 
 def copy_from_device(device_guid: str, src: str, dest: str) -> None:
     file = f"{src}-{random_string(7, 5)}".lstrip("/").replace("/", "-")
-    client = new_client()
-    device = client.get_device(device_id=device_guid)
-    request_uuid = device.upload_log_file(LogsUploadRequest(src, file_name=file))
+    client = new_v2_client()
+    upload_spec = FileUploadSpec(file_path=src, file_name=file)
+    file_upload = FileUpload(spec=upload_spec)
+    upload = client.create_fileupload(device_guid=device_guid, body=file_upload)
+    request_uuid = upload.metadata.guid
+
     while True:
-        status = device.get_log_upload_status(request_uuid)
-        if status.status not in ["IN PROGRESS", "PENDING"]:
+        upload_status = client.get_fileupload(device_guid=device_guid, guid=request_uuid)
+        if not upload_status.status:
+            raise Exception("File upload status is missing from API response")
+
+        if upload_status.status.status not in ["IN PROGRESS", "PENDING"]:
             break
 
         time.sleep(10)
         continue
 
-    if status.status != "COMPLETED":
-        raise Exception(f"Upload status: {status.status} Error: {status.error_message}")
+    if not upload_status.status:
+        raise Exception("File upload status is missing from API response")
 
-    url = device.download_log_file(request_uuid)
+    if upload_status.status.status != "COMPLETED":
+        error_msg = upload_status.status.error_message
+        raise Exception(
+            f"Upload status: {upload_status.status.status} Error: {error_msg}"
+        )
+
+    response = client.download_fileupload(device_guid=device_guid, guid=request_uuid)
+    url = response.get("url", "")
+    if not url:
+        raise Exception(
+            f"Failed to obtain download URL for file upload request '{request_uuid}'. "
+            f"Response: {response!r}"
+        )
+
     run_bash(f'curl -o "{dest}" "{url}"')
 
 

@@ -15,7 +15,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io.clients.device import DeviceStatus
 
-from riocli.config import new_client
+from riocli.config import Configuration, new_client
 from riocli.constants import Colors, Symbols
 from riocli.device.util import generate_shared_url, name_to_guid, upload_debug_logs
 from riocli.utils.spinner import with_spinner
@@ -100,7 +100,9 @@ def report_device(
             public_url = generate_shared_url(
                 device_guid, response["response"]["data"]["request_uuid"], expiry
             )
-            click.secho(f"\nURL: {public_url.url}", fg=Colors.GREEN)
+            config = Configuration()
+            url = f"{config.data['v2api_host']}/v2/devices/fileuploads/sharedurls/{public_url.metadata.guid}/"
+            click.secho(f"\nURL: {url}", fg=Colors.GREEN)
 
         spinner.text = click.style("Device reported successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
