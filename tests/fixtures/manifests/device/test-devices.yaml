@@ -1,0 +1,18 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "Device"
+metadata:
+  name: "test-upload-device"
+  labels:
+    app: test-fileupload
+    purpose: testing
+spec:
+  rosDistro: "melodic"
+  virtual:
+    enabled: True
+    arch: "amd64"
+    os: "ubuntu"
+    codename: "focal"
+    wait: True
+    expireAfter: '1h'
+  docker:
+    enabled: True
