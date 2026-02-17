@@ -1,0 +1,58 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "permission-viewer"
+  labels:
+    test: permission
+    persona: viewer
+spec:
+  description: "Role for viewing secrets with pattern perm-secret.* at project level"
+  rules:
+  - resource: "secret"
+    instances:
+    - '^perm-secret.*'
+    - '^test-secret.*'
+    actions:
+    - get
+    - list
+
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "permission-manager"
+  labels:
+    test: permission
+    persona: manager
+spec:
+  description: "Role for managing secrets with pattern managed-secret.* at project level"
+  rules:
+  - resource: "secret"
+    instances:
+    - '^managed-secret.*'
+    actions:
+    - get
+    - create
+    - update
+    - delete
+    - list
+
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "org-device-viewer"
+  labels:
+    test: permission
+    persona: viewer
+spec:
+  description: "Role for viewing all devices at organization level"
+  rules:
+  - resource: "device"
+    instances:
+    - '.*'
+    actions:
+    - get_device
+    - list_device
+
