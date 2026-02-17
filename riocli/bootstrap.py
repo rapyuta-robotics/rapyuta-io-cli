@@ -40,6 +40,7 @@ from riocli.oauth2 import oauth2
 from riocli.organization import organization
 from riocli.package import package
 from riocli.parameter import parameter
+from riocli.permission import permission
 from riocli.project import project
 from riocli.role import role
 from riocli.secret import secret
@@ -173,3 +174,4 @@ cli.add_command(oauth2)
 cli.add_command(compose)
 cli.add_command(role)
 cli.add_command(service_account)
+cli.add_command(permission)
