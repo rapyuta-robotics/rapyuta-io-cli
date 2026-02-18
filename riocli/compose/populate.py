@@ -267,19 +267,27 @@ def merge_env_vars(
     """
     env = Munch()
 
-    env["RIO_AuthToken"] = ctx.obj.data.get("auth_token", None)
-    env["RIO_CONFIGS_DIR"] = "/opt/rapyuta/configs"
-    env["RIO_PROJECT_ID"] = ctx.obj.data.get("project_id", None)
-    env["RIO_PROJECT_NAME"] = ctx.obj.data.get("project_name", None)
-    env["RIO_ORGANIZATION_ID"] = ctx.obj.data.get("organization_id", None)
-    env["RIO_ORGANIZATION_SHORT_GUID"] = ctx.obj.data.get("organization_short_id", None)
-    env["RIO_ORGANIZATION_NAME"] = ctx.obj.data.get("organization_name", None)
     # Flatten all lists into one using generator expression for memory efficiency
     for var in (var for vars_list in env_vars_lists for var in vars_list):
         name = var.get("name", "")
         if name is not None:
             value = var.get("default", var.get("value", ""))
             env[name] = str(value) if value is not None else ""
+
+    env["RIO_CONFIGS_DIR"] = "/opt/rapyuta/configs"
+
+    ctx_vars = {
+        "RIO_AuthToken": ctx.obj.data.get("auth_token"),
+        "RIO_PROJECT_ID": ctx.obj.data.get("project_id"),
+        "RIO_PROJECT_NAME": ctx.obj.data.get("project_name"),
+        "RIO_ORGANIZATION_ID": ctx.obj.data.get("organization_id"),
+        "RIO_ORGANIZATION_SHORT_GUID": ctx.obj.data.get("organization_short_id"),
+        "RIO_ORGANIZATION_NAME": ctx.obj.data.get("organization_name"),
+    }
+    for key, value in ctx_vars.items():
+        if value is not None:
+            env[key] = value
+
     return env
 
 
