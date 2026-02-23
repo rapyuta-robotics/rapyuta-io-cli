@@ -56,7 +56,7 @@ dependencies = [
     "waiting>=1.4.1",
     "yaspin==2.5.0",
     "ansible-core>=2.13.13",
-    "rapyuta-io-sdk-v2>=0.4.0",
+    "rapyuta-io-sdk-v2@git+https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git@feat/v2_fileupload_client",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
 ]
@@ -72,7 +72,6 @@ dev = [
     "pytest-mock>=3.14.0",
     "pytest-xdist>=3.8.0",
     "pytest-html>=4.1.1",
-    "pytest-dependency>=0.6.0",
 ]
 
 [project.scripts]
