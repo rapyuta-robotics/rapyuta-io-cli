@@ -11,7 +11,7 @@ spec:
     enabled: True
     arch: "amd64"
     os: "ubuntu"
-    codename: "focal"
+    codename: "jammy"
     wait: True
     expireAfter: '1h'
   docker:
