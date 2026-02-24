@@ -1,3 +1,10 @@
+## [10.0.5](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.4...v10.0.5) (2026-02-24)
+
+
+### Bug Fixes
+
+* **import_keys:** allow value none in file import ([7a16c82](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/7a16c82e3e1180a71445a3f388d5960831fddba9))
+
 ## [10.0.4](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.3...v10.0.4) (2026-02-04)
 
 
