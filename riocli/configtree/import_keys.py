@@ -260,10 +260,11 @@ def split_metadata(data: Iterable) -> (Iterable, Iterable):
 
         potential_content = value.get("value")
         potential_meta = value.get("metadata")
+        keys_present = "value" in value and "metadata" in value
 
         if (
-            len(value) == 2
-            and potential_content is not None
+            keys_present
+            and len(value) == 2
             and potential_meta is not None
             and isinstance(potential_meta, dict)
         ):
