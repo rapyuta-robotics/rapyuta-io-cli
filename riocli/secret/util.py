@@ -15,7 +15,7 @@
 import re
 
 from munch import Munch
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
 
 from riocli.utils import tabulate_data
 
@@ -25,9 +25,11 @@ def fetch_secrets(
     secret_name_or_regex: str,
     include_all: bool,
 ) -> list[Munch]:
-    secrets = client.list_secrets()
+    secrets = []
+    for page in walk_pages(client.list_secrets):
+        secrets.extend(page)
     result = []
-    for secret in secrets.items:
+    for secret in secrets:
         if (
             include_all
             or secret_name_or_regex == secret.metadata.name
