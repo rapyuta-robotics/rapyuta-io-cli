@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import click
 import munch
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -42,8 +42,10 @@ def list_secrets(labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        secrets = client.list_secrets(label_selector=labels)
-        secrets = sorted(secrets.items, key=lambda s: s.metadata.name.lower())
+        secrets = []
+        for page in walk_pages(client.list_secrets, label_selector=labels):
+            secrets.extend(page)
+        secrets = sorted(secrets, key=lambda s: s.metadata.name.lower())
         _display_secret_list(secrets, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
