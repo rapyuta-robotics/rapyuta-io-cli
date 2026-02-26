@@ -15,7 +15,7 @@ import re
 
 import click
 from munch import Munch
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
 
 from riocli.package.model import Package
 from riocli.utils import tabulate_data
@@ -80,10 +80,12 @@ def fetch_packages(
     package_version: str,
     include_all: bool,
 ) -> list[Package]:
-    packages = client.list_packages()
+    packages = []
+    for page in walk_pages(client.list_packages):
+        packages.extend(page)
 
     result = []
-    for pkg in packages.items:
+    for pkg in packages:
         # We cannot delete public packages. Skip them instead.
         if "io-public" in pkg.metadata.guid:
             continue
