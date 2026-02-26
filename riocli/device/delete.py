@@ -118,7 +118,7 @@ def delete_device(
         spinner.write("")
 
     try:
-        f = functools.partial(_delete_deivce, client)
+        f = functools.partial(_delete_device, client)
         result = apply_func_with_result(
             f=f, items=devices, workers=workers, key=lambda x: x[0]
         )
@@ -171,7 +171,7 @@ def delete_device(
         raise SystemExit(1) from e
 
 
-def _delete_deivce(
+def _delete_device(
     client: Client,
     result: Queue,
     device: Device = None,
