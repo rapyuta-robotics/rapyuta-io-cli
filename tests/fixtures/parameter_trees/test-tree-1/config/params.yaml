@@ -1,0 +1,4 @@
+robot_name: test-robot-1
+max_speed: 1.5
+enable_logging: true
+
