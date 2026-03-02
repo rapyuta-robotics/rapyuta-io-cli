@@ -50,6 +50,9 @@ run-all COVERAGE="false":
     echo "=== Running Usergroup Tests ==="
     {{PYTEST}} {{DIR}}/main/test_usergroup.py -v $COVERAGE_FLAGS
     
+    echo "=== Running Parameter Tests ==="
+    {{PYTEST}} {{DIR}}/main/test_parameter.py -v $COVERAGE_FLAGS
+
     echo "All tests completed successfully!"
     if [ "{{COVERAGE}}" = "true" ]; then
         echo "Coverage report generated in htmlcov/ directory"
@@ -100,12 +103,16 @@ run RESOURCE COVERAGE="false":
             echo "Running Usergroup tests..."
             {{PYTEST}} {{DIR}}/main/test_usergroup.py -v $COVERAGE_FLAGS
             ;;
+        "parameter"|"parameters"|"param")
+            echo "Running Parameter tests..."
+            {{PYTEST}} {{DIR}}/main/test_parameter.py -v $COVERAGE_FLAGS
+            ;;
         "all")
             just run-all {{COVERAGE}}
             ;;
         *)
             echo "Unknown resource type: {{RESOURCE}}"
-            echo "Available resources: auth, project, package, secret, staticroute, service-account, deployment, usergroup"
+            echo "Available resources: auth, project, package, secret, staticroute, service-account, deployment, usergroup, parameter"
             echo "Use 'just run all' to run all tests"
             echo "Add 'true' as second argument to enable coverage: just run <resource> true"
             exit 1
