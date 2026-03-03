@@ -17,6 +17,7 @@ from typing import Any
 
 from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2.models import Deployment
+from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.deployment.list import DEFAULT_PHASES
 from riocli.utils import process_errors, tabulate_data
@@ -36,9 +37,11 @@ def fetch_deployments(
     deployment_name_or_regex: str,
     include_all: bool,
 ) -> list[Any]:
-    deployments = client.list_deployments(phases=DEFAULT_PHASES)
+    deployments = []
+    for page in walk_pages(client.list_deployments, phases=DEFAULT_PHASES):
+        deployments.extend(page)
     result = []
-    items = deployments.items if deployments.items is not None else []
+    items = deployments if deployments is not None else []
     for deployment in items:
         if (
             include_all

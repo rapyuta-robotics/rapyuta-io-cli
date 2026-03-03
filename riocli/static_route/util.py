@@ -15,7 +15,7 @@
 import re
 
 from munch import Munch
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
@@ -39,9 +39,11 @@ def fetch_static_routes(
     route_name_or_regex: str,
     include_all: bool,
 ) -> list[Munch]:
-    routes = client.list_staticroutes()
+    routes = []
+    for page in walk_pages(client.list_staticroutes):
+        routes.extend(page)
     result = []
-    for route in routes.items:
+    for route in routes:
         if (
             include_all
             or route_name_or_regex == route.metadata.name

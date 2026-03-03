@@ -114,24 +114,19 @@ class Configuration:
         if environment:
             os.environ["RIO_CONFIG"] = self.filepath
 
-        if not with_project:
-            return v2Client(
-                config=v2Config(
-                    auth_token=self.data["auth_token"],
-                    environment=self.data.get("environment", "ga"),
-                    organization_guid=self.data.get("organization_id", None),
-                )
-            )
-
-        return v2Client(
-            config=v2Config(
-                auth_token=self.data["auth_token"],
-                environment=self.data.get("environment", "ga"),
-                organization_guid=self.data.get("organization_id", None),
-                project_guid=self.data.get("project_id", None),
-                email=self.data.get("email_id", None),
-            )
+        config_kwargs = dict(
+            auth_token=self.data["auth_token"],
+            environment=environment,
+            organization_guid=self.data.get("organization_id"),
+            v2_api_host=self.data.get("v2api_host"),
+            rip_host=self.data.get("rip_host"),
         )
+
+        if with_project:
+            config_kwargs["project_guid"] = self.data.get("project_id")
+            config_kwargs["email"] = self.data.get("email_id")
+
+        return v2Client(config=v2Config(**config_kwargs))
 
     def new_hwil_client(self: Configuration) -> HwilClient:
         if "hwil_auth_token" not in self.data:
