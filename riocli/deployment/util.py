@@ -41,7 +41,7 @@ def fetch_deployments(
     for page in walk_pages(client.list_deployments, phases=DEFAULT_PHASES):
         deployments.extend(page)
     result = []
-    items = deployments.items if deployments.items is not None else []
+    items = deployments if deployments is not None else []
     for deployment in items:
         if (
             include_all
