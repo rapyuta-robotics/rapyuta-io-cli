@@ -14,10 +14,9 @@
 import re
 
 import click
-from munch import Munch
-from rapyuta_io_sdk_v2 import Client, walk_pages, Package as PackageModel
+from rapyuta_io_sdk_v2 import Client, walk_pages
+from rapyuta_io_sdk_v2 import Package as PackageModel
 
-from riocli.package.model import Package
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
 
@@ -44,7 +43,7 @@ def find_package(
         package_obj = client.get_package(name=package_name, version=package_version)
     elif package_name:
         packages = []
-        for page in walk_pages(client.list_packages):
+        for page in walk_pages(client.list_packages, name=package_name):
             packages.extend(page)
 
         if len(packages) == 0:
