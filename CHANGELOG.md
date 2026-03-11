@@ -1,3 +1,16 @@
+# [10.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.5...v10.1.0) (2026-03-11)
+
+
+### Bug Fixes
+
+* update sdk version to 0.5.0 ([1fbae1f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1fbae1fbe439763893a79f8512153f605661f6f2))
+
+
+### Features
+
+* **fileupload:** use v2-sdk for fileupload ([#483](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/483)) ([5793cb4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5793cb45041df95b92126c910eb1b0c8b0bc00e8))
+* **permissions:** support for permissions command ([dc4c423](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/dc4c423d6f28f38069ffec957933d4b1b6940c1b))
+
 ## [10.0.5](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.4...v10.0.5) (2026-02-24)
 
 
