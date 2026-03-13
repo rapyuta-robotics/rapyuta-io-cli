@@ -1,0 +1,5 @@
+robot_name: test-robot-1-updated
+max_speed: 2.0
+enable_logging: false
+new_param: enabled
+
