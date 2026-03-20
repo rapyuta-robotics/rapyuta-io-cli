@@ -62,6 +62,10 @@ class TestDeploymentRBAC:
         self.test_deployments = self.manifest_dir / "test-deployments.yaml"
         self.managed_deployments = self.manifest_dir / "managed-deployments.yaml"
         self.deployment_roles = self.manifest_dir / "deployment-roles.yaml"
+        self.custom_sa_manifest = self.manifest_dir / "sa-for-deployment-test.yaml"
+        self.deployment_with_custom_sa = (
+            self.manifest_dir / "deployment-with-custom-sa.yaml"
+        )
 
     @pytest.fixture
     def logged_in_user_1(self, cli_runner, test_user_11, test_projects):
@@ -527,6 +531,67 @@ class TestDeploymentRBAC:
         # Should still be able to list deployments in project1
         self._assert_can_list_deployments(runner)
 
+    # =================
+    # CUSTOM SERVICE ACCOUNT TESTS (Group G)
+    # =================
+
+    @pytest.mark.xdist_group(name="custom_sa_tests_g")
+    def test_80_super_user_creates_custom_sa(self, cli_runner, super_user, test_projects):
+        """Create service account that will be used as a custom SA in a deployment"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        result = cli_runner.invoke(cli, ["apply", str(self.custom_sa_manifest), "-f"])
+        assert result.exit_code == 0, f"Failed to create custom SA: {result.output}"
+
+    @pytest.mark.xdist_group(name="custom_sa_tests_g")
+    def test_81_super_user_creates_deployment_with_custom_sa(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Create a deployment that references the custom service account"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        result = cli_runner.invoke(
+            cli, ["apply", str(self.deployment_with_custom_sa), "-f"]
+        )
+        assert result.exit_code == 0, (
+            f"Failed to create deployment with custom SA: {result.output}"
+        )
+
+    @pytest.mark.xdist_group(name="custom_sa_tests_g")
+    def test_82_verify_deployment_has_custom_sa_in_spec(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Verify that the deployed resource has the custom SA set in its spec"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        result = cli_runner.invoke(
+            cli, ["deployment", "inspect", "test-deployment-with-custom-sa"]
+        )
+        assert result.exit_code == 0, f"Failed to inspect deployment: {result.output}"
+        assert "serviceAccount" in result.output, (
+            f"serviceAccount not found in deployment spec: {result.output}"
+        )
+        assert "deployment-test-custom-sa" in result.output, (
+            f"Custom SA name not found in deployment spec: {result.output}"
+        )
+
+    @pytest.mark.xdist_group(name="custom_sa_tests_g")
+    def test_83_verify_deployment_without_custom_sa_has_no_sa_in_spec(
+        self, cli_runner, super_user, test_projects
+    ):
+        """Verify that a deployment without a custom SA does not expose serviceAccount in spec
+
+        The default SA is reserved for paramsync and should not appear in user
+        deployments that do not explicitly set spec.serviceAccount.
+        """
+        super_user.login(cli_runner, project_name="test-project1")
+
+        result = cli_runner.invoke(cli, ["deployment", "inspect", "test-deployment-1"])
+        assert result.exit_code == 0, f"Failed to inspect deployment: {result.output}"
+        assert "serviceAccount" not in result.output, (
+            f"serviceAccount unexpectedly present in deployment without custom SA: {result.output}"
+        )
+
     @pytest.mark.xdist_group(name="cleanup_z")
     def test_90_cleanup_role_bindings(self, cli_runner, super_user, test_projects):
         """Cleanup deployment role bindings"""
@@ -568,3 +633,13 @@ class TestDeploymentRBAC:
         cli_runner.invoke(cli, ["delete", "--silent", str(self.test_deployments)])
         cli_runner.invoke(cli, ["delete", "--silent", str(self.test_packages)])
         cli_runner.invoke(cli, ["delete", "--silent", str(self.deployment_roles)])
+
+    @pytest.mark.xdist_group(name="cleanup_z")
+    def test_92_cleanup_custom_sa_resources(self, cli_runner, super_user, test_projects):
+        """Cleanup custom SA deployment and service account"""
+        super_user.login(cli_runner, project_name="test-project1")
+
+        cli_runner.invoke(
+            cli, ["delete", "--silent", str(self.deployment_with_custom_sa)]
+        )
+        cli_runner.invoke(cli, ["delete", "--silent", str(self.custom_sa_manifest)])

@@ -1,0 +1,16 @@
+---
+apiVersion: apiextensions.rapyuta.io/v1
+kind: Deployment
+metadata:
+  name: test-deployment-with-custom-sa
+  region: jp
+  depends:
+    kind: package
+    nameOrGUID: "test-package-for-deploy-1"
+    version: "1.0.0"
+  labels:
+    app: test
+    purpose: deployment-custom-sa-testing
+spec:
+  runtime: cloud
+  serviceAccount: deployment-test-custom-sa
