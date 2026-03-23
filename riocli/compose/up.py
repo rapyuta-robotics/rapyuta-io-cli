@@ -9,6 +9,7 @@ from riocli.compose.generate import (
     generate_compose_file,
     resolve_chart_inputs,
     validate_chart_files,
+    write_compose_yaml,
 )
 from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
@@ -123,13 +124,13 @@ def up(
     compose_manager = DockerComposeManager(compose_path=compose_path)
 
     try:
-        generate_compose_file(
+        compose_doc = generate_compose_file(
             ctx=ctx,
-            compose_path=compose_path,
             files=files,
             values=values,
             secrets=secrets,
         )
+        write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
         if not compose_manager.validate_docker_availability():
             raise SystemExit(1)

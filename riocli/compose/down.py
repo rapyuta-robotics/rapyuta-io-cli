@@ -9,6 +9,7 @@ from riocli.compose.generate import (
     generate_compose_file,
     resolve_chart_inputs,
     validate_chart_files,
+    write_compose_yaml,
 )
 from riocli.constants.colors import Colors
 
@@ -107,13 +108,13 @@ def down(
                 f"Compose file '{compose_path}' does not exist or is empty.",
                 fg=Colors.YELLOW,
             )
-            generate_compose_file(
+            compose_doc = generate_compose_file(
                 ctx=ctx,
-                compose_path=compose_path,
                 values=values,
                 secrets=secrets,
                 files=files,
             )
+            write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
         if not compose_manager.validate_docker_availability():
             raise SystemExit(1)
