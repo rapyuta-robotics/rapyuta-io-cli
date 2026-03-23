@@ -18,15 +18,16 @@ class TestUpCommandChartFlag:
         assert result.exit_code != 0
         assert "Only one chart name is allowed" in result.output
 
+    @patch("riocli.compose.up.write_compose_yaml")
     @patch("riocli.compose.up.DockerComposeManager")
     @patch("riocli.compose.up.generate_compose_file")
     @patch("riocli.compose.up.resolve_chart_inputs")
     def test_chart_flag_cleanup_called_on_success(
-        self, mock_resolve, mock_gen, mock_mgr_cls, tmp_path
+        self, mock_resolve, mock_gen, mock_mgr_cls, mock_write, tmp_path
     ):
         chart_obj = MagicMock()
         mock_resolve.return_value = ((tmp_path / "templates",), (), chart_obj)
-        mock_gen.return_value = None
+        mock_gen.return_value = {"services": {}}
         mgr = MagicMock()
         mgr.validate_docker_availability.return_value = True
         mgr.up.return_value = True
