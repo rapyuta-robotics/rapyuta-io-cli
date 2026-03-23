@@ -11,6 +11,8 @@ from munch import munchify
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.chart.chart import Chart
+from riocli.chart.util import find_chart
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
@@ -58,6 +60,13 @@ if typing.TYPE_CHECKING:
         exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
     ),
 )
+@click.option(
+    "--chart",
+    "use_chart",
+    is_flag=True,
+    default=False,
+    help="Treat the files argument as a rapyuta chart name[:version].",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -66,6 +75,7 @@ def generate(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     path: Path,
+    use_chart: bool,
     files: tuple[str, ...],
 ) -> None:
     """
@@ -87,18 +97,33 @@ def generate(
         Specify a custom output path and file name:
 
             rio compose generate -v values.yaml -s secrets.yaml templates/ -p ./compose_output -f compose.yaml
+
+        Generate from a rapyuta chart:
+
+            rio compose generate --chart ioconfig-syncer -v my-values.yaml
     """
 
     if not path:
         click.secho("No path specified.", fg=Colors.RED)
     compose_path = path.absolute() / file_name
-    generate_compose_file(
-        ctx=ctx,
-        compose_path=compose_path,
-        values=values,
-        secrets=secrets,
-        files=files,
-    )
+
+    chart_obj = None
+    if use_chart:
+        files, values, chart_obj = resolve_chart_inputs(
+            validate_chart_files(files), values
+        )
+
+    try:
+        generate_compose_file(
+            ctx=ctx,
+            compose_path=compose_path,
+            values=values,
+            secrets=secrets,
+            files=files,
+        )
+    finally:
+        if chart_obj:
+            chart_obj.cleanup()
 
 
 def generate_compose_file(
@@ -161,6 +186,57 @@ def get_deployment_package(
     }
 
     return munchify(deployments), munchify(packages)
+
+
+def validate_chart_files(files: tuple[str, ...]) -> str:
+    """Validate the files argument when --chart is used; returns the single chart name."""
+    if len(files) == 0:
+        click.secho("Chart name is required when --chart is specified.", fg=Colors.RED)
+        raise SystemExit(1)
+    if len(files) > 1:
+        click.secho(
+            "Only one chart name is allowed when --chart is specified.", fg=Colors.RED
+        )
+        raise SystemExit(1)
+    return files[0]
+
+
+
+def resolve_chart_inputs(
+    chart_name: str,
+    user_values: tuple[str, ...],
+) -> tuple[tuple, tuple, Chart]:
+    """
+    Downloads a rapyuta chart and returns inputs for generate_compose_file.
+
+    Args:
+        chart_name: Chart name with optional version (e.g. "ioconfig-syncer:1.0.0").
+        user_values: User-supplied --values paths.
+
+    Returns:
+        Tuple of (files, extended_values, chart_obj).
+        Caller must call chart_obj.cleanup() when done.
+    """
+
+    versions = find_chart(chart_name)
+    if len(versions) > 1:
+        click.secho(
+            "More than one chart version is available. Using the latest. "
+            "Specify a version to pin (e.g. name:1.0.0).",
+            fg=Colors.YELLOW,
+        )
+
+    chart_obj = Chart(**versions[0])
+    chart_obj.download_chart()
+
+    templates_dir = Path(chart_obj.tmp_dir.name, chart_obj.name, "templates")
+    chart_values = Path(chart_obj.tmp_dir.name, chart_obj.name, "values.yaml")
+
+    extended_values = user_values
+    if chart_values.exists():
+        extended_values = (chart_values.as_posix(),) + tuple(user_values)
+
+    return (templates_dir,), extended_values, chart_obj
 
 
 def write_compose_yaml(compose_dict: DockerCompose, output_path: Path) -> None:
