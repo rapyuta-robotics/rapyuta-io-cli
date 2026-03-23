@@ -1,3 +1,15 @@
+## [10.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.1.0...v10.1.1) (2026-03-23)
+
+
+### Bug Fixes
+
+* **compose:** override the default environment variables ([92b60c1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/92b60c1bb3b6112e3f77370df385b5aa2530a405))
+* **config:** refactor v2Client initialization to use config_kwargs for cleaner code ([2a828a1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2a828a10a5ad931cff16ca2457a8bace4d0608b5))
+* **deployments:** update to use pagination for listing deployments ([e685c6a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/e685c6a3eb8d418a14466a570d6af5e9c46db2c5))
+* implement pagination in fetch methods ([5da57ac](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5da57acdc348d5be9d1f75f3ff4bcc75d1f52e00))
+* **package:** modify package fetching to filter by name in list_packages ([fa590a6](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fa590a646c1bfa8262748b17d5a562f4fdfae84e))
+* **package:** update package fetching to handle pagination and improve type hints ([9651ac1](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/9651ac12e9af81658fe2900be62628ce936728c2))
+
 # [10.1.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.0.5...v10.1.0) (2026-03-11)
 
 
