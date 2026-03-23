@@ -14,10 +14,9 @@
 import re
 
 import click
-from munch import Munch
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
+from rapyuta_io_sdk_v2 import Package as PackageModel
 
-from riocli.package.model import Package
 from riocli.utils import tabulate_data
 from riocli.utils.selector import show_selection
 
@@ -26,12 +25,13 @@ def find_package(
     client: Client,
     package_name: str,
     package_version: str,
-) -> Munch:
+) -> None | PackageModel:
     package_obj = None
 
     if package_name.startswith("pkg-"):
-        result = client.list_packages(name=package_name)
-        packages = result.items
+        packages = []
+        for page in walk_pages(client.list_packages):
+            packages.extend(page)
         if not packages:
             raise Exception("Package not found")
 
@@ -42,9 +42,9 @@ def find_package(
     elif package_name and package_version:
         package_obj = client.get_package(name=package_name, version=package_version)
     elif package_name:
-        result = client.list_packages(name=package_name)
-
-        packages = result.items
+        packages = []
+        for page in walk_pages(client.list_packages, name=package_name):
+            packages.extend(page)
 
         if len(packages) == 0:
             click.secho("package not found", fg="red")
@@ -79,11 +79,13 @@ def fetch_packages(
     package_name_or_regex: str,
     package_version: str,
     include_all: bool,
-) -> list[Package]:
-    packages = client.list_packages()
+) -> list[PackageModel]:
+    packages = []
+    for page in walk_pages(client.list_packages):
+        packages.extend(page)
 
     result = []
-    for pkg in packages.items:
+    for pkg in packages:
         # We cannot delete public packages. Skip them instead.
         if "io-public" in pkg.metadata.guid:
             continue
@@ -101,7 +103,7 @@ def fetch_packages(
     return result
 
 
-def print_packages_for_confirmation(packages: list[Package]) -> None:
+def print_packages_for_confirmation(packages: list[PackageModel]) -> None:
     headers = ["Name", "Version"]
     data = [[p.metadata.name, p.metadata.version] for p in packages]
     tabulate_data(data, headers)
