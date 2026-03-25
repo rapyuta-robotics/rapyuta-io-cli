@@ -5,7 +5,12 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
-from riocli.compose.generate import generate_compose_file
+from riocli.compose.generate import (
+    generate_compose_file,
+    resolve_chart_inputs,
+    validate_chart_files,
+    write_compose_yaml,
+)
 from riocli.constants.colors import Colors
 
 
@@ -45,6 +50,13 @@ from riocli.constants.colors import Colors
         exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
     ),
 )
+@click.option(
+    "--chart",
+    "use_chart",
+    is_flag=True,
+    default=False,
+    help="Treat the argument as a chart name and resolve inputs from it.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def down(
@@ -53,6 +65,7 @@ def down(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     path: str,
+    use_chart: bool,
     files: tuple[str, ...],
 ):
     """
@@ -74,26 +87,41 @@ def down(
         Specify a custom output path and compose file name:
 
             rio compose down -v values.yaml -s secrets.yaml templates/ -p ./compose_output -f compose.yaml
+
+        Stop services started from a chart:
+
+            rio compose down --chart ioconfig-syncer
     """
+
+    chart_obj = None
+    if use_chart:
+        files, values, chart_obj = resolve_chart_inputs(
+            validate_chart_files(files), values
+        )
 
     compose_path = path.absolute() / file_name
     compose_manager = DockerComposeManager(compose_path=compose_path)
 
-    if not compose_path.exists() or compose_manager.check_empty_file():
-        click.secho(
-            f"Compose file '{compose_path}' does not exist or is empty.", fg=Colors.YELLOW
-        )
-        generate_compose_file(
-            ctx=ctx,
-            compose_path=compose_path,
-            values=values,
-            secrets=secrets,
-            files=files,
-        )
+    try:
+        if not compose_path.exists() or compose_manager.check_empty_file():
+            click.secho(
+                f"Compose file '{compose_path}' does not exist or is empty.",
+                fg=Colors.YELLOW,
+            )
+            compose_doc = generate_compose_file(
+                ctx=ctx,
+                values=values,
+                secrets=secrets,
+                files=files,
+            )
+            write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
-    if not compose_manager.validate_docker_availability():
-        raise SystemExit(1)
+        if not compose_manager.validate_docker_availability():
+            raise SystemExit(1)
 
-    if not compose_manager.down():
-        click.secho("Docker Compose down operation failed.", fg=Colors.RED)
-        raise SystemExit(1)
+        if not compose_manager.down():
+            click.secho("Docker Compose down operation failed.", fg=Colors.RED)
+            raise SystemExit(1)
+    finally:
+        if chart_obj:
+            chart_obj.cleanup()

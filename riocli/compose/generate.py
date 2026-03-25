@@ -11,14 +11,13 @@ from munch import munchify
 
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
+from riocli.chart.chart import Chart
+from riocli.chart.util import find_chart
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.utils import print_centered_text
-
-if typing.TYPE_CHECKING:
-    from riocli.compose.model import DockerCompose
 
 
 # Expose the command for import
@@ -58,6 +57,20 @@ if typing.TYPE_CHECKING:
         exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
     ),
 )
+@click.option(
+    "--chart",
+    "use_chart",
+    is_flag=True,
+    default=False,
+    help="Treat the files argument as a rapyuta chart name[:version].",
+)
+@click.option(
+    "--append",
+    "append_services",
+    is_flag=True,
+    default=False,
+    help="Merge new services into existing compose file instead of overwriting.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -66,6 +79,8 @@ def generate(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     path: Path,
+    use_chart: bool,
+    append_services: bool,
     files: tuple[str, ...],
 ) -> None:
     """
@@ -87,27 +102,60 @@ def generate(
         Specify a custom output path and file name:
 
             rio compose generate -v values.yaml -s secrets.yaml templates/ -p ./compose_output -f compose.yaml
+
+        Generate from a rapyuta chart:
+
+            rio compose generate --chart ioconfig-syncer -v my-values.yaml
+
+        Append chart services to an existing compose file:
+
+            rio compose generate templates/
+            rio compose generate --chart --append ioconfig-syncer
     """
 
     if not path:
         click.secho("No path specified.", fg=Colors.RED)
     compose_path = path.absolute() / file_name
-    generate_compose_file(
-        ctx=ctx,
-        compose_path=compose_path,
-        values=values,
-        secrets=secrets,
-        files=files,
-    )
+
+    # Snapshot existing services before generating (for --append)
+    existing_services: dict = {}
+    if append_services and compose_path.exists():
+        try:
+            with compose_path.open() as fh:
+                existing_doc = yaml.safe_load(fh) or {}
+            existing_services = existing_doc.get("services", {}) or {}
+        except yaml.YAMLError as exc:
+            raise click.ClickException(f"Failed to read existing compose file: {exc}")
+
+    chart_obj = None
+    if use_chart:
+        files, values, chart_obj = resolve_chart_inputs(
+            validate_chart_files(files), values
+        )
+
+    try:
+        compose_doc = generate_compose_file(
+            ctx=ctx,
+            values=values,
+            secrets=secrets,
+            files=files,
+        )
+        if append_services and existing_services:
+            compose_doc["services"] = merge_compose_services(
+                existing_services, compose_doc["services"]
+            )
+        write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
+    finally:
+        if chart_obj:
+            chart_obj.cleanup()
 
 
 def generate_compose_file(
     ctx: click.Context,
-    compose_path: Path,
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     files: tuple[str, ...],
-):
+) -> dict:
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
     )
@@ -127,7 +175,7 @@ def generate_compose_file(
         ctx=ctx, deployments=deployments, packages=packages
     )
 
-    write_compose_yaml(output_path=compose_path, compose_dict=docker_compose_manifest)
+    return clean_dict(asdict(docker_compose_manifest))
 
 
 def get_deployment_package(
@@ -163,24 +211,76 @@ def get_deployment_package(
     return munchify(deployments), munchify(packages)
 
 
-def write_compose_yaml(compose_dict: DockerCompose, output_path: Path) -> None:
+def merge_compose_services(base: dict, patch: dict) -> dict:
+    """Merge compose service dicts; patch entries override base on name collision."""
+    return {**base, **patch}
+
+
+def validate_chart_files(files: tuple[str, ...]) -> str:
+    """Validate the files argument when --chart is used; returns the single chart name."""
+    if len(files) == 0:
+        click.secho("Chart name is required when --chart is specified.", fg=Colors.RED)
+        raise SystemExit(1)
+    if len(files) > 1:
+        click.secho(
+            "Only one chart name is allowed when --chart is specified.", fg=Colors.RED
+        )
+        raise SystemExit(1)
+    return files[0]
+
+
+def resolve_chart_inputs(
+    chart_name: str,
+    user_values: tuple[str, ...],
+) -> tuple[tuple, tuple, Chart]:
     """
-    Write a Docker Compose configuration to a YAML file.
+    Downloads a rapyuta chart and returns inputs for generate_compose_file.
 
     Args:
-        compose_dict: DockerCompose dataclass instance to serialize.
+        chart_name: Chart name with optional version (e.g. "ioconfig-syncer:1.0.0").
+        user_values: User-supplied --values paths.
+
+    Returns:
+        Tuple of (files, extended_values, chart_obj).
+        Caller must call chart_obj.cleanup() when done.
+    """
+
+    versions = find_chart(chart_name)
+    if len(versions) > 1:
+        click.secho(
+            "More than one chart version is available. Using the latest. "
+            "Specify a version to pin (e.g. name:1.0.0).",
+            fg=Colors.YELLOW,
+        )
+
+    chart_obj = Chart(**versions[0])
+    chart_obj.download_chart()
+
+    templates_dir = Path(chart_obj.tmp_dir.name, chart_obj.name, "templates")
+    chart_values = Path(chart_obj.tmp_dir.name, chart_obj.name, "values.yaml")
+
+    extended_values = user_values
+    if chart_values.exists():
+        extended_values = (chart_values.as_posix(),) + tuple(user_values)
+
+    return (templates_dir,), extended_values, chart_obj
+
+
+def write_compose_yaml(compose_dict: dict, output_path: Path) -> None:
+    """
+    Write a Docker Compose configuration dict to a YAML file.
+
+    Args:
+        compose_dict: Cleaned compose dict to serialize.
         output_path: Path object specifying where to write the YAML file.
 
     Raises:
         OSError: If writing the file fails.
     """
-    # Clean the compose dictionary
-    cleaned_compose = clean_dict(asdict(compose_dict))
-
     try:
         with output_path.open("w", encoding="utf-8") as f:
             yaml.dump(
-                cleaned_compose,
+                compose_dict,
                 f,
                 sort_keys=False,
                 default_flow_style=False,

@@ -5,7 +5,12 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
-from riocli.compose.generate import generate_compose_file
+from riocli.compose.generate import (
+    generate_compose_file,
+    resolve_chart_inputs,
+    validate_chart_files,
+    write_compose_yaml,
+)
 from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
 
@@ -58,6 +63,13 @@ from riocli.utils import print_centered_text
     is_flag=True,
     help="Build images before starting containers",
 )
+@click.option(
+    "--chart",
+    "use_chart",
+    is_flag=True,
+    default=False,
+    help="Treat the argument as a chart name instead of a file path.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def up(
@@ -68,6 +80,7 @@ def up(
     path: Path,
     detach: bool,
     build: bool,
+    use_chart: bool,
     files: tuple[str, ...],
 ):
     """
@@ -95,24 +108,37 @@ def up(
         Run in attached mode with image build:
 
             rio compose up -v values.yaml -s secrets.yaml -nd --build templates/
+
+        Generate from a chart and start services:
+
+            rio compose up --chart ioconfig-syncer -v my-values.yaml
     """
 
+    chart_obj = None
+    if use_chart:
+        files, values, chart_obj = resolve_chart_inputs(
+            validate_chart_files(files), values
+        )
+
     compose_path = path.absolute() / file_name
-
-    generate_compose_file(
-        ctx=ctx,
-        compose_path=compose_path,
-        files=files,
-        values=values,
-        secrets=secrets,
-    )
-
     compose_manager = DockerComposeManager(compose_path=compose_path)
 
-    if not compose_manager.validate_docker_availability():
-        raise SystemExit(1)
+    try:
+        compose_doc = generate_compose_file(
+            ctx=ctx,
+            files=files,
+            values=values,
+            secrets=secrets,
+        )
+        write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
-    print_centered_text("Starting docker services")
-    if not compose_manager.up(detached=detach, build=build):
-        click.secho("Docker Compose up operation failed.", fg=Colors.RED)
-        raise SystemExit(1)
+        if not compose_manager.validate_docker_availability():
+            raise SystemExit(1)
+
+        print_centered_text("Starting docker services")
+        if not compose_manager.up(detached=detach, build=build):
+            click.secho("Docker Compose up operation failed.", fg=Colors.RED)
+            raise SystemExit(1)
+    finally:
+        if chart_obj:
+            chart_obj.cleanup()
