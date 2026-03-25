@@ -1,3 +1,11 @@
+# [10.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.1.1...v10.2.0) (2026-03-25)
+
+
+### Features
+
+* **compose:** add --append flag to generate command ([6d2a422](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6d2a4226e1850965005998e8e991f50ded0de2c0))
+* **compose:** add --chart flag to generate, up, and down commands ([6d733bc](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6d733bc6b057ce3d28bd27c5cd3559664c1b6fb5))
+
 ## [10.1.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.1.0...v10.1.1) (2026-03-23)
 
 
