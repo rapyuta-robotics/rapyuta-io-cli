@@ -30,8 +30,10 @@ cd scripts
 ./squashfs-root/AppRun -m pip install --upgrade pip
 ./squashfs-root/AppRun -m pip install rapyuta_io_cli-*.whl
 
-# Making AppRun
-sed -i -e 's|/opt/python3.13/bin/python3.13|/usr/bin/rio|g' squashfs-root/AppRun
+# Replacing AppRun with a custom script that uses Python's -I (isolated
+# mode) to completely prevent host Python environment leakage.
+cp AppRun squashfs-root/AppRun
+chmod +x squashfs-root/AppRun
 
 # Making rio.desktop
 mv squashfs-root/usr/share/applications/python3.13.7.desktop squashfs-root/usr/share/applications/rio.desktop
