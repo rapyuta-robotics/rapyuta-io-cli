@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
 import json
 import os
 
@@ -233,6 +234,28 @@ def validate_and_set_token(
         spinner.text = click.style(str(e), fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
         return False
+
+
+def decode_jwt_claims(token: str) -> dict:
+    """Decode the payload of a JWT token without verifying the signature.
+
+    Returns the claims dict from the JWT payload.  The ``rioToken`` claim
+    contains the platform auth token; ``email`` contains the user's email.
+    """
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError(
+            f"Invalid JWT format: expected 3 dot-separated parts, got {len(parts)}"
+        )
+
+    payload = parts[1]
+    # base64url requires padding to a multiple of 4
+    padding = 4 - len(payload) % 4
+    if padding != 4:
+        payload += "=" * padding
+
+    decoded = base64.urlsafe_b64decode(payload)
+    return json.loads(decoded)
 
 
 def find_project_guid(

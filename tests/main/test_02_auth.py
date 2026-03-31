@@ -26,12 +26,31 @@ def load_test_password():
 
 @pytest.mark.auth
 def test_login_missing_credentials(cli_runner):
-    """Test login behavior with missing credentials"""
-    result = cli_runner.invoke(cli, ["auth", "login", "--no-interactive"])
+    """Test legacy login behavior with missing credentials"""
+    result = cli_runner.invoke(cli, ["auth", "login", "--legacy", "--no-interactive"])
 
     assert "email not specified" in result.output, (
         f"Expected 'email not specified' in output, but got: {result.output}"
     )
+
+
+@pytest.mark.auth
+def test_login_legacy_flag_requires_email(cli_runner):
+    """Test that --legacy without email raises an error in non-interactive mode"""
+    result = cli_runner.invoke(
+        cli, ["auth", "login", "--legacy", "--no-interactive", "--password", "secret"]
+    )
+    assert "email not specified" in result.output, result.output
+
+
+@pytest.mark.auth
+def test_login_legacy_flag_requires_password(cli_runner):
+    """Test that --legacy without password raises an error in non-interactive mode"""
+    result = cli_runner.invoke(
+        cli,
+        ["auth", "login", "--legacy", "--no-interactive", "--email", "user@example.com"],
+    )
+    assert "password not specified" in result.output, result.output
 
 
 @pytest.mark.auth

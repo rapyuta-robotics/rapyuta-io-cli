@@ -75,3 +75,29 @@ The bootstrap registers all resource groups into the top-level `cli` Click group
 ### Test Infrastructure
 
 Tests use `pytest` with Click's `CliRunner` (not subprocess). Fixtures in `tests/conftest.py` provide pre-authenticated users (`super_user`, `test_user_11`, `test_user_12`) against the `CliTest` organization on a staging platform. Tests must run in the order defined in `justfile` due to resource dependencies between test files.
+
+**Unit tests** (no network/platform required) live under `tests/unit/`:
+```bash
+uv run pytest tests/unit/ -v    # Run all unit tests
+```
+
+### Auth Flow
+
+`rio auth login` supports two authentication flows:
+
+1. **Device Authorization Flow (RFC 8628) — default**
+   - Fetches OIDC discovery document from `https://{oidc_host}/.well-known/openid-configuration`
+   - Requests a device code, displays a URL + user code for browser-based authorization
+   - Polls the token endpoint until the user completes authorization
+   - Decodes the JWT access token to extract `rioToken` (saved as `auth_token`) and `email`
+   - OIDC host per environment:
+     - `ga` (production): `oidc.rapyuta.io`
+     - `dev`: `dev-oidc.apps.okd4v2.okd4beta.rapyuta.io`
+     - Other staging (`v11`–`v15`, `qa`, `prN`): `{name}-oidc.apps.okd4v2.okd4beta.rapyuta.io`
+   - `client_id`: `DEVICE_FLOW_CLIENT_ID` constant in `riocli/auth/device_flow.py` — **substitute the real value before deploying**
+   - Override with `RIO_OIDC_CLIENT_ID` environment variable
+
+2. **Legacy email/password flow (ROPC) — `--legacy` flag**
+   - `rio auth login --legacy --email EMAIL --password PASSWORD`
+   - Kept for backwards compatibility; not recommended for new workflows
+
