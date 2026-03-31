@@ -15,12 +15,21 @@ import click
 from click_help_colors import HelpColorsCommand
 from munch import munchify
 
+from riocli.auth.device_flow import (
+    DeviceFlowError,
+    discover_oidc_endpoints,
+    display_user_code,
+    poll_for_token,
+    request_device_code,
+)
 from riocli.auth.util import (
+    decode_jwt_claims,
     get_token,
     select_organization,
     select_project,
 )
 from riocli.config import get_config_from_context
+from riocli.config.config import Configuration
 from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 from riocli.vpn.util import cleanup_hosts_file
@@ -78,47 +87,33 @@ def login(
 
     This is the first step to start using the CLI.
 
-    You can log in with your email and password or
-    just with and auth token if you already have one.
-    The command works in an interactive mode by default
-    and will prompt you to enter your credentials and
-    select the organization and project you want to work
-    with.
+    By default, login uses the OAuth 2.0 Device Authorization Flow (RFC 8628):
+    the CLI displays a short URL and a user code. Open the URL in any browser,
+    authenticate, and enter the code. The CLI receives the token automatically.
+    This flow works with MFA/SSO and never exposes your password to the CLI.
 
-    You can also use the command in non-interactive mode
-    by providing the email and password as arguments and
-    setting the --no-interactive or --silent flag. In this
-    mode, you can also set the organization and project
-    using the --organization and --project flags. If you
-    do not provide the organization and project, you will
-    have to set them later using the `rio organization select`
-    and `rio project select` commands.
-
-    Note: If you have special characters in your password, then
-    consider putting them in quotes to avoid the terminal from
-    interpreting them otherwise.
+    Use --email YOUR_EMAIL to fall back to the email/password (ROPC) flow, which prompts
+    for credentials directly.  You can also log in with a pre-existing auth
+    token using --auth-token.
 
     Usage Examples:
 
-        Login interactively
+        Login using device authorization flow (default)
 
         $ rio auth login
 
-        Login interactively with email and password
+        Login with a pre-existing auth token
+
+        $ rio auth login --auth-token YOUR_AUTH_TOKEN
+
+        Login using email and password (legacy flow)
 
         $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD
 
-        Login non-interactively with email and password
+        Non-interactive legacy login with org and project
 
-        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD --no-interactive
-
-        Login non-interactively with email, password, organization and project
-
-        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD --organization YOUR_ORG --project YOUR_PROJECT --silent
-
-        Login with auth token
-
-        $ rio auth login --auth-token YOUR_AUTH_TOKEN
+        $ rio auth login --email YOUR_EMAIL --password YOUR_PASSWORD \\
+            --organization YOUR_ORG --project YOUR_PROJECT --silent
     """
     ctx = get_root_context(ctx)
     config = get_config_from_context(ctx)
@@ -127,13 +122,13 @@ def login(
 
     if auth_token:
         config.data["auth_token"] = auth_token
-        # if not validate_and_set_token(ctx, config, interactive=interactive):
-        #     raise SystemExit(1)
         v2_cli = config.new_v2_client(with_project=False, from_file=False)
 
         subject = munchify(v2_cli.get_subject(auth_token))
 
         config.data["email_id"] = subject.data.email
+    elif interactive and not (email and password):
+        _device_flow_login(config)
     else:
         if interactive:
             email = email or click.prompt("Email")
@@ -205,3 +200,97 @@ def login(
         )
 
     click.echo(LOGIN_SUCCESS)
+
+
+def _device_flow_login(config: Configuration) -> None:
+    """Perform OAuth 2.0 Device Authorization Flow (RFC 8628) login.
+
+    Discovers OIDC endpoints, requests a device code, displays the user code
+    and verification URL, then polls for the access token.  Extracts the
+    ``rio_token`` and ``email`` claims from the id_token JWT and saves them to *config*.
+    """
+
+    try:
+        endpoints = discover_oidc_endpoints(config.oidc_server)
+    except DeviceFlowError as e:
+        click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
+        raise SystemExit(1)
+
+    device_auth_endpoint = endpoints.get("device_authorization_endpoint")
+    token_endpoint = endpoints.get("token_endpoint")
+
+    if not device_auth_endpoint:
+        click.secho(
+            f"{Symbols.ERROR} OIDC provider does not support device authorization flow",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
+    if not token_endpoint:
+        click.secho(
+            f"{Symbols.ERROR} OIDC provider is missing token_endpoint",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
+    try:
+        device_resp = request_device_code(
+            device_auth_endpoint, client_id=config.device_flow_client_id
+        )
+    except DeviceFlowError as e:
+        click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
+        raise SystemExit(1)
+
+    display_user_code(
+        user_code=device_resp["user_code"],
+        verification_uri=device_resp["verification_uri"],
+        verification_uri_complete=device_resp.get("verification_uri_complete"),
+    )
+
+    try:
+        token_resp = poll_for_token(
+            token_endpoint=token_endpoint,
+            device_code=device_resp["device_code"],
+            interval=device_resp.get("interval", 5),
+            expires_in=device_resp.get("expires_in", 300),
+            client_id=config.device_flow_client_id,
+        )
+    except DeviceFlowError as e:
+        click.secho(f"{Symbols.ERROR} {e}", fg=Colors.RED)
+        raise SystemExit(1)
+
+    access_token = token_resp.get("access_token")
+    if not access_token:
+        click.secho(
+            f"{Symbols.ERROR} No access token in device flow response",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
+    # rio_token and user claims are placed in the id_token by the RIP consent handler
+    id_token = token_resp.get("id_token")
+    if not id_token:
+        click.secho(
+            f"{Symbols.ERROR} No id_token in device flow response",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
+    try:
+        claims = decode_jwt_claims(id_token)
+    except Exception as e:
+        click.secho(f"{Symbols.ERROR} Failed to decode id_token: {e}", fg=Colors.RED)
+        raise SystemExit(1)
+
+    rio_token = claims.get("rio_token")
+    if not rio_token:
+        click.secho(
+            f"{Symbols.ERROR} rio_token claim not found in id_token",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
+    config.data["auth_token"] = rio_token
+    email = claims.get("email")
+    if email:
+        config.data["email_id"] = email
