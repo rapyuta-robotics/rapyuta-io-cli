@@ -18,7 +18,7 @@ from riocli.constants import Colors, Symbols
 from riocli.utils.context import get_root_context
 
 _STAGING_ENVIRONMENT_SUBDOMAIN = "apps.okd4v2.okd4beta.rapyuta.io"
-_NAMED_ENVIRONMENTS = ["v11", "v12", "v13", "v14", "v15", "qa", "dev"]
+_NAMED_ENVIRONMENTS = ["dev"]
 
 
 @click.command("environment", hidden=True)
@@ -51,6 +51,7 @@ def environment(ctx: click.Context, interactive: bool, silent: bool, name: str):
         ctx.obj.data.pop("core_api_host", None)
         ctx.obj.data.pop("rip_host", None)
         ctx.obj.data.pop("v2api_host", None)
+        ctx.obj.data.pop("oidc_host", None)
     else:
         _configure_environment(ctx.obj, name)
 
@@ -98,9 +99,11 @@ def _configure_environment(config: Configuration, name: str) -> None:
     core = f"https://{name}apiserver.{subdomain}"
     rip = f"https://{name}rip.{subdomain}"
     v2api = f"https://{name}api.{subdomain}"
+    oidc = f"https://{name}-oidc.{subdomain}"
 
     config.data["environment"] = name
     config.data["catalog_host"] = catalog
     config.data["core_api_host"] = core
     config.data["rip_host"] = rip
     config.data["v2api_host"] = v2api
+    config.data["oidc_host"] = oidc
