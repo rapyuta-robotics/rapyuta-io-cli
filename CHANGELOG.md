@@ -1,3 +1,15 @@
+# [10.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.2.0...v10.3.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* **appimage:** replace AppRun with custom script to prevent host Python environment leakage ([2c4b4f0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2c4b4f0b38171ff3baef39c429cc859ca624d74d))
+
+
+### Features
+
+* custom sa ([b7ae887](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b7ae88711426982d72cc298190bca14f25528b73))
+
 # [10.2.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.1.1...v10.2.0) (2026-03-25)
 
 
