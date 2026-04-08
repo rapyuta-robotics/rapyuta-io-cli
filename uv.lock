@@ -1502,8 +1502,8 @@ wheels = [
 
 [[package]]
 name = "rapyuta-io"
-version = "1.17.1"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk.git?rev=devel#abfe9d788f616bbadc5eaa7ae7cf4462daba0899" }
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-storage-blob" },
     { name = "python-dateutil" },
@@ -1513,6 +1513,10 @@ dependencies = [
     { name = "setuptools" },
     { name = "six" },
     { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/9b/c032f7dae66683ba8e04f4592348cdd658744a02e73dab6d0926be16d939/rapyuta_io-3.1.0.tar.gz", hash = "sha256:00b64870588988901021d2ddc8a875082090d310a9dad10da072288f16df6a38", size = 670265, upload-time = "2026-04-08T12:38:27.994Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/a9/b0216f73ca8204ed953ea16f42cdfde6c71ea0cd61a173dabff69fd4cad4/rapyuta_io-3.1.0-py3-none-any.whl", hash = "sha256:026b4f5012946fdbbffd1faeb0edb28d95055339fea924b138dcb3f088d5978d", size = 54841, upload-time = "2026-04-08T12:38:26.696Z" },
 ]
 
 [[package]]
@@ -1603,8 +1607,8 @@ requires-dist = [
     { name = "python-magic-bin", marker = "os_name == 'nt'", specifier = ">=0.4.14" },
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
-    { name = "rapyuta-io", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk.git?rev=devel" },
-    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=devel" },
+    { name = "rapyuta-io", specifier = ">=3.0.1" },
+    { name = "rapyuta-io-sdk-v2", specifier = ">=0.6.0" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1631,13 +1635,17 @@ dev = [
 
 [[package]]
 name = "rapyuta-io-sdk-v2"
-version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=devel#ee54639b11ef3dfd2286dac1e2df7d793126a339" }
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
     { name = "python-benedict" },
     { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d8/bd/7c32c6118ecdbddc70064b33a79f3f5bcde70a7c366f9d558a100a000178/rapyuta_io_sdk_v2-0.6.0.tar.gz", hash = "sha256:3ad7ade537b2362559973fdc2028ec25652cfdbd2224db693d87da73de923f10", size = 134768, upload-time = "2026-04-08T12:38:59.609Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/f6/321cad7a5a70de3afa12af07db8907acda174185a34d9a3a079ae4a8bbf3/rapyuta_io_sdk_v2-0.6.0-py3-none-any.whl", hash = "sha256:a6e09b2e198739755e31a10d49d85857cff14b3685f0827d63b5847d00c3f076", size = 58896, upload-time = "2026-04-08T12:38:58.628Z" },
 ]
 
 [[package]]
