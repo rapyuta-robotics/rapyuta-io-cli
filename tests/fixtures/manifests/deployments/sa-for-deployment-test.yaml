@@ -1,0 +1,9 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "ServiceAccount"
+metadata:
+  name: "deployment-test-custom-sa"
+  labels:
+    environment: test
+    purpose: deployment-custom-sa-testing
+spec:
+  description: "Service account for testing custom SA in deployments"

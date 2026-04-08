@@ -1,0 +1,27 @@
+#! /bin/bash
+
+# If running from an extracted image, then export ARGV0 and APPDIR
+if [ -z "${APPIMAGE}" ]; then
+    export ARGV0="$0"
+    export APPDIR="$(dirname "$(readlink -f "$0")")"
+fi
+
+# Resolve the calling command (preserving symbolic links).
+export APPIMAGE_COMMAND=$(command -v -- "$ARGV0")
+
+# Export TCl/Tk
+export TCL_LIBRARY="${APPDIR}/usr/share/tcltk/tcl8.6"
+export TK_LIBRARY="${APPDIR}/usr/share/tcltk/tk8.6"
+export TKPATH="${TK_LIBRARY}"
+
+# Export SSL certificate
+export SSL_CERT_FILE="${APPDIR}/opt/_internal/certs.pem"
+
+# Prevent .pyc writes to the read-only squashfs filesystem
+export PYTHONDONTWRITEBYTECODE=1
+
+# Call the bundled Python directly with -I (isolated mode) to prevent
+# host Python environment leakage. -I implies -E (ignore PYTHON* env
+# vars) and -s (no user site-packages).
+exec "${APPDIR}/opt/python3.13/bin/python3.13" -I "${APPDIR}/opt/python3.13/bin/rio" "$@"
+
