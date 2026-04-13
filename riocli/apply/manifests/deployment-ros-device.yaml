@@ -38,3 +38,4 @@ spec:
     - depends:
         kind: network
         nameOrGUID: "network-routed-device"
+  # networkInterface: eth0  # Optional: network interface for ROS networks (overrides per-network interface)
