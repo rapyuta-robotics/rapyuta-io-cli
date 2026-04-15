@@ -1,3 +1,10 @@
+# [10.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.3.0...v10.4.0) (2026-04-15)
+
+
+### Features
+
+* **deployment:** add networkInterface to schema and manifests ([8a4bdab](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/8a4bdab1600e55ec4cd12c426795f0e49bad383d))
+
 # [10.3.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.2.0...v10.3.0) (2026-04-08)
 
 
