@@ -158,6 +158,11 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/deviceNetworkAttachSpec"
+              networkInterface:
+                type: string
+                description: >
+                  Network interface to use for ROS networks. Takes precedence
+                  over any interface specified in rosNetworks entries.
               features:
                 type: ["object", "null"]
                 properties:
@@ -228,6 +233,11 @@ definitions:
                 type: array
                 items:
                   "$ref": "#/definitions/cloudNetworkAttachSpec"
+              networkInterface:
+                type: string
+                description: >
+                  Network interface to use for ROS networks. Takes precedence
+                  over any interface specified in rosNetworks entries.
               managedServices:
                 type: array
                 items:
