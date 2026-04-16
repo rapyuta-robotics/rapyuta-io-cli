@@ -1,0 +1,51 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "test-db-1"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  type: "postgres"
+  postgres:
+    version: "15"
+    primary:
+      deviceName: "test-db-device"
+    credentials:
+      username: "admin"
+      password: "TestPassword123!"
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "test-db-2"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  type: "postgres"
+  postgres:
+    version: "15"
+    primary:
+      deviceName: "test-db-device"
+    credentials:
+      username: "admin"
+      password: "TestPassword123!"
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "unauthorized-db"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  type: "postgres"
+  postgres:
+    version: "15"
+    primary:
+      deviceName: "test-db-device"
+    credentials:
+      username: "admin"
+      password: "TestPassword123!"
