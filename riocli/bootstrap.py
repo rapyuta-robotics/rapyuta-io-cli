@@ -31,6 +31,7 @@ from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
+from riocli.database import database
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -175,3 +176,4 @@ cli.add_command(compose)
 cli.add_command(role)
 cli.add_command(service_account)
 cli.add_command(permission)
+cli.add_command(database)
