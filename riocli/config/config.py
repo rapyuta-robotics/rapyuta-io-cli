@@ -52,8 +52,10 @@ class Configuration:
     PIPING_SERVER = (
         "https://piping-server-v0-rapyuta-infra.apps.okd4v2.okd4beta.rapyuta.io"
     )
+    OIDC_SERVER = "https://oidc.rapyuta.io"
     DIFF_TOOL = "diff"
     MERGE_TOOL = "vimdiff"
+    DEVICE_FLOW_CLIENT_ID = "rio-cli"
 
     def __init__(self, filepath: str | None = None):
         self._filepath = os.environ.get("RIO_CONFIG", filepath)
@@ -203,6 +205,14 @@ class Configuration:
     @property
     def merge_tool(self: Configuration):
         return self.data.get("merge_tool", self.MERGE_TOOL)
+
+    @property
+    def device_flow_client_id(self: Configuration) -> str:
+        return self.data.get("device_flow_client_id", self.DEVICE_FLOW_CLIENT_ID)
+
+    @property
+    def oidc_server(self: Configuration) -> str:
+        return self.data.get("oidc_host", self.OIDC_SERVER)
 
     @property
     def machine_id(self: Configuration):
