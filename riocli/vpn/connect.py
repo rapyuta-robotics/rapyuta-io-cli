@@ -56,7 +56,13 @@ _TAILSCALE_CMD_FORMAT = (
     "when you enable this flag.",
 )
 @click.option(
-    "--force", "-f", "--silent", "force", is_flag=True, help="Skip confirmation"
+    "--force",
+    "-f",
+    "--silent",
+    "force",
+    is_flag=True,
+    help="Skip interactive confirmation prompts (e.g. tool installation, "
+    "already-connected warning). Useful for CI/CD workflows.",
 )
 @click.pass_context
 @with_spinner(text="Connecting...")
@@ -80,7 +86,7 @@ def connect(ctx: click.Context, update_hosts: bool, force: bool, spinner: Yaspin
 
     try:
         with spinner.hidden():
-            install_vpn_tools()
+            install_vpn_tools(force=force)
 
         client = config.new_v2_client()
 
