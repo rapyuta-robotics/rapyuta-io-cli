@@ -87,18 +87,19 @@ def get_tailscale_status() -> dict:
     return json.loads(output)
 
 
-def install_vpn_tools() -> None:
+def install_vpn_tools(force: bool = False) -> None:
     if is_tailscale_installed():
         return
 
-    click.confirm(
-        click.style(
-            f"{Symbols.INFO} VPN tools are not installed. Do you want to install them now?",
-            fg=Colors.YELLOW,
-        ),
-        default=True,
-        abort=True,
-    )
+    if not force:
+        click.confirm(
+            click.style(
+                f"{Symbols.INFO} VPN tools are not installed. Do you want to install them now?",
+                fg=Colors.YELLOW,
+            ),
+            default=True,
+            abort=True,
+        )
 
     if not is_linux():
         click.secho("Only linux is supported", fg=Colors.YELLOW)
