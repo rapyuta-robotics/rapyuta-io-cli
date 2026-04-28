@@ -46,7 +46,7 @@ def list_backups(database_name: str) -> None:
 def _display_backup_list(backups: list, show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ["Backup ID", "Database", "Upload Status"]
+        headers = ["Backup ID", "Database", "Type", "Version", "Upload Status"]
 
     data = []
     for b in backups:
@@ -54,6 +54,8 @@ def _display_backup_list(backups: list, show_header: bool = True) -> None:
             [
                 b.spec.id if b.spec else "",
                 b.spec.databaseName if b.spec else "",
+                b.spec.type if b.spec else "",
+                b.spec.version if b.spec else "",
                 b.spec.status if b.spec else "",
             ]
         )

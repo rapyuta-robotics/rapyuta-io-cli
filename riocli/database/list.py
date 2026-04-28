@@ -47,12 +47,16 @@ def _display_database_list(
             version = db.spec.postgres.version or ""
             primary_device = db.spec.postgres.primary.deviceName or ""
 
+        phase = ""
+        if db.status and db.status.postgres and db.status.postgres.primary:
+            phase = db.status.postgres.primary.phase or ""
+
         row = [
             db.metadata.name,
             db.spec.type,
             version,
             primary_device,
-            db.status.phase if db.status else "",
+            phase,
         ]
 
         if wide:

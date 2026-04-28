@@ -29,7 +29,11 @@ def print_databases_for_confirmation(databases: list) -> None:
         [
             db.metadata.name,
             db.spec.type,
-            db.status.phase if db.status else "",
+            (
+                db.status.postgres.primary.phase
+                if db.status and db.status.postgres and db.status.postgres.primary
+                else ""
+            ),
         ]
         for db in databases
     ]
