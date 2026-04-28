@@ -1,0 +1,38 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "my-postgres-db"
+  labels:
+    app: my-app
+spec:
+  type: "postgres"         # Required. Only supported engine: postgres
+  postgres:
+    version: ""            # Required. Use `rio database versions` to list supported versions.
+    primary:
+      deviceName: "my-device"                              # Required. Name of the primary device.
+      dataDirectory: ""                                    # Optional. Defaults to /opt/rapyuta/volumes/postgres_<name>/<version>
+    credentials:
+      username: "admin"    # Required.
+      password: "changeme" # Required.
+    multipleDatabase:      # Optional. Additional databases to create inside the instance.
+      - "app_db"
+    parameters:            # Optional. PostgreSQL server configuration parameters.
+      max_connections: "200"
+      shared_buffers: "256MB"
+    migration:             # Optional. In-place data migration from an older data directory.
+      enabled: false
+      sourceDataDirectory: ""
+    standby:               # Optional. Standby (replication) configuration.
+      primaryInterface: "eth0"
+      devices:
+        - deviceName: "my-standby-device"
+          dataDirectory: ""                                # Optional. Defaults to /opt/rapyuta/volumes/postgres_<name>/standby/<version>
+    backup:                # Optional. Backup configuration.
+      enabled: true
+      schedule: "0 2 * * *"  # Required when enabled. Standard cron format.
+      directory: "/backups/my-postgres-db"  # Optional. Defaults to /backups/<name>
+      credentials:           # Required when enabled.
+        username: "replicator"
+        password: "changeme"
+    recovery:              # Optional. Point-in-time recovery from an existing backup.
+      sourceBackupID: ""   # Required when recovery block is present.
