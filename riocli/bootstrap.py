@@ -46,6 +46,7 @@ from riocli.role import role
 from riocli.secret import secret
 from riocli.service_account import service_account
 from riocli.shell import deprecated_repl, shell
+from riocli.ssh import ssh
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
 from riocli.utils import (
@@ -166,6 +167,7 @@ cli.add_command(deprecated_repl)
 cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
+cli.add_command(ssh)
 cli.add_command(usergroup)
 cli.add_command(config_trees)
 cli.add_command(hwildevice)
