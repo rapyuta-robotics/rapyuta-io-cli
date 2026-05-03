@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2026 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 import yaml
 from benedict import benedict
 from munch import Munch, munchify, unmunchify
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
@@ -28,7 +29,6 @@ from riocli.utils.state import StateFile
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
 
 
@@ -290,7 +290,9 @@ def combine_metadata(keys: dict) -> dict:
 
 def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> dict | None:
     client = new_v2_client(with_project=(not is_org))
-    revisions = client.list_revisions(tree_name=tree_name)
+    revisions = []
+    for page in walk_pages(client.list_revisions, tree_name=tree_name):
+        revisions.extend(munchify(page))
     if len(revisions) == 0:
         return
 
@@ -347,7 +349,11 @@ def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) ->
     client = new_v2_client(with_project=(not is_org))
     labels = f"{MILESTONE_LABEL_KEY}={milestone}"
 
-    revisions = client.list_revisions(tree_name=tree_name, label_selector=[labels])
+    revisions = []
+    for page in walk_pages(
+        client.list_revisions, tree_name=tree_name, label_selector=[labels]
+    ):
+        revisions.extend(munchify(page))
     if len(revisions) == 0:
         raise Exception(f"Revision with milestone {milestone} not found")
 
