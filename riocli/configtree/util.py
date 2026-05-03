@@ -290,7 +290,8 @@ def combine_metadata(keys: dict) -> dict:
 
 def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> dict | None:
     client = new_v2_client(with_project=(not is_org))
-    revisions = client.list_revisions(tree_name=tree_name)
+    result = client.list_revisions(tree_name=tree_name)
+    revisions = munchify(result.get("items", []))
     if len(revisions) == 0:
         return
 
@@ -347,7 +348,8 @@ def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) ->
     client = new_v2_client(with_project=(not is_org))
     labels = f"{MILESTONE_LABEL_KEY}={milestone}"
 
-    revisions = client.list_revisions(tree_name=tree_name, label_selector=[labels])
+    result = client.list_revisions(tree_name=tree_name, label_selector=[labels])
+    revisions = munchify(result.get("items", []))
     if len(revisions) == 0:
         raise Exception(f"Revision with milestone {milestone} not found")
 
