@@ -16,7 +16,7 @@
 
 Generates a dedicated ``rio_ed25519`` key pair (if not already present),
 requests a signed SSH user certificate from rapyuta.io, writes it to
-``~/.ssh/rio_ed25519-cert.pub``, and loads the identity into
+``<app-dir>/rio_ed25519-cert.pub``, and loads the identity into
 ``ssh-agent`` with a 5-minute TTL for immediate use.
 """
 
@@ -28,18 +28,18 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import SSHKeySignRequest
 
-from riocli.config import new_v2_client
+from riocli.config import get_config_from_context
 
 if TYPE_CHECKING:
     from yaspin.api import Yaspin
 from riocli.constants import Colors, Symbols
-from riocli.ssh.agent import add_identity, remove_rio_identities
 from riocli.ssh.certificate import (
     format_cert_expiry,
     is_cert_valid,
     write_certificate,
 )
-from riocli.ssh.keys import ensure_rio_key_pair, read_public_key
+from riocli.ssh.keys import ensure_rio_key_pair
+from riocli.ssh.util import add_to_ssh_agent, remove_from_ssh_agent
 from riocli.utils.spinner import with_spinner
 
 
@@ -50,11 +50,10 @@ from riocli.utils.spinner import with_spinner
     help_options_color=Colors.GREEN,
 )
 @click.option(
-    "--no-agent",
-    "no_agent",
-    is_flag=True,
-    default=False,
-    help="Skip loading the identity into ssh-agent.",
+    "--agent/--no-agent",
+    "agent",
+    default=True,
+    help="Load (or skip loading) the identity into ssh-agent.",
 )
 @click.option(
     "--force",
@@ -63,21 +62,12 @@ from riocli.utils.spinner import with_spinner
     default=False,
     help="Re-sign the certificate even if the existing one is still valid.",
 )
-@click.option(
-    "--user-guid",
-    "user_guid",
-    type=str,
-    default=None,
-    hidden=True,
-    help="Sign the key on behalf of a specific user (admin use).",
-)
 @click.pass_context
 @with_spinner(text="Signing SSH public key...")
 def ssh(
     ctx: click.Context,
-    no_agent: bool,
+    agent: bool,
     force: bool,
-    user_guid: str | None,
     spinner: Yaspin = None,  # type: ignore[assignment]  # injected by @with_spinner
 ) -> None:
     """Sign your SSH public key and load the certificate into ssh-agent.
@@ -116,10 +106,10 @@ def ssh(
                 )
             )
 
-            if not no_agent:
+            if agent:
                 try:
-                    remove_rio_identities(public_path)
-                    add_identity(private_path, cert_path)
+                    remove_from_ssh_agent(private_path)
+                    add_to_ssh_agent(private_path)
                     spinner.write(
                         click.style(
                             f"{Symbols.SUCCESS} Identity loaded into ssh-agent "
@@ -139,7 +129,7 @@ def ssh(
             return
 
         # ----- 3. Read the public key ----- #
-        public_key = read_public_key(public_path)
+        public_key = public_path.read_text().strip()
 
         spinner.write(
             click.style(
@@ -149,15 +139,16 @@ def ssh(
         )
 
         # ----- 4. Call the SDK to sign the key ----- #
-        client = new_v2_client()
+        config = get_config_from_context(ctx)
+        client = config.new_v2_client()
         request = SSHKeySignRequest(publicKey=public_key)
-        response = client.sign_ssh_public_key(body=request, user_guid=user_guid)
+        response = client.sign_ssh_public_key(body=request)
 
         # ----- 5. Remove old identity & write the new certificate ----- #
-        # Remove BEFORE overwriting the cert file so the old blob still
-        # matches what is loaded in the agent.
-        if not no_agent:
-            remove_rio_identities(public_path)
+        # Remove BEFORE overwriting the cert file so the old identity
+        # still matches what is loaded in the agent.
+        if agent:
+            remove_from_ssh_agent(private_path)
 
         write_certificate(cert_path, response.certificate)
 
@@ -169,9 +160,9 @@ def ssh(
         )
 
         # ----- 6. Load into ssh-agent with 5-minute TTL ----- #
-        if not no_agent:
+        if agent:
             try:
-                add_identity(private_path, cert_path)
+                add_to_ssh_agent(private_path)
                 spinner.write(
                     click.style(
                         f"{Symbols.SUCCESS} Identity loaded into ssh-agent "
