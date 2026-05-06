@@ -15,54 +15,19 @@
 """SSH certificate management for ``rio ssh``.
 
 Handles writing certificates to disk and parsing certificate metadata
-(expiry, validity) using pure-Python binary parsing of the SSH
-certificate wire format.
-
-The wire format is defined in the OpenSSH PROTOCOL.certkeys document.
+(expiry, validity) by delegating to ``ssh-keygen -L`` rather than
+implementing the binary wire format directly.
 """
 
 from __future__ import annotations
 
-import base64
-import struct
+import re
+import subprocess
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-# Number of length-prefixed public-key fields that appear between the
-# nonce and the serial in each certificate type.  This table is used
-# to skip past the key-type-specific data when parsing the certificate.
-_CERT_PK_FIELDS: dict[bytes, int] = {
-    b"ssh-rsa-cert-v01@openssh.com": 2,  # e, n
-    b"ssh-dss-cert-v01@openssh.com": 4,  # p, q, g, y
-    b"ssh-ed25519-cert-v01@openssh.com": 1,  # pk
-    b"ecdsa-sha2-nistp256-cert-v01@openssh.com": 2,  # identifier, Q
-    b"ecdsa-sha2-nistp384-cert-v01@openssh.com": 2,
-    b"ecdsa-sha2-nistp521-cert-v01@openssh.com": 2,
-    b"sk-ssh-ed25519-cert-v01@openssh.com": 2,  # pk, application
-    b"sk-ecdsa-sha2-nistp256-cert-v01@openssh.com": 3,  # id, Q, app
-}
-
-
-def _read_string(data: bytes, pos: int) -> tuple[bytes, int]:
-    """Read a uint32 length-prefixed string from SSH wire format."""
-    length = struct.unpack(">I", data[pos : pos + 4])[0]
-    pos += 4
-    return data[pos : pos + length], pos + length
-
-
-def _read_uint64(data: bytes, pos: int) -> tuple[int, int]:
-    """Read a big-endian uint64."""
-    val = struct.unpack(">Q", data[pos : pos + 8])[0]
-    return val, pos + 8
-
-
-def _read_uint32(data: bytes, pos: int) -> tuple[int, int]:
-    """Read a big-endian uint32."""
-    val = struct.unpack(">I", data[pos : pos + 4])[0]
-    return val, pos + 4
 
 
 def write_certificate(cert_path: Path, certificate: str) -> None:
@@ -82,10 +47,9 @@ def write_certificate(cert_path: Path, certificate: str) -> None:
 def parse_cert_valid_before(cert_path: Path) -> datetime | None:
     """Parse the ``valid_before`` timestamp from an SSH certificate.
 
-    Decodes the certificate binary blob and walks the wire format to
-    extract the ``valid_before`` uint64 Unix timestamp.  Returns a
-    timezone-aware UTC :class:`~datetime.datetime`, or ``None`` if
-    parsing fails for any reason.
+    Runs ``ssh-keygen -L -f <cert_path>`` and extracts the end time
+    from the ``Valid:`` line.  Returns a timezone-aware UTC
+    :class:`~datetime.datetime`, or ``None`` if parsing fails.
 
     Args:
         cert_path: Path to the certificate file.
@@ -94,56 +58,79 @@ def parse_cert_valid_before(cert_path: Path) -> datetime | None:
         The expiry as a UTC datetime, or ``None``.
     """
     try:
-        parts = cert_path.read_text().strip().split()
-        if len(parts) < 2:
+        result = subprocess.run(
+            ["ssh-keygen", "-L", "-f", str(cert_path)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
             return None
 
-        cert_blob = base64.b64decode(parts[1])
-        pos = 0
-
-        # 1. cert type string
-        cert_type, pos = _read_string(cert_blob, pos)
-
-        # 2. nonce
-        _, pos = _read_string(cert_blob, pos)
-
-        # 3. skip key-type-specific public key fields
-        num_fields = _CERT_PK_FIELDS.get(cert_type)
-        if num_fields is None:
-            return None
-
-        for _ in range(num_fields):
-            _, pos = _read_string(cert_blob, pos)
-
-        # 4. serial (uint64)
-        _, pos = _read_uint64(cert_blob, pos)
-
-        # 5. type (uint32) — 1=user, 2=host
-        _, pos = _read_uint32(cert_blob, pos)
-
-        # 6. key_id (string)
-        _, pos = _read_string(cert_blob, pos)
-
-        # 7. valid_principals (string, nested)
-        _, pos = _read_string(cert_blob, pos)
-
-        # 8. valid_after (uint64)
-        _, pos = _read_uint64(cert_blob, pos)
-
-        # 9. valid_before (uint64) — this is what we want
-        valid_before, _ = _read_uint64(cert_blob, pos)
-
-        return datetime.fromtimestamp(valid_before, tz=timezone.utc)
+        return _parse_valid_before_from_output(result.stdout)
 
     except Exception:
         return None
 
 
+def _parse_valid_before_from_output(output: str) -> datetime | None:
+    """Extract the ``valid_before`` datetime from ssh-keygen -L output.
+
+    The ``Valid:`` line has the format::
+
+        Valid: from 2026-04-01T10:00:00 to 2026-04-01T10:05:00
+
+    or with ``forever`` for never-expiring certificates.
+
+    Args:
+        output: Full stdout from ``ssh-keygen -L``.
+
+    Returns:
+        The expiry as a UTC datetime, or ``None``.
+    """
+    for line in output.splitlines():
+        line = line.strip()
+        if not line.startswith("Valid:"):
+            continue
+
+        # Handle "forever" sentinel (valid_before = 0xFFFFFFFFFFFFFFFF).
+        if "forever" in line.lower():
+            return datetime.max.replace(tzinfo=timezone.utc)
+
+        # Extract the "to <timestamp>" portion.
+        match = re.search(r"to\s+(\S+)", line)
+        if not match:
+            return None
+
+        timestamp_str = match.group(1)
+        return _parse_ssh_timestamp(timestamp_str)
+
+    return None
+
+
+def _parse_ssh_timestamp(timestamp_str: str) -> datetime | None:
+    """Parse a timestamp string from ssh-keygen output.
+
+    Handles ISO-8601 format (``2026-04-01T10:05:00``) as produced by
+    modern OpenSSH.
+
+    Args:
+        timestamp_str: The timestamp string to parse.
+
+    Returns:
+        A timezone-aware UTC datetime, or ``None``.
+    """
+    try:
+        # ssh-keygen produces local-time timestamps without tz info.
+        # Parse as local time and convert to UTC.
+        dt = datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M:%S")
+        local_dt = dt.astimezone()
+        return local_dt.astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
 def is_cert_valid(cert_path: Path) -> bool:
     """Check whether the certificate exists and has not yet expired.
-
-    Compares the ``valid_before`` field (UTC) against the current UTC
-    time.
 
     Args:
         cert_path: Path to the certificate file.
@@ -166,8 +153,7 @@ def format_cert_expiry(cert_path: Path) -> str | None:
     """Return a human-readable local-time expiry string.
 
     Converts the UTC ``valid_before`` to the system's local timezone
-    and formats as an ISO-8601 string without timezone suffix (matching
-    what ``ssh-keygen -Lf`` would display).
+    and formats as an ISO-8601 string without timezone suffix.
 
     Args:
         cert_path: Path to the certificate file.
