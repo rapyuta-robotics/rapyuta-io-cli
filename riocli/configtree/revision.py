@@ -28,6 +28,7 @@ from munch import munchify
 from riocli.config import get_config_from_context, new_v2_client
 from riocli.config.config import Configuration
 from riocli.configtree.util import (
+    MILESTONE_LABEL_KEY,
     display_config_tree_keys,
     get_revision_from_state,
     save_revision,
@@ -173,11 +174,16 @@ class Revision:
         if author is None:
             author = self._get_author()
 
+        labels = None
+        if self._milestone:
+            labels = {MILESTONE_LABEL_KEY: self._milestone}
+
         self._client.commit_revision(
             tree_name=self._tree_name,
             revision_id=self._rev_id,
             message=msg,
             author=author,
+            labels=labels,
             with_project=(not self._with_org),
         )
         if not self._explicit:
