@@ -69,15 +69,15 @@ def _fuzzy_selection_list(items: list, header: str) -> Any:
 
 
 def _fuzzy_selection_dict(ranger: dict, header: str) -> Any:
-    """Interactive fuzzy-search selector for a dict (returns the key/GUID)."""
+    """Interactive fuzzy-search selector for a dict (returns the key/GUID).
+
+    Passes keys as ``return_items`` so the picker returns the selected key
+    directly, avoiding any label-to-key lookup that would break on duplicate
+    labels.
+    """
     keys = list(ranger.keys())
     labels = list(ranger.values())
-    chosen_label = _run_fuzzy_picker(labels, labels, header)
-    # Return the key whose value matches the chosen label
-    for k, v in ranger.items():
-        if v == chosen_label:
-            return k
-    return keys[0]
+    return _run_fuzzy_picker(labels, keys, header)
 
 
 def _run_fuzzy_picker(display_items: list, return_items: list, header: str) -> Any:
@@ -105,6 +105,7 @@ def _run_fuzzy_picker(display_items: list, return_items: list, header: str) -> A
             "info": "ansigreen",
             "prompt": "ansicyan bold",
             "count": "ansibrightblack",
+            "separator": "ansibrightblack",
         }
     )
 
@@ -117,10 +118,10 @@ def _run_fuzzy_picker(display_items: list, return_items: list, header: str) -> A
     }
 
     def _matches(query: str, text: str) -> bool:
-        """Simple case-insensitive substring / fuzzy match."""
+        """Case-insensitive fuzzy match: every character of query must appear
+        in order somewhere in text (same algorithm as fzf's default mode)."""
         query = query.lower()
         text = text.lower()
-        # Fuzzy: every character of query must appear in order in text
         it = iter(text)
         return all(c in it for c in query)
 
@@ -156,8 +157,8 @@ def _run_fuzzy_picker(display_items: list, return_items: list, header: str) -> A
             f"<count>  {matched}/{total} items</count>  "
             f"<info>↑↓ navigate · type to filter · Enter select · Esc abort</info>\n"
         )
-        _add(f"<ansibrightblack>  &gt; </ansibrightblack>{_escape(state['query'])}\n")
-        _add(f"<ansibrightblack>  {'─' * 60}</ansibrightblack>\n")
+        _add(f"<separator>  &gt; </separator>{_escape(state['query'])}\n")
+        _add(f"<separator>  {'─' * 60}</separator>\n")
 
         for rank, orig_idx in enumerate(filtered):
             label = str(display_items[orig_idx])
@@ -235,7 +236,6 @@ def _run_fuzzy_picker(display_items: list, return_items: list, header: str) -> A
         style=style,
         full_screen=False,
         mouse_support=False,
-        refresh_interval=0.05,
     )
 
     app.run()
@@ -268,7 +268,7 @@ def _show_selection_list(
 
         data.append([idx_column, opt_column])
 
-    tabulate_data(data, header=(), table_format="plain")
+    tabulate_data(data, headers=(), table_format="plain")
 
     prompt = click.style(prompt, fg=Colors.BLUE)
     choice = click.prompt(prompt, type=types.IntParamType())
