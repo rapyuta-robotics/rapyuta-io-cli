@@ -1,0 +1,17 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "managed-db-2"
+  labels:
+    environment: test
+    team: rbac-test
+spec:
+  type: "postgres"
+  postgres:
+    version: "15"
+    primary:
+      deviceName: "test-db-device"
+    credentials:
+      username: "admin"
+      password: "TestPassword123!"

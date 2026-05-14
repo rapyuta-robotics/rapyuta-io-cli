@@ -126,7 +126,7 @@ class Model(ABC, Munch):
         if not kind:
             raise ValueError("kind is a required field")
         if not name:
-            raise ValueError(f"[kind:{kind}] {name} is required")
+            raise ValueError(f"[kind:{kind}] metadata.name is required")
 
         return f"{kind.lower()}:{name}"
 

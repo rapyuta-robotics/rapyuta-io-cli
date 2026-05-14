@@ -1,0 +1,79 @@
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "database-viewer"
+  labels:
+    persona: developer
+spec:
+  description: "Role to view databases with name test-db-*"
+  rules:
+
+  - resource: "database"
+    instances:
+    - '^test-db-.*'
+    actions:
+    - get
+    - create
+
+  - resource: "database"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "database-creator"
+  labels:
+    persona: developer
+spec:
+  description: "Role to create databases with name user-db-*"
+  rules:
+
+  - resource: "database"
+    instances:
+    - '^user-db-.*'
+    actions:
+    - create
+    - get
+
+  - resource: "database"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "database-manager"
+  labels:
+    persona: admin
+spec:
+  description: "Role to fully manage databases with name managed-db-*"
+  rules:
+
+  - resource: "database"
+    instances:
+    - '^managed-db-.*'
+    actions:
+    - create
+    - get
+    - update
+    - delete
+
+  - resource: "database"
+    actions:
+    - list
+---
+apiVersion: "api.rapyuta.io/v2"
+kind: "Role"
+metadata:
+  name: "database-readonly"
+  labels:
+    persona: viewer
+spec:
+  description: "Role to only list all databases"
+  rules:
+
+  - resource: "database"
+    actions:
+    - list
