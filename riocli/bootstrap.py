@@ -81,7 +81,10 @@ def safe_cli():
         try:
             cli()
         except Exception as e:
-            click.secho(str(e), fg=Colors.RED)
+            try:
+                click.secho(str(e), fg=Colors.RED, err=True)
+            except (ValueError, OSError):
+                pass
             raise SystemExit(1) from e
     else:
         cli()
