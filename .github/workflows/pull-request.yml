@@ -1,6 +1,9 @@
 name: ✅ Quality Checks
 on: [ push ]
 
+permissions:
+  contents: read
+
 jobs:
   code-quality-checks:
     runs-on: ubuntu-latest
