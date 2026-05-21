@@ -38,7 +38,6 @@ from riocli.ssh.certificate import (
     is_cert_valid,
     write_certificate,
 )
-from riocli.ssh.keys import ensure_rio_key_pair
 from riocli.ssh.util import add_to_ssh_agent, remove_from_ssh_agent
 from riocli.utils.spinner import with_spinner
 
@@ -85,7 +84,12 @@ def ssh(
     """
     try:
         # ----- 1. Ensure dedicated key pair exists ----- #
-        private_path, public_path, cert_path, generated = ensure_rio_key_pair()
+        config = get_config_from_context(ctx)
+        generated = config.ensure_ssh_keys()
+
+        private_path = config.ssh_private_key
+        public_path = config.ssh_public_key
+        cert_path = config.ssh_certificate
 
         if generated:
             spinner.write(
@@ -139,7 +143,6 @@ def ssh(
         )
 
         # ----- 4. Call the SDK to sign the key ----- #
-        config = get_config_from_context(ctx)
         client = config.new_v2_client()
         request = SSHKeySignRequest(publicKey=public_key)
         response = client.sign_ssh_public_key(body=request)

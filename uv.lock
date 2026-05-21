@@ -1085,7 +1085,6 @@ wheels = [
 [[package]]
 name = "pydantic"
 version = "2.13.4"
->>>>>>> 646d5e2 (fix: review comments)
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-types" },
@@ -1531,6 +1530,7 @@ dependencies = [
     { name = "click-help-colors" },
     { name = "click-repl" },
     { name = "click-spinner" },
+    { name = "cryptography" },
     { name = "dictdiffer" },
     { name = "directory-tree" },
     { name = "email-validator" },
@@ -1587,6 +1587,7 @@ requires-dist = [
     { name = "click-help-colors", specifier = ">=0.9.1" },
     { name = "click-repl", specifier = ">=0.2.0" },
     { name = "click-spinner", specifier = ">=0.1.10" },
+    { name = "cryptography", specifier = ">=40.0.0" },
     { name = "dictdiffer", specifier = ">=0.9.0" },
     { name = "directory-tree", specifier = ">=0.0.3.1" },
     { name = "email-validator", specifier = ">=2.0.0.post2" },
@@ -1607,7 +1608,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
     { name = "rapyuta-io", specifier = ">=3.1.0" },
-    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=7468326f29047dc443f3ace2fdf0d2a2bf1d7b3f" },
+    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Frapyuta-ca" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1635,7 +1636,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git?rev=7468326f29047dc443f3ace2fdf0d2a2bf1d7b3f#7468326f29047dc443f3ace2fdf0d2a2bf1d7b3f" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Frapyuta-ca#7468326f29047dc443f3ace2fdf0d2a2bf1d7b3f" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },

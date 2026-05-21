@@ -15,19 +15,24 @@
 """SSH certificate management for ``rio ssh``.
 
 Handles writing certificates to disk and parsing certificate metadata
-(expiry, validity) by delegating to ``ssh-keygen -L`` rather than
-implementing the binary wire format directly.
+(expiry, validity) using the ``cryptography`` library's
+:class:`~cryptography.hazmat.primitives.serialization.ssh.SSHCertificate`
+for structured certificate introspection.
 """
 
 from __future__ import annotations
 
-import re
-import subprocess
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
+from cryptography.hazmat.primitives.serialization import load_ssh_public_identity
+from cryptography.hazmat.primitives.serialization.ssh import SSHCertificate
+
 if TYPE_CHECKING:
     from pathlib import Path
+
+#: ``valid_before`` sentinel meaning "never expires".
+_FOREVER = 0xFFFFFFFFFFFFFFFF
 
 
 def write_certificate(cert_path: Path, certificate: str) -> None:
@@ -44,12 +49,29 @@ def write_certificate(cert_path: Path, certificate: str) -> None:
     cert_path.chmod(0o644)
 
 
+def _load_certificate(cert_path: Path) -> SSHCertificate | None:
+    """Load an SSH certificate from *cert_path*.
+
+    Returns ``None`` when the file is missing, unreadable, or does not
+    contain a valid SSH certificate.
+    """
+    try:
+        data = cert_path.read_bytes()
+        identity = load_ssh_public_identity(data)
+        if isinstance(identity, SSHCertificate):
+            return identity
+        return None
+    except Exception:
+        return None
+
+
 def parse_cert_valid_before(cert_path: Path) -> datetime | None:
     """Parse the ``valid_before`` timestamp from an SSH certificate.
 
-    Runs ``ssh-keygen -L -f <cert_path>`` and extracts the end time
-    from the ``Valid:`` line.  Returns a timezone-aware UTC
-    :class:`~datetime.datetime`, or ``None`` if parsing fails.
+    Uses the ``cryptography`` library to load the certificate and read
+    its ``valid_before`` field.  Returns a timezone-aware UTC
+    :class:`~datetime.datetime`, or ``None`` if the file is missing or
+    cannot be parsed.
 
     Args:
         cert_path: Path to the certificate file.
@@ -57,76 +79,15 @@ def parse_cert_valid_before(cert_path: Path) -> datetime | None:
     Returns:
         The expiry as a UTC datetime, or ``None``.
     """
-    try:
-        result = subprocess.run(
-            ["ssh-keygen", "-L", "-f", str(cert_path)],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            return None
-
-        return _parse_valid_before_from_output(result.stdout)
-
-    except Exception:
+    cert = _load_certificate(cert_path)
+    if cert is None:
         return None
 
+    ts = cert.valid_before
+    if ts == _FOREVER:
+        return datetime.max.replace(tzinfo=timezone.utc)
 
-def _parse_valid_before_from_output(output: str) -> datetime | None:
-    """Extract the ``valid_before`` datetime from ssh-keygen -L output.
-
-    The ``Valid:`` line has the format::
-
-        Valid: from 2026-04-01T10:00:00 to 2026-04-01T10:05:00
-
-    or with ``forever`` for never-expiring certificates.
-
-    Args:
-        output: Full stdout from ``ssh-keygen -L``.
-
-    Returns:
-        The expiry as a UTC datetime, or ``None``.
-    """
-    for line in output.splitlines():
-        line = line.strip()
-        if not line.startswith("Valid:"):
-            continue
-
-        # Handle "forever" sentinel (valid_before = 0xFFFFFFFFFFFFFFFF).
-        if "forever" in line.lower():
-            return datetime.max.replace(tzinfo=timezone.utc)
-
-        # Extract the "to <timestamp>" portion.
-        match = re.search(r"to\s+(\S+)", line)
-        if not match:
-            return None
-
-        timestamp_str = match.group(1)
-        return _parse_ssh_timestamp(timestamp_str)
-
-    return None
-
-
-def _parse_ssh_timestamp(timestamp_str: str) -> datetime | None:
-    """Parse a timestamp string from ssh-keygen output.
-
-    Handles ISO-8601 format (``2026-04-01T10:05:00``) as produced by
-    modern OpenSSH.
-
-    Args:
-        timestamp_str: The timestamp string to parse.
-
-    Returns:
-        A timezone-aware UTC datetime, or ``None``.
-    """
-    try:
-        # ssh-keygen produces local-time timestamps without tz info.
-        # Parse as local time and convert to UTC.
-        dt = datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M:%S")
-        local_dt = dt.astimezone()
-        return local_dt.astimezone(timezone.utc)
-    except ValueError:
-        return None
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
 
 
 def is_cert_valid(cert_path: Path) -> bool:
