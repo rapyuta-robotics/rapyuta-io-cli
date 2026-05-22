@@ -23,7 +23,6 @@ from unittest.mock import patch
 import pytest
 
 from riocli.config.config import Configuration
-from riocli.ssh.keys import RIO_KEY_NAME
 
 from .conftest import _make_subprocess_result, _real_config_for_dir
 
@@ -44,7 +43,6 @@ class TestSSHProperties:
         assert cert == app_dir / "rio_ed25519-cert.pub"
 
     def test_key_name_constant(self):
-        assert RIO_KEY_NAME == "rio_ed25519"
         assert Configuration._SSH_KEY_NAME == "rio_ed25519"
 
 
