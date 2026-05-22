@@ -64,34 +64,58 @@ class TestDummySpinnerClosedStream:
         with patch("sys.stdout", broken):
             spinner.ok("OK")
 
-    def test_ok_writes_to_stderr(self, capsys):
-        """DummySpinner.ok() output goes to stderr, not stdout."""
+    def test_ok_writes_to_stdout(self, capsys):
+        """DummySpinner.ok() output goes to stdout."""
         spinner = DummySpinner()
         spinner.text = "my task"
         spinner.ok("OK")
         captured = capsys.readouterr()
-        assert "OK" in captured.err
-        assert "my task" in captured.err
-        # Nothing written to stdout
-        assert captured.out == ""
+        assert "OK" in captured.out
+        assert "my task" in captured.out
 
-    def test_fail_writes_to_stderr(self, capsys):
-        """DummySpinner.fail() output goes to stderr, not stdout."""
+    def test_fail_writes_to_stdout(self, capsys):
+        """DummySpinner.fail() output goes to stdout."""
         spinner = DummySpinner()
         spinner.text = "my task"
         spinner.fail("FAIL")
         captured = capsys.readouterr()
-        assert "FAIL" in captured.err
-        assert "my task" in captured.err
-        assert captured.out == ""
+        assert "FAIL" in captured.out
+        assert "my task" in captured.out
 
-    def test_write_writes_to_stderr(self, capsys):
-        """DummySpinner.write() output goes to stderr, not stdout."""
+    def test_write_writes_to_stdout(self, capsys):
+        """DummySpinner.write() output goes to stdout."""
         spinner = DummySpinner()
-        spinner.write("hello stderr")
+        spinner.write("hello stdout")
+        captured = capsys.readouterr()
+        assert "hello stdout" in captured.out
+
+
+class TestDummySpinnerStderrKwarg:
+    """Verify _safe_echo passes err=True through to click.echo for stderr output."""
+
+    def test_safe_echo_with_err_true_writes_to_stderr(self, capsys):
+        """_safe_echo(message, err=True) should write to stderr."""
+        spinner = DummySpinner()
+        spinner._safe_echo("hello stderr", err=True)
         captured = capsys.readouterr()
         assert "hello stderr" in captured.err
         assert captured.out == ""
+
+    def test_safe_echo_with_err_false_writes_to_stdout(self, capsys):
+        """_safe_echo(message, err=False) should write to stdout."""
+        spinner = DummySpinner()
+        spinner._safe_echo("hello stdout", err=False)
+        captured = capsys.readouterr()
+        assert "hello stdout" in captured.out
+        assert captured.err == ""
+
+    def test_safe_echo_without_err_writes_to_stdout(self, capsys):
+        """_safe_echo(message) without err kwarg defaults to stdout."""
+        spinner = DummySpinner()
+        spinner._safe_echo("default output")
+        captured = capsys.readouterr()
+        assert "default output" in captured.out
+        assert captured.err == ""
 
 
 class TestDummySpinnerChainedAttrs:
