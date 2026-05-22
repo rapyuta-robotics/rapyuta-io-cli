@@ -28,9 +28,9 @@ class DummySpinner:
     def __init__(self, *args, **kwargs):
         self.text = ""
 
-    def _safe_echo(self, message):
+    def _safe_echo(self, *args, **kwargs):
         try:
-            click.echo(message, err=True)
+            click.echo(*args, **kwargs)
         except (ValueError, OSError):
             pass
 
