@@ -56,7 +56,7 @@ dependencies = [
     "waiting>=1.4.1",
     "yaspin==2.5.0",
     "ansible-core>=2.13.13",
-    "rapyuta-io-sdk-v2 @ git+https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2.git@27b164fa140b5f09a56b3bf689ecbc6f8efac9a0",
+    "rapyuta-io-sdk-v2 @ git+https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2@devel",
     "cryptography>=40.0.0",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
@@ -206,4 +206,4 @@ filterwarnings = [
 ]
 
 [tool.uv.sources]
-rapyuta-io-sdk-v2 = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2", rev = "feat/rapyuta-ca" }
+rapyuta-io-sdk-v2 = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2", rev = "devel" }
