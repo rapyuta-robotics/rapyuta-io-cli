@@ -1530,6 +1530,7 @@ dependencies = [
     { name = "click-help-colors" },
     { name = "click-repl" },
     { name = "click-spinner" },
+    { name = "cryptography" },
     { name = "dictdiffer" },
     { name = "directory-tree" },
     { name = "email-validator" },
@@ -1586,6 +1587,7 @@ requires-dist = [
     { name = "click-help-colors", specifier = ">=0.9.1" },
     { name = "click-repl", specifier = ">=0.2.0" },
     { name = "click-spinner", specifier = ">=0.1.10" },
+    { name = "cryptography", specifier = ">=40.0.0" },
     { name = "dictdiffer", specifier = ">=0.9.0" },
     { name = "directory-tree", specifier = ">=0.0.3.1" },
     { name = "email-validator", specifier = ">=2.0.0.post2" },
@@ -1634,7 +1636,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel#4880e82ce74f9ad440623bdb838181c091025774" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel#9d976ed41ffa215cbde39a11fe2a79dfb3694a3c" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
