@@ -1608,7 +1608,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
     { name = "rapyuta-io", specifier = ">=3.1.0" },
-    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel" },
+    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=fix%2Fcoerce-dateTime-bool-fields" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1636,7 +1636,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel#9d976ed41ffa215cbde39a11fe2a79dfb3694a3c" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=fix%2Fcoerce-dateTime-bool-fields#a31e9a9711f50ccf090a8533ca132c6201277d42" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
