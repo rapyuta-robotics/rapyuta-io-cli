@@ -30,6 +30,27 @@ cd scripts
 ./squashfs-root/AppRun -m pip install --upgrade pip
 ./squashfs-root/AppRun -m pip install rapyuta_io_cli-*.whl
 
+# Force-reinstall cryptography with a manylinux_2_28 wheel so the
+# AppImage works on systems with GLIBC >= 2.28 (Ubuntu 20.04+).
+# Without this, CI hosts with newer GLIBC pull manylinux_2_34 wheels
+# whose _rust.abi3.so requires GLIBC_2.33 symbols unavailable on
+# older distros.
+WHEEL_DIR=/tmp/rio-wheels
+rm -rf "$WHEEL_DIR" && mkdir -p "$WHEEL_DIR"
+./squashfs-root/AppRun -m pip download \
+    --only-binary=:all: \
+    --platform manylinux_2_28_x86_64 \
+    --python-version 3.13 \
+    --implementation cp \
+    --abi cp313 --abi abi3 --abi none \
+    --no-deps \
+    --dest "$WHEEL_DIR" \
+    cryptography
+./squashfs-root/AppRun -m pip install \
+    --force-reinstall --no-deps \
+    --no-index --find-links "$WHEEL_DIR" \
+    cryptography
+
 # Replacing AppRun with a custom script that uses Python's -I (isolated
 # mode) to completely prevent host Python environment leakage.
 cp AppRun squashfs-root/AppRun
