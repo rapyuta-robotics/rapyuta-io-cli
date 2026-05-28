@@ -81,11 +81,12 @@ def export_keys(
                 with_project=(not with_org),
             )
         )
-        if not tree.get("head"):
-            raise Exception("Config tree does not have keys in the revision")
+
+        if not rev_id and not tree.get("head"):
+            raise Exception("Config tree does not have a HEAD revision set")
 
         keys = tree.get("keys")
-        if not isinstance(keys, dict):
+        if keys is None or not isinstance(keys, dict):
             raise Exception("Keys are not a dictionary")
 
         data = unflatten_keys(keys)

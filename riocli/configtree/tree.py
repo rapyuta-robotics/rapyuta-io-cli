@@ -233,7 +233,7 @@ def set_tree_revision(
 
         if not rev or not rev.committed:
             spinner.text = click.style(
-                "RevisionID not provided as argument and not found in the State file.",
+                "RevisionID not provided as argument and not found or commited in the State file.",
                 fg=Colors.RED,
             )
             spinner.red.fail(Symbols.ERROR)

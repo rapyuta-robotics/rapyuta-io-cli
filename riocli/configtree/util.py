@@ -30,7 +30,7 @@ from riocli.utils.state import StateFile
 if TYPE_CHECKING:
     from collections.abc import Iterable
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
-
+TOP_KEYS_FILE = "top-keys"
 
 # The following describes how configtrees are stored in the Statefile.
 # "configtrees": {
@@ -200,6 +200,8 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
+        if not isinstance(file_data, dict):
+            continue
         file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
         final_data = benedict(file_data)
         if file_format == "yaml":
@@ -261,7 +263,20 @@ def unflatten_keys(keys: dict | None) -> benedict:
         return benedict()
 
     data = combine_metadata(keys)
-    return benedict(data).unflatten(separator="/")
+
+    flat_data = {}
+    nested_data = {}
+    for k, v in data.items():
+        if "/" not in k:
+            flat_data[k] = v
+        else:
+            nested_data[k] = v
+
+    result = benedict(nested_data).unflatten(separator="/")
+    if flat_data:
+        result[TOP_KEYS_FILE] = flat_data
+
+    return result
 
 
 def combine_metadata(keys: dict) -> dict:
@@ -333,13 +348,13 @@ def fetch_tree_keys(
         )
     )
 
-    if not tree.get("head"):
+    if not rev_id and not tree.get("head"):
         raise Exception(
-            f"Config tree {tree.metadata.name} does not have keys in the revision"
+            f"Config tree {tree.metadata.name} does not have a HEAD revision set"
         )
 
     keys = tree.get("keys")
-    if not isinstance(keys, dict):
+    if keys is None or not isinstance(keys, dict):
         raise Exception("Keys are not dictionary")
 
     return keys
