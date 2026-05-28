@@ -32,7 +32,9 @@ from riocli.utils.spinner import with_spinner
 @click.argument("chart", type=str)
 @click.option("--branch", help="Preview charts from a branch (pr preview)")
 @with_spinner(text="Searching for chart...")
-def search_chart(chart: str, wide: bool = False, branch: str = None, spinner: Yaspin = None) -> None:
+def search_chart(
+    chart: str, wide: bool = False, branch: str = None, spinner: Yaspin = None
+) -> None:
     """Search for a chart in the chart repo."""
     repository = None
     if branch:

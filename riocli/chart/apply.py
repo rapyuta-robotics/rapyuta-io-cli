@@ -132,7 +132,6 @@ def apply_chart(
         repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
     versions = find_chart(chart, repository)
     if len(versions) > 1:
-
         click.secho(
             "More than one charts are available, please specify the version!",
             fg=Colors.RED,

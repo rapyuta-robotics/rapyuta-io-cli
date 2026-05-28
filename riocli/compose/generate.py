@@ -68,7 +68,7 @@ from riocli.utils import print_centered_text
     "--chart-branch",
     "chart_branch",
     default=None,
-    help="(Advanced) Branch-based chart repo index to preview/test unmerged charts."
+    help="(Advanced) Branch-based chart repo index to preview/test unmerged charts.",
 )
 @click.option(
     "--append",
@@ -241,7 +241,6 @@ def resolve_chart_inputs(
     user_values: tuple[str, ...],
     chart_branch: str = None,
 ) -> tuple[tuple, tuple, Chart]:
-
     """
     Downloads a rapyuta chart and returns inputs for generate_compose_file.
 
