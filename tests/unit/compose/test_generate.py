@@ -144,7 +144,7 @@ class TestGenerateCommandChartFlag:
             catch_exceptions=False,
         )
 
-        mock_resolve.assert_called_once_with("my-chart", ())
+        mock_resolve.assert_called_once_with("my-chart", (),None)
         mock_gen.assert_called_once()
         chart_obj.cleanup.assert_called_once()
 
