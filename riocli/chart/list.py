@@ -27,9 +27,13 @@ from riocli.constants import Colors
     help_options_color=Colors.GREEN,
 )
 @click.option("-w", "--wide", is_flag=True, default=False, help="Print more details")
-def list_charts(wide: bool = False) -> None:
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
+def list_charts(wide: bool = False, branch: str = None) -> None:
     """List all available charts."""
-    index = fetch_index()
+    repository = None
+    if branch:
+        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+    index = fetch_index(repository) if repository else fetch_index()
     if "entries" not in index:
         raise Exception("No entries found!")
     entries = []

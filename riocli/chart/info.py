@@ -28,7 +28,11 @@ from riocli.utils import dump_all_yaml
     help="Describe the available chart with versions",
 )
 @click.argument("chart", type=str)
-def info_chart(chart: str) -> None:
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
+def info_chart(chart: str, branch: str = None) -> None:
     """Print a chart's details."""
-    versions = find_chart(chart)
+    repository = None
+    if branch:
+        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+    versions = find_chart(chart, repository)
     dump_all_yaml(versions)

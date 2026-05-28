@@ -30,11 +30,15 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option("-w", "--wide", is_flag=True, default=False, help="Print more details")
 @click.argument("chart", type=str)
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
 @with_spinner(text="Searching for chart...")
-def search_chart(chart: str, wide: bool = False, spinner: Yaspin = None) -> None:
+def search_chart(chart: str, wide: bool = False, branch: str = None, spinner: Yaspin = None) -> None:
     """Search for a chart in the chart repo."""
+    repository = None
+    if branch:
+        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
     try:
-        versions = find_chart(chart)
+        versions = find_chart(chart, repository)
         with spinner.hidden():
             print_chart_entries(versions, wide=wide)
     except Exception as e:

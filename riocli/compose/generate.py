@@ -65,6 +65,12 @@ from riocli.utils import print_centered_text
     help="Treat the files argument as a rapyuta chart name[:version].",
 )
 @click.option(
+    "--chart-branch",
+    "chart_branch",
+    default=None,
+    help="(Advanced) Branch-based chart repo index to preview/test unmerged charts."
+)
+@click.option(
     "--append",
     "append_services",
     is_flag=True,
@@ -82,6 +88,7 @@ def generate(
     use_chart: bool,
     append_services: bool,
     files: tuple[str, ...],
+    chart_branch: str = None,
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -130,7 +137,7 @@ def generate(
     chart_obj = None
     if use_chart:
         files, values, chart_obj = resolve_chart_inputs(
-            validate_chart_files(files), values
+            validate_chart_files(files), values, chart_branch
         )
 
     try:
@@ -232,7 +239,9 @@ def validate_chart_files(files: tuple[str, ...]) -> str:
 def resolve_chart_inputs(
     chart_name: str,
     user_values: tuple[str, ...],
+    chart_branch: str = None,
 ) -> tuple[tuple, tuple, Chart]:
+
     """
     Downloads a rapyuta chart and returns inputs for generate_compose_file.
 
@@ -245,7 +254,10 @@ def resolve_chart_inputs(
         Caller must call chart_obj.cleanup() when done.
     """
 
-    versions = find_chart(chart_name)
+    repository = None
+    if chart_branch:
+        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{chart_branch}/incubator/index.yaml"
+    versions = find_chart(chart_name, repository)
     if len(versions) > 1:
         click.secho(
             "More than one chart version is available. Using the latest. "

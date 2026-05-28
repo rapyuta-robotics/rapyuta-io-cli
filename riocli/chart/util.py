@@ -8,11 +8,11 @@ DEFAULT_REPOSITORY = (
 )
 
 
-def find_chart(chart: str) -> list:
+def find_chart(chart: str, repository: str = None) -> list:
     """Finds a chart in the upstream index."""
     chart, ver = parse_chart(chart)
 
-    index = fetch_index()
+    index = fetch_index(repository) if repository else fetch_index()
     if "entries" not in index:
         raise Exception("No entries found!")
 
@@ -26,7 +26,7 @@ def find_chart(chart: str) -> list:
     return versions
 
 
-def fetch_index(repository=DEFAULT_REPOSITORY) -> dict:
+def fetch_index(repository: str = DEFAULT_REPOSITORY) -> dict:
     """Fetches the upstream chart index."""
     response = requests.get(repository)
     if not response.ok:
