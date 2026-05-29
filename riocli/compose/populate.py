@@ -64,8 +64,61 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
-    return DockerCompose(services=services)
 
+    fixup_vols = get_volumes_requiring_fixup(deployments)
+    if fixup_vols:
+        fix_cmds = []
+        for entry in fixup_vols:
+            if entry["uid"] is not None or entry["gid"] is not None:
+                chown_str = "chown "
+                chown_str += str(entry["uid"]) if entry["uid"] is not None else ""
+                chown_str += ":"
+                chown_str += str(entry["gid"]) if entry["gid"] is not None else ""
+                chown_str += f' "{entry["container"]}"'
+                fix_cmds.append(chown_str)
+            if entry["perm"] is not None:
+                chmod_str = f'chmod {entry["perm"]} "{entry["container"]}"'
+                fix_cmds.append(chmod_str)
+        fixperms_vols = [f'{entry["host"]}:{entry["container"]}:rw' for entry in fixup_vols]
+        services["init-fixperms"] = Service(
+            container_name="init-fixperms",
+            image="alpine:3.19",
+            user="0:0",
+            command=["sh", "-c", "ls -ld /opt/rapyuta/configs/test-perm/ && " + " && ".join(fix_cmds) + "&& ls -ld /opt/rapyuta/configs/test-perm/"],
+            volumes=fixperms_vols,
+            restart="no",
+            depends_on={},
+        )
+        affected_paths = {entry["container"] for entry in fixup_vols}
+        for name, svc in services.items():
+            if name == "init-fixperms":
+                continue
+            if any(isinstance(vol, str) and any(path in vol for path in affected_paths) for vol in getattr(svc, "volumes", [])):
+                if svc.depends_on is None:
+                    svc.depends_on = {}
+                svc.depends_on["init-fixperms"] = DependsCondition(condition="service_completed_successfully")
+
+    return DockerCompose(services=services, version="3.8")
+
+
+def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
+        fixup = []
+        for dep in deployments.values():
+            for volume in dep.spec.get("volumes", []):
+                uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
+                if uid is None and gid is None and perm is None:
+                    continue
+                host = volume.get("subPath")
+                container = volume.get("mountPath")
+                if host and container:
+                    fixup.append({
+                        "host": host,
+                        "container": container,
+                        "uid": uid,
+                        "gid": gid,
+                        "perm": perm,
+                    })
+        return fixup
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:
     if not package.spec.get("ros", {}).get("enabled", False):
