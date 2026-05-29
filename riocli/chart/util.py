@@ -6,6 +6,13 @@ from riocli.utils import tabulate_data
 DEFAULT_REPOSITORY = (
     "https://rapyuta-robotics.github.io/rapyuta-charts/incubator/index.yaml"  # noqa
 )
+BRANCH_REPO_BASE = "https://chartsbranch.blob.core.windows.net/charts-per-branch"
+
+
+def branch_repository_url(branch: str) -> str:
+    if not branch:
+        raise ValueError("Branch name must be non-empty")
+    return f"{BRANCH_REPO_BASE}/{branch}/incubator/index.yaml"
 
 
 def find_chart(chart: str, repository: str = None) -> list:

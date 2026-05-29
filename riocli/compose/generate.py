@@ -12,7 +12,7 @@ from munch import munchify
 from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
 from riocli.chart.chart import Chart
-from riocli.chart.util import find_chart
+from riocli.chart.util import branch_repository_url, find_chart
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
@@ -65,10 +65,10 @@ from riocli.utils import print_centered_text
     help="Treat the files argument as a rapyuta chart name[:version].",
 )
 @click.option(
-    "--chart-branch",
-    "chart_branch",
+    "--branch",
+    "branch",
     default=None,
-    help="(Advanced) Branch-based chart repo index to preview/test unmerged charts.",
+    help="Branch-based chart repo index to preview/test unmerged charts.",
 )
 @click.option(
     "--append",
@@ -88,7 +88,7 @@ def generate(
     use_chart: bool,
     append_services: bool,
     files: tuple[str, ...],
-    chart_branch: str = None,
+    branch: str = None,
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -137,7 +137,7 @@ def generate(
     chart_obj = None
     if use_chart:
         files, values, chart_obj = resolve_chart_inputs(
-            validate_chart_files(files), values, chart_branch
+            validate_chart_files(files), values, branch
         )
 
     try:
@@ -239,7 +239,7 @@ def validate_chart_files(files: tuple[str, ...]) -> str:
 def resolve_chart_inputs(
     chart_name: str,
     user_values: tuple[str, ...],
-    chart_branch: str = None,
+    branch: str = None,
 ) -> tuple[tuple, tuple, Chart]:
     """
     Downloads a rapyuta chart and returns inputs for generate_compose_file.
@@ -254,8 +254,8 @@ def resolve_chart_inputs(
     """
 
     repository = None
-    if chart_branch:
-        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{chart_branch}/incubator/index.yaml"
+    if branch:
+        repository = branch_repository_url(branch)
     versions = find_chart(chart_name, repository)
     if len(versions) > 1:
         click.secho(

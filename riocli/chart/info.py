@@ -15,7 +15,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.chart.util import find_chart
+from riocli.chart.util import branch_repository_url, find_chart
 from riocli.constants import Colors
 from riocli.utils import dump_all_yaml
 
@@ -33,6 +33,6 @@ def info_chart(chart: str, branch: str = None) -> None:
     """Print a chart's details."""
     repository = None
     if branch:
-        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+        repository = branch_repository_url(branch)
     versions = find_chart(chart, repository)
     dump_all_yaml(versions)

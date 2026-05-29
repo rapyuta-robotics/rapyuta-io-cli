@@ -16,7 +16,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.chart.util import find_chart, print_chart_entries
+from riocli.chart.util import branch_repository_url, find_chart, print_chart_entries
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
@@ -38,7 +38,7 @@ def search_chart(
     """Search for a chart in the chart repo."""
     repository = None
     if branch:
-        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+        repository = branch_repository_url(branch)
     try:
         versions = find_chart(chart, repository)
         with spinner.hidden():

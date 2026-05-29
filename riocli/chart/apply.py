@@ -18,7 +18,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.chart.chart import Chart
-from riocli.chart.util import find_chart
+from riocli.chart.util import branch_repository_url, find_chart
 from riocli.constants import Colors
 
 
@@ -129,7 +129,7 @@ def apply_chart(
     """
     repository = None
     if branch:
-        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+        repository = branch_repository_url(branch)
     versions = find_chart(chart, repository)
     if len(versions) > 1:
         click.secho(

@@ -16,7 +16,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from munch import munchify
 
-from riocli.chart.util import fetch_index, print_chart_entries
+from riocli.chart.util import branch_repository_url, fetch_index, print_chart_entries
 from riocli.constants import Colors
 
 
@@ -32,7 +32,7 @@ def list_charts(wide: bool = False, branch: str = None) -> None:
     """List all available charts."""
     repository = None
     if branch:
-        repository = f"https://chartsbranch.blob.core.windows.net/charts-per-branch/{branch}/incubator/index.yaml"
+        repository = branch_repository_url(branch)
     index = fetch_index(repository) if repository else fetch_index()
     if "entries" not in index:
         raise Exception("No entries found!")
