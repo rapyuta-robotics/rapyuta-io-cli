@@ -1,4 +1,5 @@
 import pytest
+
 from riocli.chart.util import branch_repository_url
 
 
