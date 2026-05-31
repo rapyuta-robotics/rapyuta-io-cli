@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shlex
+import os
 from typing import Any
 
 import click
@@ -69,22 +70,34 @@ def populate(
     if fixup_vols:
         fix_cmds = []
         for entry in fixup_vols:
+            container_path = entry["container"]
+            basename = os.path.basename(container_path)
+            if container_path.endswith("/"):
+                is_probably_file = False
+            elif "." in basename and not basename.startswith('.'):
+                is_probably_file = True
+            else:
+                is_probably_file = False
+            if is_probably_file:
+                fix_cmds.append(f'touch "{container_path}"')
+            else:
+                fix_cmds.append(f'mkdir -p "{container_path}"')
             if entry["uid"] is not None or entry["gid"] is not None:
                 chown_str = "chown "
                 chown_str += str(entry["uid"]) if entry["uid"] is not None else ""
                 chown_str += ":"
                 chown_str += str(entry["gid"]) if entry["gid"] is not None else ""
-                chown_str += f' "{entry["container"]}"'
+                chown_str += f' "{container_path}"'
                 fix_cmds.append(chown_str)
             if entry["perm"] is not None:
-                chmod_str = f'chmod {entry["perm"]} "{entry["container"]}"'
+                chmod_str = f'chmod {entry["perm"]} "{container_path}"'
                 fix_cmds.append(chmod_str)
         fixperms_vols = [f'{entry["host"]}:{entry["container"]}:rw' for entry in fixup_vols]
         services["init-fixperms"] = Service(
             container_name="init-fixperms",
             image="alpine:3.19",
             user="0:0",
-            command=["sh", "-c", "ls -ld /opt/rapyuta/configs/test-perm/ && " + " && ".join(fix_cmds) + "&& ls -ld /opt/rapyuta/configs/test-perm/"],
+            command=["sh", "-c", " && ".join(fix_cmds)],
             volumes=fixperms_vols,
             restart="no",
             depends_on={},
