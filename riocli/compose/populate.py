@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import shlex
 import os
+import shlex
 from typing import Any
 
 import click
@@ -65,7 +65,6 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
-
     fixup_vols = get_volumes_requiring_fixup(deployments)
     if fixup_vols:
         fix_cmds = []
@@ -74,7 +73,7 @@ def populate(
             basename = os.path.basename(container_path)
             if container_path.endswith("/"):
                 is_probably_file = False
-            elif "." in basename and not basename.startswith('.'):
+            elif "." in basename and not basename.startswith("."):
                 is_probably_file = True
             else:
                 is_probably_file = False
@@ -92,7 +91,9 @@ def populate(
             if entry["perm"] is not None:
                 chmod_str = f'chmod {entry["perm"]} "{container_path}"'
                 fix_cmds.append(chmod_str)
-        fixperms_vols = [f'{entry["host"]}:{entry["container"]}:rw' for entry in fixup_vols]
+        fixperms_vols = [
+            f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
+        ]
         services["init-fixperms"] = Service(
             container_name="init-fixperms",
             image="alpine:3.19",
@@ -106,32 +107,40 @@ def populate(
         for name, svc in services.items():
             if name == "init-fixperms":
                 continue
-            if any(isinstance(vol, str) and any(path in vol for path in affected_paths) for vol in getattr(svc, "volumes", [])):
+            if any(
+                isinstance(vol, str) and any(path in vol for path in affected_paths)
+                for vol in getattr(svc, "volumes", [])
+            ):
                 if svc.depends_on is None:
                     svc.depends_on = {}
-                svc.depends_on["init-fixperms"] = DependsCondition(condition="service_completed_successfully")
+                svc.depends_on["init-fixperms"] = DependsCondition(
+                    condition="service_completed_successfully"
+                )
 
     return DockerCompose(services=services, version="3.8")
 
 
 def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
-        fixup = []
-        for dep in deployments.values():
-            for volume in dep.spec.get("volumes", []):
-                uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
-                if uid is None and gid is None and perm is None:
-                    continue
-                host = volume.get("subPath")
-                container = volume.get("mountPath")
-                if host and container:
-                    fixup.append({
+    fixup = []
+    for dep in deployments.values():
+        for volume in dep.spec.get("volumes", []):
+            uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
+            if uid is None and gid is None and perm is None:
+                continue
+            host = volume.get("subPath")
+            container = volume.get("mountPath")
+            if host and container:
+                fixup.append(
+                    {
                         "host": host,
                         "container": container,
                         "uid": uid,
                         "gid": gid,
                         "perm": perm,
-                    })
-        return fixup
+                    }
+                )
+    return fixup
+
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:
     if not package.spec.get("ros", {}).get("enabled", False):
