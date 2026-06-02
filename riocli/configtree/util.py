@@ -288,8 +288,12 @@ def combine_metadata(keys: dict) -> dict:
             data = b64decode(data).decode("utf-8")
             # The data received from the API is always in string format. To use
             # appropriate data-type in Python (as well in exports), we are
-            # passing it through YAML parser.
-            data = yaml.safe_load(data)
+            # passing it through YAML parser. Fall back to the raw string if
+            # the value is not valid YAML (e.g. log format strings with '%').
+            try:
+                data = yaml.safe_load(data)
+            except yaml.YAMLError:
+                pass
         metadata = val.get("metadata", None)
 
         if metadata:
