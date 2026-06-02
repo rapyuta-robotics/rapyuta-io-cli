@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""``rio ssh`` – sign an SSH public key and load the certificate into ssh-agent.
+"""``rio ssh-cert`` – sign an SSH public key and load the certificate into ssh-agent.
 
 Generates a dedicated ``rio_ed25519`` key pair (if not already present),
 requests a signed SSH user certificate from rapyuta.io, writes it to
@@ -43,7 +43,7 @@ from riocli.utils.spinner import with_spinner
 
 
 @click.command(
-    "ssh",
+    "ssh-cert",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -78,9 +78,9 @@ def ssh(
 
     \b
     Examples:
-        $ rio ssh
-        $ rio ssh --no-agent
-        $ rio ssh --force
+        $ rio ssh-cert
+        $ rio ssh-cert --no-agent
+        $ rio ssh-cert --force
     """
     try:
         # ----- 1. Ensure dedicated key pair exists ----- #
