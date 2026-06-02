@@ -67,6 +67,7 @@ from riocli.vpn import vpn
         "sr": "static-route",
         "ug": "usergroup",
         "sa": "service-account",
+        "ssh": "ssh-cert",
     },
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
