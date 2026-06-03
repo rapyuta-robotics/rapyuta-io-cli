@@ -1,3 +1,24 @@
+# [10.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.4.0...v10.5.0) (2026-06-03)
+
+
+### Bug Fixes
+
+* **ci:** fix for ci to have read permissions only ([de190da](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/de190da1886880f839c9bdf56a2e00f7ea271346))
+* **configtree:** creating revisions respect milestone label ([a87bb59](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a87bb59c4518354f7833bc6c0d1b4bc13605d6f2))
+* **configtree:** fix head check for specific revisions and guard flat keys in export ([40cd972](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/40cd9721fc3d9a890dc08a2478458f3ddd5b52cb))
+* **configtree:** unwrap paginated list_revisions response ([d1d401b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d1d401b97ea1e52348af4cb374df111954c7771e))
+* constrain AppImage wheels to manylinux_2_28 for Ubuntu 20.04 ([b86849a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b86849a581bc8ec924731aa28c7d5d19e0f03d4b))
+* improve error handling for CLI output and spinner messages ([74fed2b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/74fed2b8a3e61eec0e90289d3bb738884ea77c20))
+* **ssh:** rename the command to `ssh-cert` ([89f6876](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/89f68766760a609a9432ac1657a65108dadcb15d))
+* **utils:** use stdout by default, respect the **kwargs ([020de6a](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/020de6a031e295e1dabe94a832978adf21ff413d))
+
+
+### Features
+
+* **auth:** implement OAuth 2.0 Device Authorization Flow (RFC 8628) ([1cff26c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1cff26c0cfff6d6020e172ae3469d027069d618c)), closes [#1821](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/1821)
+* **ssh:** add rio command to generate ssh certificates ([#503](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/503)) ([5d6617d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5d6617d88fff6209e151728f4e6a676a71cf2e02))
+* **vpn:** support non-interactive in vpn connect ([c06efe4](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c06efe45d4b8fb33f7d5de3d8df6fda8d08ceddf))
+
 # [10.4.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.3.0...v10.4.0) (2026-04-15)
 
 
