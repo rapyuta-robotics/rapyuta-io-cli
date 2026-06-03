@@ -28,17 +28,23 @@ class DummySpinner:
     def __init__(self, *args, **kwargs):
         self.text = ""
 
+    def _safe_echo(self, *args, **kwargs):
+        try:
+            click.echo(*args, **kwargs)
+        except (ValueError, OSError):
+            pass
+
     def write(self, text):
-        click.echo(text)
+        self._safe_echo(text)
 
     def hidden(self):
         return self
 
     def fail(self, text="FAIL"):
-        click.echo(f"{text} {self.text}")
+        self._safe_echo(f"{text} {self.text}")
 
     def ok(self, text="OK"):
-        click.echo(f"{text} {self.text}")
+        self._safe_echo(f"{text} {self.text}")
 
     def __getattr__(self, name):
         return self

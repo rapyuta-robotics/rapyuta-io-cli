@@ -46,6 +46,7 @@ from riocli.role import role
 from riocli.secret import secret
 from riocli.service_account import service_account
 from riocli.shell import deprecated_repl, shell
+from riocli.ssh import ssh
 from riocli.static_route import static_route
 from riocli.usergroup import usergroup
 from riocli.utils import (
@@ -66,6 +67,7 @@ from riocli.vpn import vpn
         "sr": "static-route",
         "ug": "usergroup",
         "sa": "service-account",
+        "ssh": "ssh-cert",
     },
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -81,7 +83,10 @@ def safe_cli():
         try:
             cli()
         except Exception as e:
-            click.secho(str(e), fg=Colors.RED)
+            try:
+                click.secho(str(e), fg=Colors.RED, err=True)
+            except (ValueError, OSError):
+                pass
             raise SystemExit(1) from e
     else:
         cli()
@@ -166,6 +171,7 @@ cli.add_command(deprecated_repl)
 cli.add_command(template)
 cli.add_command(organization)
 cli.add_command(vpn)
+cli.add_command(ssh)
 cli.add_command(usergroup)
 cli.add_command(config_trees)
 cli.add_command(hwildevice)

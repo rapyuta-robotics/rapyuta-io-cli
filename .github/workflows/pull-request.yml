@@ -1,9 +1,12 @@
 name: ✅ Quality Checks
 on: [ push ]
 
+permissions:
+  contents: read
+
 jobs:
   code-quality-checks:
-    runs-on: ubuntu-latest
+    runs-on: aks-spot-4cpu
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -17,3 +20,18 @@ jobs:
         uses: astral-sh/ruff-action@v3
         with:
           args: "format --check"
+
+  unit-tests:
+    runs-on: aks-spot-4cpu
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run unit tests
+        run: uv run pytest tests/unit/ -v --tb=short

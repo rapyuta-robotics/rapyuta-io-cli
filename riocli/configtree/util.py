@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2026 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 import yaml
 from benedict import benedict
 from munch import Munch, munchify, unmunchify
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
@@ -28,9 +29,8 @@ from riocli.utils.state import StateFile
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
-
+TOP_KEYS_FILE = "top-keys"
 
 # The following describes how configtrees are stored in the Statefile.
 # "configtrees": {
@@ -200,6 +200,8 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
+        if not isinstance(file_data, dict):
+            continue
         file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
         final_data = benedict(file_data)
         if file_format == "yaml":
@@ -261,7 +263,20 @@ def unflatten_keys(keys: dict | None) -> benedict:
         return benedict()
 
     data = combine_metadata(keys)
-    return benedict(data).unflatten(separator="/")
+
+    flat_data = {}
+    nested_data = {}
+    for k, v in data.items():
+        if "/" not in k:
+            flat_data[k] = v
+        else:
+            nested_data[k] = v
+
+    result = benedict(nested_data).unflatten(separator="/")
+    if flat_data:
+        result[TOP_KEYS_FILE] = flat_data
+
+    return result
 
 
 def combine_metadata(keys: dict) -> dict:
@@ -290,7 +305,9 @@ def combine_metadata(keys: dict) -> dict:
 
 def fetch_last_milestone_keys(is_org: bool, tree_name: str) -> dict | None:
     client = new_v2_client(with_project=(not is_org))
-    revisions = client.list_revisions(tree_name=tree_name)
+    revisions = []
+    for page in walk_pages(client.list_revisions, tree_name=tree_name):
+        revisions.extend(munchify(page))
     if len(revisions) == 0:
         return
 
@@ -331,13 +348,13 @@ def fetch_tree_keys(
         )
     )
 
-    if not tree.get("head"):
+    if not rev_id and not tree.get("head"):
         raise Exception(
-            f"Config tree {tree.metadata.name} does not have keys in the revision"
+            f"Config tree {tree.metadata.name} does not have a HEAD revision set"
         )
 
     keys = tree.get("keys")
-    if not isinstance(keys, dict):
+    if keys is None or not isinstance(keys, dict):
         raise Exception("Keys are not dictionary")
 
     return keys
@@ -347,7 +364,11 @@ def fetch_milestone_revision_id(is_org: bool, tree_name: str, milestone: str) ->
     client = new_v2_client(with_project=(not is_org))
     labels = f"{MILESTONE_LABEL_KEY}={milestone}"
 
-    revisions = client.list_revisions(tree_name=tree_name, label_selector=[labels])
+    revisions = []
+    for page in walk_pages(
+        client.list_revisions, tree_name=tree_name, label_selector=[labels]
+    ):
+        revisions.extend(munchify(page))
     if len(revisions) == 0:
         raise Exception(f"Revision with milestone {milestone} not found")
 

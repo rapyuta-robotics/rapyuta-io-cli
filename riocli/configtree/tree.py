@@ -1,4 +1,4 @@
-# Copyright 2024 Rapyuta Robotics
+# Copyright 2026 Rapyuta Robotics
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Iterable
-
 import click
 from click_help_colors import HelpColorsCommand
 from munch import munchify
+from rapyuta_io_sdk_v2 import walk_pages
 from yaspin.core import Yaspin
 
 from riocli.config import get_config_from_context, new_v2_client
@@ -234,7 +233,7 @@ def set_tree_revision(
 
         if not rev or not rev.committed:
             spinner.text = click.style(
-                "RevisionID not provided as argument and not found in the State file.",
+                "RevisionID not provided as argument and not found or commited in the State file.",
                 fg=Colors.RED,
             )
             spinner.red.fail(Symbols.ERROR)
@@ -295,10 +294,9 @@ def list_config_trees(
 
     try:
         client = new_v2_client(with_project=(not with_org))
-        result = client.list_configtrees(with_project=(not with_org))
-        trees = munchify(result.get("items", []))
-        if not isinstance(trees, Iterable):
-            raise Exception("List items are not iterable")
+        trees = []
+        for page in walk_pages(client.list_configtrees, with_project=(not with_org)):
+            trees.extend(munchify(page))
 
         display_config_trees(trees=trees)
     except Exception as e:
@@ -368,10 +366,11 @@ def list_tree_revisions(
     """
     try:
         client = new_v2_client(with_project=(not with_org))
-        result = client.list_revisions(tree_name=tree_name, with_project=(not with_org))
-        revisions = munchify(result.get("items", []))
-        if not isinstance(revisions, Iterable):
-            raise Exception("List items are not iterable")
+        revisions = []
+        for page in walk_pages(
+            client.list_revisions, tree_name=tree_name, with_project=(not with_org)
+        ):
+            revisions.extend(munchify(page))
 
         if graph:
             display_config_tree_revision_graph(tree_name=tree_name, revisions=revisions)
