@@ -17,6 +17,8 @@ from base64 import b64encode
 
 from etcd3gw import Etcd3Client
 
+from riocli.configtree.util import serialize_value
+
 
 def import_in_etcd(
     data: dict,
@@ -44,7 +46,10 @@ def import_in_etcd(
         key = f"{prefix}/{key}"
 
         enc_key = b64encode(str(key).encode("utf-8")).decode()
-        enc_val = b64encode(str(val).encode("utf-8")).decode()
+        # Serialize non-string values to JSON instead of str(): Python's
+        # repr of dicts and lists uses single quotes, which is not valid
+        # JSON and breaks consumers parsing the values back.
+        enc_val = b64encode(serialize_value(val).encode("utf-8")).decode()
         compares.append(
             {
                 "key": enc_key,

@@ -13,9 +13,11 @@
 # limitations under the License.
 from __future__ import annotations
 
+import json
 import os
 from base64 import b64decode
-from typing import TYPE_CHECKING
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from benedict import benedict
@@ -194,6 +196,27 @@ class Metadata:
 
     def get_dict(self: Metadata) -> dict:
         return self.data
+
+
+def serialize_value(value: Any) -> str:
+    """Serialize a key's value to a string for storage.
+
+    Non-string values are serialized to JSON so that consumers can parse
+    them back. A plain str() must be avoided here: Python's repr of dicts
+    and lists uses single quotes, which is not valid JSON.
+    """
+    if isinstance(value, str):
+        return value
+
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        default=lambda o: (
+            o.isoformat()
+            if isinstance(o, (datetime, date))  # noqa: UP038
+            else str(o)
+        ),
+    )
 
 
 def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> None:
