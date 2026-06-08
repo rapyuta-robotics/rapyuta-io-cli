@@ -19,6 +19,8 @@ VOLUME_PERMISSIONS = {
     777: "rw",
 }
 
+FIXPERMS_IMAGE = "alpine:3.19"
+
 ROS_MASTER_URI = "http://127.0.0.1:1234"
 
 
@@ -82,12 +84,9 @@ def populate(
             else:
                 fix_cmds.append(f'mkdir -p "{container_path}"')
             if entry["uid"] is not None or entry["gid"] is not None:
-                chown_str = "chown "
-                chown_str += str(entry["uid"]) if entry["uid"] is not None else ""
-                chown_str += ":"
-                chown_str += str(entry["gid"]) if entry["gid"] is not None else ""
-                chown_str += f' "{container_path}"'
-                fix_cmds.append(chown_str)
+                owner = str(entry["uid"]) if entry["uid"] is not None else ""
+                group = str(entry["gid"]) if entry["gid"] is not None else ""
+                fix_cmds.append(f'chown -R {owner}:{group} "{container_path}"')
             if entry["perm"] is not None:
                 chmod_str = f'chmod {entry["perm"]} "{container_path}"'
                 fix_cmds.append(chmod_str)
@@ -96,19 +95,20 @@ def populate(
         ]
         services["init-fixperms"] = Service(
             container_name="init-fixperms",
-            image="alpine:3.19",
+            image=FIXPERMS_IMAGE,
             user="0:0",
             command=["sh", "-c", " && ".join(fix_cmds)],
             volumes=fixperms_vols,
             restart="no",
-            depends_on={},
         )
         affected_paths = {entry["container"] for entry in fixup_vols}
         for name, svc in services.items():
             if name == "init-fixperms":
                 continue
             if any(
-                isinstance(vol, str) and any(path in vol for path in affected_paths)
+                isinstance(vol, str)
+                and len(vol.split(":")) >= 2
+                and vol.split(":")[1] in affected_paths
                 for vol in getattr(svc, "volumes", [])
             ):
                 if svc.depends_on is None:
@@ -117,7 +117,7 @@ def populate(
                     condition="service_completed_successfully"
                 )
 
-    return DockerCompose(services=services, version="3.8")
+    return DockerCompose(services=services)
 
 
 def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
