@@ -105,25 +105,36 @@ def apply_chart(
     branch: str = None,
 ) -> None:
     """Install a chart from the rapyuta-charts repository.
+
     This command is based on the ``rio apply`` command. However,
     the manifests are pulled from rapyuta-charts repository on
     GitHub. A rapyuta chart is collection of manifest files with
     default values.
+
     You can provide value files with the ``--values`` option and
     sops encrypted secret files with ``--secret`` option.
+
     The ``--branch`` flag can be used to preview charts from a PR branch.
+
     The ``--workers`` flag can be used to specify the number of parallel
     workers while running the apply command. The default value is 6.
+
     The ``--dryrun`` flag can be used to test the installation process
     without actually installing the chart.
+
     Repository: https://github.com/rapyuta-robotics/rapyuta-charts
+
     Usage Examples:
+
      Apply a chart with values and secrets files
         $ rio chart apply ioconfig-syncer -v values.yaml -s secrets.yaml
+
      Preview a chart from a branch:
         $ rio chart apply ioconfig-syncer --branch my-feature
+
      Apply a chart with values and secrets files without confirmation
         $ rio chart apply ioconfig-syncer -v values.yaml -s secrets.yaml -f
+
      Re-create existing chart resources.
         $ rio chart apply -v values.yaml --delete-existing
     """

@@ -33,7 +33,7 @@ def list_charts(wide: bool = False, branch: str = None) -> None:
     repository = None
     if branch:
         repository = branch_repository_url(branch)
-    index = fetch_index(repository) if repository else fetch_index()
+    index = fetch_index(repository)
     if "entries" not in index:
         raise Exception("No entries found!")
     entries = []

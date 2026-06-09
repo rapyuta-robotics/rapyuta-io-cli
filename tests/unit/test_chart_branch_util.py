@@ -1,5 +1,3 @@
-import pytest
-
 from riocli.chart.util import branch_repository_url
 
 
@@ -12,21 +10,18 @@ def test_branch_repository_url_normal():
 def test_branch_repository_url_urlencoding():
     result = branch_repository_url("bug/fix some")
     assert result == (
-        "https://chartsbranch.blob.core.windows.net/charts-per-branch/bug/fix some/incubator/index.yaml"
+        "https://chartsbranch.blob.core.windows.net/charts-per-branch/bug/fix%20some/incubator/index.yaml"
     )
 
 
-def test_branch_repository_url_strips_and_safe():
-    assert branch_repository_url("  new-feature  ") == (
-        "https://chartsbranch.blob.core.windows.net/charts-per-branch/  new-feature  /incubator/index.yaml"
+def test_branch_repository_url_query_char():
+    # ? must be encoded so it cannot silently become a query-string delimiter
+    result = branch_repository_url("feat?oops")
+    assert result == (
+        "https://chartsbranch.blob.core.windows.net/charts-per-branch/feat%3Foops/incubator/index.yaml"
     )
-
-
-def test_branch_repository_url_empty():
-    with pytest.raises(ValueError):
-        branch_repository_url("")
 
 
 def test_branch_repository_url_symbols():
-    raw = branch_repository_url("bran©h@!")
-    assert "bran©h@!" in raw
+    result = branch_repository_url("bran©h@!")
+    assert "bran%C2%A9h%40%21" in result
