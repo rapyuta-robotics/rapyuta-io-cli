@@ -107,6 +107,21 @@ def _build_fixup_cmd(entry: dict) -> str:
     Uses a runtime [ -f ] check so file mounts (pre-existing host files) receive
     plain chown/chmod while directory mounts receive mkdir -p + recursive chown.
     The returned string is a single if/else/fi block safe to && -chain with others.
+
+    Docker bind-mount caveat: when the host path does not exist, Docker automatically
+    creates a *directory* there while setting up the init container's own bind mount —
+    even for file mounts.  This happens before the init container's shell command runs,
+    so the init container is responsible for correcting the path type.
+    The [ -f ] check handles two of the three possible states correctly:
+      - host path is a file     → true branch, chown/chmod applied directly ✓
+      - host path is a directory and intended to be one → false branch, mkdir -p
+                                  is a no-op ✓
+    The remaining gap is:
+      - host path is intended to be a file but the init container finds a directory
+        there (created automatically during bind-mount setup) → [ -f ] is false, so
+        the else branch runs mkdir -p (a no-op) and the wrong type persists.
+        The fix belongs here: detect [ -d path ] for file mounts, remove the
+        directory, and touch the file in its place.
     """
     path = shlex.quote(entry["container"])
     dir_cmds = [f"mkdir -p {path}"]

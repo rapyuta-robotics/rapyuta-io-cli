@@ -4,8 +4,6 @@ import os
 import stat
 import subprocess
 
-import pytest
-
 from riocli.compose.populate import _build_fixup_cmd
 
 
