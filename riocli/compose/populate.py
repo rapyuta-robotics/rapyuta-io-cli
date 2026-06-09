@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import shlex
 from typing import Any
 
@@ -71,35 +70,7 @@ def populate(
 
     fixup_vols = get_volumes_requiring_fixup(processed_deployments)
     if fixup_vols:
-        fix_cmds = []
-        for entry in fixup_vols:
-            container_path = entry["container"]
-            if _is_file_mount(container_path):
-                parent = os.path.dirname(container_path)
-                fix_cmds.append(f"mkdir -p {shlex.quote(parent)}")
-                fix_cmds.append(f"touch {shlex.quote(container_path)}")
-                if entry["uid"] is not None or entry["gid"] is not None:
-                    owner = str(entry["uid"]) if entry["uid"] is not None else ""
-                    group = str(entry["gid"]) if entry["gid"] is not None else ""
-                    fix_cmds.append(
-                        f"chown {owner}:{group} {shlex.quote(container_path)}"
-                    )
-                if entry["perm"] is not None:
-                    fix_cmds.append(
-                        f"chmod {entry['perm']} {shlex.quote(container_path)}"
-                    )
-            else:
-                fix_cmds.append(f"mkdir -p {shlex.quote(container_path)}")
-                if entry["uid"] is not None or entry["gid"] is not None:
-                    owner = str(entry["uid"]) if entry["uid"] is not None else ""
-                    group = str(entry["gid"]) if entry["gid"] is not None else ""
-                    fix_cmds.append(
-                        f"chown -R {owner}:{group} {shlex.quote(container_path)}"
-                    )
-                if entry["perm"] is not None:
-                    fix_cmds.append(
-                        f"chmod {entry['perm']} {shlex.quote(container_path)}"
-                    )
+        fix_cmds = [_build_fixup_cmd(entry) for entry in fixup_vols]
         fixperms_vols = [
             f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
         ]
@@ -128,6 +99,33 @@ def populate(
                 )
 
     return DockerCompose(services=services)
+
+
+def _build_fixup_cmd(entry: dict) -> str:
+    """Build a shell compound command that handles both file and directory mount paths.
+
+    Uses a runtime [ -f ] check so file mounts (pre-existing host files) receive
+    plain chown/chmod while directory mounts receive mkdir -p + recursive chown.
+    The returned string is a single if/else/fi block safe to && -chain with others.
+    """
+    path = shlex.quote(entry["container"])
+    dir_cmds = [f"mkdir -p {path}"]
+    file_cmds = []
+
+    if entry["uid"] is not None or entry["gid"] is not None:
+        owner = str(entry["uid"]) if entry["uid"] is not None else ""
+        group = str(entry["gid"]) if entry["gid"] is not None else ""
+        dir_cmds.append(f"chown -R {owner}:{group} {path}")
+        file_cmds.append(f"chown {owner}:{group} {path}")
+
+    if entry["perm"] is not None:
+        dir_cmds.append(f"chmod {entry['perm']} {path}")
+        file_cmds.append(f"chmod {entry['perm']} {path}")
+
+    dir_block = " && ".join(dir_cmds)
+    file_block = " && ".join(file_cmds) if file_cmds else ":"
+
+    return f"if [ -f {path} ]; then {file_block}; else {dir_block}; fi"
 
 
 def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
@@ -174,11 +172,6 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
                 }
             )
     return fixup
-
-
-def _is_file_mount(path: str) -> bool:
-    """Heuristic: treat the mount target as a file if it has a file extension."""
-    return bool(os.path.splitext(path)[1])
 
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:
