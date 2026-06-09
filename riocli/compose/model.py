@@ -40,6 +40,7 @@ class Service:
 
     container_name: str
     image: str
+    user: str | None = None
     pull_policy: str | None = DEFAULT_PULL_POLICY
     command: str | list[str] | None = None
     hostname: str | None = None
