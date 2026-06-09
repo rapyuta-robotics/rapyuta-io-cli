@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shlex
 from typing import Any
 
@@ -73,13 +74,32 @@ def populate(
         fix_cmds = []
         for entry in fixup_vols:
             container_path = entry["container"]
-            fix_cmds.append(f"mkdir -p {shlex.quote(container_path)}")
-            if entry["uid"] is not None or entry["gid"] is not None:
-                owner = str(entry["uid"]) if entry["uid"] is not None else ""
-                group = str(entry["gid"]) if entry["gid"] is not None else ""
-                fix_cmds.append(f"chown -R {owner}:{group} {shlex.quote(container_path)}")
-            if entry["perm"] is not None:
-                fix_cmds.append(f"chmod {entry['perm']} {shlex.quote(container_path)}")
+            if _is_file_mount(container_path):
+                parent = os.path.dirname(container_path)
+                fix_cmds.append(f"mkdir -p {shlex.quote(parent)}")
+                fix_cmds.append(f"touch {shlex.quote(container_path)}")
+                if entry["uid"] is not None or entry["gid"] is not None:
+                    owner = str(entry["uid"]) if entry["uid"] is not None else ""
+                    group = str(entry["gid"]) if entry["gid"] is not None else ""
+                    fix_cmds.append(
+                        f"chown {owner}:{group} {shlex.quote(container_path)}"
+                    )
+                if entry["perm"] is not None:
+                    fix_cmds.append(
+                        f"chmod {entry['perm']} {shlex.quote(container_path)}"
+                    )
+            else:
+                fix_cmds.append(f"mkdir -p {shlex.quote(container_path)}")
+                if entry["uid"] is not None or entry["gid"] is not None:
+                    owner = str(entry["uid"]) if entry["uid"] is not None else ""
+                    group = str(entry["gid"]) if entry["gid"] is not None else ""
+                    fix_cmds.append(
+                        f"chown -R {owner}:{group} {shlex.quote(container_path)}"
+                    )
+                if entry["perm"] is not None:
+                    fix_cmds.append(
+                        f"chmod {entry['perm']} {shlex.quote(container_path)}"
+                    )
         fixperms_vols = [
             f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
         ]
@@ -154,6 +174,11 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
                 }
             )
     return fixup
+
+
+def _is_file_mount(path: str) -> bool:
+    """Heuristic: treat the mount target as a file if it has a file extension."""
+    return bool(os.path.splitext(path)[1])
 
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:
