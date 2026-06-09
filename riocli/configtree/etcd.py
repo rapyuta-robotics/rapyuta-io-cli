@@ -46,9 +46,6 @@ def import_in_etcd(
         key = f"{prefix}/{key}"
 
         enc_key = b64encode(str(key).encode("utf-8")).decode()
-        # Serialize non-string values to JSON instead of str(): Python's
-        # repr of dicts and lists uses single quotes, which is not valid
-        # JSON and breaks consumers parsing the values back.
         enc_val = b64encode(serialize_value(val).encode("utf-8")).decode()
         compares.append(
             {

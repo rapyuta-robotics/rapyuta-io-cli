@@ -73,3 +73,4 @@ class TestSerializeValue:
         result = serialize_value({"site": "台場"})
 
         assert "台場" in result
+        assert json.loads(result) == {"site": "台場"}
