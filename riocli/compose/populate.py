@@ -73,11 +73,11 @@ def populate(
         fix_cmds = []
         for entry in fixup_vols:
             container_path = entry["container"]
-            fix_cmds.append(f'mkdir -p {shlex.quote(container_path)}')
+            fix_cmds.append(f"mkdir -p {shlex.quote(container_path)}")
             if entry["uid"] is not None or entry["gid"] is not None:
                 owner = str(entry["uid"]) if entry["uid"] is not None else ""
                 group = str(entry["gid"]) if entry["gid"] is not None else ""
-                fix_cmds.append(f'chown -R {owner}:{group} {shlex.quote(container_path)}')
+                fix_cmds.append(f"chown -R {owner}:{group} {shlex.quote(container_path)}")
             if entry["perm"] is not None:
                 fix_cmds.append(f'chmod {entry["perm"]} {shlex.quote(container_path)}')
         fixperms_vols = [
