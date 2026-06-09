@@ -18,7 +18,7 @@ VOLUME_PERMISSIONS = {
     777: "rw",
 }
 
-FIXPERMS_IMAGE = "alpine:3.19"
+FIXPERMS_IMAGE = "alpine:latest"
 
 ROS_MASTER_URI = "http://127.0.0.1:1234"
 
