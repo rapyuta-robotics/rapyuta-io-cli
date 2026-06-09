@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import shlex
 from typing import Any
 
@@ -44,9 +43,10 @@ def populate(
     """
     spinner = kwargs.get("spinner")
     services: dict[str, Service] = {}
+    processed_deployments: dict[str, dict] = {}
 
     # Process deployments and create services
-    for deployment in deployments.values():
+    for key, deployment in deployments.items():
         try:
             _process_deployment_services(
                 ctx=ctx,
@@ -55,6 +55,7 @@ def populate(
                 packages=packages,
                 services=services,
             )
+            processed_deployments[key] = deployment
         except (KeyError, ValueError) as e:
             # Log error but continue processing other deployments
             spinner.text = click.style(
@@ -67,29 +68,18 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
-    fixup_vols = get_volumes_requiring_fixup(deployments)
+    fixup_vols = get_volumes_requiring_fixup(processed_deployments)
     if fixup_vols:
         fix_cmds = []
         for entry in fixup_vols:
             container_path = entry["container"]
-            basename = os.path.basename(container_path)
-            if container_path.endswith("/"):
-                is_probably_file = False
-            elif "." in basename and not basename.startswith("."):
-                is_probably_file = True
-            else:
-                is_probably_file = False
-            if is_probably_file:
-                fix_cmds.append(f'touch "{container_path}"')
-            else:
-                fix_cmds.append(f'mkdir -p "{container_path}"')
+            fix_cmds.append(f'mkdir -p {shlex.quote(container_path)}')
             if entry["uid"] is not None or entry["gid"] is not None:
                 owner = str(entry["uid"]) if entry["uid"] is not None else ""
                 group = str(entry["gid"]) if entry["gid"] is not None else ""
-                fix_cmds.append(f'chown -R {owner}:{group} "{container_path}"')
+                fix_cmds.append(f'chown -R {owner}:{group} {shlex.quote(container_path)}')
             if entry["perm"] is not None:
-                chmod_str = f'chmod {entry["perm"]} "{container_path}"'
-                fix_cmds.append(chmod_str)
+                fix_cmds.append(f'chmod {entry["perm"]} {shlex.quote(container_path)}')
         fixperms_vols = [
             f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
         ]
@@ -129,16 +119,36 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
                 continue
             host = volume.get("subPath")
             container = volume.get("mountPath")
-            if host and container:
-                fixup.append(
-                    {
-                        "host": host,
-                        "container": container,
-                        "uid": uid,
-                        "gid": gid,
-                        "perm": perm,
-                    }
-                )
+            if not host or not container:
+                continue
+
+            if not container.startswith("/"):
+                raise ValueError(f"mountPath must be an absolute path, got: {container!r}")
+
+            if uid is not None:
+                uid = int(uid)
+                if uid < 0:
+                    raise ValueError(f"uid must be a non-negative integer, got: {uid}")
+
+            if gid is not None:
+                gid = int(gid)
+                if gid < 0:
+                    raise ValueError(f"gid must be a non-negative integer, got: {gid}")
+
+            if perm is not None:
+                perm = int(perm)
+                if not (0 <= perm <= 7777):
+                    raise ValueError(f"perm must be a valid octal permission value (0–7777), got: {perm}")
+
+            fixup.append(
+                {
+                    "host": host,
+                    "container": container,
+                    "uid": uid,
+                    "gid": gid,
+                    "perm": perm,
+                }
+            )
     return fixup
 
 
