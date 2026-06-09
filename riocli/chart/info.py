@@ -15,7 +15,7 @@
 import click
 from click_help_colors import HelpColorsCommand
 
-from riocli.chart.util import find_chart
+from riocli.chart.util import branch_repository_url, find_chart
 from riocli.constants import Colors
 from riocli.utils import dump_all_yaml
 
@@ -28,7 +28,11 @@ from riocli.utils import dump_all_yaml
     help="Describe the available chart with versions",
 )
 @click.argument("chart", type=str)
-def info_chart(chart: str) -> None:
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
+def info_chart(chart: str, branch: str = None) -> None:
     """Print a chart's details."""
-    versions = find_chart(chart)
+    repository = None
+    if branch:
+        repository = branch_repository_url(branch)
+    versions = find_chart(chart, repository)
     dump_all_yaml(versions)

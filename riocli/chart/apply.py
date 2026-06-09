@@ -18,7 +18,7 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.chart.chart import Chart
-from riocli.chart.util import find_chart
+from riocli.chart.util import branch_repository_url, find_chart
 from riocli.constants import Colors
 
 
@@ -91,6 +91,7 @@ from riocli.constants import Colors
     help="Interval between retries defaults to 6",
 )
 @click.argument("chart", type=str)
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
 def apply_chart(
     chart: str,
     values: Iterable[str],
@@ -101,6 +102,7 @@ def apply_chart(
     dryrun: bool = False,
     workers: int = 6,
     silent: bool = False,
+    branch: str = None,
 ) -> None:
     """Install a chart from the rapyuta-charts repository.
 
@@ -111,6 +113,8 @@ def apply_chart(
 
     You can provide value files with the ``--values`` option and
     sops encrypted secret files with ``--secret`` option.
+
+    The ``--branch`` flag can be used to preview charts from a PR branch.
 
     The ``--workers`` flag can be used to specify the number of parallel
     workers while running the apply command. The default value is 6.
@@ -123,18 +127,21 @@ def apply_chart(
     Usage Examples:
 
      Apply a chart with values and secrets files
-
         $ rio chart apply ioconfig-syncer -v values.yaml -s secrets.yaml
 
-     Apply a chart with values and secrets files without confirmation
+     Preview a chart from a branch:
+        $ rio chart apply ioconfig-syncer --branch my-feature
 
+     Apply a chart with values and secrets files without confirmation
         $ rio chart apply ioconfig-syncer -v values.yaml -s secrets.yaml -f
 
      Re-create existing chart resources.
-
         $ rio chart apply -v values.yaml --delete-existing
     """
-    versions = find_chart(chart)
+    repository = None
+    if branch:
+        repository = branch_repository_url(branch)
+    versions = find_chart(chart, repository)
     if len(versions) > 1:
         click.secho(
             "More than one charts are available, please specify the version!",
