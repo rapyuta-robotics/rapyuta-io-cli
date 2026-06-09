@@ -79,7 +79,7 @@ def populate(
                 group = str(entry["gid"]) if entry["gid"] is not None else ""
                 fix_cmds.append(f"chown -R {owner}:{group} {shlex.quote(container_path)}")
             if entry["perm"] is not None:
-                fix_cmds.append(f'chmod {entry["perm"]} {shlex.quote(container_path)}')
+                fix_cmds.append(f"chmod {entry['perm']} {shlex.quote(container_path)}")
         fixperms_vols = [
             f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
         ]
@@ -123,7 +123,9 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
                 continue
 
             if not container.startswith("/"):
-                raise ValueError(f"mountPath must be an absolute path, got: {container!r}")
+                raise ValueError(
+                    f"mountPath must be an absolute path, got: {container!r}"
+                )
 
             if uid is not None:
                 uid = int(uid)
@@ -138,7 +140,9 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
             if perm is not None:
                 perm = int(perm)
                 if not (0 <= perm <= 7777):
-                    raise ValueError(f"perm must be a valid octal permission value (0–7777), got: {perm}")
+                    raise ValueError(
+                        f"perm must be a valid octal permission value (0–7777), got: {perm}"
+                    )
 
             fixup.append(
                 {
