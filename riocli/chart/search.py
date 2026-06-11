@@ -16,7 +16,7 @@ import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
 
-from riocli.chart.util import find_chart, print_chart_entries
+from riocli.chart.util import branch_repository_url, find_chart, print_chart_entries
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
@@ -30,11 +30,17 @@ from riocli.utils.spinner import with_spinner
 )
 @click.option("-w", "--wide", is_flag=True, default=False, help="Print more details")
 @click.argument("chart", type=str)
+@click.option("--branch", help="Preview charts from a branch (pr preview)")
 @with_spinner(text="Searching for chart...")
-def search_chart(chart: str, wide: bool = False, spinner: Yaspin = None) -> None:
+def search_chart(
+    chart: str, wide: bool = False, branch: str = None, spinner: Yaspin = None
+) -> None:
     """Search for a chart in the chart repo."""
+    repository = None
+    if branch:
+        repository = branch_repository_url(branch)
     try:
-        versions = find_chart(chart)
+        versions = find_chart(chart, repository)
         with spinner.hidden():
             print_chart_entries(versions, wide=wide)
     except Exception as e:

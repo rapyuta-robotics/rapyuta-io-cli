@@ -18,6 +18,8 @@ VOLUME_PERMISSIONS = {
     777: "rw",
 }
 
+FIXPERMS_IMAGE = "alpine:latest"
+
 ROS_MASTER_URI = "http://127.0.0.1:1234"
 
 
@@ -41,9 +43,10 @@ def populate(
     """
     spinner = kwargs.get("spinner")
     services: dict[str, Service] = {}
+    processed_deployments: dict[str, dict] = {}
 
     # Process deployments and create services
-    for deployment in deployments.values():
+    for key, deployment in deployments.items():
         try:
             _process_deployment_services(
                 ctx=ctx,
@@ -52,6 +55,7 @@ def populate(
                 packages=packages,
                 services=services,
             )
+            processed_deployments[key] = deployment
         except (KeyError, ValueError) as e:
             # Log error but continue processing other deployments
             spinner.text = click.style(
@@ -64,7 +68,125 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
+    fixup_vols = get_volumes_requiring_fixup(processed_deployments)
+    if fixup_vols:
+        fix_cmds = [_build_fixup_cmd(entry) for entry in fixup_vols]
+        fixperms_vols = [
+            f"{entry['host']}:{entry['container']}:rw" for entry in fixup_vols
+        ]
+        services["init-fixperms"] = Service(
+            container_name="init-fixperms",
+            image=FIXPERMS_IMAGE,
+            user="0:0",
+            command=["sh", "-c", " && ".join(fix_cmds)],
+            volumes=fixperms_vols,
+            restart="no",
+        )
+        affected_paths = {entry["container"] for entry in fixup_vols}
+        for name, svc in services.items():
+            if name == "init-fixperms":
+                continue
+            if any(
+                isinstance(vol, str)
+                and len(vol.split(":")) >= 2
+                and vol.split(":")[1] in affected_paths
+                for vol in getattr(svc, "volumes", [])
+            ):
+                if svc.depends_on is None:
+                    svc.depends_on = {}
+                svc.depends_on["init-fixperms"] = DependsCondition(
+                    condition="service_completed_successfully"
+                )
+
     return DockerCompose(services=services)
+
+
+def _build_fixup_cmd(entry: dict) -> str:
+    """Build a shell compound command that handles both file and directory mount paths.
+
+    Uses a runtime [ -f ] check so file mounts (pre-existing host files) receive
+    plain chown/chmod while directory mounts receive mkdir -p + recursive chown.
+    The returned string is a single if/else/fi block safe to && -chain with others.
+
+    Docker bind-mount caveat: when the host path does not exist, Docker automatically
+    creates a *directory* there while setting up the init container's own bind mount —
+    even for file mounts.  This happens before the init container's shell command runs,
+    so the init container is responsible for correcting the path type.
+    The [ -f ] check handles two of the three possible states correctly:
+      - host path is a file     → true branch, chown/chmod applied directly ✓
+      - host path is a directory and intended to be one → false branch, mkdir -p
+                                  is a no-op ✓
+    The remaining gap is:
+      - host path is intended to be a file but the init container finds a directory
+        there (created automatically during bind-mount setup) → [ -f ] is false, so
+        the else branch runs mkdir -p (a no-op) and the wrong type persists.
+        The fix belongs here: detect [ -d path ] for file mounts, remove the
+        directory, and touch the file in its place.
+    """
+    path = shlex.quote(entry["container"])
+    dir_cmds = [f"mkdir -p {path}"]
+    file_cmds = []
+
+    if entry["uid"] is not None or entry["gid"] is not None:
+        owner = str(entry["uid"]) if entry["uid"] is not None else ""
+        group = str(entry["gid"]) if entry["gid"] is not None else ""
+        dir_cmds.append(f"chown -R {owner}:{group} {path}")
+        file_cmds.append(f"chown {owner}:{group} {path}")
+
+    if entry["perm"] is not None:
+        dir_cmds.append(f"chmod {entry['perm']} {path}")
+        file_cmds.append(f"chmod {entry['perm']} {path}")
+
+    dir_block = " && ".join(dir_cmds)
+    file_block = " && ".join(file_cmds) if file_cmds else ":"
+
+    return f"if [ -f {path} ]; then {file_block}; else {dir_block}; fi"
+
+
+def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
+    fixup = []
+    for dep in deployments.values():
+        for volume in dep.spec.get("volumes", []):
+            uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
+            if uid is None and gid is None and perm is None:
+                continue
+            host = volume.get("subPath")
+            container = volume.get("mountPath")
+            if not host or not container:
+                continue
+
+            if not container.startswith("/"):
+                raise ValueError(
+                    f"mountPath must be an absolute path, got: {container!r}"
+                )
+
+            if uid is not None:
+                uid = int(uid)
+                if uid < 0:
+                    raise ValueError(f"uid must be a non-negative integer, got: {uid}")
+
+            if gid is not None:
+                gid = int(gid)
+                if gid < 0:
+                    raise ValueError(f"gid must be a non-negative integer, got: {gid}")
+
+            if perm is not None:
+                perm = int(perm)
+                if not (0 <= perm <= 7777):
+                    raise ValueError(
+                        f"perm must be a valid octal permission value (0–7777), got: {perm}"
+                    )
+
+            fixup.append(
+                {
+                    "host": host,
+                    "container": container,
+                    "uid": uid,
+                    "gid": gid,
+                    "perm": perm,
+                }
+            )
+    return fixup
 
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:

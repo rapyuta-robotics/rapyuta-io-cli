@@ -13,10 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 
-import json
 import os
 from base64 import b64encode
-from datetime import date, datetime
 from hashlib import md5
 from typing import TYPE_CHECKING, Any
 
@@ -32,6 +30,7 @@ from riocli.configtree.util import (
     display_config_tree_keys,
     get_revision_from_state,
     save_revision,
+    serialize_value,
 )
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
@@ -111,18 +110,8 @@ class Revision:
         perms: int = 644,
         metadata: dict | None = None,
     ) -> None:
-        # Fix: Ensure non-string values are serialized to JSON
-        if not isinstance(value, str):
-            value = json.dumps(
-                value,
-                ensure_ascii=False,
-                default=lambda o: (
-                    o.isoformat()
-                    if isinstance(o, (datetime, date))  # noqa: UP038
-                    else str(o)
-                ),
-            )
-        str_val = str(value)
+        # Ensure non-string values are serialized to JSON.
+        str_val = serialize_value(value)
         enc_val = str_val.encode("utf-8")
 
         data = {

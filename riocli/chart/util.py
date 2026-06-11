@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 import requests
 from yaml import safe_load
 
@@ -6,13 +8,19 @@ from riocli.utils import tabulate_data
 DEFAULT_REPOSITORY = (
     "https://rapyuta-robotics.github.io/rapyuta-charts/incubator/index.yaml"  # noqa
 )
+# Azure Blob Storage s3bucket where helm charts are populated by rapyuta-charts CI on PR open/update.
+BRANCH_REPO_BASE = "https://chartsbranch.blob.core.windows.net/charts-per-branch"
 
 
-def find_chart(chart: str) -> list:
+def branch_repository_url(branch: str) -> str:
+    return f"{BRANCH_REPO_BASE}/{quote(branch, safe='/')}/incubator/index.yaml"
+
+
+def find_chart(chart: str, repository: str = None) -> list:
     """Finds a chart in the upstream index."""
     chart, ver = parse_chart(chart)
 
-    index = fetch_index()
+    index = fetch_index(repository)
     if "entries" not in index:
         raise Exception("No entries found!")
 
@@ -26,9 +34,9 @@ def find_chart(chart: str) -> list:
     return versions
 
 
-def fetch_index(repository=DEFAULT_REPOSITORY) -> dict:
+def fetch_index(repository: str = None) -> dict:
     """Fetches the upstream chart index."""
-    response = requests.get(repository)
+    response = requests.get(repository or DEFAULT_REPOSITORY)
     if not response.ok:
         raise Exception(f"Fetching index failed: {repository}")
 
