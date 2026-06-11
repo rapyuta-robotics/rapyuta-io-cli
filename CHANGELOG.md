@@ -1,3 +1,16 @@
+# [10.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.5.0...v10.6.0) (2026-06-11)
+
+
+### Bug Fixes
+
+* **compose:** handle volume permissions ([b1979be](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/b1979beee8ab1de4f1d2dc02276d5d272233efd9))
+* **configtree:** serialize values as JSON in etcd import path ([#539](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/539)) ([c6dffd2](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/c6dffd2806db225837127621918320106502d2c8))
+
+
+### Features
+
+* support branch in rio charts to test before merging to devel ([#532](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/532)) ([5158a8f](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/5158a8fa40894a40bcd16c55688908551b274a65))
+
 # [10.5.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.4.0...v10.5.0) (2026-06-03)
 
 
