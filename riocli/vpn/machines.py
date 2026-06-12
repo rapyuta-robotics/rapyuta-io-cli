@@ -15,6 +15,7 @@ from collections.abc import Iterable
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import walk_pages
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
@@ -54,7 +55,13 @@ def list_machines() -> None:
 
     try:
         client = new_v2_client()
-        machines = client.list_instance_bindings("rio-internal-headscale", labels=labels)
+        machines = []
+        for page in walk_pages(
+            client.list_instance_bindings,
+            "rio-internal-headscale",
+            label_selector=[labels],
+        ):
+            machines.extend(page)
         display_machines(machines=machines)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
