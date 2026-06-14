@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from hashlib import sha256
+from unittest.mock import MagicMock
+
 import pytest
 
 from riocli.utils import appimage
@@ -66,19 +69,17 @@ def test_update_available_release_older_is_false():
 def test_update_available_devel_differs():
     # devel builds differ only by +build metadata, which semver ignores;
     # any difference in the full version string means a newer commit.
-    assert appimage.update_available(
-        "devel", "10.6.0-devel+bbb2222", "10.6.0-devel+aaa1111"
-    ) is True
+    assert (
+        appimage.update_available("devel", "10.6.0-devel+bbb2222", "10.6.0-devel+aaa1111")
+        is True
+    )
 
 
 def test_update_available_devel_same():
-    assert appimage.update_available(
-        "devel", "10.6.0-devel+aaa1111", "10.6.0-devel+aaa1111"
-    ) is False
-
-
-from hashlib import sha256
-from unittest.mock import MagicMock
+    assert (
+        appimage.update_available("devel", "10.6.0-devel+aaa1111", "10.6.0-devel+aaa1111")
+        is False
+    )
 
 
 def _fake_response(content=b"", json_data=None):
