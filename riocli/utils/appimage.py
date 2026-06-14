@@ -72,3 +72,40 @@ def update_available(channel: str, remote_version: str, current_version: str) ->
     if channel == CHANNEL_DEVEL:
         return remote_version != current_version
     return semver.Version.parse(remote_version).compare(current_version) > 0
+
+
+def fetch_manifest(channel: str) -> dict:
+    """Fetch and parse the channel's latest.json (anonymous GET)."""
+    resp = requests.get(manifest_url(channel))
+    resp.raise_for_status()
+    return resp.json()
+
+
+def download_and_replace(channel: str, manifest: dict, target: str | None = None) -> None:
+    """Download the AppImage named in the manifest, verify its sha256,
+    then atomically replace ``target`` (defaults to the running executable).
+    """
+    if target is None:
+        target = sys.executable
+
+    resp = requests.get(appimage_url(channel, manifest["file"]))
+    resp.raise_for_status()
+    content = resp.content
+
+    expected = manifest.get("sha256")
+    if expected and sha256(content).hexdigest() != expected:
+        raise Exception("Checksum mismatch for the downloaded AppImage")
+
+    with TemporaryDirectory() as tmp:
+        save_to = Path(tmp) / "rio"
+        save_to.write_bytes(content)
+        os.chmod(save_to, 0o755)
+        try:
+            os.remove(target)
+            move(save_to, target)
+        except OSError as e:
+            click.secho(
+                f"{Symbols.WARNING} Please consider running as a root user.",
+                fg=Colors.YELLOW,
+            )
+            raise e

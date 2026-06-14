@@ -75,3 +75,50 @@ def test_update_available_devel_same():
     assert appimage.update_available(
         "devel", "10.6.0-devel+aaa1111", "10.6.0-devel+aaa1111"
     ) is False
+
+
+from hashlib import sha256
+from unittest.mock import MagicMock
+
+
+def _fake_response(content=b"", json_data=None):
+    resp = MagicMock()
+    resp.content = content
+    resp.raise_for_status = MagicMock()
+    if json_data is not None:
+        resp.json = MagicMock(return_value=json_data)
+    return resp
+
+
+def test_fetch_manifest(monkeypatch):
+    manifest = {"version": "10.6.0-devel+abc", "file": "rio.AppImage", "sha256": "x"}
+    monkeypatch.setattr(
+        appimage.requests, "get", lambda url, **kw: _fake_response(json_data=manifest)
+    )
+    assert appimage.fetch_manifest("devel") == manifest
+
+
+def test_download_and_replace_writes_target(monkeypatch, tmp_path):
+    payload = b"APPIMAGE-BYTES"
+    digest = sha256(payload).hexdigest()
+    manifest = {"version": "10.6.0", "file": "rio.AppImage", "sha256": digest}
+    monkeypatch.setattr(
+        appimage.requests, "get", lambda url, **kw: _fake_response(content=payload)
+    )
+    target = tmp_path / "rio"
+    target.write_bytes(b"OLD")
+    appimage.download_and_replace("release", manifest, target=str(target))
+    assert target.read_bytes() == payload
+
+
+def test_download_and_replace_checksum_mismatch(monkeypatch, tmp_path):
+    manifest = {"version": "10.6.0", "file": "rio.AppImage", "sha256": "deadbeef"}
+    monkeypatch.setattr(
+        appimage.requests, "get", lambda url, **kw: _fake_response(content=b"bytes")
+    )
+    target = tmp_path / "rio"
+    target.write_bytes(b"OLD")
+    with pytest.raises(Exception, match="[Cc]hecksum"):
+        appimage.download_and_replace("release", manifest, target=str(target))
+    # original must be untouched on mismatch
+    assert target.read_bytes() == b"OLD"
