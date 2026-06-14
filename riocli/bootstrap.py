@@ -53,7 +53,6 @@ from riocli.utils import (
     AliasedGroup,
     appimage,
     check_for_updates,
-    is_pip_installation,
     pip_install_cli,
 )
 from riocli.vpn import vpn
@@ -127,7 +126,13 @@ def update(silent: bool) -> None:
     You can skip the confirmation prompt by using the --silent or
     --force or -f flag.
     """
-    if is_pip_installation():
+    # The AppImage runtime sets the APPIMAGE env var to the .AppImage path.
+    # Absent it, this is a pip install. (sys.executable is unreliable here:
+    # the AppImage's bundled interpreter path also contains "python", so the
+    # old "python" in sys.executable heuristic mis-classifies AppImages.)
+    appimage_path = os.environ.get("APPIMAGE")
+
+    if not appimage_path:
         available, latest = check_for_updates(__version__)
         if not available:
             click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
@@ -143,7 +148,9 @@ def update(silent: bool) -> None:
         click.secho(f"{Symbols.SUCCESS} Update successful!", fg=Colors.GREEN)
         return
 
-    # AppImage installation: update from our Azure Blob channel.
+    # AppImage installation: update from our Azure Blob channel, replacing the
+    # AppImage file itself (target=APPIMAGE, not sys.executable — that is the
+    # bundled interpreter inside the mounted AppImage).
     channel = appimage.channel_for_version(__version__)
     if channel is None:
         click.secho(
@@ -169,7 +176,7 @@ def update(silent: bool) -> None:
         _ = click.confirm("Do you want to update?", abort=True, default=False)
 
     try:
-        appimage.download_and_replace(channel, manifest)
+        appimage.download_and_replace(channel, manifest, target=appimage_path)
     except Exception as e:
         click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
         raise SystemExit(1) from e

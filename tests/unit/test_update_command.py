@@ -19,8 +19,10 @@ from click.testing import CliRunner
 from riocli.bootstrap import cli
 
 
-def test_update_devel_appimage_uses_blob():
-    """A devel AppImage runs the blob path, not the GitHub path."""
+def test_update_devel_appimage_uses_blob(monkeypatch):
+    """A devel AppImage (APPIMAGE env set) updates from the blob, replacing
+    the AppImage file (not sys.executable)."""
+    monkeypatch.setenv("APPIMAGE", "/opt/rio.AppImage")
     manifest = {
         "version": "10.9.9+devel.newsha",
         "file": "rio-10.9.9-x86_64.AppImage",
@@ -28,21 +30,20 @@ def test_update_devel_appimage_uses_blob():
     }
     with (
         patch("riocli.bootstrap.__version__", "10.6.0+devel.oldsha"),
-        patch("riocli.bootstrap.is_pip_installation", return_value=False),
         patch("riocli.bootstrap.appimage.fetch_manifest", return_value=manifest) as fm,
         patch("riocli.bootstrap.appimage.download_and_replace") as dr,
     ):
         result = CliRunner().invoke(cli, ["update", "--silent"])
     assert result.exit_code == 0
     fm.assert_called_once_with("devel")
-    dr.assert_called_once_with("devel", manifest)
+    dr.assert_called_once_with("devel", manifest, target="/opt/rio.AppImage")
 
 
-def test_update_appimage_already_latest():
+def test_update_appimage_already_latest(monkeypatch):
+    monkeypatch.setenv("APPIMAGE", "/opt/rio.AppImage")
     manifest = {"version": "10.6.0", "file": "rio-10.6.0-x86_64.AppImage", "sha256": "x"}
     with (
         patch("riocli.bootstrap.__version__", "10.6.0"),
-        patch("riocli.bootstrap.is_pip_installation", return_value=False),
         patch("riocli.bootstrap.appimage.fetch_manifest", return_value=manifest),
         patch("riocli.bootstrap.appimage.download_and_replace") as dr,
     ):
@@ -52,14 +53,30 @@ def test_update_appimage_already_latest():
     dr.assert_not_called()
 
 
-def test_update_dev_build_is_not_updatable():
-    """A feature-branch (dev.*) build refuses to auto-update."""
+def test_update_dev_build_is_not_updatable(monkeypatch):
+    """A feature-branch (dev.*) AppImage build refuses to auto-update."""
+    monkeypatch.setenv("APPIMAGE", "/opt/rio.AppImage")
     with (
         patch("riocli.bootstrap.__version__", "10.6.0+dev.feature-x.sha"),
-        patch("riocli.bootstrap.is_pip_installation", return_value=False),
         patch("riocli.bootstrap.appimage.fetch_manifest") as fm,
     ):
         result = CliRunner().invoke(cli, ["update", "--silent"])
     assert result.exit_code == 0
     assert "development build" in result.output.lower()
+    fm.assert_not_called()
+
+
+def test_update_pip_install_uses_pypi(monkeypatch):
+    """Without APPIMAGE env it is a pip install: uses PyPI, never the blob."""
+    monkeypatch.delenv("APPIMAGE", raising=False)
+    with (
+        patch("riocli.bootstrap.__version__", "10.6.0"),
+        patch("riocli.bootstrap.check_for_updates", return_value=(True, "10.7.0")) as cfu,
+        patch("riocli.bootstrap.pip_install_cli") as pip,
+        patch("riocli.bootstrap.appimage.fetch_manifest") as fm,
+    ):
+        result = CliRunner().invoke(cli, ["update", "--silent"])
+    assert result.exit_code == 0
+    cfu.assert_called_once()
+    pip.assert_called_once()
     fm.assert_not_called()

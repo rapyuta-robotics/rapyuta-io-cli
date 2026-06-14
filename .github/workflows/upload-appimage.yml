@@ -26,14 +26,6 @@ jobs:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
           AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
 
-      - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appimages
-          path: ${{ github.workspace }}/scripts/rio*.AppImage
-          if-no-files-found: error
-          retention-days: 15
-
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
@@ -42,8 +34,12 @@ jobs:
       - name: Comment blob link on PR
         if: github.event_name == 'pull_request'
         run: |
-          BRANCH="${{ github.head_ref }}"
           ACCOUNT="${{ secrets.AZURE_STORAGE_ACCOUNT }}"
+          if [ -z "$ACCOUNT" ]; then
+            echo "No Azure account secret (fork PR?) — skipping blob comment"
+            exit 0
+          fi
+          BRANCH="${{ github.head_ref }}"
           FILE=$(ls scripts/rio*.AppImage | xargs -n1 basename | head -n1)
           URL="https://${ACCOUNT}.blob.core.windows.net/dev/${BRANCH}/${FILE}"
           gh pr comment "$PR_NUMBER" --edit-last -b "**🤖 PR AppImage:** [$FILE]($URL)" \

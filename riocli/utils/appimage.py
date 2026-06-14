@@ -109,21 +109,26 @@ def download_and_replace(channel: str, manifest: dict, target: str | None = None
         raise Exception("Checksum mismatch for the downloaded AppImage")
 
     target_path = Path(target)
-    fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
+    tmp_path = None
     try:
+        # Create the temp file in the target's own directory so os.replace is
+        # an atomic same-filesystem rename. mkstemp is inside the try so a
+        # permission error here still surfaces the root-user hint below.
+        fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
         # os.fdopen takes ownership of fd; f.write loops until all bytes are
         # written (os.write may short-write on a multi-MB binary).
         with os.fdopen(fd, "wb") as f:
             f.write(content)
         os.chmod(tmp_path, 0o755)
         os.replace(tmp_path, target)
-    except OSError as e:
-        try:
-            os.unlink(tmp_path)
-        except FileNotFoundError:
-            pass
+    except OSError:
+        if tmp_path is not None:
+            try:
+                os.unlink(tmp_path)
+            except FileNotFoundError:
+                pass
         click.secho(
             f"{Symbols.WARNING} Please consider running as a root user.",
             fg=Colors.YELLOW,
         )
-        raise e
+        raise
