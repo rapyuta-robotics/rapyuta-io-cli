@@ -27,6 +27,7 @@ export PATH="$PWD:$PATH"
 # builds are versioned upstream by bump-version.sh and are left as-is.
 # cwd = repo root here, so riocli/bootstrap.py has no leading ../
 CHANNEL="${CHANNEL:-dev}"
+RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
 if [[ "$CHANNEL" != "release" ]]; then
   BASE_VERSION=$(grep -m1 '^__version__' riocli/bootstrap.py | sed -E 's/.*"([^"]+)".*/\1/')
   SHORT_SHA=$(git rev-parse --short "${GITHUB_SHA:-HEAD}")
@@ -34,7 +35,6 @@ if [[ "$CHANNEL" != "release" ]]; then
     STAMP="${BASE_VERSION}-devel+${SHORT_SHA}"
   else
     # dev / PR build: include a semver-safe branch identifier
-    RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
     SAFE_BRANCH=$(echo "$RAW_BRANCH" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
     STAMP="${BASE_VERSION}-dev.${SAFE_BRANCH}+${SHORT_SHA}"
   fi
@@ -101,19 +101,21 @@ fi
 # Building AppImage
 ./appimagetool-x86_64.AppImage -n squashfs-root/
 
+APPIMAGE_FILE=$(find . -maxdepth 1 -name 'rio*.AppImage' | head -n1 | sed 's|^\./||')
+[[ -n "$APPIMAGE_FILE" ]] || { echo "ERROR: no rio*.AppImage found in scripts/"; exit 1; }
+
 # Upload the built AppImage to the channel's Azure Blob container.
 # Download stays anonymous (public-read); upload authenticates with a
 # write-scoped SAS token. Required env: CHANNEL, AZURE_STORAGE_ACCOUNT,
-# AZURE_SAS_TOKEN. dev/PR builds land under dev/<branch>/ and carry no
-# manifest (not an update channel).
-# cwd = scripts/ here, so riocli/bootstrap.py is at ../riocli/bootstrap.py
-APPIMAGE_FILE=$(find . -maxdepth 1 -name 'rio*.AppImage' | head -n1 | sed 's|^\./||')
-
+# AZURE_SAS_TOKEN.
+# dev builds  -> dev/<branch>/<file>, no manifest (not an update channel)
+# devel/release builds -> <channel>/<file> + latest.json manifest
 if [[ -n "${AZURE_STORAGE_ACCOUNT:-}" && -n "${AZURE_SAS_TOKEN:-}" ]]; then
+  # silence trace: SAS token is in the URL
+  set +x
   if [[ "$CHANNEL" == "dev" ]]; then
-    RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
     DEST="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/dev/${RAW_BRANCH}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}"
-    azcopy copy "${APPIMAGE_FILE}" "${DEST}"
+    azcopy copy "${APPIMAGE_FILE}" "${DEST}" --overwrite=true
   else
     SHA256=$(sha256sum "${APPIMAGE_FILE}" | cut -d' ' -f1)
     VERSION=$(grep -m1 '^__version__' ../riocli/bootstrap.py | sed -E 's/.*"([^"]+)".*/\1/')
@@ -121,9 +123,10 @@ if [[ -n "${AZURE_STORAGE_ACCOUNT:-}" && -n "${AZURE_SAS_TOKEN:-}" ]]; then
 {"version": "${VERSION}", "file": "${APPIMAGE_FILE}", "sha256": "${SHA256}"}
 EOF
     BASE="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${CHANNEL}"
-    azcopy copy "${APPIMAGE_FILE}" "${BASE}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}"
-    azcopy copy "latest.json" "${BASE}/latest.json?${AZURE_SAS_TOKEN}"
+    azcopy copy "${APPIMAGE_FILE}" "${BASE}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}" --overwrite=true
+    azcopy copy "latest.json" "${BASE}/latest.json?${AZURE_SAS_TOKEN}" --overwrite=true
   fi
+  set -x
 else
   echo "AZURE_STORAGE_ACCOUNT / AZURE_SAS_TOKEN not set — skipping blob upload"
 fi
