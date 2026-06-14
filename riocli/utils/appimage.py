@@ -40,17 +40,22 @@ def base_url() -> str:
 def channel_for_version(version: str) -> str | None:
     """Map a CLI version to its update channel.
 
-    Plain semver -> release. A ``devel``/``devel.N`` prerelease -> devel.
-    Anything else (``dev.<branch>``, ``rc.N``, etc.) is not an
-    auto-updatable channel and returns None.
+    The channel is carried in the version's local/build segment so the
+    stamped version stays PEP 440-valid for ``uv build`` (a semver-style
+    ``-prerelease`` would fail the wheel build). Examples:
+
+    - ``10.6.0`` (no build metadata) -> release
+    - ``10.6.0+devel.<sha>`` -> devel
+    - ``10.6.0+dev.<branch>.<sha>`` (or any other build label) -> None
+      (development build, not auto-updatable)
     """
     try:
-        pre = semver.Version.parse(version).prerelease
+        build = semver.Version.parse(version).build
     except ValueError as e:
         raise ValueError(f"Invalid version string: {version!r}") from e
-    if pre is None:
+    if build is None:
         return CHANNEL_RELEASE
-    if pre == CHANNEL_DEVEL or pre.startswith(f"{CHANNEL_DEVEL}."):
+    if build == CHANNEL_DEVEL or build.startswith(f"{CHANNEL_DEVEL}."):
         return CHANNEL_DEVEL
     return None
 

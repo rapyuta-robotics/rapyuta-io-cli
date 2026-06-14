@@ -24,10 +24,10 @@ from riocli.utils import appimage
     "version,expected",
     [
         ("10.6.0", appimage.CHANNEL_RELEASE),
-        ("10.6.0-devel+abc1234", appimage.CHANNEL_DEVEL),
-        ("10.6.0-devel.3+abc1234", appimage.CHANNEL_DEVEL),
-        ("10.6.0-dev.feature-x+abc1234", None),
-        ("10.6.0-rc.1+abc1234", None),
+        ("10.6.0+devel.abc1234", appimage.CHANNEL_DEVEL),
+        ("10.6.0+devel.3.abc1234", appimage.CHANNEL_DEVEL),
+        ("10.6.0+dev.feature-x.abc1234", None),
+        ("10.6.0+rc.1.abc1234", None),
     ],
 )
 def test_channel_for_version(version, expected):
@@ -75,14 +75,14 @@ def test_update_available_devel_differs():
     # devel builds differ only by +build metadata, which semver ignores;
     # any difference in the full version string means a newer commit.
     assert (
-        appimage.update_available("devel", "10.6.0-devel+bbb2222", "10.6.0-devel+aaa1111")
+        appimage.update_available("devel", "10.6.0+devel.bbb2222", "10.6.0+devel.aaa1111")
         is True
     )
 
 
 def test_update_available_devel_same():
     assert (
-        appimage.update_available("devel", "10.6.0-devel+aaa1111", "10.6.0-devel+aaa1111")
+        appimage.update_available("devel", "10.6.0+devel.aaa1111", "10.6.0+devel.aaa1111")
         is False
     )
 
@@ -90,7 +90,7 @@ def test_update_available_devel_same():
 def test_update_available_devel_no_downgrade():
     # remote base version older than current → no update even on devel
     assert (
-        appimage.update_available("devel", "10.5.0-devel+aaa1111", "10.6.0-devel+bbb2222")
+        appimage.update_available("devel", "10.5.0+devel.aaa1111", "10.6.0+devel.bbb2222")
         is False
     )
 
@@ -105,7 +105,7 @@ def _fake_response(content=b"", json_data=None):
 
 
 def test_fetch_manifest(monkeypatch):
-    manifest = {"version": "10.6.0-devel+abc", "file": "rio.AppImage", "sha256": "x"}
+    manifest = {"version": "10.6.0+devel.abc", "file": "rio.AppImage", "sha256": "x"}
     monkeypatch.setattr(
         appimage.requests, "get", lambda url, **kw: _fake_response(json_data=manifest)
     )

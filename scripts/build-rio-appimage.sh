@@ -31,12 +31,16 @@ RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
 if [[ "$CHANNEL" != "release" ]]; then
   BASE_VERSION=$(grep -m1 '^__version__' riocli/bootstrap.py | sed -E 's/.*"([^"]+)".*/\1/')
   SHORT_SHA=$(git rev-parse --short "${GITHUB_SHA:-HEAD}")
+  # The channel marker goes in the PEP 440 local-version segment (after +)
+  # so `uv build` accepts it; a semver-style -prerelease (e.g. -dev.x) is
+  # NOT PEP 440-valid and fails the wheel build. semver still parses these
+  # (the segment is build metadata), and channel_for_version reads .build.
   if [[ "$CHANNEL" == "devel" ]]; then
-    STAMP="${BASE_VERSION}-devel+${SHORT_SHA}"
+    STAMP="${BASE_VERSION}+devel.${SHORT_SHA}"
   else
-    # dev / PR build: include a semver-safe branch identifier
+    # dev / PR build: include a local-version-safe branch identifier
     SAFE_BRANCH=$(echo "$RAW_BRANCH" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
-    STAMP="${BASE_VERSION}-dev.${SAFE_BRANCH}+${SHORT_SHA}"
+    STAMP="${BASE_VERSION}+dev.${SAFE_BRANCH}.${SHORT_SHA}"
   fi
   sed -i -E "0,/^__version__.*/s/^__version__.*/__version__ = \"${STAMP}\"/" riocli/bootstrap.py
 fi

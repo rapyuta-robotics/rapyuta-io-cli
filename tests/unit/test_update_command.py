@@ -22,12 +22,12 @@ from riocli.bootstrap import cli
 def test_update_devel_appimage_uses_blob():
     """A devel AppImage runs the blob path, not the GitHub path."""
     manifest = {
-        "version": "10.9.9-devel+newsha",
-        "file": "rio-10.9.9-devel+newsha-x86_64.AppImage",
+        "version": "10.9.9+devel.newsha",
+        "file": "rio-10.9.9-x86_64.AppImage",
         "sha256": "x",
     }
     with (
-        patch("riocli.bootstrap.__version__", "10.6.0-devel+oldsha"),
+        patch("riocli.bootstrap.__version__", "10.6.0+devel.oldsha"),
         patch("riocli.bootstrap.is_pip_installation", return_value=False),
         patch("riocli.bootstrap.appimage.fetch_manifest", return_value=manifest) as fm,
         patch("riocli.bootstrap.appimage.download_and_replace") as dr,
@@ -55,7 +55,7 @@ def test_update_appimage_already_latest():
 def test_update_dev_build_is_not_updatable():
     """A feature-branch (dev.*) build refuses to auto-update."""
     with (
-        patch("riocli.bootstrap.__version__", "10.6.0-dev.feature-x+sha"),
+        patch("riocli.bootstrap.__version__", "10.6.0+dev.feature-x.sha"),
         patch("riocli.bootstrap.is_pip_installation", return_value=False),
         patch("riocli.bootstrap.appimage.fetch_manifest") as fm,
     ):

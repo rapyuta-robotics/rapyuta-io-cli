@@ -6,8 +6,12 @@ keyed by the running binary's version string:
 | Version pattern | Channel | Manifest URL |
 |---|---|---|
 | `X.Y.Z` | `release` | `https://riocliartifacts.blob.core.windows.net/release/latest.json` |
-| `X.Y.Z-devel+<sha>` | `devel` | `https://riocliartifacts.blob.core.windows.net/devel/latest.json` |
-| `X.Y.Z-dev.<branch>+<sha>` | none | not auto-updatable (development build) |
+| `X.Y.Z+devel.<sha>` | `devel` | `https://riocliartifacts.blob.core.windows.net/devel/latest.json` |
+| `X.Y.Z+dev.<branch>.<sha>` | none | not auto-updatable (development build) |
+
+The channel marker lives in the version's local segment (after `+`) so the
+stamped version stays PEP 440-valid for `uv build`; channel detection reads
+the build-metadata segment.
 
 pip installs are unaffected — they continue to upgrade from PyPI via the existing `check_for_updates` / `pip_install_cli` path.
 
