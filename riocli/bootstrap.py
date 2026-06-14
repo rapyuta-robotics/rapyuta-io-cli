@@ -51,10 +51,10 @@ from riocli.static_route import static_route
 from riocli.usergroup import usergroup
 from riocli.utils import (
     AliasedGroup,
+    appimage,
     check_for_updates,
     is_pip_installation,
     pip_install_cli,
-    update_appimage,
 )
 from riocli.vpn import vpn
 
@@ -127,21 +127,50 @@ def update(silent: bool) -> None:
     You can skip the confirmation prompt by using the --silent or
     --force or -f flag.
     """
-    available, latest = check_for_updates(__version__)
-    if not available:
+    if is_pip_installation():
+        available, latest = check_for_updates(__version__)
+        if not available:
+            click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
+            return
+        click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
+        if not silent:
+            _ = click.confirm("Do you want to update?", abort=True, default=False)
+        try:
+            _ = pip_install_cli(version=latest)
+        except Exception as e:
+            click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
+            raise SystemExit(1) from e
+        click.secho(f"{Symbols.SUCCESS} Update successful!", fg=Colors.GREEN)
+        return
+
+    # AppImage installation: update from our Azure Blob channel.
+    channel = appimage.channel_for_version(__version__)
+    if channel is None:
+        click.secho(
+            f"{Symbols.WARNING} This is a development build; auto-update is "
+            "disabled. Rebuild from your branch or install a release.",
+            fg=Colors.YELLOW,
+        )
+        return
+
+    try:
+        manifest = appimage.fetch_manifest(channel)
+    except Exception as e:
+        click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
+        raise SystemExit(1) from e
+
+    if not appimage.update_available(channel, manifest["version"], __version__):
         click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
         return
 
-    click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
-
+    click.secho(
+        f"🎉 A newer version ({manifest['version']}) is available.", fg=Colors.GREEN
+    )
     if not silent:
         _ = click.confirm("Do you want to update?", abort=True, default=False)
 
     try:
-        if is_pip_installation():
-            _ = pip_install_cli(version=latest)
-        else:
-            update_appimage(version=latest)
+        appimage.download_and_replace(channel, manifest)
     except Exception as e:
         click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
