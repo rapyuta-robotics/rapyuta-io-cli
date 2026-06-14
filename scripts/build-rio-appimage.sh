@@ -14,6 +14,33 @@ chmod +x mc
 ./mc cp -r local/appimages/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage scripts/
 chmod +x scripts/*.AppImage
 
+# Install azcopy for Azure Blob uploads (used later in the upload stage).
+# Export PATH now (cwd = repo root) so azcopy stays on PATH after cd scripts.
+wget -q https://aka.ms/downloadazcopy-v10-linux -O azcopy.tar.gz
+tar -xzf azcopy.tar.gz --strip-components=1 --wildcards '*/azcopy'
+chmod +x azcopy
+export PATH="$PWD:$PATH"
+
+# Stamp a channel suffix into __version__ for non-release builds so the
+# installed AppImage knows which Azure Blob container to update from.
+# CHANNEL is set by the calling workflow (release|devel|dev). Release
+# builds are versioned upstream by bump-version.sh and are left as-is.
+# cwd = repo root here, so riocli/bootstrap.py has no leading ../
+CHANNEL="${CHANNEL:-dev}"
+if [[ "$CHANNEL" != "release" ]]; then
+  BASE_VERSION=$(grep -m1 '^__version__' riocli/bootstrap.py | sed -E 's/.*"([^"]+)".*/\1/')
+  SHORT_SHA=$(git rev-parse --short "${GITHUB_SHA:-HEAD}")
+  if [[ "$CHANNEL" == "devel" ]]; then
+    STAMP="${BASE_VERSION}-devel+${SHORT_SHA}"
+  else
+    # dev / PR build: include a semver-safe branch identifier
+    RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
+    SAFE_BRANCH=$(echo "$RAW_BRANCH" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
+    STAMP="${BASE_VERSION}-dev.${SAFE_BRANCH}+${SHORT_SHA}"
+  fi
+  sed -i -E "0,/^__version__.*/s/^__version__.*/__version__ = \"${STAMP}\"/" riocli/bootstrap.py
+fi
+
 # Creating rio-cli wheel
 uv build
 cp dist/rapyuta_io_cli-*.whl scripts/
