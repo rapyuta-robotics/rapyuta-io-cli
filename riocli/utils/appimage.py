@@ -106,9 +106,11 @@ def download_and_replace(channel: str, manifest: dict, target: str | None = None
     target_path = Path(target)
     fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
     try:
-        os.write(fd, content)
-        os.fchmod(fd, 0o755)
-        os.close(fd)
+        # os.fdopen takes ownership of fd; f.write loops until all bytes are
+        # written (os.write may short-write on a multi-MB binary).
+        with os.fdopen(fd, "wb") as f:
+            f.write(content)
+        os.chmod(tmp_path, 0o755)
         os.replace(tmp_path, target)
     except OSError as e:
         try:
