@@ -60,3 +60,15 @@ def manifest_url(channel: str) -> str:
 
 def appimage_url(channel: str, filename: str) -> str:
     return f"{base_url()}/{channel}/{filename}"
+
+
+def update_available(channel: str, remote_version: str, current_version: str) -> bool:
+    """Whether ``remote_version`` should replace ``current_version``.
+
+    Release channel uses semver precedence (no downgrades). Devel builds
+    share a base version and differ only by ignored +build metadata, so
+    compare the full string for any change.
+    """
+    if channel == CHANNEL_DEVEL:
+        return remote_version != current_version
+    return semver.Version.parse(remote_version).compare(current_version) > 0

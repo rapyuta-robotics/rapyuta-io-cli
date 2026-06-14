@@ -48,3 +48,30 @@ def test_base_url_env_override(monkeypatch):
     assert appimage.manifest_url("devel") == (
         "https://staging.example.com/devel/latest.json"
     )
+
+
+def test_update_available_release_newer():
+    assert appimage.update_available("release", "10.7.0", "10.6.0") is True
+
+
+def test_update_available_release_same():
+    assert appimage.update_available("release", "10.6.0", "10.6.0") is False
+
+
+def test_update_available_release_older_is_false():
+    # never offer a downgrade on the release channel
+    assert appimage.update_available("release", "10.5.0", "10.6.0") is False
+
+
+def test_update_available_devel_differs():
+    # devel builds differ only by +build metadata, which semver ignores;
+    # any difference in the full version string means a newer commit.
+    assert appimage.update_available(
+        "devel", "10.6.0-devel+bbb2222", "10.6.0-devel+aaa1111"
+    ) is True
+
+
+def test_update_available_devel_same():
+    assert appimage.update_available(
+        "devel", "10.6.0-devel+aaa1111", "10.6.0-devel+aaa1111"
+    ) is False
