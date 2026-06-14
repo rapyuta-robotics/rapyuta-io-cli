@@ -34,6 +34,11 @@ def test_channel_for_version(version, expected):
     assert appimage.channel_for_version(version) == expected
 
 
+def test_channel_for_version_invalid():
+    with pytest.raises(ValueError):
+        appimage.channel_for_version("notaversion")
+
+
 def test_manifest_url_default_account():
     assert appimage.manifest_url("devel") == (
         f"{appimage.DEFAULT_ACCOUNT_URL}/devel/latest.json"
@@ -82,6 +87,14 @@ def test_update_available_devel_same():
     )
 
 
+def test_update_available_devel_no_downgrade():
+    # remote base version older than current → no update even on devel
+    assert (
+        appimage.update_available("devel", "10.5.0-devel+aaa1111", "10.6.0-devel+bbb2222")
+        is False
+    )
+
+
 def _fake_response(content=b"", json_data=None):
     resp = MagicMock()
     resp.content = content
@@ -110,6 +123,20 @@ def test_download_and_replace_writes_target(monkeypatch, tmp_path):
     target.write_bytes(b"OLD")
     appimage.download_and_replace("release", manifest, target=str(target))
     assert target.read_bytes() == payload
+
+
+def test_download_and_replace_missing_sha256(monkeypatch, tmp_path):
+    # manifest without sha256 must raise ValueError and leave target untouched
+    payload = b"APPIMAGE-BYTES"
+    manifest = {"version": "10.6.0", "file": "rio.AppImage"}
+    monkeypatch.setattr(
+        appimage.requests, "get", lambda url, **kw: _fake_response(content=payload)
+    )
+    target = tmp_path / "rio"
+    target.write_bytes(b"OLD")
+    with pytest.raises(ValueError, match="sha256"):
+        appimage.download_and_replace("release", manifest, target=str(target))
+    assert target.read_bytes() == b"OLD"
 
 
 def test_download_and_replace_checksum_mismatch(monkeypatch, tmp_path):

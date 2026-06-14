@@ -13,10 +13,9 @@
 # limitations under the License.
 import os
 import sys
+import tempfile
 from hashlib import sha256
 from pathlib import Path
-from shutil import move
-from tempfile import TemporaryDirectory
 
 import click
 import requests
@@ -46,7 +45,10 @@ def channel_for_version(version: str) -> str | None:
     Anything else (``dev.<branch>``, ``rc.N``, etc.) is not an
     auto-updatable channel and returns None.
     """
-    pre = semver.Version.parse(version).prerelease
+    try:
+        pre = semver.Version.parse(version).prerelease
+    except ValueError as e:
+        raise ValueError(f"Invalid version string: {version!r}") from e
     if pre is None:
         return CHANNEL_RELEASE
     if pre == CHANNEL_DEVEL or pre.startswith(f"{CHANNEL_DEVEL}."):
@@ -67,16 +69,18 @@ def update_available(channel: str, remote_version: str, current_version: str) ->
 
     Release channel uses semver precedence (no downgrades). Devel builds
     share a base version and differ only by ignored +build metadata, so
-    compare the full string for any change.
+    compare the full string for any change (but never downgrade base version).
     """
     if channel == CHANNEL_DEVEL:
+        if semver.Version.parse(remote_version).compare(current_version) < 0:
+            return False
         return remote_version != current_version
     return semver.Version.parse(remote_version).compare(current_version) > 0
 
 
 def fetch_manifest(channel: str) -> dict:
     """Fetch and parse the channel's latest.json (anonymous GET)."""
-    resp = requests.get(manifest_url(channel))
+    resp = requests.get(manifest_url(channel), timeout=10)
     resp.raise_for_status()
     return resp.json()
 
@@ -88,24 +92,32 @@ def download_and_replace(channel: str, manifest: dict, target: str | None = None
     if target is None:
         target = sys.executable
 
-    resp = requests.get(appimage_url(channel, manifest["file"]))
+    resp = requests.get(appimage_url(channel, manifest["file"]), timeout=(10, 300))
     resp.raise_for_status()
     content = resp.content
 
     expected = manifest.get("sha256")
-    if expected and sha256(content).hexdigest() != expected:
+    if not expected:
+        raise ValueError(
+            "Manifest missing 'sha256' — refusing to install unverified binary"
+        )
+    if sha256(content).hexdigest() != expected:
         raise Exception("Checksum mismatch for the downloaded AppImage")
 
-    with TemporaryDirectory() as tmp:
-        save_to = Path(tmp) / "rio"
-        save_to.write_bytes(content)
-        os.chmod(save_to, 0o755)
+    target_path = Path(target)
+    fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
+    try:
+        os.write(fd, content)
+        os.fchmod(fd, 0o755)
+        os.close(fd)
+        os.replace(tmp_path, target)
+    except OSError as e:
         try:
-            os.remove(target)
-            move(save_to, target)
-        except OSError as e:
-            click.secho(
-                f"{Symbols.WARNING} Please consider running as a root user.",
-                fg=Colors.YELLOW,
-            )
-            raise e
+            os.unlink(tmp_path)
+        except FileNotFoundError:
+            pass
+        click.secho(
+            f"{Symbols.WARNING} Please consider running as a root user.",
+            fg=Colors.YELLOW,
+        )
+        raise e
