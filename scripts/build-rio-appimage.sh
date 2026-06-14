@@ -100,3 +100,30 @@ fi
 
 # Building AppImage
 ./appimagetool-x86_64.AppImage -n squashfs-root/
+
+# Upload the built AppImage to the channel's Azure Blob container.
+# Download stays anonymous (public-read); upload authenticates with a
+# write-scoped SAS token. Required env: CHANNEL, AZURE_STORAGE_ACCOUNT,
+# AZURE_SAS_TOKEN. dev/PR builds land under dev/<branch>/ and carry no
+# manifest (not an update channel).
+# cwd = scripts/ here, so riocli/bootstrap.py is at ../riocli/bootstrap.py
+APPIMAGE_FILE=$(find . -maxdepth 1 -name 'rio*.AppImage' | head -n1 | sed 's|^\./||')
+
+if [[ -n "${AZURE_STORAGE_ACCOUNT:-}" && -n "${AZURE_SAS_TOKEN:-}" ]]; then
+  if [[ "$CHANNEL" == "dev" ]]; then
+    RAW_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-local}}"
+    DEST="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/dev/${RAW_BRANCH}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}"
+    azcopy copy "${APPIMAGE_FILE}" "${DEST}"
+  else
+    SHA256=$(sha256sum "${APPIMAGE_FILE}" | cut -d' ' -f1)
+    VERSION=$(grep -m1 '^__version__' ../riocli/bootstrap.py | sed -E 's/.*"([^"]+)".*/\1/')
+    cat > latest.json <<EOF
+{"version": "${VERSION}", "file": "${APPIMAGE_FILE}", "sha256": "${SHA256}"}
+EOF
+    BASE="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${CHANNEL}"
+    azcopy copy "${APPIMAGE_FILE}" "${BASE}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}"
+    azcopy copy "latest.json" "${BASE}/latest.json?${AZURE_SAS_TOKEN}"
+  fi
+else
+  echo "AZURE_STORAGE_ACCOUNT / AZURE_SAS_TOKEN not set — skipping blob upload"
+fi
