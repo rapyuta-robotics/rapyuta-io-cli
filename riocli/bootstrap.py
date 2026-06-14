@@ -151,7 +151,13 @@ def update(silent: bool) -> None:
     # AppImage installation: update from our Azure Blob channel, replacing the
     # AppImage file itself (target=APPIMAGE, not sys.executable — that is the
     # bundled interpreter inside the mounted AppImage).
-    channel = appimage.channel_for_version(__version__)
+    try:
+        channel = appimage.channel_for_version(__version__)
+    except ValueError as e:
+        click.secho(
+            f"{Symbols.ERROR} Cannot determine update channel: {e}", fg=Colors.RED
+        )
+        raise SystemExit(1) from e
     if channel is None:
         click.secho(
             f"{Symbols.WARNING} This is a development build; auto-update is "

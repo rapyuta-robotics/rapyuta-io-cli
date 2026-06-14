@@ -99,6 +99,10 @@ def _fake_response(content=b"", json_data=None):
     resp = MagicMock()
     resp.content = content
     resp.raise_for_status = MagicMock()
+    # Support the streaming download: `with requests.get(...) as r: r.iter_content(...)`
+    resp.__enter__.return_value = resp
+    resp.__exit__.return_value = False
+    resp.iter_content = lambda chunk_size=8192: iter([content])
     if json_data is not None:
         resp.json = MagicMock(return_value=json_data)
     return resp
@@ -110,6 +114,17 @@ def test_fetch_manifest(monkeypatch):
         appimage.requests, "get", lambda url, **kw: _fake_response(json_data=manifest)
     )
     assert appimage.fetch_manifest("devel") == manifest
+
+
+def test_fetch_manifest_rejects_malformed(monkeypatch):
+    # missing 'file' and 'sha256' -> clear ValueError, not a downstream KeyError
+    monkeypatch.setattr(
+        appimage.requests,
+        "get",
+        lambda url, **kw: _fake_response(json_data={"version": "10.6.0"}),
+    )
+    with pytest.raises(ValueError, match="[Mm]alformed manifest"):
+        appimage.fetch_manifest("devel")
 
 
 def test_download_and_replace_writes_target(monkeypatch, tmp_path):

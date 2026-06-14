@@ -82,53 +82,84 @@ def update_available(channel: str, remote_version: str, current_version: str) ->
     return semver.Version.parse(remote_version).compare(current_version) > 0
 
 
+_REQUIRED_MANIFEST_KEYS = ("version", "file", "sha256")
+
+
 def fetch_manifest(channel: str) -> dict:
-    """Fetch and parse the channel's latest.json (anonymous GET)."""
+    """Fetch, parse and validate the channel's latest.json (anonymous GET).
+
+    Raises ValueError with an actionable message if the manifest is not a
+    JSON object carrying the required keys, so callers get a clear error
+    instead of a downstream KeyError/TypeError.
+    """
     resp = requests.get(manifest_url(channel), timeout=10)
     resp.raise_for_status()
-    return resp.json()
+    manifest = resp.json()
+    if not isinstance(manifest, dict) or not all(
+        k in manifest for k in _REQUIRED_MANIFEST_KEYS
+    ):
+        raise ValueError(
+            f"Malformed manifest for channel {channel!r}: "
+            f"expected a JSON object with keys {_REQUIRED_MANIFEST_KEYS}"
+        )
+    return manifest
+
+
+def _unlink_quietly(path: str | None) -> None:
+    if path is not None:
+        try:
+            os.unlink(path)
+        except FileNotFoundError:
+            pass
 
 
 def download_and_replace(channel: str, manifest: dict, target: str | None = None) -> None:
-    """Download the AppImage named in the manifest, verify its sha256,
-    then atomically replace ``target`` (defaults to the running executable).
+    """Stream the AppImage named in the manifest into a sibling temp file,
+    verify its sha256, then atomically replace ``target``.
+
+    ``target`` defaults to the AppImage path (``APPIMAGE`` env var, set by the
+    AppImage runtime) and falls back to the running interpreter.
     """
     if target is None:
-        target = sys.executable
-
-    resp = requests.get(appimage_url(channel, manifest["file"]), timeout=(10, 300))
-    resp.raise_for_status()
-    content = resp.content
+        target = os.environ.get("APPIMAGE") or sys.executable
 
     expected = manifest.get("sha256")
     if not expected:
         raise ValueError(
             "Manifest missing 'sha256' — refusing to install unverified binary"
         )
-    if sha256(content).hexdigest() != expected:
-        raise Exception("Checksum mismatch for the downloaded AppImage")
 
     target_path = Path(target)
     tmp_path = None
+    digest = sha256()
     try:
-        # Create the temp file in the target's own directory so os.replace is
-        # an atomic same-filesystem rename. mkstemp is inside the try so a
-        # permission error here still surfaces the root-user hint below.
+        # Temp file in the target's own directory so os.replace is an atomic
+        # same-filesystem rename. Stream the download (AppImages are tens of
+        # MB) and hash incrementally to bound peak memory.
         fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
-        # os.fdopen takes ownership of fd; f.write loops until all bytes are
-        # written (os.write may short-write on a multi-MB binary).
         with os.fdopen(fd, "wb") as f:
-            f.write(content)
+            with requests.get(
+                appimage_url(channel, manifest["file"]),
+                timeout=(10, 300),
+                stream=True,
+            ) as resp:
+                resp.raise_for_status()
+                for chunk in resp.iter_content(chunk_size=1024 * 1024):
+                    f.write(chunk)
+                    digest.update(chunk)
+        if digest.hexdigest() != expected:
+            raise ValueError("Checksum mismatch for the downloaded AppImage")
         os.chmod(tmp_path, 0o755)
         os.replace(tmp_path, target)
     except OSError:
-        if tmp_path is not None:
-            try:
-                os.unlink(tmp_path)
-            except FileNotFoundError:
-                pass
+        _unlink_quietly(tmp_path)
         click.secho(
             f"{Symbols.WARNING} Please consider running as a root user.",
             fg=Colors.YELLOW,
         )
+        raise
+    except Exception:
+        # Any non-OS failure (checksum mismatch, network error) must still
+        # clean up the partial temp file and leave the original untouched.
+        _unlink_quietly(tmp_path)
         raise
