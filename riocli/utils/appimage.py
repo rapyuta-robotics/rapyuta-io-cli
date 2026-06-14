@@ -26,9 +26,8 @@ from riocli.constants import Colors, Symbols
 CHANNEL_RELEASE = "release"
 CHANNEL_DEVEL = "devel"
 
-# Public-read Azure Blob account that hosts the rio AppImages.
-# NOTE: confirm the final account name with infra before the first
-# blob-aware release (spec open question #1). Overridable via env for
+# Public-read Azure Blob account (OKD4 Prod) hosting the rio AppImages.
+# Containers: release / devel / dev. Override via RIO_APPIMAGE_BASE_URL for
 # staging/testing.
 DEFAULT_ACCOUNT_URL = "https://riocliartifacts.blob.core.windows.net"
 

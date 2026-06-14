@@ -38,6 +38,20 @@ def test_update_devel_appimage_uses_blob():
     dr.assert_called_once_with("devel", manifest)
 
 
+def test_update_appimage_already_latest():
+    manifest = {"version": "10.6.0", "file": "rio-10.6.0-x86_64.AppImage", "sha256": "x"}
+    with (
+        patch("riocli.bootstrap.__version__", "10.6.0"),
+        patch("riocli.bootstrap.is_pip_installation", return_value=False),
+        patch("riocli.bootstrap.appimage.fetch_manifest", return_value=manifest),
+        patch("riocli.bootstrap.appimage.download_and_replace") as dr,
+    ):
+        result = CliRunner().invoke(cli, ["update", "--silent"])
+    assert result.exit_code == 0
+    assert "latest version" in result.output
+    dr.assert_not_called()
+
+
 def test_update_dev_build_is_not_updatable():
     """A feature-branch (dev.*) build refuses to auto-update."""
     with (

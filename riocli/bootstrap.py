@@ -155,17 +155,16 @@ def update(silent: bool) -> None:
 
     try:
         manifest = appimage.fetch_manifest(channel)
+        version = manifest["version"]
     except Exception as e:
         click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
         raise SystemExit(1) from e
 
-    if not appimage.update_available(channel, manifest["version"], __version__):
+    if not appimage.update_available(channel, version, __version__):
         click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
         return
 
-    click.secho(
-        f"🎉 A newer version ({manifest['version']}) is available.", fg=Colors.GREEN
-    )
+    click.secho(f"🎉 A newer version ({version}) is available.", fg=Colors.GREEN)
     if not silent:
         _ = click.confirm("Do you want to update?", abort=True, default=False)
 
