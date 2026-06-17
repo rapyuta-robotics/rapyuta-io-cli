@@ -16,6 +16,7 @@ from rapyuta_io_sdk_v2 import Client as v2Client
 from rapyuta_io_sdk_v2 import Database as DatabaseModel
 from typing_extensions import override
 
+from riocli.database.util import poll_database
 from riocli.model import Model
 
 
@@ -29,13 +30,25 @@ class Database(Model):
     def create_object(
         self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> DatabaseModel:
-        return v2_client.create_database(body=self._obj)  # pyright:ignore[reportArgumentType]
+        created = v2_client.create_database(body=self._obj)  # pyright:ignore[reportArgumentType]
+        return poll_database(
+            client=v2_client,
+            name=created.metadata.name,
+            retry_count=retry_count,
+            sleep_interval=retry_interval,
+        )
 
     @override
     def update_object(
         self, v2_client: v2Client, retry_count: int, retry_interval: int, *args, **kwargs
     ) -> DatabaseModel:
-        return v2_client.update_database(name=self._obj.metadata.name, body=self._obj)  # pyright:ignore[reportArgumentType]
+        updated = v2_client.update_database(name=self._obj.metadata.name, body=self._obj)  # pyright:ignore[reportArgumentType]
+        return poll_database(
+            client=v2_client,
+            name=updated.metadata.name,
+            retry_count=retry_count,
+            sleep_interval=retry_interval,
+        )
 
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
