@@ -214,7 +214,7 @@ spec:
       type: preInstalled # Options: [docker (default), preInstalled]
       command:
        - "roslaunch talker talker.launch"
-  environmentArgs:
+  environmentVars:
     - name: "key1" # Required
       default: "key1-value"
       description: "A environment variable"
@@ -267,7 +267,7 @@ spec:
       type: preInstalled # Options: [docker (default), preInstalled]
       command:
        - "roslaunch talker talker.launch"
-  environmentArgs:
+  environmentVars:
     - name: "key1" # Required
       default: "key1-value"
       description: "A environment variable"

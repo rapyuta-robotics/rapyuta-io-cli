@@ -20,10 +20,24 @@ from typing_extensions import override
 from riocli.model import Model
 
 
+def _normalize_package_env_vars(pkg: Munch) -> None:
+    # 'environmentArgs' was the old key before it was renamed to 'environmentVars'.
+    # Silently accepted for backward compatibility with manifests written before the rename.
+    spec = pkg.get("spec")
+    if not spec:
+        return
+
+    if "environmentArgs" in spec and "environmentVars" not in spec:
+        spec["environmentVars"] = spec.pop("environmentArgs")
+    elif "environmentArgs" in spec:
+        del spec["environmentArgs"]
+
+
 class Package(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
+        _normalize_package_env_vars(self)
         self._obj = PackageModel.model_validate(self)
 
     @override
