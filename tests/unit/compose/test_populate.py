@@ -4,12 +4,12 @@ import os
 import stat
 import subprocess
 
-from munch import munchify
+from munch import Munch, munchify
 
 from riocli.compose.populate import _build_fixup_cmd, get_volumes_requiring_fixup
 
 
-def _make_deployment(volumes: list[dict]) -> object:
+def _make_deployment(volumes: list[dict]) -> Munch:
     return munchify({"spec": {"volumes": volumes}})
 
 
@@ -74,7 +74,6 @@ class TestGetVolumesRequiringFixup:
         assert len(result) == 2
 
     def test_skips_volumes_without_uid_gid_perm(self):
-
         dep = _make_deployment(
             [
                 {"subPath": "/host/path", "mountPath": "/container/path"},
