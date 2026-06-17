@@ -31,6 +31,7 @@ from riocli.config import Configuration
 from riocli.config.context import cli_context
 from riocli.configtree import config_trees
 from riocli.constants import Colors, Symbols
+from riocli.database import database
 from riocli.deployment import deployment
 from riocli.device import device
 from riocli.disk import disk
@@ -165,6 +166,7 @@ cli.add_command(static_route)
 cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(parameter)
+cli.add_command(database)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
