@@ -17,12 +17,27 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
+      - name: Install dependencies
+        run: uv sync --python ${{ matrix.python-version }} --all-extras --dev
+
+      - name: Smoke import
+        run: |
+          export LC_ALL=C.UTF-8
+          export LANG=C.UTF-8
+          uv run --python ${{ matrix.python-version }} python -c "
+          import riocli
+          from riocli.bootstrap import safe_cli
+          print('smoke imports OK')
+          "
+
       - name: Run the CLI
         run: |
           export LC_ALL=C.UTF-8
           export LANG=C.UTF-8
-          uv python pin ${{ matrix.python-version }}
-          DEBUG=true uv run rio --help
+          uv run --python ${{ matrix.python-version }} rio --help
+
+      - name: Run unit tests
+        run: uv run --python ${{ matrix.python-version }} pytest tests/unit/ -v --tb=short
 
   windows-python-compatibility:
     runs-on: windows-latest
@@ -41,7 +56,11 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
+      - name: Install dependencies
+        run: uv sync --python ${{ matrix.python-version }} --all-extras --dev
+
       - name: Run the CLI
-        run: |
-          uv python pin ${{ matrix.python-version }}
-          uv run rio --help
+        run: uv run --python ${{ matrix.python-version }} rio --help
+
+      - name: Run unit tests
+        run: uv run --python ${{ matrix.python-version }} pytest tests/unit/ -v --tb=short
