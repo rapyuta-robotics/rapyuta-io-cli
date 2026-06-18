@@ -20,11 +20,17 @@ ssh-agent instance.
 
 from __future__ import annotations
 
+import os
 import subprocess
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def is_ssh_agent_available() -> bool:
+    """Return True if an ssh-agent socket is advertised in the environment."""
+    return bool(os.environ.get("SSH_AUTH_SOCK"))
 
 
 def add_to_ssh_agent(

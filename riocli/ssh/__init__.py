@@ -22,6 +22,7 @@ requests a signed SSH user certificate from rapyuta.io, writes it to
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
@@ -38,8 +39,38 @@ from riocli.ssh.certificate import (
     is_cert_valid,
     write_certificate,
 )
-from riocli.ssh.util import add_to_ssh_agent, remove_from_ssh_agent
+from riocli.ssh.util import (
+    add_to_ssh_agent,
+    is_ssh_agent_available,
+    remove_from_ssh_agent,
+)
 from riocli.utils.spinner import with_spinner
+
+_SYSTEM_KEY_NAMES = ("id_ed25519", "id_ecdsa", "id_rsa")
+
+
+def _resolve_key_paths(key_path, use_system_key, config):
+    """Return (private_path, public_path, cert_path, should_generate).
+
+    should_generate=True means the caller must invoke config.ensure_ssh_keys().
+    """
+    if key_path is None and not use_system_key:
+        return config.ssh_private_key, config.ssh_public_key, config.ssh_certificate, True
+
+    if use_system_key:
+        ssh_dir = Path.home() / ".ssh"
+        for name in _SYSTEM_KEY_NAMES:
+            priv = ssh_dir / name
+            pub = ssh_dir / f"{name}.pub"
+            if priv.is_file() and pub.is_file():
+                return priv, pub, ssh_dir / f"{name}-cert.pub", False
+        # No system key found — fall back to the rio-cli managed key.
+        return config.ssh_private_key, config.ssh_public_key, config.ssh_certificate, True
+
+    priv = Path(key_path).expanduser().resolve()
+    pub = priv.parent / f"{priv.name}.pub"
+    cert = priv.parent / f"{priv.name}-cert.pub"
+    return priv, pub, cert, False
 
 
 @click.command(
@@ -61,45 +92,121 @@ from riocli.utils.spinner import with_spinner
     default=False,
     help="Re-sign the certificate even if the existing one is still valid.",
 )
+@click.option(
+    "--use-system-key",
+    "use_system_key",
+    is_flag=True,
+    default=False,
+    help=(
+        "Search ~/.ssh/ for an existing key pair (id_ed25519, id_ecdsa, id_rsa) "
+        "and sign that instead of the rio-cli managed key. "
+        "Falls back to the managed key if no system key is found. "
+        "Does not load into ssh-agent unless --agent is also passed."
+    ),
+)
+@click.option(
+    "--key-path",
+    "key_path",
+    default=None,
+    metavar="PATH",
+    help=(
+        "Path to a specific SSH private key to sign. "
+        "Expects PATH.pub alongside it; errors if either file is missing. "
+        "Does not load into ssh-agent unless --agent is also passed."
+    ),
+)
 @click.pass_context
 @with_spinner(text="Signing SSH public key...")
 def ssh(
     ctx: click.Context,
     agent: bool,
     force: bool,
+    use_system_key: bool,
+    key_path: str | None,
     spinner: Yaspin = None,  # type: ignore[assignment]  # injected by @with_spinner
 ) -> None:
     """Sign your SSH public key and load the certificate into ssh-agent.
 
-    Uses a dedicated ``rio_ed25519`` key pair (auto-generated on first
-    run).  The signed certificate and key are loaded into ssh-agent
-    with a 5-minute TTL so they expire automatically without affecting
-    your other SSH identities.
+    Uses a dedicated ``rio_ed25519`` key pair by default (auto-generated
+    on first run).  Pass ``--use-system-key`` to sign an existing key from
+    ``~/.ssh/``, or ``--key-path PATH`` to sign a specific key.
+
+    Agent loading is enabled by default for the managed key, but opt-in
+    (requires explicit ``--agent``) when ``--use-system-key`` or
+    ``--key-path`` is used.
 
     \b
     Examples:
         $ rio ssh-cert
+        $ rio ssh-cert --use-system-key
+        $ rio ssh-cert --use-system-key --agent
+        $ rio ssh-cert --key-path ~/.ssh/id_ed25519
+        $ rio ssh-cert --key-path ~/.ssh/id_ed25519 --agent
         $ rio ssh-cert --no-agent
         $ rio ssh-cert --force
     """
+    if use_system_key and key_path is not None:
+        ctx.fail("--use-system-key and --key-path are mutually exclusive.")
+
     try:
-        # ----- 1. Ensure dedicated key pair exists ----- #
         config = get_config_from_context(ctx)
-        generated = config.ensure_ssh_keys()
 
-        private_path = config.ssh_private_key
-        public_path = config.ssh_public_key
-        cert_path = config.ssh_certificate
+        # ----- 1. Resolve key paths ----- #
+        private_path, public_path, cert_path, should_generate = _resolve_key_paths(
+            key_path, use_system_key, config
+        )
 
-        if generated:
+        if use_system_key and not should_generate:
             spinner.write(
                 click.style(
-                    f"{Symbols.SUCCESS} Generated dedicated key pair: {public_path}",
-                    fg=Colors.GREEN,
+                    f"{Symbols.INFO} Using system key: {private_path}",
+                    fg=Colors.CYAN,
+                )
+            )
+        elif use_system_key and should_generate:
+            spinner.write(
+                click.style(
+                    f"{Symbols.INFO} No system keys found in ~/.ssh/; "
+                    "falling back to rio-cli managed key.",
+                    fg=Colors.CYAN,
                 )
             )
 
-        # ----- 2. Reuse existing cert if still valid ----- #
+        if should_generate:
+            generated = config.ensure_ssh_keys()
+            if generated:
+                spinner.write(
+                    click.style(
+                        f"{Symbols.SUCCESS} Generated dedicated key pair: {public_path}",
+                        fg=Colors.GREEN,
+                    )
+                )
+        else:
+            if not private_path.is_file():
+                raise FileNotFoundError(f"SSH private key not found: {private_path}")
+            if not public_path.is_file():
+                raise FileNotFoundError(f"SSH public key not found: {public_path}")
+
+        # ----- 2. Check ssh-agent availability once ----- #
+        # For --use-system-key and --key-path, agent loading is opt-in: only load
+        # if --agent was explicitly passed.  The vanilla managed-key case loads by
+        # default (agent=True unless --no-agent is given).
+        using_custom_key = use_system_key or key_path is not None
+        agent_explicitly_set = (
+            ctx.get_parameter_source("agent") == click.core.ParameterSource.COMMANDLINE
+        )
+        use_agent = agent if not using_custom_key else (agent and agent_explicitly_set)
+        agent_available = use_agent and is_ssh_agent_available()
+        if use_agent and not agent_available:
+            spinner.write(
+                click.style(
+                    f"{Symbols.INFO} No ssh-agent detected (SSH_AUTH_SOCK not set); "
+                    "skipping agent load.",
+                    fg=Colors.CYAN,
+                )
+            )
+
+        # ----- 3. Reuse existing cert if still valid ----- #
         if is_cert_valid(cert_path) and not force:
             expiry = format_cert_expiry(cert_path)
             spinner.write(
@@ -110,7 +217,7 @@ def ssh(
                 )
             )
 
-            if agent:
+            if agent_available:
                 try:
                     remove_from_ssh_agent(private_path)
                     add_to_ssh_agent(private_path)
@@ -132,7 +239,7 @@ def ssh(
             spinner.ok(Symbols.SUCCESS)
             return
 
-        # ----- 3. Read the public key ----- #
+        # ----- 4. Read the public key ----- #
         public_key = public_path.read_text().strip()
 
         spinner.write(
@@ -142,15 +249,15 @@ def ssh(
             )
         )
 
-        # ----- 4. Call the SDK to sign the key ----- #
+        # ----- 5. Call the SDK to sign the key ----- #
         client = config.new_v2_client()
         request = SSHKeySignRequest(publicKey=public_key)
         response = client.sign_ssh_public_key(body=request)
 
-        # ----- 5. Remove old identity & write the new certificate ----- #
+        # ----- 6. Remove old identity & write the new certificate ----- #
         # Remove BEFORE overwriting the cert file so the old identity
         # still matches what is loaded in the agent.
-        if agent:
+        if agent_available:
             remove_from_ssh_agent(private_path)
 
         write_certificate(cert_path, response.certificate)
@@ -162,8 +269,8 @@ def ssh(
             )
         )
 
-        # ----- 6. Load into ssh-agent with 5-minute TTL ----- #
-        if agent:
+        # ----- 7. Load into ssh-agent with 5-minute TTL ----- #
+        if agent_available:
             try:
                 add_to_ssh_agent(private_path)
                 spinner.write(
@@ -181,7 +288,7 @@ def ssh(
                     )
                 )
 
-        # ----- 7. Print certificate expiry ----- #
+        # ----- 8. Print certificate expiry ----- #
         expiry = format_cert_expiry(cert_path)
         if expiry:
             spinner.write(
