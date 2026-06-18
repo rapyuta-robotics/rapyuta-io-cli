@@ -14,9 +14,9 @@
 
 import click
 
-from riocli.compose.down import down
-from riocli.compose.generate import generate
-from riocli.compose.up import up
+from riocli.compose.down import down as _down_cmd
+from riocli.compose.generate import generate as _generate_cmd
+from riocli.compose.up import up as _up_cmd
 from riocli.constants.colors import Colors
 from riocli.utils import AliasedGroup
 
@@ -38,6 +38,6 @@ def compose() -> None:
     pass
 
 
-compose.add_command(generate)
-compose.add_command(up)
-compose.add_command(down)
+compose.add_command(_generate_cmd)
+compose.add_command(_up_cmd)
+compose.add_command(_down_cmd)

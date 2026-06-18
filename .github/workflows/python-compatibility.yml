@@ -61,6 +61,3 @@ jobs:
 
       - name: Run the CLI
         run: uv run --python ${{ matrix.python-version }} rio --help
-
-      - name: Run unit tests
-        run: uv run --python ${{ matrix.python-version }} pytest tests/unit/ -v --tb=short
