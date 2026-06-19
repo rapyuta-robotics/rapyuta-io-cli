@@ -20,9 +20,9 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 from benedict import benedict
-from ruamel.yaml import YAML
 from munch import Munch, munchify, unmunchify
 from rapyuta_io_sdk_v2 import walk_pages
+from ruamel.yaml import YAML, YAMLError
 
 from riocli.config import new_v2_client
 from riocli.utils import tabulate_data
@@ -234,7 +234,7 @@ def parse_configtree_value(value: str) -> Any:
     """
     try:
         return _yaml_reader.load(value)
-    except Exception:
+    except YAMLError:
         return value
 
 
@@ -347,7 +347,7 @@ def combine_metadata(keys: dict) -> dict:
             # passing it through YAML parser.
             try:
                 data = _yaml_reader.load(data)
-            except Exception:
+            except YAMLError:
                 # Values are not guaranteed to be valid YAML, e.g. logging
                 # format strings like "[%(levelname)s] ...". Keep the raw
                 # string as-is when parsing fails.

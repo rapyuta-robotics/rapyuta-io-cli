@@ -16,8 +16,8 @@ from pathlib import Path
 
 import click
 from benedict import benedict
-from ruamel.yaml import YAML as _YAML
 from click_help_colors import HelpColorsCommand
+from ruamel.yaml import YAML as _YAML
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
@@ -95,7 +95,7 @@ from riocli.utils.spinner import with_spinner
     "--override",
     "overrides",
     type=click.Path(exists=True),
-    default=None,
+    default=(),
     multiple=True,
     help="Override values for keys in the imported files.",
 )
