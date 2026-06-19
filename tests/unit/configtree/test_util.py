@@ -41,6 +41,31 @@ class TestCombineMetadata:
         assert result["a/bool"] is True
         assert result["a/str"] == "hello"
 
+    def test_yaml11_booleans_are_preserved_as_strings(self):
+        # YAML 1.1 coerces yes/no/on/off to bool; YAML 1.2 (ruamel) keeps them
+        # as strings — the core fix for the configtree import/export pipeline.
+        keys = {
+            "a/yes": {"data": _encode("yes")},
+            "a/no": {"data": _encode("no")},
+            "a/on": {"data": _encode("on")},
+            "a/off": {"data": _encode("off")},
+        }
+
+        result = combine_metadata(keys)
+
+        assert result["a/yes"] == "yes"
+        assert result["a/no"] == "no"
+        assert result["a/on"] == "on"
+        assert result["a/off"] == "off"
+
+    def test_octal_0777_is_decimal_777(self):
+        # YAML 1.1 (PyYAML) parses 0777 as octal 511; YAML 1.2 treats it as decimal.
+        keys = {"cfg/mode": {"data": _encode("0777")}}
+
+        result = combine_metadata(keys)
+
+        assert result["cfg/mode"] == 777
+
     def test_non_yaml_value_is_kept_as_raw_string(self):
         # Logging format strings are not valid YAML: the leading '[' starts a
         # flow sequence and '%' cannot start a token. They must survive as-is

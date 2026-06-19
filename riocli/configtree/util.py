@@ -19,8 +19,8 @@ from base64 import b64decode
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
-import yaml
 from benedict import benedict
+from ruamel.yaml import YAML
 from munch import Munch, munchify, unmunchify
 from rapyuta_io_sdk_v2 import walk_pages
 
@@ -31,6 +31,11 @@ from riocli.utils.state import StateFile
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+
+_yaml_reader = YAML(typ="safe")
+_yaml_writer = YAML()
+_yaml_writer.default_flow_style = False
+
 MILESTONE_LABEL_KEY = "rapyuta.io/milestone"
 TOP_KEYS_FILE = "top-keys"
 
@@ -219,6 +224,19 @@ def serialize_value(value: Any) -> str:
     )
 
 
+def _to_plain(obj: Any) -> Any:
+    """Recursively convert dict/list subclasses to plain Python containers.
+
+    ruamel.yaml's representer only handles exact dict/list types, not subclasses
+    like benedict or CommentedMap, so we normalise before dumping.
+    """
+    if isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_to_plain(v) for v in obj]
+    return obj
+
+
 def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> None:
     base_dir = os.path.abspath(base_dir)
 
@@ -228,7 +246,8 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
         file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
         final_data = benedict(file_data)
         if file_format == "yaml":
-            final_data.to_yaml(filepath=file_path)
+            with open(file_path, "w") as fh:
+                _yaml_writer.dump(_to_plain(final_data), fh)
         elif file_format == "json":
             final_data.to_json(filepath=file_path, indent=4)
         else:
@@ -313,8 +332,8 @@ def combine_metadata(keys: dict) -> dict:
             # appropriate data-type in Python (as well in exports), we are
             # passing it through YAML parser.
             try:
-                data = yaml.safe_load(data)
-            except yaml.YAMLError:
+                data = _yaml_reader.load(data)
+            except Exception:
                 # Values are not guaranteed to be valid YAML, e.g. logging
                 # format strings like "[%(levelname)s] ...". Keep the raw
                 # string as-is when parsing fails.
