@@ -224,6 +224,20 @@ def serialize_value(value: Any) -> str:
     )
 
 
+def parse_configtree_value(value: str) -> Any:
+    """Parse a CLI string value using YAML 1.2 semantics before storage.
+
+    Gives put-key the same type detection as the import path so that
+    '{a: 1}' → {"a": 1} (JSON), '[1,2]' → [1, 2] (list), 'true' → bool,
+    'yes' → str (YAML 1.2, not coerced to bool), etc.
+    Falls back to the raw string when the value is not parseable as YAML.
+    """
+    try:
+        return _yaml_reader.load(value)
+    except Exception:
+        return value
+
+
 def _to_plain(obj: Any) -> Any:
     """Recursively convert dict/list subclasses to plain Python containers.
 

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from base64 import b64encode
 
-from riocli.configtree.util import combine_metadata
+from riocli.configtree.util import combine_metadata, parse_configtree_value, serialize_value
 
 
 def _encode(value: str) -> str:
@@ -76,6 +76,50 @@ class TestCombineMetadata:
         result = combine_metadata(keys)
 
         assert result["wms/logging/format"] == fmt
+
+
+class TestParseConfigtreeValue:
+    """Tests for parse_configtree_value() — ensures put-key matches import types."""
+
+    def test_integer_string_becomes_int(self):
+        assert parse_configtree_value("300") == 300
+        assert isinstance(parse_configtree_value("300"), int)
+
+    def test_float_string_becomes_float(self):
+        assert parse_configtree_value("3.14") == 3.14
+
+    def test_bool_true_becomes_bool(self):
+        assert parse_configtree_value("true") is True
+        assert parse_configtree_value("false") is False
+
+    def test_null_becomes_none(self):
+        assert parse_configtree_value("null") is None
+
+    def test_yaml11_booleans_stay_as_strings(self):
+        # YAML 1.2: yes/no/on/off are NOT booleans — strings preserved.
+        assert parse_configtree_value("yes") == "yes"
+        assert parse_configtree_value("no") == "no"
+        assert parse_configtree_value("on") == "on"
+        assert parse_configtree_value("off") == "off"
+
+    def test_plain_string_passes_through(self):
+        assert parse_configtree_value("hello") == "hello"
+
+    def test_dict_normalizes_to_json_form(self):
+        # YAML shorthand {a: 1} → Python dict → json.dumps → '{"a": 1}'
+        parsed = parse_configtree_value("{a: 1}")
+        stored = serialize_value(parsed)
+        assert stored == '{"a": 1}'
+
+    def test_list_normalizes_spacing(self):
+        # '[1,2]' (no space) → list [1,2] → json.dumps → '[1, 2]'
+        parsed = parse_configtree_value("[1,2]")
+        stored = serialize_value(parsed)
+        assert stored == "[1, 2]"
+
+    def test_invalid_yaml_falls_back_to_raw_string(self):
+        fmt = "[%(levelname)s] [%(asctime)s]: %(message)s"
+        assert parse_configtree_value(fmt) == fmt
 
     def test_metadata_is_combined_with_value(self):
         keys = {

@@ -29,6 +29,7 @@ from riocli.configtree.util import (
     MILESTONE_LABEL_KEY,
     display_config_tree_keys,
     get_revision_from_state,
+    parse_configtree_value,
     save_revision,
     serialize_value,
 )
@@ -430,7 +431,7 @@ def put_key_in_revision(
         with Revision(
             tree_name=tree_name, spinner=spinner, client=client, with_org=with_org
         ) as rev:
-            rev.store(key=key, value=value)
+            rev.store(key=key, value=parse_configtree_value(value))
             spinner.write(click.style(f"\t{Symbols.SUCCESS} Key {key} added."))
     except Exception as e:
         spinner.text = click.style(
