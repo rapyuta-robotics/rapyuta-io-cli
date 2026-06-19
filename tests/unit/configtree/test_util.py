@@ -18,7 +18,11 @@ from __future__ import annotations
 
 from base64 import b64encode
 
-from riocli.configtree.util import combine_metadata, parse_configtree_value, serialize_value
+from riocli.configtree.util import (
+    combine_metadata,
+    parse_configtree_value,
+    serialize_value,
+)
 
 
 def _encode(value: str) -> str:
