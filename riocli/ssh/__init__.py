@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""``rio ssh-cert`` – sign an SSH public key and load the certificate into ssh-agent.
+"""``rio ssh-cert`` – sign an SSH public key and optionally install the wrapper.
 
-Generates a dedicated ``rio_ed25519`` key pair (if not already present),
-requests a signed SSH user certificate from rapyuta.io, writes it to
-``<app-dir>/rio_ed25519-cert.pub``, and loads the identity into
-``ssh-agent`` with a 5-minute TTL for immediate use.
+When invoked with no subcommand, signs the SSH public key and loads the
+certificate into ssh-agent.  Pass ``install-wrapper`` as a subcommand to
+set up transparent automatic renewal.
 """
 
 from __future__ import annotations
@@ -26,7 +25,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import click
-from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import SSHKeySignRequest
 
 from riocli.config import get_config_from_context
@@ -39,11 +37,13 @@ from riocli.ssh.certificate import (
     is_cert_valid,
     write_certificate,
 )
+from riocli.ssh.install_wrapper import install_wrapper
 from riocli.ssh.util import (
     add_to_ssh_agent,
     is_ssh_agent_available,
     remove_from_ssh_agent,
 )
+from riocli.utils import AliasedGroup
 from riocli.utils.spinner import with_spinner
 
 _SYSTEM_KEY_NAMES = ("id_ed25519", "id_ecdsa", "id_rsa")
@@ -67,57 +67,14 @@ def _resolve_key_paths(key_path, use_system_key, config):
         # No system key found — fall back to the rio-cli managed key.
         return config.ssh_private_key, config.ssh_public_key, config.ssh_certificate, True
 
-    priv = Path(key_path).expanduser().resolve()
+    priv = Path(key_path)
     pub = priv.parent / f"{priv.name}.pub"
     cert = priv.parent / f"{priv.name}-cert.pub"
     return priv, pub, cert, False
 
 
-@click.command(
-    "ssh-cert",
-    cls=HelpColorsCommand,
-    help_headers_color=Colors.YELLOW,
-    help_options_color=Colors.GREEN,
-)
-@click.option(
-    "--agent/--no-agent",
-    "agent",
-    default=True,
-    help="Load (or skip loading) the identity into ssh-agent.",
-)
-@click.option(
-    "--force",
-    "-f",
-    is_flag=True,
-    default=False,
-    help="Re-sign the certificate even if the existing one is still valid.",
-)
-@click.option(
-    "--use-system-key",
-    "use_system_key",
-    is_flag=True,
-    default=False,
-    help=(
-        "Search ~/.ssh/ for an existing key pair (id_ed25519, id_ecdsa, id_rsa) "
-        "and sign that instead of the rio-cli managed key. "
-        "Falls back to the managed key if no system key is found. "
-        "Does not load into ssh-agent unless --agent is also passed."
-    ),
-)
-@click.option(
-    "--key-path",
-    "key_path",
-    default=None,
-    metavar="PATH",
-    help=(
-        "Path to a specific SSH private key to sign. "
-        "Expects PATH.pub alongside it; errors if either file is missing. "
-        "Does not load into ssh-agent unless --agent is also passed."
-    ),
-)
-@click.pass_context
 @with_spinner(text="Signing SSH public key...")
-def ssh(
+def _do_sign_cert(
     ctx: click.Context,
     agent: bool,
     force: bool,
@@ -125,29 +82,6 @@ def ssh(
     key_path: str | None,
     spinner: Yaspin = None,  # type: ignore[assignment]  # injected by @with_spinner
 ) -> None:
-    """Sign your SSH public key and load the certificate into ssh-agent.
-
-    Uses a dedicated ``rio_ed25519`` key pair by default (auto-generated
-    on first run).  Pass ``--use-system-key`` to sign an existing key from
-    ``~/.ssh/``, or ``--key-path PATH`` to sign a specific key.
-
-    Agent loading is enabled by default for the managed key, but opt-in
-    (requires explicit ``--agent``) when ``--use-system-key`` or
-    ``--key-path`` is used.
-
-    \b
-    Examples:
-        $ rio ssh-cert
-        $ rio ssh-cert --use-system-key
-        $ rio ssh-cert --use-system-key --agent
-        $ rio ssh-cert --key-path ~/.ssh/id_ed25519
-        $ rio ssh-cert --key-path ~/.ssh/id_ed25519 --agent
-        $ rio ssh-cert --no-agent
-        $ rio ssh-cert --force
-    """
-    if use_system_key and key_path is not None:
-        ctx.fail("--use-system-key and --key-path are mutually exclusive.")
-
     try:
         config = get_config_from_context(ctx)
 
@@ -311,3 +245,88 @@ def ssh(
             fg=Colors.RED,
         )
         raise SystemExit(1) from e
+
+
+@click.group(
+    "ssh-cert",
+    cls=AliasedGroup,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+    invoke_without_command=True,
+)
+@click.option(
+    "--agent/--no-agent",
+    "agent",
+    default=True,
+    help="Load (or skip loading) the identity into ssh-agent.",
+)
+@click.option(
+    "--force",
+    "-f",
+    is_flag=True,
+    default=False,
+    help="Re-sign the certificate even if the existing one is still valid.",
+)
+@click.option(
+    "--use-system-key",
+    "use_system_key",
+    is_flag=True,
+    default=False,
+    help=(
+        "Search ~/.ssh/ for an existing key pair (id_ed25519, id_ecdsa, id_rsa) "
+        "and sign that instead of the rio-cli managed key. "
+        "Falls back to the managed key if no system key is found. "
+        "Does not load into ssh-agent unless --agent is also passed."
+    ),
+)
+@click.option(
+    "--key-path",
+    "key_path",
+    default=None,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    help=(
+        "Path to a specific SSH private key to sign. "
+        "Expects PATH.pub alongside it; errors if either file is missing. "
+        "Does not load into ssh-agent unless --agent is also passed."
+    ),
+)
+@click.pass_context
+def ssh_cert(
+    ctx: click.Context,
+    agent: bool,
+    force: bool,
+    use_system_key: bool,
+    key_path: str | None,
+) -> None:
+    """Sign your SSH public key and load the certificate into ssh-agent.
+
+    Uses a dedicated ``rio_ed25519`` key pair by default (auto-generated
+    on first run).  Pass ``--use-system-key`` to sign an existing key from
+    ``~/.ssh/``, or ``--key-path PATH`` to sign a specific key.
+
+    Agent loading is enabled by default for the managed key, but opt-in
+    (requires explicit ``--agent``) when ``--use-system-key`` or
+    ``--key-path`` is used.
+
+    \b
+    Examples:
+        $ rio ssh-cert
+        $ rio ssh-cert --use-system-key
+        $ rio ssh-cert --use-system-key --agent
+        $ rio ssh-cert --key-path ~/.ssh/id_ed25519
+        $ rio ssh-cert --key-path ~/.ssh/id_ed25519 --agent
+        $ rio ssh-cert --no-agent
+        $ rio ssh-cert --force
+        $ rio ssh-cert install-wrapper
+        $ rio ssh-cert install-wrapper --ssh-user rr
+    """
+    if ctx.invoked_subcommand is not None:
+        return
+
+    if use_system_key and key_path is not None:
+        ctx.fail("--use-system-key and --key-path are mutually exclusive.")
+
+    _do_sign_cert(ctx, agent, force, use_system_key, key_path)
+
+
+ssh_cert.add_command(install_wrapper)

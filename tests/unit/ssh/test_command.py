@@ -33,7 +33,7 @@ class TestResolveKeyPaths:
     """Unit tests for the _resolve_key_paths() helper."""
 
     def test_no_flags_returns_managed_key(self, ssh_dir):
-        from riocli.ssh import _resolve_key_paths
+        from riocli.ssh.cert import _resolve_key_paths
 
         config = _make_config_for_dir(ssh_dir)
         priv, pub, cert, should_generate = _resolve_key_paths(None, False, config)
@@ -44,7 +44,7 @@ class TestResolveKeyPaths:
         assert should_generate is True
 
     def test_use_system_key_finds_ed25519(self, tmp_path):
-        from riocli.ssh import _resolve_key_paths
+        from riocli.ssh.cert import _resolve_key_paths
 
         fake_home = tmp_path / "home"
         ssh_dir = fake_home / ".ssh"
@@ -62,7 +62,7 @@ class TestResolveKeyPaths:
         assert should_generate is False
 
     def test_use_system_key_skips_to_ecdsa_when_ed25519_missing(self, tmp_path):
-        from riocli.ssh import _resolve_key_paths
+        from riocli.ssh.cert import _resolve_key_paths
 
         fake_home = tmp_path / "home"
         ssh_dir = fake_home / ".ssh"
@@ -79,7 +79,7 @@ class TestResolveKeyPaths:
         assert should_generate is False
 
     def test_use_system_key_falls_back_when_no_system_key(self, tmp_path):
-        from riocli.ssh import _resolve_key_paths
+        from riocli.ssh.cert import _resolve_key_paths
 
         fake_home = tmp_path / "home"
         (fake_home / ".ssh").mkdir(parents=True)
@@ -92,7 +92,7 @@ class TestResolveKeyPaths:
         assert should_generate is True
 
     def test_explicit_key_path_derives_pub_and_cert(self, tmp_path):
-        from riocli.ssh import _resolve_key_paths
+        from riocli.ssh.cert import _resolve_key_paths
 
         key = tmp_path / "mykey"
         config = MagicMock()
@@ -119,7 +119,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -140,7 +140,7 @@ class TestSSHCommand:
         config.ensure_ssh_keys.return_value = True
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -159,7 +159,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--no-agent"], catch_exceptions=False)
@@ -178,7 +178,7 @@ class TestSSHCommand:
         config.new_v2_client.return_value = _mock_v2_client(certificate="new-cert")
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--force"], catch_exceptions=False)
@@ -197,7 +197,7 @@ class TestSSHCommand:
         config.new_v2_client.return_value = _mock_v2_client(certificate="fresh-cert")
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--force", "--no-agent"], catch_exceptions=False)
@@ -218,7 +218,7 @@ class TestSSHCommand:
         config.new_v2_client.return_value = _mock_v2_client(certificate="new-cert")
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["-f"], catch_exceptions=False)
@@ -236,7 +236,7 @@ class TestSSHCommand:
         )
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [])
@@ -252,7 +252,7 @@ class TestSSHCommand:
         )
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [])
@@ -268,7 +268,7 @@ class TestSSHCommand:
         )
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [])
@@ -284,7 +284,7 @@ class TestSSHCommand:
         )
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [])
@@ -294,17 +294,18 @@ class TestSSHCommand:
 
     @patch("riocli.ssh.get_config_from_context")
     def test_missing_private_key_errors(self, mock_get_config, ssh_dir):
-        """--key-path pointing to a non-existent private key must error."""
+        """--key-path pointing to a non-existent file is rejected by Click (exit 2)."""
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--key-path", str(ssh_dir / "nonexistent_key")])
 
-        assert result.exit_code == 1
-        assert "SSH private key not found" in result.output
+        # click.Path(exists=True) validates the path before our code runs.
+        assert result.exit_code == 2
+        assert "does not exist" in result.output
 
     @patch("riocli.ssh.get_config_from_context")
     def test_missing_public_key_errors(self, mock_get_config, ssh_dir):
@@ -314,7 +315,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--key-path", str(priv)])
@@ -332,7 +333,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -353,7 +354,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -379,7 +380,7 @@ class TestSSHCommand:
             True,
         )
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--use-system-key"], catch_exceptions=False)
@@ -401,7 +402,7 @@ class TestSSHCommand:
         mock_get_config.return_value = config
         mock_add.side_effect = RuntimeError("agent not running")
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -423,7 +424,7 @@ class TestSSHCommand:
         call_order = []
         mock_remove.side_effect = lambda *a, **k: call_order.append("remove")
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         with patch("riocli.ssh.write_certificate") as mock_write:
             mock_write.side_effect = lambda *a, **k: call_order.append("write")
@@ -457,7 +458,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -481,7 +482,7 @@ class TestSSHCommand:
         config.new_v2_client.return_value = _mock_v2_client(certificate="fresh-cert")
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--force"], catch_exceptions=False)
@@ -510,7 +511,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--no-agent"], catch_exceptions=False)
@@ -540,7 +541,7 @@ class TestSSHCommand:
         mock_get_config.return_value = config
         mock_add.side_effect = RuntimeError("SSH_AUTH_SOCK is not set")
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -568,7 +569,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -587,7 +588,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -605,7 +606,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -623,7 +624,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, [], catch_exceptions=False)
@@ -644,7 +645,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(
@@ -666,7 +667,7 @@ class TestSSHCommand:
         config = _make_config_for_dir(ssh_dir)
         mock_get_config.return_value = config
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(
@@ -696,7 +697,7 @@ class TestSSHCommand:
             False,
         )
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--use-system-key"], catch_exceptions=False)
@@ -723,7 +724,7 @@ class TestSSHCommand:
             False,
         )
 
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(
@@ -737,7 +738,7 @@ class TestSSHCommand:
 
     def test_use_system_key_and_key_path_together_errors(self, ssh_dir):
         """--use-system-key and --key-path together must be rejected."""
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(
@@ -751,7 +752,7 @@ class TestSSHCommand:
 
     def test_user_guid_flag_not_accepted(self):
         """--user-guid should no longer be accepted."""
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         runner = CliRunner()
         result = runner.invoke(ssh, ["--user-guid", "test-guid-123"])
@@ -773,7 +774,7 @@ class TestE2ESignFlow:
         add_raises: bool = False,
     ):
         """Run rio ssh with real ssh-keygen and mocked SDK/ssh-add."""
-        from riocli.ssh import ssh
+        from riocli.ssh.cert import ssh
 
         if cli_args is None:
             cli_args = []
