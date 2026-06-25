@@ -1611,7 +1611,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
     { name = "rapyuta-io", specifier = ">=3.1.0" },
-    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel" },
+    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?branch=feat%2Fdatabase" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1639,7 +1639,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.3.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=devel#59d72fe5e3b33d1f456c16e9a9e955b20a976788" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?branch=feat%2Fdatabase#1d1f4bea5d94d7bffdfce97dd4a144ea94eae185" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
