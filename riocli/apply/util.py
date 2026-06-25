@@ -27,6 +27,7 @@ from riocli.apply.filters import get_interface_ip, getenv
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.constants.symbols import Symbols
+from riocli.database.model import Database
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
@@ -42,6 +43,7 @@ from riocli.usergroup.model import UserGroup
 from riocli.utils import tabulate_data
 
 KIND_TO_CLASS = {
+    "database": Database,
     "deployment": Deployment,
     "device": Device,
     "disk": Disk,

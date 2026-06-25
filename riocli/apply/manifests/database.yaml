@@ -1,0 +1,23 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Database"
+metadata:
+  name: "orders-db"
+  labels:
+    app: orders
+spec:
+  type: postgres
+  postgres:
+    version: "17"  # Supported: 14, 15, 16, 17, 18
+    primary:
+      deviceName: edge-node-01
+      dataDirectory: /opt/rapyuta/volumes/orders-db
+      port: 5432
+    credentials:
+      username: app
+      password: <secret>  # Immutable after creation
+    multipleDatabase:
+      - orders
+      - analytics
+    parameters:
+      max_connections: "200"
+      shared_buffers: 512MB
