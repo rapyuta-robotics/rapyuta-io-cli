@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rapyuta_io_sdk_v2 import walk_pages
 import click
 from click_help_colors import HelpColorsCommand
 
@@ -59,8 +60,12 @@ def list_backups(database: str, labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        backups = client.list_backups(database=database, label_selector=labels)
-        display_backup_list(backups.items, show_header=True)
+        backups = []
+        for page in walk_pages(
+            client.list_backups, label_selector=labels
+        ):
+            backups.extend(page)
+        display_backup_list(backups, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
