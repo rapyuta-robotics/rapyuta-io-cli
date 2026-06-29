@@ -14,9 +14,7 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 
-from riocli.backup.util import find_backup_guid
 from riocli.config import new_v2_client
 from riocli.constants import Colors
 from riocli.utils import inspect_with_format
@@ -35,23 +33,19 @@ from riocli.utils import inspect_with_format
     default="yaml",
     type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
-@click.argument("backup-name-or-guid", type=str)
-def inspect_backup(format_type: str, backup_name_or_guid: str) -> None:
-    """Inspect a backup by its GUID or name.
+@click.argument("backup-name", type=str)
+def inspect_backup(format_type: str, backup_name: str) -> None:
+    """Inspect a backup by its name.
 
     Usage Examples:
 
-        $ rio backup inspect backup-abcdef0123456789abcdef01
+        $ rio backup inspect orders-nightly
 
         $ rio backup inspect orders-nightly --format json
     """
     try:
         client = new_v2_client()
-        try:
-            backup = client.get_backup(backup_name_or_guid)
-        except HttpNotFoundError:
-            guid = find_backup_guid(client, backup_name_or_guid)
-            backup = client.get_backup(guid)
+        backup = client.get_backup(backup_name)
         inspect_with_format(
             backup.model_dump(exclude_none=True, by_alias=True), format_type
         )

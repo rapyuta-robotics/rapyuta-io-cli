@@ -150,7 +150,7 @@ def delete_backup(
 
 def _apply_delete(client: Client, result: Queue, backup: Backup) -> None:
     try:
-        client.delete_backup(guid=backup.metadata.guid)
+        client.delete_backup(name=backup.metadata.name)
         result.put((backup.metadata.name, True, "Backup deleted successfully"))
     except Exception as e:
         result.put((backup.metadata.name, False, str(e)))

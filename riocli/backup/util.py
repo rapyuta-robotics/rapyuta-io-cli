@@ -15,7 +15,7 @@
 import re
 import typing
 
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
 
 from riocli.utils import tabulate_data
 
@@ -25,30 +25,19 @@ def fetch_backups(
     backup_name_or_regex: str,
     include_all: bool,
 ) -> list:
-    backups = client.list_backups()
+    backups = []
+    for page in walk_pages(client.list_backups):
+        backups.extend(page)
 
     if include_all:
-        return backups.items
+        return backups
 
     result = []
-    for backup in backups.items:
+    for backup in backups:
         if re.search(backup_name_or_regex, backup.metadata.name):
             result.append(backup)
 
     return result
-
-
-def find_backup_guid(client: Client, name: str) -> str:
-    """Resolve a backup name to its GUID.
-
-    Backups are keyed by GUID; this helper lets users reference a backup by
-    its (project-unique) name.
-    """
-    for backup in client.list_backups().items:
-        if backup.metadata.name == name:
-            return backup.metadata.guid
-
-    raise Exception(f"backup '{name}' not found")
 
 
 def display_backup_list(backups: typing.Any, show_header: bool = True):
