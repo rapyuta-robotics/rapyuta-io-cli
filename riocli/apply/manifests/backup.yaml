@@ -8,5 +8,3 @@ spec:
   type: scheduled  # Supported: scheduled, onDemand
   database: orders-db  # Source database (reference only; backup survives its deletion)
   schedule: "0 2 * * *"  # Cron schedule; required when type is scheduled
-  retention:
-    count: 7  # Number of backups to retain

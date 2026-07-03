@@ -13,15 +13,11 @@
 # limitations under the License.
 
 import re
-import time
 import typing
 
 from rapyuta_io_sdk_v2 import Client
 
 from riocli.utils import tabulate_data
-from riocli.utils.error import DeploymentNotRunning, RetriesExhausted
-
-_TERMINAL_PHASES = {"Running", "Failed", "Degraded"}
 
 
 def fetch_databases(
@@ -66,28 +62,3 @@ def display_database_list(databases: typing.Any, show_header: bool = True):
         )
 
     tabulate_data(data, headers)
-
-
-def poll_database(
-    client: Client,
-    name: str,
-    retry_count: int = 50,
-    sleep_interval: int = 6,
-):
-    database = client.get_database(name)
-
-    for _ in range(retry_count):
-        phase = getattr(database.status, "phase", None) if database.status else None
-        if phase in _TERMINAL_PHASES:
-            if phase == "Failed":
-                raise DeploymentNotRunning(
-                    f"Database reached Failed phase. Message: {getattr(database.status, 'message', '')}"
-                )
-            return database
-
-        time.sleep(sleep_interval)
-        database = client.get_database(name)
-
-    raise RetriesExhausted(
-        f"Retries exhausted: Tried {retry_count} times with {sleep_interval}s interval."
-    )

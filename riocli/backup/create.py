@@ -50,20 +50,11 @@ from riocli.constants import Colors, Symbols
     default=None,
     help="Cron schedule (required when type is scheduled)",
 )
-@click.option(
-    "--retention",
-    "-r",
-    "retention",
-    type=click.INT,
-    default=None,
-    help="Number of backups to retain",
-)
 @click.argument("backup-name", type=str)
 def create_backup(
     database: str,
     backup_type: str,
     schedule: str,
-    retention: int,
     backup_name: str,
 ) -> None:
     """Create a backup for a database.
@@ -75,7 +66,7 @@ def create_backup(
 
         Create a scheduled nightly backup
 
-            $ rio backup create orders-nightly --database orders-db --schedule "0 2 * * *" --retention 7
+            $ rio backup create orders-nightly --database orders-db --schedule "0 2 * * *"
 
         Trigger an on-demand backup
 
@@ -91,8 +82,6 @@ def create_backup(
     }
     if schedule:
         spec["schedule"] = schedule
-    if retention is not None:
-        spec["retention"] = {"count": retention}
 
     body = {
         "apiVersion": "api.rapyuta.io/v2",
