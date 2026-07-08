@@ -1,3 +1,10 @@
+## [10.6.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.0...v10.6.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **compose:** de-deduplicate mount volumes in init-perm sidecar container ([3642506](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/364250657ec51e2a913b56df6233285d03ef9742))
+
 # [10.6.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.5.0...v10.6.0) (2026-06-11)
 
 
