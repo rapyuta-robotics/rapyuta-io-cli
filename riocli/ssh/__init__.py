@@ -43,6 +43,12 @@ from riocli.ssh.util import (
     is_ssh_agent_available,
     remove_from_ssh_agent,
 )
+from riocli.ssh_ensure_cert import (
+    _STATE_NAME,
+    read_saved_project,
+    resolve_margin,
+    save_project,
+)
 from riocli.utils import AliasedGroup
 from riocli.utils.spinner import with_spinner
 
@@ -141,7 +147,14 @@ def _do_sign_cert(
             )
 
         # ----- 3. Reuse existing cert if still valid ----- #
-        if is_cert_valid(cert_path) and not force:
+        # Project-id tracking: detect when the user switches projects.
+        app_dir = config.ssh_certificate.parent
+        state_path = app_dir / _STATE_NAME
+        project_id = config.data.get("project_id")
+        margin = resolve_margin(None)
+
+        project_matches = (not project_id) or read_saved_project(state_path) == project_id
+        if not force and is_cert_valid(cert_path, margin=margin) and project_matches:
             expiry = format_cert_expiry(cert_path)
             spinner.write(
                 click.style(
@@ -195,6 +208,10 @@ def _do_sign_cert(
             remove_from_ssh_agent(private_path)
 
         write_certificate(cert_path, response.certificate)
+
+        # Save project id after successful renewal so next run can fast-path.
+        if project_id:
+            save_project(state_path, project_id)
 
         spinner.write(
             click.style(

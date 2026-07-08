@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import re
 import shutil
+import sys
 from pathlib import Path
 
 import click
@@ -32,13 +33,16 @@ _INCLUDE_LINE = "Include config.d/rio-ssh.conf"
 _MANAGED_BEGIN = "# >>> rio ssh-cert (managed) >>>"
 _MANAGED_END = "# <<< rio ssh-cert (managed) <<<"
 
+#: Standalone fast-start entry point invoked from the Match exec block.
+_ENSURE_CERT_BIN = "rio-ssh-ensure-cert"
+
 _CONF_TEMPLATE = """\
 # Managed by rio ssh-cert install-wrapper. Do not edit by hand.
 #
 # For the matching login accounts, run cert renewal before connecting.
 # If it exits 0 the certificate is valid (or was just renewed) and SSH
 # uses it; otherwise SSH falls back to defaults.
-Match user {ssh_user} exec "rio ssh-cert --no-agent"
+Match user {ssh_user} exec "'{ensure_cert_cmd}'"
     IdentityFile    {identity_file}
     CertificateFile {certificate_file}
     IdentitiesOnly  yes
@@ -72,10 +76,10 @@ def install_wrapper(ssh_user: str, force: bool) -> None:
     automatically renews the certificate when needed — no manual
     ``rio ssh-cert`` required.
 
-    The SSH ``Match exec`` clause calls ``rio ssh-cert --no-agent`` directly.
-    For a more robust wrapper with project-id tracking, flock-based concurrency
-    protection, and expiry-margin support, see the standalone shell wrapper at
-    https://github.com/rapyuta-robotics/rr-rio-ssh-wrapper.
+    The SSH ``Match exec`` clause calls the lightweight ``rio-ssh-ensure-cert``
+    binary (not ``rio`` itself, which would add ~650ms of CLI startup to every
+    connection).  It silently keeps the certificate valid with project-id
+    tracking, flock-based concurrency protection, and an expiry margin.
 
     \b
     Examples:
@@ -83,6 +87,15 @@ def install_wrapper(ssh_user: str, force: bool) -> None:
         $ rio ssh-cert install-wrapper --ssh-user rr
         $ rio ssh-cert install-wrapper --force
     """
+    if sys.platform == "win32":
+        click.secho(
+            f"{Symbols.ERROR} install-wrapper is not supported on Windows. "
+            "The SSH Match exec feature requires a Unix-compatible OpenSSH client. "
+            "Run 'rio ssh-cert' manually to sign your certificate.",
+            fg=Colors.RED,
+        )
+        raise SystemExit(1)
+
     if not _SSH_USER_RE.match(ssh_user):
         click.secho(
             f"{Symbols.ERROR} Invalid --ssh-user value '{ssh_user}'. "
@@ -91,10 +104,12 @@ def install_wrapper(ssh_user: str, force: bool) -> None:
         )
         raise SystemExit(1)
 
-    if shutil.which("rio") is None:
+    ensure_cert_cmd = shutil.which(_ENSURE_CERT_BIN)
+    if ensure_cert_cmd is None:
         click.secho(
-            f"{Symbols.ERROR} rio not found on PATH. "
-            "Ensure the rio-cli package is installed and on your PATH.",
+            f"{Symbols.ERROR} {_ENSURE_CERT_BIN} not found on PATH. "
+            "Ensure the rio-cli package is installed and on your PATH "
+            "(reinstall it if you upgraded from an older version).",
             fg=Colors.RED,
         )
         raise SystemExit(1)
@@ -124,6 +139,7 @@ def install_wrapper(ssh_user: str, force: bool) -> None:
                 ssh_user=ssh_user,
                 identity_file=identity_file,
                 certificate_file=certificate_file,
+                ensure_cert_cmd=ensure_cert_cmd,
             )
         )
         conf_file.chmod(0o600)

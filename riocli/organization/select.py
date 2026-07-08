@@ -110,3 +110,25 @@ def select_organization(
             f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
             fg=Colors.YELLOW,
         )
+
+    if ctx.obj.data.get("project_id"):
+        _refresh_ssh_cert(ctx)
+
+
+def _refresh_ssh_cert(ctx: click.Context) -> None:
+    """Re-issue the SSH certificate for the newly selected project.
+
+    Failure is non-fatal: a warning is shown so the organization switch
+    still succeeds even if cert renewal fails.
+    """
+    from riocli.ssh import ssh_cert
+
+    try:
+        ctx.invoke(ssh_cert, force=True, agent=True, use_system_key=False, key_path=None)
+    except SystemExit as e:
+        if e.code != 0:
+            click.secho(
+                f"{Symbols.WARNING} SSH certificate renewal failed. "
+                "Run 'rio ssh-cert --force' manually.",
+                fg=Colors.YELLOW,
+            )

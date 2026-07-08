@@ -22,10 +22,10 @@ from click.testing import CliRunner
 
 from riocli.ssh.install_wrapper import _inject_include, install_wrapper
 
-_RIO_PATH = "/usr/local/bin/rio"
+_ENSURE_PATH = "/usr/local/bin/rio-ssh-ensure-cert"
 
 
-def _run(args: list[str], rio: str | None = _RIO_PATH) -> object:
+def _run(args: list[str], rio: str | None = _ENSURE_PATH) -> object:
     """Invoke install_wrapper with shutil.which mocked."""
     runner = CliRunner()
     with patch("riocli.ssh.install_wrapper.shutil.which", return_value=rio):
@@ -41,7 +41,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir",
@@ -58,7 +58,7 @@ class TestInstallWrapper:
         assert conf_file.exists()
         content = conf_file.read_text()
         assert "Match user rr" in content
-        assert "rio ssh-cert --no-agent" in content
+        assert f"exec \"'{_ENSURE_PATH}'\"" in content
         assert "IdentityFile" in content
         assert "CertificateFile" in content
 
@@ -74,7 +74,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir", return_value=str(tmp_path)
@@ -87,7 +87,7 @@ class TestInstallWrapper:
     def test_wrapper_not_on_path_exits_1(self, tmp_path):
         result = _run([], rio=None)
         assert result.exit_code == 1
-        assert "rio not found" in result.output
+        assert "rio-ssh-ensure-cert not found" in result.output
 
     def test_existing_conf_skipped_without_force(self, tmp_path):
         ssh_dir = tmp_path / ".ssh"
@@ -100,7 +100,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir", return_value=str(tmp_path)
@@ -123,7 +123,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir", return_value=str(tmp_path)
@@ -145,7 +145,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir", return_value=str(tmp_path)
@@ -166,7 +166,7 @@ class TestInstallWrapper:
             patch("riocli.ssh.install_wrapper.Path.home", return_value=tmp_path),
             patch(
                 "riocli.ssh.install_wrapper.shutil.which",
-                return_value=_RIO_PATH,
+                return_value=_ENSURE_PATH,
             ),
             patch(
                 "riocli.ssh.install_wrapper.click.get_app_dir", return_value=str(tmp_path)
