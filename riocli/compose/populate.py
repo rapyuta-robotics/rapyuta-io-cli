@@ -144,7 +144,7 @@ def _build_fixup_cmd(entry: dict) -> str:
 
 
 def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
-    fixup = []
+    volumes_by_path: dict[tuple, dict] = {}
     for dep in deployments.values():
         for volume in dep.spec.get("volumes", []):
             uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
@@ -177,16 +177,16 @@ def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
                         f"perm must be a valid octal permission value (0–7777), got: {perm}"
                     )
 
-            fixup.append(
-                {
+            key = (host, container)
+            if key not in volumes_by_path:
+                volumes_by_path[key] = {
                     "host": host,
                     "container": container,
                     "uid": uid,
                     "gid": gid,
                     "perm": perm,
                 }
-            )
-    return fixup
+    return list(volumes_by_path.values())
 
 
 def _is_ros_enabled(deployment: Munch, package: Munch) -> bool:

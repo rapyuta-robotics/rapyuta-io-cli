@@ -4,7 +4,105 @@ import os
 import stat
 import subprocess
 
-from riocli.compose.populate import _build_fixup_cmd
+from munch import Munch, munchify
+
+from riocli.compose.populate import _build_fixup_cmd, get_volumes_requiring_fixup
+
+
+def _make_deployment(volumes: list[dict]) -> Munch:
+    return munchify({"spec": {"volumes": volumes}})
+
+
+class TestGetVolumesRequiringFixup:
+    def test_deduplicates_same_host_and_container(self):
+        dep = _make_deployment(
+            [
+                {
+                    "subPath": "/host/path",
+                    "mountPath": "/container/path",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+                {
+                    "subPath": "/host/path",
+                    "mountPath": "/container/path",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+            ]
+        )
+        result = get_volumes_requiring_fixup({"dep": dep})
+        assert len(result) == 1
+        assert result[0]["host"] == "/host/path"
+        assert result[0]["container"] == "/container/path"
+
+    def test_deduplicates_across_deployments(self):
+        vol = {
+            "subPath": "/host/path",
+            "mountPath": "/container/path",
+            "uid": 1000,
+            "gid": 1000,
+            "perm": 755,
+        }
+        dep1 = _make_deployment([vol])
+        dep2 = _make_deployment([vol])
+        result = get_volumes_requiring_fixup({"dep1": dep1, "dep2": dep2})
+        assert len(result) == 1
+
+    def test_distinct_mounts_are_all_returned(self):
+        dep = _make_deployment(
+            [
+                {
+                    "subPath": "/host/a",
+                    "mountPath": "/container/a",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+                {
+                    "subPath": "/host/b",
+                    "mountPath": "/container/b",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+            ]
+        )
+        result = get_volumes_requiring_fixup({"dep": dep})
+        assert len(result) == 2
+
+    def test_skips_volumes_without_uid_gid_perm(self):
+        dep = _make_deployment(
+            [
+                {"subPath": "/host/path", "mountPath": "/container/path"},
+            ]
+        )
+        result = get_volumes_requiring_fixup({"dep": dep})
+        assert result == []
+
+    def test_same_host_different_container_both_kept(self):
+        dep = _make_deployment(
+            [
+                {
+                    "subPath": "/host/path",
+                    "mountPath": "/container/a",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+                {
+                    "subPath": "/host/path",
+                    "mountPath": "/container/b",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 755,
+                },
+            ]
+        )
+        result = get_volumes_requiring_fixup({"dep": dep})
+        assert len(result) == 2
 
 
 class TestBuildFixupCmdStructure:

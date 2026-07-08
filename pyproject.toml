@@ -54,7 +54,7 @@ dependencies = [
     "waiting>=1.4.1",
     "yaspin==2.5.0",
     "ansible-core>=2.13.13",
-    "rapyuta-io-sdk-v2>=0.8.0",
+    "rapyuta-io-sdk-v2>=0.8.2",
     "cryptography>=40.0.0",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
