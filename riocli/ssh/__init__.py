@@ -315,7 +315,7 @@ def ssh_cert(
     use_system_key: bool,
     key_path: str | None,
 ) -> None:
-    """Sign your SSH public key and load the certificate into ssh-agent.
+    """Sign your SSH public key and optionally load the certificate into ssh-agent.
 
     Uses a dedicated ``rio_ed25519`` key pair by default (auto-generated
     on first run).  Pass ``--use-system-key`` to sign an existing key from
@@ -347,3 +347,22 @@ def ssh_cert(
 
 
 ssh_cert.add_command(install_wrapper)
+
+
+def refresh_ssh_cert(ctx: click.Context) -> None:
+    """Re-issue the SSH certificate for the currently selected project.
+
+    Shared by ``rio project select`` and ``rio organization select`` so a
+    project/org switch always carries a matching certificate. Failure is
+    non-fatal: a warning is shown so the caller's own success message
+    still stands even if cert renewal fails.
+    """
+    try:
+        ctx.invoke(ssh_cert, force=True, agent=True, use_system_key=False, key_path=None)
+    except SystemExit as e:
+        if e.code != 0:
+            click.secho(
+                f"{Symbols.WARNING} SSH certificate renewal failed. "
+                "Run 'rio ssh-cert --force' manually.",
+                fg=Colors.YELLOW,
+            )

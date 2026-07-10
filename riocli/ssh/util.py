@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SSH agent helpers for ``rio ssh``.
+"""SSH agent helpers for ``rio ssh-cert``.
 
 Wraps ``ssh-add`` to load and remove identities from a running
 ssh-agent instance.

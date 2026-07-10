@@ -43,8 +43,8 @@ _CONF_TEMPLATE = """\
 # If it exits 0 the certificate is valid (or was just renewed) and SSH
 # uses it; otherwise SSH falls back to defaults.
 Match user {ssh_user} exec "'{ensure_cert_cmd}'"
-    IdentityFile    {identity_file}
-    CertificateFile {certificate_file}
+    IdentityFile    "{identity_file}"
+    CertificateFile "{certificate_file}"
     IdentitiesOnly  yes
 """
 

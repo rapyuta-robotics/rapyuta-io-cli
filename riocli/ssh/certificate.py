@@ -110,6 +110,10 @@ def is_cert_valid(cert_path: Path, margin: int = 0) -> bool:
     if expiry is None:
         return False
 
+    # A negative margin would extend the effective expiry instead of adding
+    # handshake headroom, letting an already-expired cert read as valid.
+    margin = max(margin, 0)
+
     return datetime.now(tz=timezone.utc) < expiry - timedelta(seconds=margin)
 
 

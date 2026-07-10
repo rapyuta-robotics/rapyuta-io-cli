@@ -122,6 +122,7 @@ def cert_valid(cert_path: Path, margin: int = 0) -> bool:
         return True
 
     expiry = datetime.fromtimestamp(valid_before, tz=timezone.utc)
+    margin = max(margin, 0)
     return datetime.now(tz=timezone.utc) < expiry - timedelta(seconds=margin)
 
 
@@ -225,7 +226,12 @@ def ensure_certificate(
     ``rio ssh-cert`` interactive flow.  Returns a process exit
     code (0 = certificate ready, non-zero = fall back to default SSH config).
     """
-    config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        config_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    except OSError:
+        # Match exec must never crash SSH — fall back to default config.
+        return 1
+
     log_path = config_dir / _LOG_NAME
     state_path = config_dir / _STATE_NAME
 
