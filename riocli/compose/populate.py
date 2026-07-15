@@ -6,7 +6,11 @@ from typing import Any
 import click
 from munch import Munch
 
-from riocli.compose.defaults import DEFAULT_VOLUME_MOUNTS, generate_roscore_service
+from riocli.compose.defaults import (
+    CONFIGS_DIR,
+    generate_roscore_service,
+    get_default_volume_mounts,
+)
 from riocli.compose.model import DependsCondition, DockerCompose, HealthCheck, Service
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
@@ -28,6 +32,7 @@ def populate(
     ctx: click.Context,
     deployments: dict[str, dict],
     packages: dict[str, dict],
+    configs_path: str | None = None,
     *args,
     **kwargs,
 ) -> DockerCompose:
@@ -37,6 +42,8 @@ def populate(
     Args:
         deployments: Dictionary of deployment definitions.
         packages: Dictionary of package definitions.
+        configs_path: Host-side path to bind-mount in place of CONFIGS_DIR
+            wherever CONFIGS_DIR appears as a volume's host path.
 
     Returns:
         DockerCompose object representing the final configuration.
@@ -54,6 +61,7 @@ def populate(
                 deployments=deployments,
                 packages=packages,
                 services=services,
+                configs_path=configs_path,
             )
             processed_deployments[key] = deployment
         except (KeyError, ValueError) as e:
@@ -68,7 +76,7 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
-    fixup_vols = get_volumes_requiring_fixup(processed_deployments)
+    fixup_vols = get_volumes_requiring_fixup(processed_deployments, configs_path)
     if fixup_vols:
         fix_cmds = [_build_fixup_cmd(entry) for entry in fixup_vols]
         fixperms_vols = [
@@ -143,14 +151,29 @@ def _build_fixup_cmd(entry: dict) -> str:
     return f"if [ -f {path} ]; then {file_block}; else {dir_block}; fi"
 
 
-def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
+def _substitute_configs_path(
+    host_path: str | None, configs_path: str | None
+) -> str | None:
+    """Rewrites a volume's host path from under CONFIGS_DIR to under configs_path, if given."""
+    if not configs_path or not host_path:
+        return host_path
+    if host_path == CONFIGS_DIR:
+        return configs_path
+    if host_path.startswith(CONFIGS_DIR + "/"):
+        return configs_path.rstrip("/") + host_path[len(CONFIGS_DIR) :]
+    return host_path
+
+
+def get_volumes_requiring_fixup(
+    deployments: dict[str, dict], configs_path: str | None = None
+) -> list[dict]:
     volumes_by_path: dict[tuple, dict] = {}
     for dep in deployments.values():
         for volume in dep.spec.get("volumes", []):
             uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
             if uid is None and gid is None and perm is None:
                 continue
-            host = volume.get("subPath")
+            host = _substitute_configs_path(volume.get("subPath"), configs_path)
             container = volume.get("mountPath")
             if not host or not container:
                 continue
@@ -210,6 +233,7 @@ def _process_deployment_services(
     deployments: dict[str, dict],
     packages: dict[str, dict],
     services: dict[str, Service],
+    configs_path: str | None = None,
 ) -> None:
     """Process a single deployment and add its services to the services dictionary."""
     dep_name = deployment.metadata.name
@@ -228,7 +252,7 @@ def _process_deployment_services(
         restart_policy = "no"
 
     # Build volume mounts, dependencies, and environment variables
-    volume_mounts = build_volume_mounts(deployment)
+    volume_mounts = build_volume_mounts(deployment, configs_path)
     ros_enabled = _is_ros_enabled(deployment=deployment, package=package)
     if ros_enabled and "ros-master" not in services:
         services["ros-master"] = generate_roscore_service()
@@ -296,23 +320,25 @@ def create_service(
     )
 
 
-def build_volume_mounts(deployment: dict) -> list[str]:
+def build_volume_mounts(deployment: dict, configs_path: str | None = None) -> list[str]:
     """
     Constructs a list of volume mount strings for a given deployment.
     Includes default volumes and custom volumes specified in the deployment.
 
     Args:
         deployment: The deployment definition dictionary.
+        configs_path: Host-side path to bind-mount in place of CONFIGS_DIR
+            wherever CONFIGS_DIR appears as a volume's host path.
 
     Returns:
         List of Docker volume mount strings.
     """
     # Start with default volume mounts
-    service_volumes = DEFAULT_VOLUME_MOUNTS.copy()
+    service_volumes = get_default_volume_mounts(configs_path)
 
     # Add custom volumes from deployment
     for volume in deployment.spec.get("volumes", []):
-        src = volume.get("subPath")
+        src = _substitute_configs_path(volume.get("subPath"), configs_path)
         dst = volume.get("mountPath")
         if not src or not dst:
             continue

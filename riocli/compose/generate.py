@@ -77,6 +77,15 @@ from riocli.utils import print_centered_text
     default=False,
     help="Merge new services into existing compose file instead of overwriting.",
 )
+@click.option(
+    "--configs-path",
+    "configs_path",
+    default=None,
+    help="Host path to bind-mount in place of /opt/rapyuta/configs in the generated compose file.",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -89,6 +98,7 @@ def generate(
     append_services: bool,
     files: tuple[str, ...],
     branch: str = None,
+    configs_path: Path = None,
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -118,6 +128,10 @@ def generate(
 
             rio compose generate templates/
             rio compose generate --chart --append ioconfig-syncer
+
+        Bind-mount a local directory in place of /opt/rapyuta/configs:
+
+            rio compose generate templates/ --configs-path ./local-configs
     """
 
     if not path:
@@ -146,6 +160,7 @@ def generate(
             values=values,
             secrets=secrets,
             files=files,
+            configs_path=configs_path.as_posix() if configs_path else None,
         )
         if append_services and existing_services:
             compose_doc["services"] = merge_compose_services(
@@ -162,6 +177,7 @@ def generate_compose_file(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     files: tuple[str, ...],
+    configs_path: str | None = None,
 ) -> dict:
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -179,7 +195,7 @@ def generate_compose_file(
 
     print_centered_text("Converting Manifests")
     docker_compose_manifest = populate(
-        ctx=ctx, deployments=deployments, packages=packages
+        ctx=ctx, deployments=deployments, packages=packages, configs_path=configs_path
     )
 
     return clean_dict(asdict(docker_compose_manifest))
