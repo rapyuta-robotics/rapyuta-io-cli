@@ -2,7 +2,6 @@ name: ⬆️ Upload AppImage
 on:
   push:
     branches:
-    - main
     - devel
   pull_request:
 
@@ -20,59 +19,33 @@ jobs:
         run: ./scripts/build-rio-appimage.sh
         shell: bash
         env:
+          CHANNEL: ${{ github.event_name == 'pull_request' && 'dev' || 'devel' }}
           MINIO_URL: ${{ secrets.MINIO_URL }}
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET: ${{ secrets.MINIO_SECRET }}
-
-      - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appimages
-          path: ${{ github.workspace }}/scripts/rio*.AppImage
-          if-no-files-found: error
-          retention-days: 15
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
 
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
           sudo apt-get install gh
 
-      - name: Edit the last bot comment
-        id: edit-comment
+      - name: Comment blob link on PR
         if: github.event_name == 'pull_request'
         run: |
-          set -e
-          gh pr comment $PR_NUMBER --edit-last -b "
-          **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
-          "
+          ACCOUNT="${{ secrets.AZURE_STORAGE_ACCOUNT }}"
+          if [ -z "$ACCOUNT" ]; then
+            echo "No Azure account secret (fork PR?) — skipping blob comment"
+            exit 0
+          fi
+          # Same sanitization as build-rio-appimage.sh so the link matches the
+          # actual dev/<safe-branch>/ upload path.
+          BRANCH=$(echo "${{ github.head_ref }}" | tr -c '0-9A-Za-z' '-' | sed -E 's/-+/-/g; s/^-|-$//g')
+          FILE=$(ls scripts/rio*.AppImage | xargs -n1 basename | head -n1)
+          URL="https://${ACCOUNT}.blob.core.windows.net/dev/${BRANCH}/${FILE}"
+          gh pr comment "$PR_NUMBER" --edit-last -b "**🤖 PR AppImage:** [$FILE]($URL)" \
+            || gh pr comment "$PR_NUMBER" -b "**🤖 PR AppImage:** [$FILE]($URL)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_ID: ${{ github.run_id }}
-          PR_NUMBER: ${{ github.event.number }}
-        continue-on-error: true
-
-      - name: Delete existing bot comments
-        if: steps.edit-comment.outcome == 'failure'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
-        run: |
-          # Get all comments on the PR where the author is the bot
-          COMMENTS=$(gh api repos/${{ github.repository }}/issues/$PR_NUMBER/comments --jq '.[] | select(.user.login == "github-actions[bot]") | .id')
-      
-          # Loop through each bot comment and delete it
-          for COMMENT_ID in $COMMENTS; do
-            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
-          done
-
-      - name: Artifact Comment on PR
-        # if: github.event_name == 'pull_request'
-        if: steps.edit-comment.outcome == 'failure'
-        run: |
-          gh pr comment $PR_NUMBER -b  "
-          **🤖 Pull Request [Artifacts](https://github.com/rapyuta-robotics/rapyuta-io-cli/actions/runs/"$RUN_ID") (#"$RUN_ID") 🎉**
-          "
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_ID: ${{ github.run_id }}
           PR_NUMBER: ${{ github.event.number }}
