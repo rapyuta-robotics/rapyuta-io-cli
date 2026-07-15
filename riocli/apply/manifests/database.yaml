@@ -12,10 +12,21 @@ spec:
       deviceName: edge-node-01
       dataDirectory: /opt/rapyuta/volumes/orders-db
       port: 5432
-    users:
+    # Credentials reference keys in an Opaque secret (immutable after creation).
+    # Create the secret first, e.g.:
+    #   rio secret create orders-db-secret --type opaque \
+    #     PRIMARY_USER=app PRIMARY_PASS=... BACKUP_USER=rio_backup BACKUP_PASS=...
+    credentials:
       primary:
-        username: app
-        password: <secret>  # Immutable after creation
+        username:
+          secretKeyRef: {name: orders-db-secret, key: PRIMARY_USER}
+        password:
+          secretKeyRef: {name: orders-db-secret, key: PRIMARY_PASS}
+      backup:
+        username:
+          secretKeyRef: {name: orders-db-secret, key: BACKUP_USER}
+        password:
+          secretKeyRef: {name: orders-db-secret, key: BACKUP_PASS}
     multipleDatabase:
       - orders
       - analytics
