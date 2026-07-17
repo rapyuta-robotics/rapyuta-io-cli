@@ -75,6 +75,7 @@ dev = [
 
 [project.scripts]
 rio = "riocli.bootstrap:safe_cli"
+rio-ssh-ensure-cert = "riocli.ssh_ensure_cert:main"
 
 [project.urls]
 Homepage = "https://cli.rapyuta.io"

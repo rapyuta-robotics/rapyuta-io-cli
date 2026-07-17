@@ -69,6 +69,16 @@ class TestSSHAddWrappers:
             add_to_ssh_agent(priv)
 
     @patch("riocli.ssh.util.subprocess.run")
+    def test_add_to_ssh_agent_binary_not_found(self, mock_run, tmp_path):
+        """FileNotFoundError from subprocess (ssh-add not on PATH) becomes RuntimeError."""
+        mock_run.side_effect = FileNotFoundError("No such file or directory: 'ssh-add'")
+        priv = tmp_path / "rio_ed25519"
+        priv.write_text("fake key")
+
+        with pytest.raises(RuntimeError, match="ssh-add not found"):
+            add_to_ssh_agent(priv)
+
+    @patch("riocli.ssh.util.subprocess.run")
     def test_remove_from_ssh_agent_success(self, mock_run, tmp_path):
         mock_run.return_value = _make_subprocess_result()
         priv = tmp_path / "rio_ed25519"

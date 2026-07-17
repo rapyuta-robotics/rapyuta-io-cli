@@ -57,3 +57,7 @@ def select_project(
         f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",
         fg=Colors.GREEN,
     )
+
+    from riocli.ssh import refresh_ssh_cert
+
+    refresh_ssh_cert(ctx)

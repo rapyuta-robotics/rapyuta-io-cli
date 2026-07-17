@@ -22,7 +22,7 @@ for structured certificate introspection.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 from cryptography.hazmat.primitives.serialization import load_ssh_public_identity
@@ -90,15 +90,18 @@ def parse_cert_valid_before(cert_path: Path) -> datetime | None:
     return datetime.fromtimestamp(ts, tz=timezone.utc)
 
 
-def is_cert_valid(cert_path: Path) -> bool:
+def is_cert_valid(cert_path: Path, margin: int = 0) -> bool:
     """Check whether the certificate exists and has not yet expired.
 
     Args:
         cert_path: Path to the certificate file.
+        margin: Treat the certificate as expired this many seconds
+            *before* its real expiry, to leave headroom for an SSH
+            handshake that follows the check.  Defaults to ``0``.
 
     Returns:
-        ``True`` if the certificate exists and its expiry is in the
-        future, ``False`` otherwise.
+        ``True`` if the certificate exists and its expiry (minus
+        ``margin`` seconds) is still in the future, ``False`` otherwise.
     """
     if not cert_path.is_file():
         return False
@@ -107,7 +110,11 @@ def is_cert_valid(cert_path: Path) -> bool:
     if expiry is None:
         return False
 
-    return datetime.now(tz=timezone.utc) < expiry
+    # A negative margin would extend the effective expiry instead of adding
+    # handshake headroom, letting an already-expired cert read as valid.
+    margin = max(margin, 0)
+
+    return datetime.now(tz=timezone.utc) < expiry - timedelta(seconds=margin)
 
 
 def format_cert_expiry(cert_path: Path) -> str | None:
