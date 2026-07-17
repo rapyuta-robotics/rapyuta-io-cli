@@ -1,3 +1,15 @@
+## [10.6.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.1...v10.6.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **vpn:** fix machines list command ([58c40ad](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/58c40ad4455449dee242b9cd2275688af4b68897)), closes [#2055](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/2055)
+
+
+### Performance Improvements
+
+* **project:** Add fast path for projects without Docker cache enabled ([cef1edb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/cef1edb2d607cc9ec94ab7926cc4e29b7c0090df))
+
 ## [10.6.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.0...v10.6.1) (2026-07-08)
 
 
