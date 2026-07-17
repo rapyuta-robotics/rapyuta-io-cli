@@ -15,7 +15,7 @@
 from munch import Munch
 from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2 import Project as ProjectModel
-from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
+from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 from typing_extensions import override
 from waiting import wait
 
@@ -65,6 +65,15 @@ class Project(Model):
     ) -> ApplyResult:
         # set organizationGUID irrespective of it being present in the manifest
         self._set_organization(config)
+
+        # Fast Path for Projects without Docker cache.
+        if not self._obj.spec.features.docker_cache.enabled:
+            try:
+                _ = v2_client.create_project(body=self._obj)
+
+                return ApplyResult.CREATED
+            except HttpAlreadyExistsError:
+                pass
 
         try:
             # We try to update before creating in Project. The DockerCache
