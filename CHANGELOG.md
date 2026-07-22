@@ -1,3 +1,10 @@
+# [10.7.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.2...v10.7.0) (2026-07-22)
+
+
+### Features
+
+* add --key-path flag for custom keys usage ([#547](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/547)) ([#557](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/557)) ([68e398e](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/68e398ec6e41f1644e36b2a775cdc4987def98b6))
+
 ## [10.6.2](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.1...v10.6.2) (2026-07-17)
 
 
