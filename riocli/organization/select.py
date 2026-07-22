@@ -110,3 +110,8 @@ def select_organization(
             f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
             fg=Colors.YELLOW,
         )
+
+    if ctx.obj.data.get("project_id"):
+        from riocli.ssh import refresh_ssh_cert
+
+        refresh_ssh_cert(ctx)

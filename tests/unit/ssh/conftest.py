@@ -80,6 +80,9 @@ def _make_config_for_dir(d: Path) -> MagicMock:
     # By default, ensure_ssh_keys returns False (existing key pair).
     config.ensure_ssh_keys.return_value = False
     config.new_v2_client.return_value = _mock_v2_client()
+    # data is an instance attribute on Configuration, so spec=... blocks it;
+    # set it explicitly so callers of config.data.get(...) work correctly.
+    config.data = {}
     return config
 
 
