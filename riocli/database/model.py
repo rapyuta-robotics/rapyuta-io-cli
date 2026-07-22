@@ -26,15 +26,11 @@ class Database(Model):
         self._obj = DatabaseModel.model_validate(self)
 
     @override
-    def create_object(
-        self, v2_client: v2Client, *args, **kwargs
-    ) -> DatabaseModel:
+    def create_object(self, v2_client: v2Client, *args, **kwargs) -> DatabaseModel:
         return v2_client.create_database(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
-    def update_object(
-        self, v2_client: v2Client, *args, **kwargs
-    ) -> DatabaseModel:
+    def update_object(self, v2_client: v2Client, *args, **kwargs) -> DatabaseModel:
         return v2_client.update_database(name=self._obj.metadata.name, body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
