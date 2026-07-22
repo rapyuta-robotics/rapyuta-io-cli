@@ -1,0 +1,1019 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Deployment" href="deployment.html"><link rel="prev" title="Completion" href="completion.html">
+        <link rel="prefetch" href="_static/logo-light-mode.svg" as="image">
+        <link rel="prefetch" href="_static/logo-dark-mode.svg" as="image">
+
+    <link rel="shortcut icon" href="_static/favicon.ico"><!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Config Trees - CLI documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="_static/css/rio-sphinx.css?v=b645b6b6" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">CLI  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/logo-light-mode.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/logo-dark-mode.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">CLI  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="apply.html">Apply</a><input aria-label="Toggle navigation of Apply" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auth.html">Authentication</a><input aria-label="Toggle navigation of Authentication" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="chart.html">Chart</a><input aria-label="Toggle navigation of Chart" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="completion.html">Completion</a><input aria-label="Toggle navigation of Completion" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">ConfigTree</a><input aria-label="Toggle navigation of ConfigTree" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="deployment.html">Deployment</a><input aria-label="Toggle navigation of Deployment" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="device.html">Device</a><input aria-label="Toggle navigation of Device" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="disk.html">Disk</a><input aria-label="Toggle navigation of Disk" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hwil.html">Hardware-in-Loop</a><input aria-label="Toggle navigation of Hardware-in-Loop" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="network.html">Network</a><input aria-label="Toggle navigation of Network" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="organization.html">Organization</a><input aria-label="Toggle navigation of Organization" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="package.html">Package</a><input aria-label="Toggle navigation of Package" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="parameter.html">Parameter</a><input aria-label="Toggle navigation of Parameter" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="project.html">Project</a><input aria-label="Toggle navigation of Project" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="secret.html">Secret</a><input aria-label="Toggle navigation of Secret" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="static_route.html">Static Route</a><input aria-label="Toggle navigation of Static Route" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="usergroup.html">User Group</a><input aria-label="Toggle navigation of User Group" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="vpn.html">VPN</a><input aria-label="Toggle navigation of VPN" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="_sources/config_tree.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="config-trees">
+<h1>Config Trees<a class="headerlink" href="#config-trees" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="rio-configtree">
+<h2>rio configtree<a class="headerlink" href="#rio-configtree" title="Link to this heading">¶</a></h2>
+<p>Config Trees are version controlled config.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-configtree-clone">
+<h3>clone<a class="headerlink" href="#rio-configtree-clone" title="Link to this heading">¶</a></h3>
+<p>Clones an existing Config tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>clone<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span>NEW_TREE
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-clone-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-clone-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-clone-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-clone-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-clone-arg-NEW_TREE">
+<span class="sig-name descname"><span class="pre">NEW_TREE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-clone-arg-NEW_TREE" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-create">
+<h3>create<a class="headerlink" href="#rio-configtree-create" title="Link to this heading">¶</a></h3>
+<p>Creates a new Config tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-create-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-create-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-create-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-create-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-delete">
+<h3>delete<a class="headerlink" href="#rio-configtree-delete" title="Link to this heading">¶</a></h3>
+<p>Deletes the Config tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-delete-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-delete-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-delete-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-delete-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-diff">
+<h3>diff<a class="headerlink" href="#rio-configtree-diff" title="Link to this heading">¶</a></h3>
+<p>Diff between two revisions of the same or different trees.</p>
+<p>The ref is a slash (‘/’) separated string.</p>
+<ul class="simple">
+<li><p>The first part can be ‘org’ or ‘proj’ defining the scope of the reference.</p></li>
+<li><p>The second part defines the name of the Tree.</p></li>
+<li><p>The third optional part defines the revision-id or milestone of the Tree.</p></li>
+</ul>
+<p>Examples:</p>
+<ul class="simple">
+<li><p>org/tree-name</p></li>
+<li><p>org/tree-name/rev-id</p></li>
+<li><p>org/tree-name/milestone</p></li>
+<li><p>proj/tree-name</p></li>
+<li><p>proj/tree-name/rev-id</p></li>
+<li><p>proj/tree-name/milestone</p></li>
+</ul>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>diff<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>REF_1<span class="w"> </span>REF_2
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-diff-arg-REF_1">
+<span class="sig-name descname"><span class="pre">REF_1</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-diff-arg-REF_1" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-diff-arg-REF_2">
+<span class="sig-name descname"><span class="pre">REF_2</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-diff-arg-REF_2" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-export">
+<h3>export<a class="headerlink" href="#rio-configtree-export" title="Link to this heading">¶</a></h3>
+<p>Export keys of the Config tree to files.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>REV_ID<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-export-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-export-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-export-export-directory">
+<span class="sig-name descname"><span class="pre">--export-directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;export_directory&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-export-export-directory" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the directory for exporting files.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-export-f">
+<span id="cmdoption-rio-configtree-export-format"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;file_format&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-export-f" title="Link to this definition">¶</a></dt>
+<dd><p>Format of the exported files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json | yaml</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-export-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-export-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-export-arg-REV_ID">
+<span class="sig-name descname"><span class="pre">REV_ID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-export-arg-REV_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-history">
+<h3>history<a class="headerlink" href="#rio-configtree-history" title="Link to this heading">¶</a></h3>
+<p>Shows the revisions of the Config Tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span><span class="nb">history</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-history-graph">
+<span class="sig-name descname"><span class="pre">--graph</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-history-graph" title="Link to this definition">¶</a></dt>
+<dd><p>Display in the graph format.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-history-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-history-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-history-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-history-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-import">
+<h3>import<a class="headerlink" href="#rio-configtree-import" title="Link to this heading">¶</a></h3>
+<p>Imports keys from JSON or YAML files.</p>
+<p>The import command can import keys into an existing Config Tree or
+to an ETCD cluster. It can also output the keys to files in JSON or
+YAML format. The command can also apply overrides to the keys before
+importing them.</p>
+<p>The keys are imported from the one or more files provided as arguments.
+The supported file formats are JSON and YAML.</p>
+<p>Usage Examples:</p>
+<blockquote>
+<div><p>Import keys from master.json to the sootballs Config Tree along with overrides. Also, commit and update the head of the Config Tree.</p>
+<p>$ rio configtree import sootballs master.json –override overrides.json –commit –update-head</p>
+<p>Import keys from master.json to etcd along with overrides.</p>
+<p>$ rio configtree import sootballs master.json –override overrides.json –etcd-endpoint localhost</p>
+</div></blockquote>
+<p>You can specify more than one override file by providing the files with –override flag multiple times.</p>
+<p>When importing to ETCD, the name of the base JSON or YAML file will be prefixed to the keys.</p>
+<p>Note: If –etcd-endpoint is provided, the keys are imported to the local etcd cluster instead of the rapyuta.io cloud.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>import<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>FILES<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-commit">
+<span id="cmdoption-rio-configtree-import-no-commit"></span><span class="sig-name descname"><span class="pre">--commit</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-commit</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-import-commit" title="Link to this definition">¶</a></dt>
+<dd><p>Commit the imported keys to the Config Tree.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-update-head">
+<span id="cmdoption-rio-configtree-import-no-update-head"></span><span class="sig-name descname"><span class="pre">--update-head</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--no-update-head</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-import-update-head" title="Link to this definition">¶</a></dt>
+<dd><p>Update the HEAD of the Config Tree after importing the keys.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-milestone">
+<span class="sig-name descname"><span class="pre">--milestone</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;milestone&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-milestone" title="Link to this definition">¶</a></dt>
+<dd><p>Milestone name for the imported revision.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-etcd-endpoint">
+<span class="sig-name descname"><span class="pre">--etcd-endpoint</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;etcd_endpoint&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-etcd-endpoint" title="Link to this definition">¶</a></dt>
+<dd><p>Import keys to local etcd instead of rapyuta.io cloud</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-export-directory">
+<span class="sig-name descname"><span class="pre">--export-directory</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;export_directory&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-export-directory" title="Link to this definition">¶</a></dt>
+<dd><p>Path to the directory for exporting files.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-export-format">
+<span class="sig-name descname"><span class="pre">--export-format</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;export_format&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-export-format" title="Link to this definition">¶</a></dt>
+<dd><p>Format of the exported files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>json | yaml</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-etcd-port">
+<span class="sig-name descname"><span class="pre">--etcd-port</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;etcd_port&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-etcd-port" title="Link to this definition">¶</a></dt>
+<dd><p>Port for the etcd endpoint</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-etcd-prefix">
+<span class="sig-name descname"><span class="pre">--etcd-prefix</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;etcd_prefix&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-etcd-prefix" title="Link to this definition">¶</a></dt>
+<dd><p>Prefix to use for the key-space</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-import-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-override">
+<span class="sig-name descname"><span class="pre">--override</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;overrides&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-import-override" title="Link to this definition">¶</a></dt>
+<dd><p>Override values for keys in the imported files.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-import-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-import-arg-FILES">
+<span class="sig-name descname"><span class="pre">FILES</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-import-arg-FILES" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-keys">
+<h3>keys<a class="headerlink" href="#rio-configtree-keys" title="Link to this heading">¶</a></h3>
+<p>Lists all the keys in the Config tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>keys<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>REV_ID<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-keys-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-keys-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-keys-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-keys-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-keys-arg-REV_ID">
+<span class="sig-name descname"><span class="pre">REV_ID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-keys-arg-REV_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-list">
+<h3>list<a class="headerlink" href="#rio-configtree-list" title="Link to this heading">¶</a></h3>
+<p>Lists the Config trees.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-list-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-list-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-merge">
+<h3>merge<a class="headerlink" href="#rio-configtree-merge" title="Link to this heading">¶</a></h3>
+<p>Merge the revision specified by the ref on the base-tree. The Base tree must
+be the name of the tree. Merge always works on the HEAD of the tree.</p>
+<p>The ref is a slash (‘/’) separated string.</p>
+<ul class="simple">
+<li><p>The first part can be ‘org’ or ‘proj’ defining the scope of the reference.</p></li>
+<li><p>The second part defines the name of the Tree.</p></li>
+<li><p>The third optional part defines the revision-id or milestone of the Tree.</p></li>
+</ul>
+<p>Examples:</p>
+<ul class="simple">
+<li><p>org/tree-name</p></li>
+<li><p>org/tree-name/rev-id</p></li>
+<li><p>org/tree-name/milestone</p></li>
+<li><p>proj/tree-name</p></li>
+<li><p>proj/tree-name/rev-id</p></li>
+<li><p>proj/tree-name/milestone</p></li>
+</ul>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>merge<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>BASE_TREE_NAME<span class="w"> </span>REF
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-silent">
+<span class="sig-name descname"><span class="pre">--silent</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-silent" title="Link to this definition">¶</a></dt>
+<dd><p>Skip interactively, if fast merge is not possible, then fail.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-ignore-conflict">
+<span class="sig-name descname"><span class="pre">--ignore-conflict</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-ignore-conflict" title="Link to this definition">¶</a></dt>
+<dd><p>Skip the conflicting keys and only perform a partial fast merge.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-milestone">
+<span class="sig-name descname"><span class="pre">--milestone</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;milestone&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-milestone" title="Link to this definition">¶</a></dt>
+<dd><p>Minestone name for the imported revision.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-arg-BASE_TREE_NAME">
+<span class="sig-name descname"><span class="pre">BASE_TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-arg-BASE_TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-merge-arg-REF">
+<span class="sig-name descname"><span class="pre">REF</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-merge-arg-REF" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision">
+<h3>revision<a class="headerlink" href="#rio-configtree-revision" title="Link to this heading">¶</a></h3>
+<p>Revision Operations on Config trees.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="rio-configtree-revision-commit">
+<h4>commit<a class="headerlink" href="#rio-configtree-revision-commit" title="Link to this heading">¶</a></h4>
+<p>Commit the existing Revision</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>commit<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>REV_ID<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-commit-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-commit-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-commit-m">
+<span id="cmdoption-rio-configtree-revision-commit-message"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--message</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;message&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-commit-m" title="Link to this definition">¶</a></dt>
+<dd><p>Message for the Revision.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-commit-milestone">
+<span class="sig-name descname"><span class="pre">--milestone</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;milestone&gt;</span></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-commit-milestone" title="Link to this definition">¶</a></dt>
+<dd><p>Minestone name for the imported revision.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-commit-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-commit-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-commit-arg-REV_ID">
+<span class="sig-name descname"><span class="pre">REV_ID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-commit-arg-REV_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision-delete">
+<h4>delete<a class="headerlink" href="#rio-configtree-revision-delete" title="Link to this heading">¶</a></h4>
+<p>Delete the key in the uncommitted revision</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>delete<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span>KEY
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-delete-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-delete-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-delete-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-delete-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-delete-arg-KEY">
+<span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-delete-arg-KEY" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision-init">
+<h4>init<a class="headerlink" href="#rio-configtree-revision-init" title="Link to this heading">¶</a></h4>
+<p>Initialize a new revision for the Config tree</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>init<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-init-force">
+<span class="sig-name descname"><span class="pre">--force</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-init-force" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-init-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-init-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-init-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-init-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision-keys">
+<h4>keys<a class="headerlink" href="#rio-configtree-revision-keys" title="Link to this heading">¶</a></h4>
+<p>Lists all the keys in the revision</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>keys<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>REV_ID<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-keys-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-keys-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-keys-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-keys-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-keys-arg-REV_ID">
+<span class="sig-name descname"><span class="pre">REV_ID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-keys-arg-REV_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision-put">
+<h4>put<a class="headerlink" href="#rio-configtree-revision-put" title="Link to this heading">¶</a></h4>
+<p>Put a key in the uncommitted revision.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>put<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span>KEY<span class="w"> </span>VALUE
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-arg-KEY">
+<span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-arg-KEY" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-arg-VALUE">
+<span class="sig-name descname"><span class="pre">VALUE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-arg-VALUE" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="rio-configtree-revision-put-file">
+<h4>put-file<a class="headerlink" href="#rio-configtree-revision-put-file" title="Link to this heading">¶</a></h4>
+<p>Upload a file in the uncommitted revision.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>revision<span class="w"> </span>put-file<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span>KEY<span class="w"> </span>FILE_PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-file-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-file-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-file-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-file-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-file-arg-KEY">
+<span class="sig-name descname"><span class="pre">KEY</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-file-arg-KEY" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-revision-put-file-arg-FILE_PATH">
+<span class="sig-name descname"><span class="pre">FILE_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-revision-put-file-arg-FILE_PATH" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="rio-configtree-set-revision">
+<h3>set-revision<a class="headerlink" href="#rio-configtree-set-revision" title="Link to this heading">¶</a></h3>
+<p>Sets the revision as head of the Config tree.</p>
+<p class="rubric">Usage</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>rio<span class="w"> </span>configtree<span class="w"> </span>set-revision<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TREE_NAME<span class="w"> </span><span class="o">[</span>REV_ID<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-set-revision-organization">
+<span class="sig-name descname"><span class="pre">--organization</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-set-revision-organization" title="Link to this definition">¶</a></dt>
+<dd><p>Operate on organization-scoped Config Trees only.</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-set-revision-arg-TREE_NAME">
+<span class="sig-name descname"><span class="pre">TREE_NAME</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-set-revision-arg-TREE_NAME" title="Link to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-rio-configtree-set-revision-arg-REV_ID">
+<span class="sig-name descname"><span class="pre">REV_ID</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-rio-configtree-set-revision-arg-REV_ID" title="Link to this definition">¶</a></dt>
+<dd><p>Optional argument</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="deployment.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Deployment</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="completion.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Completion</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Rapyuta Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Config Trees</a><ul>
+<li><a class="reference internal" href="#rio-configtree">rio configtree</a><ul>
+<li><a class="reference internal" href="#rio-configtree-clone">clone</a></li>
+<li><a class="reference internal" href="#rio-configtree-create">create</a></li>
+<li><a class="reference internal" href="#rio-configtree-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-configtree-diff">diff</a></li>
+<li><a class="reference internal" href="#rio-configtree-export">export</a></li>
+<li><a class="reference internal" href="#rio-configtree-history">history</a></li>
+<li><a class="reference internal" href="#rio-configtree-import">import</a></li>
+<li><a class="reference internal" href="#rio-configtree-keys">keys</a></li>
+<li><a class="reference internal" href="#rio-configtree-list">list</a></li>
+<li><a class="reference internal" href="#rio-configtree-merge">merge</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision">revision</a><ul>
+<li><a class="reference internal" href="#rio-configtree-revision-commit">commit</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision-delete">delete</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision-init">init</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision-keys">keys</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision-put">put</a></li>
+<li><a class="reference internal" href="#rio-configtree-revision-put-file">put-file</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rio-configtree-set-revision">set-revision</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/js/rio-sphinx.js?v=5215d7cd"></script>
+    </body>
+</html>
