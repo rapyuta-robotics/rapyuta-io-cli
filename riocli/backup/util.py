@@ -15,49 +15,47 @@
 import re
 import typing
 
-from rapyuta_io_sdk_v2 import Client
+from rapyuta_io_sdk_v2 import Client, walk_pages
 
 from riocli.utils import tabulate_data
 
 
-def fetch_databases(
+def fetch_backups(
     client: Client,
-    database_name_or_regex: str,
+    backup_name_or_regex: str,
     include_all: bool,
 ) -> list:
-    databases = client.list_databases()
+    backups = []
+    for page in walk_pages(client.list_backups):
+        backups.extend(page)
 
     if include_all:
-        return databases.items
+        return backups
 
     result = []
-    for db in databases.items:
-        if re.search(database_name_or_regex, db.metadata.name):
-            result.append(db)
+    for backup in backups:
+        if re.search(backup_name_or_regex, backup.metadata.name):
+            result.append(backup)
 
     return result
 
 
-def display_database_list(databases: typing.Any, show_header: bool = True):
+def display_backup_list(backups: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ("GUID", "Name", "Phase", "Device", "Version")
+        headers = ("GUID", "Name", "Type", "Database", "Schedule", "Phase")
 
     data = []
-    for db in databases:
-        phase = getattr(db.status, "phase", None) if db.status else None
-        primary = None
-        version = None
-        if db.spec.postgres:
-            primary = db.spec.postgres.primary.device_name
-            version = db.spec.postgres.version
+    for backup in backups:
+        phase = getattr(backup.status, "phase", None) if backup.status else None
         data.append(
             [
-                db.metadata.guid,
-                db.metadata.name,
+                backup.metadata.guid,
+                backup.metadata.name,
+                backup.spec.type,
+                backup.spec.database,
+                backup.spec.schedule or "-",
                 phase or "Unknown",
-                primary or "-",
-                version or "-",
             ]
         )
 
