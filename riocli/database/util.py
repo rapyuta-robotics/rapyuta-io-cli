@@ -19,8 +19,6 @@ from rapyuta_io_sdk_v2 import Client
 
 from riocli.utils import tabulate_data
 
-_TERMINAL_PHASES = {"Running", "Failed", "Degraded"}
-
 
 def fetch_databases(
     client: Client,

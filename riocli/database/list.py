@@ -14,6 +14,7 @@
 
 import click
 from click_help_colors import HelpColorsCommand
+from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
@@ -46,8 +47,10 @@ def list_databases(labels: list[str]) -> None:
     """
     try:
         client = new_v2_client(with_project=True)
-        databases = client.list_databases(label_selector=labels)
-        display_database_list(databases.items, show_header=True)
+        databases = []
+        for page in walk_pages(client.list_databases, label_selector=labels):
+            databases.extend(page)
+        display_database_list(databases, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

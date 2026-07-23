@@ -24,6 +24,7 @@ import jinja2
 from yaspin.api import Yaspin
 
 from riocli.apply.filters import get_interface_ip, getenv
+from riocli.backup.model import Backup
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.constants.symbols import Symbols
@@ -44,6 +45,7 @@ from riocli.utils import tabulate_data
 
 KIND_TO_CLASS = {
     "database": Database,
+    "backup": Backup,
     "deployment": Deployment,
     "device": Device,
     "disk": Disk,
