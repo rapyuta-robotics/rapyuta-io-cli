@@ -24,6 +24,7 @@ from riocli.apply import apply, delete, graph
 from riocli.apply.explain import explain, list_examples
 from riocli.apply.template import template
 from riocli.auth import auth
+from riocli.backup import backup
 from riocli.chart import chart
 from riocli.completion import completion
 from riocli.compose import compose
@@ -167,6 +168,7 @@ cli.add_command(network)
 cli.add_command(completion)
 cli.add_command(parameter)
 cli.add_command(database)
+cli.add_command(backup)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)

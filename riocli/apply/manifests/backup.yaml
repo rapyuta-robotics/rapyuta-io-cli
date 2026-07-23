@@ -1,0 +1,10 @@
+apiVersion: "api.rapyuta.io/v2"
+kind: "Backup"
+metadata:
+  name: "orders-nightly"
+  labels:
+    app: orders
+spec:
+  type: scheduled  # Supported: scheduled, onDemand
+  database: orders-db  # Source database (reference only; backup survives its deletion)
+  schedule: "0 2 * * *"  # Cron schedule; required when type is scheduled

@@ -16,9 +16,9 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import walk_pages
 
+from riocli.backup.util import display_backup_list
 from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.database.util import display_database_list
 
 
 @click.command(
@@ -28,29 +28,42 @@ from riocli.database.util import display_database_list
     help_options_color=Colors.GREEN,
 )
 @click.option(
+    "--database",
+    "-d",
+    "database",
+    type=click.STRING,
+    default=None,
+    help="Filter backups by their source database",
+)
+@click.option(
     "--label",
     "-l",
     "labels",
     multiple=True,
     type=click.STRING,
     default=(),
-    help="Filter the database list by labels",
+    help="Filter the backup list by labels",
 )
-def list_databases(labels: list[str]) -> None:
-    """List the databases in the current project.
+def list_backups(database: str, labels: list[str]) -> None:
+    """List the backups in the current project.
+
+    Backups are first-class resources and survive the deletion of their
+    source database.
 
     Usage Examples:
 
-        $ rio database list
+        $ rio backup list
 
-        $ rio database list -l app=orders
+        $ rio backup list --database orders-db
+
+        $ rio backup list -l app=orders
     """
     try:
         client = new_v2_client(with_project=True)
-        databases = []
-        for page in walk_pages(client.list_databases, label_selector=labels):
-            databases.extend(page)
-        display_database_list(databases, show_header=True)
+        backups = []
+        for page in walk_pages(client.list_backups, label_selector=labels):
+            backups.extend(page)
+        display_backup_list(backups, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

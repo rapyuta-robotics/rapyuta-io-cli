@@ -12,31 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from rapyuta_io_sdk_v2 import Backup as BackupModel
 from rapyuta_io_sdk_v2 import Client as v2Client
-from rapyuta_io_sdk_v2 import Database as DatabaseModel
 from typing_extensions import override
 
 from riocli.model import Model
 
 
-class Database(Model):
+class Backup(Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.update(*args, **kwargs)
-        self._obj = DatabaseModel.model_validate(self)
+        self._obj = BackupModel.model_validate(self)
 
     @override
-    def create_object(self, v2_client: v2Client, *args, **kwargs) -> DatabaseModel:
-        return v2_client.create_database(body=self._obj)  # pyright:ignore[reportArgumentType]
+    def create_object(self, v2_client: v2Client, *args, **kwargs) -> BackupModel:
+        return v2_client.create_backup(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
-    def update_object(self, v2_client: v2Client, *args, **kwargs) -> DatabaseModel:
-        return v2_client.update_database(name=self._obj.metadata.name, body=self._obj)  # pyright:ignore[reportArgumentType]
+    def update_object(self, v2_client: v2Client, *args, **kwargs) -> BackupModel:
+        # Backups are immutable; the API exposes no update operation.
+        raise NotImplementedError
 
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_database(self._obj.metadata.name)
+        _ = v2_client.delete_backup(self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        return None
+        # The source database is the backup's only dependency.
+        return [f"database:{self._obj.spec.database}"]
