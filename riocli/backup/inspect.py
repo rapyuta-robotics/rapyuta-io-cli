@@ -14,43 +14,41 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.database.util import display_database_list
+from riocli.utils import inspect_with_format
 
 
 @click.command(
-    "list",
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
 @click.option(
-    "--label",
-    "-l",
-    "labels",
-    multiple=True,
-    type=click.STRING,
-    default=(),
-    help="Filter the database list by labels",
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
-def list_databases(labels: list[str]) -> None:
-    """List the databases in the current project.
+@click.argument("backup-name", type=str)
+def inspect_backup(format_type: str, backup_name: str) -> None:
+    """Inspect a backup by its name.
 
     Usage Examples:
 
-        $ rio database list
+        $ rio backup inspect orders-nightly
 
-        $ rio database list -l app=orders
+        $ rio backup inspect orders-nightly --format json
     """
     try:
-        client = new_v2_client(with_project=True)
-        databases = []
-        for page in walk_pages(client.list_databases, label_selector=labels):
-            databases.extend(page)
-        display_database_list(databases, show_header=True)
+        client = new_v2_client()
+        backup = client.get_backup(backup_name)
+        inspect_with_format(
+            backup.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
