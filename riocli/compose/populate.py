@@ -491,9 +491,14 @@ def populate_healthcheck(exe: dict) -> HealthCheck | None:
     if not command:
         return None
 
+    start_period = None
+    if probe.get("initialDelaySeconds") is not None:
+        start_period = f"{probe.get('initialDelaySeconds')}s"
+
     return HealthCheck(
         test=" ".join(shlex.quote(part) for part in command),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
         interval=f"{probe.get('periodSeconds', 10)}s",
         retries=probe.get("failureThreshold", 3),
+        start_period=start_period,
     )
