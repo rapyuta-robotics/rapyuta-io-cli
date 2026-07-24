@@ -78,9 +78,7 @@ class TestPopulateHealthcheck:
         assert hc.start_period == "45s"
 
     def test_missing_initial_delay_seconds_leaves_start_period_none(self):
-        exe = munchify(
-            {"livenessProbe": {"exec": {"command": ["rosnode", "list"]}}}
-        )
+        exe = munchify({"livenessProbe": {"exec": {"command": ["rosnode", "list"]}}})
         hc = populate_healthcheck(exe)
         assert hc.start_period is None
 
