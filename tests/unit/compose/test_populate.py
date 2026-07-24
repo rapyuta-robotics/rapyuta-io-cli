@@ -19,6 +19,10 @@ def _make_deployment(volumes: list[dict]) -> Munch:
 
 
 class TestPopulateEntrypoint:
+    # populate_entrypoint() only feeds `rio compose generate`'s local Docker
+    # Compose output. Real device deployments (`rio apply`) never read an
+    # `entrypoint` field -- it has no effect there, only in this pipeline.
+
     def test_missing_entrypoint_returns_none(self):
         assert populate_entrypoint(munchify({"command": "foo"})) is None
 
