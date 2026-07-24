@@ -32,6 +32,7 @@ class HealthCheck:
     interval: str | None = None
     timeout: str | None = None
     retries: int | None = None
+    start_period: str | None = None
 
 
 @dataclass

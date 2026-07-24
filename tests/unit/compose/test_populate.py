@@ -11,6 +11,7 @@ from riocli.compose.populate import (
     get_volumes_requiring_fixup,
     populate_command,
     populate_entrypoint,
+    populate_healthcheck,
 )
 
 
@@ -54,6 +55,34 @@ class TestPopulateEntrypoint:
         exe = munchify({"entrypoint": "./owm_bootstrap.sh", "command": "--foo bar"})
         assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
         assert populate_command(exe) == "--foo bar"
+
+
+class TestPopulateHealthcheck:
+    def test_no_liveness_probe_returns_none(self):
+        assert populate_healthcheck(munchify({})) is None
+
+    def test_no_exec_command_returns_none(self):
+        exe = munchify({"livenessProbe": {"exec": {}}})
+        assert populate_healthcheck(exe) is None
+
+    def test_initial_delay_seconds_becomes_start_period(self):
+        exe = munchify(
+            {
+                "livenessProbe": {
+                    "exec": {"command": ["rosnode", "list"]},
+                    "initialDelaySeconds": 45,
+                }
+            }
+        )
+        hc = populate_healthcheck(exe)
+        assert hc.start_period == "45s"
+
+    def test_missing_initial_delay_seconds_leaves_start_period_none(self):
+        exe = munchify(
+            {"livenessProbe": {"exec": {"command": ["rosnode", "list"]}}}
+        )
+        hc = populate_healthcheck(exe)
+        assert hc.start_period is None
 
 
 class TestGetVolumesRequiringFixup:
