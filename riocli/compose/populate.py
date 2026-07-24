@@ -377,11 +377,10 @@ def populate_entrypoint(exe: dict) -> list[str] | str | None:
     executable must run a different process than the image's default launcher
     (e.g. a bootstrap script instead of the image's normal server process).
     """
-    entrypoint_raw = exe.get("entrypoint")
-    if not entrypoint_raw:
+    if "entrypoint" not in exe or exe.get("entrypoint") is None:
         return None
 
-    return sanitize_command(entrypoint_raw)
+    return sanitize_command(exe.get("entrypoint"))
 
 
 def find_package(packages: dict[str, dict], name: str, version: str) -> dict:
