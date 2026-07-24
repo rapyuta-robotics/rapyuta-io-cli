@@ -6,11 +6,40 @@ import subprocess
 
 from munch import Munch, munchify
 
-from riocli.compose.populate import _build_fixup_cmd, get_volumes_requiring_fixup
+from riocli.compose.populate import (
+    _build_fixup_cmd,
+    get_volumes_requiring_fixup,
+    populate_command,
+    populate_entrypoint,
+)
 
 
 def _make_deployment(volumes: list[dict]) -> Munch:
     return munchify({"spec": {"volumes": volumes}})
+
+
+class TestPopulateEntrypoint:
+    def test_missing_entrypoint_returns_none(self):
+        assert populate_entrypoint(munchify({"command": "foo"})) is None
+
+    def test_string_entrypoint_is_returned_as_is(self):
+        exe = munchify({"entrypoint": "./owm_bootstrap.sh"})
+        assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
+
+    def test_list_entrypoint_is_returned_as_is(self):
+        exe = munchify({"entrypoint": ["/usr/local/bin/apiserver"]})
+        assert populate_entrypoint(exe) == ["/usr/local/bin/apiserver"]
+
+    def test_dollar_vars_are_escaped(self):
+        exe = munchify({"entrypoint": "./run.sh $FOO"})
+        assert populate_entrypoint(exe) == "./run.sh $$FOO"
+
+    def test_entrypoint_and_command_coexist(self):
+        # entrypoint replaces the image's ENTRYPOINT; command still supplies
+        # the args passed to it -- both populate independently.
+        exe = munchify({"entrypoint": "./owm_bootstrap.sh", "command": "--foo bar"})
+        assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
+        assert populate_command(exe) == "--foo bar"
 
 
 class TestGetVolumesRequiringFixup:

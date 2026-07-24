@@ -43,6 +43,7 @@ class Service:
     user: str | None = None
     pull_policy: str | None = DEFAULT_PULL_POLICY
     command: str | list[str] | None = None
+    entrypoint: str | list[str] | None = None
     hostname: str | None = None
     restart: str | None = DEFAULT_RESTART_POLICY
     ports: list[str] | None = field(default_factory=list)
