@@ -19,6 +19,7 @@ from riocli.vpn.disconnect import disconnect
 from riocli.vpn.flush import flush
 from riocli.vpn.machines import machines
 from riocli.vpn.ping import ping_all
+from riocli.vpn.preauthkey import preauthkey
 from riocli.vpn.status import status
 
 
@@ -46,3 +47,4 @@ vpn.add_command(status)
 vpn.add_command(ping_all)
 vpn.add_command(machines)
 vpn.add_command(flush)
+vpn.add_command(preauthkey)
