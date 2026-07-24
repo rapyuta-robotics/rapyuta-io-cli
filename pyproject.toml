@@ -204,4 +204,4 @@ filterwarnings = [
 ]
 
 [tool.uv.sources]
-rapyuta-io-sdk-v2 = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2", branch = "feat/database-phase-2-backup" }
+rapyuta-io-sdk-v2 = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2", branch = "feat/database-secrets-integration" }
