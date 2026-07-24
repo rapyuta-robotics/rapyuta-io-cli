@@ -376,6 +376,12 @@ def populate_entrypoint(exe: dict) -> list[str] | str | None:
     ENTRYPOINT, this replaces the image's ENTRYPOINT outright -- needed when an
     executable must run a different process than the image's default launcher
     (e.g. a bootstrap script instead of the image's normal server process).
+
+    NOTE: this only affects `rio compose generate`'s local Docker Compose
+    output. Real device deployments (`rio apply`) don't read this field at
+    all -- there is no ENTRYPOINT-override concept in the device runtime,
+    only `command`. Declaring `entrypoint` in a manifest has zero effect
+    outside the compose pipeline.
     """
     if "entrypoint" not in exe or exe.get("entrypoint") is None:
         return None
