@@ -290,6 +290,7 @@ def create_service(
         volumes=volume_mounts,
         depends_on=depends_on,
         command=populate_command(exe),
+        entrypoint=populate_entrypoint(exe),
         healthcheck=populate_healthcheck(exe),
         mem_limit=mem_limit,
         cpus=cpu_limit,
@@ -364,6 +365,23 @@ def sanitize_command(input: list[str] | str | None) -> list[str] | str | None:
 
     if isinstance(input, str):
         return input.replace("$", "$$").replace("$$$$", "$$")
+
+
+def populate_entrypoint(exe: dict) -> list[str] | str | None:
+    """
+    Constructs the Docker Compose ``entrypoint`` override from the executable's
+    declared ``entrypoint`` field.
+
+    Unlike ``command``, which only supplies arguments to the image's existing
+    ENTRYPOINT, this replaces the image's ENTRYPOINT outright -- needed when an
+    executable must run a different process than the image's default launcher
+    (e.g. a bootstrap script instead of the image's normal server process).
+    """
+    entrypoint_raw = exe.get("entrypoint")
+    if not entrypoint_raw:
+        return None
+
+    return sanitize_command(entrypoint_raw)
 
 
 def find_package(packages: dict[str, dict], name: str, version: str) -> dict:

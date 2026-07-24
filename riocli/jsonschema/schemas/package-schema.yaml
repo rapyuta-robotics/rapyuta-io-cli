@@ -121,6 +121,8 @@ definitions:
           - preInstalled
       command:
         "$ref": "#/definitions/commandSpec"
+      entrypoint:
+        "$ref": "#/definitions/commandSpec"
       runAsBash:
         type: boolean
         default: True
