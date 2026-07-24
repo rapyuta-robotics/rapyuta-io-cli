@@ -70,6 +70,15 @@ from riocli.utils import print_centered_text
     default=False,
     help="Treat the argument as a chart name instead of a file path.",
 )
+@click.option(
+    "--configs-path",
+    "configs_path",
+    default=None,
+    help="Host path to bind-mount in place of /opt/rapyuta/configs in the generated compose file.",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def up(
@@ -82,6 +91,7 @@ def up(
     build: bool,
     use_chart: bool,
     files: tuple[str, ...],
+    configs_path: Path = None,
 ):
     """
     Generate and start services using Docker Compose.
@@ -112,6 +122,10 @@ def up(
         Generate from a chart and start services:
 
             rio compose up --chart ioconfig-syncer -v my-values.yaml
+
+        Bind-mount a local directory in place of /opt/rapyuta/configs:
+
+            rio compose up templates/ --configs-path ./local-configs
     """
 
     chart_obj = None
@@ -129,6 +143,7 @@ def up(
             files=files,
             values=values,
             secrets=secrets,
+            configs_path=configs_path.as_posix() if configs_path else None,
         )
         write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
