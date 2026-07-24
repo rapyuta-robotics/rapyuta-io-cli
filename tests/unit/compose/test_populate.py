@@ -22,6 +22,16 @@ class TestPopulateEntrypoint:
     def test_missing_entrypoint_returns_none(self):
         assert populate_entrypoint(munchify({"command": "foo"})) is None
 
+    def test_none_entrypoint_returns_none(self):
+        assert populate_entrypoint(munchify({"entrypoint": None})) is None
+
+    def test_explicit_empty_string_entrypoint_is_honored(self):
+        # An explicit "" clears the image's ENTRYPOINT entirely in Compose --
+        # distinct from not declaring the field at all -- so it must not be
+        # treated as "missing".
+        exe = munchify({"entrypoint": ""})
+        assert populate_entrypoint(exe) == ""
+
     def test_string_entrypoint_is_returned_as_is(self):
         exe = munchify({"entrypoint": "./owm_bootstrap.sh"})
         assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
