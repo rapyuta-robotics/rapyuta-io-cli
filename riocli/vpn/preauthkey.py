@@ -87,6 +87,7 @@ def preauthkey(
             ctx,
             delta=timedelta(hours=expiry_hours),
             ephemeral=ephemeral,
+            throwaway=False,
         )
 
         key = binding.get("HEADSCALE_PRE_AUTH_KEY")
