@@ -123,7 +123,7 @@ run RESOURCE COVERAGE="false":
         echo "Coverage report generated in htmlcov/ directory"
     fi
 
-# Build the rio AppImage into scripts/ (needs sudo for fuse/libfuse2)
+# Build the rio AppImage into local-build/
 appimage VERSION=`git rev-parse --short HEAD`:
     #!/usr/bin/env bash
     set -euo pipefail

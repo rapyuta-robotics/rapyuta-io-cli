@@ -14,8 +14,20 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 BUILD=$ROOT/local-build
 mkdir -p "$BUILD"
 
+# Make the AppImage runtimes unpack to a temp dir instead of mounting, so
+# neither appimagetool nor the built AppImage needs the fusermount helper —
+# no FUSE, no sudo, no apt on the developer's machine.
+export APPIMAGE_EXTRACT_AND_RUN=1
+
+# Keep the host's ~/.local out of sys.path. The stock python-appimage AppRun
+# used during the install steps does not isolate Python, so pip would treat
+# packages in the user site as already satisfied and omit them from the
+# bundle — and scripts/AppRun runs Python with -I, so they are gone at
+# runtime (ModuleNotFoundError for e.g. pydantic).
+export PYTHONNOUSERSITE=1
+
 STEP=0
-TOTAL=9
+TOTAL=8
 step() {
     STEP=$((STEP + 1))
     echo
@@ -33,16 +45,6 @@ step "Building the rio CLI wheel"
 (cd "$ROOT" && uv build --out-dir local-build/dist)
 WHEEL=$(ls -1t "$BUILD"/dist/rapyuta_io_cli-*.whl | head -1)
 done_ "local-build/dist/$(basename "$WHEEL")"
-
-step "Checking FUSE (needed by the AppImages)"
-if ldconfig -p | grep -q libfuse.so.2; then
-    done_ "libfuse2 already present"
-else
-    echo "    installing fuse libfuse2 (needs sudo)"
-    sudo apt-get update
-    sudo apt-get install -y fuse libfuse2
-    done_ "fuse, libfuse2"
-fi
 
 step "Extracting the Python AppImage"
 cd "$BUILD"
