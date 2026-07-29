@@ -13,7 +13,11 @@ from riocli.apply.parse import Applier
 from riocli.apply.util import process_files_values_secrets
 from riocli.chart.chart import Chart
 from riocli.chart.util import branch_repository_url, find_chart
-from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME, DEVICE_RUNTIME
+from riocli.compose.defaults import (
+    CLOUD_RUNTIME,
+    DEFAULT_COMPOSE_FILENAME,
+    DEVICE_RUNTIME,
+)
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -189,7 +193,11 @@ def get_deployment_package(
     applier: Applier,
 ) -> tuple[dict[str, dict], dict[str, dict]]:
     """
-    Sorts applier objects into deployments and packages for device runtime.
+    Sorts applier objects into deployments and packages for the supported runtimes.
+
+    Both the ``device`` and ``cloud`` runtimes are converted. Device conversion is
+    unchanged; cloud manifests additionally surface disk-backed volumes as named
+    Docker volumes (see ``build_volume_mounts``).
 
     Args:
         applier: Applier object containing parsed manifests
@@ -197,12 +205,14 @@ def get_deployment_package(
     Returns:
         Tuple of (deployments, packages) dictionaries
     """
+    supported_runtimes = (DEVICE_RUNTIME, CLOUD_RUNTIME)
+
     deployments = {
         k: v
         for k, v in applier.objects.items()
         if (
             v.get("kind") == "Deployment"
-            and v.get("spec", {}).get("runtime") == DEVICE_RUNTIME
+            and v.get("spec", {}).get("runtime") in supported_runtimes
         )
     }
 
@@ -211,7 +221,7 @@ def get_deployment_package(
         for k, v in applier.objects.items()
         if (
             v.get("kind") == "Package"
-            and v.get("spec", {}).get("runtime") == DEVICE_RUNTIME
+            and v.get("spec", {}).get("runtime") in supported_runtimes
         )
     }
 

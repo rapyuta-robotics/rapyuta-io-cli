@@ -3,6 +3,7 @@ from riocli.compose.model import Service
 # Constants
 DEFAULT_COMPOSE_FILENAME = "docker-compose.yaml"
 DEVICE_RUNTIME = "device"
+CLOUD_RUNTIME = "cloud"
 ROS_MASTER_IMAGE = "quay.io/rapyuta/ros-base-melodic:master"
 ROS_MASTER_PORT = 1234
 ROS_MASTER_CONTAINER_NAME = "roscore"

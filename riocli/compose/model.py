@@ -63,3 +63,4 @@ class DockerCompose:
 
     services: ServiceDict
     version: str | None = None
+    volumes: dict[str, dict] | None = None
