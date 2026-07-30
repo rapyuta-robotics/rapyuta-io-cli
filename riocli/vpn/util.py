@@ -162,6 +162,7 @@ def create_binding(
     delta: timedelta | None = None,
     ephemeral: bool = True,
     throwaway: bool = True,
+    reusable: bool = False,
 ) -> Munch:
     vpn_instance = "rio-internal-headscale"
     if name == "":
@@ -180,6 +181,7 @@ def create_binding(
                 "ephemeral": ephemeral,
                 "expirationTime": get_key_expiry_time(delta),
                 "nodeKey": machine,
+                "reusable": reusable,
             },
         },
     }
