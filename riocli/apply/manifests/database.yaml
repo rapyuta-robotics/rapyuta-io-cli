@@ -12,21 +12,25 @@ spec:
       deviceName: edge-node-01
       dataDirectory: /opt/rapyuta/volumes/orders-db
       port: 5432
-    # Credentials reference keys in an Opaque secret (immutable after creation).
-    # Create the secret first, e.g.:
+    # Optional hot-standby topology. Every standby device must be distinct from
+    # the primary and from the other standbys. primaryHost is server-resolved
+    # from the primary device's IP on primaryInterface — do not set it.
+    # standby:
+    #   primaryInterface: eth0
+    #   devices:
+    #     - deviceName: edge-node-02
+    #       dataDirectory: /opt/rapyuta/volumes/orders-db  # defaults to the primary's
+    #       port: 5432
+    # The primary user references keys in an Opaque secret (immutable after
+    # creation). Create the secret first, e.g.:
     #   rio secret create orders-db-secret --type opaque \
-    #     PRIMARY_USER=app PRIMARY_PASS=... BACKUP_USER=rio_backup BACKUP_PASS=...
-    credentials:
+    #     PRIMARY_USER=app PRIMARY_PASS=...
+    # The backup and replication users are generated server-side into a managed
+    # secret; anything supplied for them is ignored.
+    users:
       primary:
-        username:
-          secretKeyRef: {name: orders-db-secret, key: PRIMARY_USER}
-        password:
-          secretKeyRef: {name: orders-db-secret, key: PRIMARY_PASS}
-      backup:
-        username:
-          secretKeyRef: {name: orders-db-secret, key: BACKUP_USER}
-        password:
-          secretKeyRef: {name: orders-db-secret, key: BACKUP_PASS}
+        username: {name: orders-db-secret, key: PRIMARY_USER}
+        password: {name: orders-db-secret, key: PRIMARY_PASS}
     multipleDatabase:
       - orders
       - analytics
