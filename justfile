@@ -123,6 +123,12 @@ run RESOURCE COVERAGE="false":
         echo "Coverage report generated in htmlcov/ directory"
     fi
 
+# Build the rio AppImage into local-build/
+appimage VERSION=`git rev-parse --short HEAD`:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ./scripts/build-rio-appimage-local.sh "{{VERSION}}"
+
 # Run uv sync --upgrade and rio --help for multiple Python versions
 sync-and-help:
     #!/bin/bash

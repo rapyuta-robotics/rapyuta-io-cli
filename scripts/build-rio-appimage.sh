@@ -2,6 +2,12 @@
 
 set -uxe
 
+# Keep the host's ~/.local out of sys.path. The stock python-appimage AppRun
+# used below does not isolate Python, so pip would treat packages in the user
+# site as already satisfied and omit them from the bundle, while the final
+# AppRun runs Python with -I and cannot see them at runtime.
+export PYTHONNOUSERSITE=1
+
 # Installing minio client
 wget https://dl.min.io/client/mc/release/linux-amd64/mc
 chmod +x mc
