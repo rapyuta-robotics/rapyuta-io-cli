@@ -6,7 +6,11 @@ from typing import Any
 import click
 from munch import Munch
 
-from riocli.compose.defaults import DEFAULT_VOLUME_MOUNTS, generate_roscore_service
+from riocli.compose.defaults import (
+    CLOUD_RUNTIME,
+    DEFAULT_VOLUME_MOUNTS,
+    generate_roscore_service,
+)
 from riocli.compose.model import DependsCondition, DockerCompose, HealthCheck, Service
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
@@ -44,6 +48,7 @@ def populate(
     spinner = kwargs.get("spinner")
     services: dict[str, Service] = {}
     processed_deployments: dict[str, dict] = {}
+    named_volumes: set[str] = set()
 
     # Process deployments and create services
     for key, deployment in deployments.items():
@@ -54,6 +59,8 @@ def populate(
                 deployments=deployments,
                 packages=packages,
                 services=services,
+                named_volumes=named_volumes,
+                spinner=spinner,
             )
             processed_deployments[key] = deployment
         except (KeyError, ValueError) as e:
@@ -98,7 +105,16 @@ def populate(
                     condition="service_completed_successfully"
                 )
 
-    return DockerCompose(services=services)
+    # Declare top-level named volumes for any disk-backed cloud mounts. A non-empty
+    # mapping ({"driver": "local"}) is required because clean_dict() drops keys whose
+    # value is {} or None — an empty volume config would be stripped from the output.
+    volumes = (
+        {name: {"driver": "local"} for name in sorted(named_volumes)}
+        if named_volumes
+        else None
+    )
+
+    return DockerCompose(services=services, volumes=volumes)
 
 
 def _build_fixup_cmd(entry: dict) -> str:
@@ -210,8 +226,15 @@ def _process_deployment_services(
     deployments: dict[str, dict],
     packages: dict[str, dict],
     services: dict[str, Service],
+    named_volumes: set[str],
+    spinner=None,
 ) -> None:
-    """Process a single deployment and add its services to the services dictionary."""
+    """Process a single deployment and add its services to the services dictionary.
+
+    ``named_volumes`` accumulates the names of disk-backed volumes encountered so the
+    caller can declare them under the compose file's top-level ``volumes:`` key.
+    ``spinner`` is forwarded to ``build_volume_mounts`` for subPath warnings.
+    """
     dep_name = deployment.metadata.name
     pkg_dep = deployment.metadata.depends
     package = find_package(packages, pkg_dep.nameOrGUID, pkg_dep.version)
@@ -228,7 +251,7 @@ def _process_deployment_services(
         restart_policy = "no"
 
     # Build volume mounts, dependencies, and environment variables
-    volume_mounts = build_volume_mounts(deployment)
+    volume_mounts = build_volume_mounts(deployment, named_volumes, spinner=spinner)
     ros_enabled = _is_ros_enabled(deployment=deployment, package=package)
     if ros_enabled and "ros-master" not in services:
         services["ros-master"] = generate_roscore_service()
@@ -290,31 +313,80 @@ def create_service(
         volumes=volume_mounts,
         depends_on=depends_on,
         command=populate_command(exe),
+        entrypoint=populate_entrypoint(exe),
         healthcheck=populate_healthcheck(exe),
         mem_limit=mem_limit,
         cpus=cpu_limit,
     )
 
 
-def build_volume_mounts(deployment: dict) -> list[str]:
+def build_volume_mounts(
+    deployment: dict, named_volumes: set[str], spinner=None
+) -> list[str]:
     """
     Constructs a list of volume mount strings for a given deployment.
-    Includes default volumes and custom volumes specified in the deployment.
+
+    The default host mounts (``DEFAULT_VOLUME_MOUNTS``) are applied only to the
+    ``device`` runtime. A cloud pod receives none of them on the platform (they are
+    device-daemon paths — host ``/dev``, other containers' state, the on-device log
+    dirs), so cloud services start from an empty list and get only their own declared
+    volumes.
+
+    Two kinds of custom volume are supported:
+
+    * Device bind mounts, where ``subPath`` is an absolute host path mounted at
+      ``mountPath`` (optionally with a permission-derived mode).
+    * Cloud disk mounts, where the volume depends on a ``Disk`` resource. These have
+      no host path; they are mapped to a named Docker volume keyed by the disk name,
+      and that name is recorded in ``named_volumes`` for top-level declaration. The
+      SDK's ``DiskDepends`` model accepts ``"Disk"``/``"disk"`` and defaults to
+      ``"Disk"``, so the kind is matched case-insensitively and an omitted kind is
+      treated as a disk depends. A disk mount's ``subPath`` cannot be expressed in
+      Compose short syntax (the whole volume is mounted); a warning is emitted since
+      the platform mounts only the subtree.
 
     Args:
         deployment: The deployment definition dictionary.
+        named_volumes: Mutable set collecting disk-backed named-volume names.
+        spinner: Optional spinner used to surface subPath warnings.
 
     Returns:
         List of Docker volume mount strings.
     """
-    # Start with default volume mounts
-    service_volumes = DEFAULT_VOLUME_MOUNTS.copy()
+    # Device runtime gets the standard host mounts; cloud starts empty.
+    runtime = deployment.spec.get("runtime")
+    service_volumes = [] if runtime == CLOUD_RUNTIME else DEFAULT_VOLUME_MOUNTS.copy()
 
     # Add custom volumes from deployment
     for volume in deployment.spec.get("volumes", []):
-        src = volume.get("subPath")
         dst = volume.get("mountPath")
-        if not src or not dst:
+        if not dst:
+            continue
+
+        # Cloud disk-backed volume -> named Docker volume. Match the SDK's DiskDepends
+        # semantics: kind is "Disk"/"disk" (case-insensitive) and defaults to "Disk".
+        depends = volume.get("depends") or {}
+        if depends and str(depends.get("kind", "disk")).lower() == "disk":
+            disk_name = depends.get("nameOrGUID")
+            if not disk_name:
+                continue
+            sub_path = volume.get("subPath")
+            if sub_path and spinner is not None:
+                spinner.write(
+                    click.style(
+                        f"{Symbols.WARNING} disk '{disk_name}': subPath '{sub_path}' "
+                        f"cannot be expressed in Compose short syntax; mounting the "
+                        f"whole volume at {dst} (the platform mounts only the subtree).",
+                        fg=Colors.YELLOW,
+                    )
+                )
+            service_volumes.append(f"{disk_name}:{dst}")
+            named_volumes.add(disk_name)
+            continue
+
+        # Device bind mount -> host path mounted at container path.
+        src = volume.get("subPath")
+        if not src:
             continue
 
         # Determine volume mode based on permissions
@@ -364,6 +436,28 @@ def sanitize_command(input: list[str] | str | None) -> list[str] | str | None:
 
     if isinstance(input, str):
         return input.replace("$", "$$").replace("$$$$", "$$")
+
+
+def populate_entrypoint(exe: dict) -> list[str] | str | None:
+    """
+    Constructs the Docker Compose ``entrypoint`` override from the executable's
+    declared ``entrypoint`` field.
+
+    Unlike ``command``, which only supplies arguments to the image's existing
+    ENTRYPOINT, this replaces the image's ENTRYPOINT outright -- needed when an
+    executable must run a different process than the image's default launcher
+    (e.g. a bootstrap script instead of the image's normal server process).
+
+    NOTE: this only affects `rio compose generate`'s local Docker Compose
+    output. Real device deployments (`rio apply`) don't read this field at
+    all -- there is no ENTRYPOINT-override concept in the device runtime,
+    only `command`. Declaring `entrypoint` in a manifest has zero effect
+    outside the compose pipeline.
+    """
+    if "entrypoint" not in exe or exe.get("entrypoint") is None:
+        return None
+
+    return sanitize_command(exe.get("entrypoint"))
 
 
 def find_package(packages: dict[str, dict], name: str, version: str) -> dict:
@@ -448,7 +542,10 @@ def populate_depends_on(
         for exe in pkg.get("spec", {}).get("executables", []):
             service_name = f"{dep_name}_{exe['name']}"
             condition = DependsCondition()
-            if hasattr(exe, "livenessProbe") and hasattr(exe.livenessProbe, "exec"):
+            # Wait for the dependency to be healthy whenever it emits a healthcheck.
+            # Only exec probes produce one (see populate_healthcheck); httpGet probes
+            # do not, so those dependencies fall back to service_started.
+            if populate_healthcheck(exe):
                 condition.condition = "service_healthy"
 
             depends_on[service_name] = condition
@@ -459,6 +556,13 @@ def populate_depends_on(
 def populate_healthcheck(exe: dict) -> HealthCheck | None:
     """
     Generates a Docker Compose healthcheck configuration from a livenessProbe.
+
+    Only ``exec`` probes are translated: they name a command the image is expected to
+    provide. ``httpGet`` probes are intentionally ignored — rapyuta.io evaluates them
+    externally, so container images routinely omit an HTTP client (curl/wget) and an
+    in-container HTTP healthcheck would report a false ``unhealthy``. Dependencies whose
+    only probe is ``httpGet`` therefore fall back to ``service_started`` ordering (see
+    ``populate_depends_on``).
     """
     probe = exe.get("livenessProbe")
     if not probe:
@@ -468,9 +572,14 @@ def populate_healthcheck(exe: dict) -> HealthCheck | None:
     if not command:
         return None
 
+    start_period = None
+    if probe.get("initialDelaySeconds") is not None:
+        start_period = f"{probe.get('initialDelaySeconds')}s"
+
     return HealthCheck(
         test=" ".join(shlex.quote(part) for part in command),
         timeout=f"{probe.get('timeoutSeconds', 30)}s",
         interval=f"{probe.get('periodSeconds', 10)}s",
         retries=probe.get("failureThreshold", 3),
+        start_period=start_period,
     )

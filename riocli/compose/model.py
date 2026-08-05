@@ -32,6 +32,7 @@ class HealthCheck:
     interval: str | None = None
     timeout: str | None = None
     retries: int | None = None
+    start_period: str | None = None
 
 
 @dataclass
@@ -43,6 +44,7 @@ class Service:
     user: str | None = None
     pull_policy: str | None = DEFAULT_PULL_POLICY
     command: str | list[str] | None = None
+    entrypoint: str | list[str] | None = None
     hostname: str | None = None
     restart: str | None = DEFAULT_RESTART_POLICY
     ports: list[str] | None = field(default_factory=list)
@@ -61,3 +63,4 @@ class DockerCompose:
 
     services: ServiceDict
     version: str | None = None
+    volumes: dict[str, dict] | None = None
