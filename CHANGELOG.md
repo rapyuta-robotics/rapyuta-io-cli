@@ -1,3 +1,20 @@
+# [10.8.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.7.0...v10.8.0) (2026-08-05)
+
+
+### Bug Fixes
+
+* **compose:** address review feedback on entrypoint support ([47c107c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47c107ca530e9863338a80233fc703f03650c544))
+* **compose:** recover initialDelaySeconds as healthcheck start_period ([0d6fe39](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0d6fe3916acd8ede996e1544f04b10727a820c57))
+
+
+### Features
+
+* add --key-path flag for custom keys usage ([#547](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/547)) ([128d1bd](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/128d1bd6f8da1aaf26b807a4c5f3fdbc9d550e7e))
+* **appimage:** add local build script for rio AppImage ([#565](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/565)) ([6d97405](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/6d974051bffb53bb15a4075c694de5ef79e38ade))
+* **compose:** cloud runtime and disk volumes for compose generate ([#563](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/563)) ([83c8322](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/83c8322aaa0bfd6a6f91cfa74b54588625f9c675))
+* **compose:** honor a declared entrypoint field, distinct from command ([ed035b0](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ed035b09ca25e8be6ab1cd802783549f357af34e))
+* **vpn:** preauthkey command for MDM pre-configuration ([#559](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/559)) ([405f973](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/405f9738afc98d87b55529f71aec48778ec7a21f))
+
 # [10.7.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.6.2...v10.7.0) (2026-07-22)
 
 
