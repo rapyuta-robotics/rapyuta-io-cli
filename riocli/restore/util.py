@@ -74,7 +74,6 @@ def _source_summary(source: typing.Any) -> str:
     if source.type == "dataDirectory":
         return f"dataDirectory: {source.old_data_directory}"
 
-    if source.backup_run_id:
-        return f"backup: {source.backup_name} ({source.backup_run_id})"
-
-    return f"backup: {source.backup_name}"
+    # The archive is what the restore actually reads, so it is what the column
+    # shows; the backup name is provenance and may be absent.
+    return f"backup: {source.file_upload}"
