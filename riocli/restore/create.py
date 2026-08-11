@@ -43,12 +43,21 @@ from riocli.restore.util import display_restore_list
     help="Where to restore from. Defaults to backup",
 )
 @click.option(
+    "--file-upload",
+    "-u",
+    "file_upload",
+    type=click.STRING,
+    default=None,
+    help="Uploaded archive to restore: its file-upload GUID or filename "
+    "(required when --source is backup). See `rio device uploads list`",
+)
+@click.option(
     "--backup",
     "-b",
     "backup_name",
     type=click.STRING,
     default=None,
-    help="Source backup (required when --source is backup)",
+    help="Source backup name, recorded as provenance",
 )
 @click.option(
     "--backup-run",
@@ -103,6 +112,7 @@ from riocli.restore.util import display_restore_list
 def create_restore(
     database: str,
     source_type: str,
+    file_upload: str,
     backup_name: str,
     backup_run_id: str,
     old_data_directory: str,
@@ -121,13 +131,14 @@ def create_restore(
 
     Usage Examples:
 
-        Restore one logical database from a backup
+        Restore one logical database from an uploaded archive
 
-            $ rio restore create orders-restore -d orders-db -b orders-nightly --db orders
+            $ rio restore create orders-restore -d orders-db \\
+                -u orders_20260101T020000.tar.gz --db orders
 
-        Restore every logical database the backup holds
+        Restore every logical database the archive holds
 
-            $ rio restore create orders-restore -d orders-db -b orders-nightly
+            $ rio restore create orders-restore -d orders-db -u fileupload-abc123
 
         Migrate a v17 cluster into a new v18 database
 
@@ -139,11 +150,17 @@ def create_restore(
     source = {"type": source_type}
 
     if source_type == "backup":
-        if not backup_name:
-            click.secho("--backup is required when --source is backup", fg=Colors.RED)
+        if not file_upload:
+            click.secho(
+                "--file-upload is required when --source is backup", fg=Colors.RED
+            )
             raise SystemExit(1)
 
-        source["backupName"] = backup_name
+        source["fileUpload"] = file_upload
+
+        # Provenance: neither resolves the archive, both make the record readable.
+        if backup_name:
+            source["backupName"] = backup_name
         if backup_run_id:
             source["backupRunID"] = backup_run_id
     else:
