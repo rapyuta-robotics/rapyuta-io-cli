@@ -47,8 +47,9 @@ class Restore(Model):
         # The target database must exist and be running before a restore can run.
         deps = [f"database:{self._obj.spec.database}"]
 
-        # A backup source must exist too; a dataDirectory source is a path on the
-        # device and has no manifest to depend on.
+        # A named backup is ordering information only — the archive is addressed
+        # by its own GUID or filename, and a dataDirectory source is a path on
+        # the device with no manifest to depend on.
         if self._obj.spec.source.type == "backup" and self._obj.spec.source.backup_name:
             deps.append(f"backup:{self._obj.spec.source.backup_name}")
 

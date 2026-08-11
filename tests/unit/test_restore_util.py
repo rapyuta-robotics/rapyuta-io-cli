@@ -14,23 +14,22 @@ def _restore(source: dict) -> Restore:
     )
 
 
-def test_source_summary_backup_latest_run():
-    # No run pinned: the restore takes the backup's latest.
-    r = _restore({"type": "backup", "backupName": "orders-nightly"})
-    assert _source_summary(r.spec.source) == "backup: orders-nightly"
-
-
-def test_source_summary_backup_pinned_run():
-    # A pinned run is what distinguishes two restores of the same backup, so it
-    # belongs in the summary.
+def test_source_summary_backup_names_the_archive():
+    # The archive is what the restore actually reads, so it is what is shown —
+    # not the backup name, which is provenance and may be absent.
     r = _restore(
         {
             "type": "backup",
+            "fileUpload": "orders_20260101T020000.tar.gz",
             "backupName": "orders-nightly",
-            "backupRunID": "20260101T020000",
         }
     )
-    assert _source_summary(r.spec.source) == "backup: orders-nightly (20260101T020000)"
+    assert _source_summary(r.spec.source) == "backup: orders_20260101T020000.tar.gz"
+
+
+def test_source_summary_backup_by_guid():
+    r = _restore({"type": "backup", "fileUpload": "fileupload-abc123"})
+    assert _source_summary(r.spec.source) == "backup: fileupload-abc123"
 
 
 def test_source_summary_data_directory():
