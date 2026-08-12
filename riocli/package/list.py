@@ -70,7 +70,7 @@ def _display_package_list(
 
             # check if filter word was passed.
             # if filter word was passed and it is not present in package name then continue
-            if filter_word and not package.metadata.name.find(filter_word):
+            if filter_word and filter_word not in package.metadata.name:
                 continue
 
             if truncate_limit and description is not None:
