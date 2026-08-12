@@ -150,12 +150,22 @@ def message_with_prompt(
 
 def print_objects_table(objects: Iterable[str]) -> None:
     data: list[list[str]] = []
+    versioned = False
 
     for o in objects:
-        kind, name = o.split(":")
-        data.append([kind.title(), name])
+        # Versioned resources like Package carry their version in the key, as
+        # "<kind>:<name>:<version>". Cap the split so the version arrives whole
+        # -- it is an opaque string and may itself contain a colon.
+        kind, name, *rest = o.split(":", 2)
+        version = rest[0] if rest else ""
+        versioned = versioned or bool(version)
+        data.append([kind.title(), name, version])
 
-    tabulate_data(data, headers=["Kind", "Name"])
+    if not versioned:
+        tabulate_data([row[:2] for row in data], headers=["Kind", "Name"])
+        return
+
+    tabulate_data(data, headers=["Kind", "Name", "Version"])
 
 
 def init_jinja_environment():
