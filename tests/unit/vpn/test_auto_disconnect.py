@@ -13,16 +13,24 @@ class TestShouldDisconnectVpn:
         assert should_disconnect_vpn({}, keep_vpn=True) is False
 
     def test_config_opt_out_suppresses_disconnect(self):
-        assert should_disconnect_vpn({"auto_disconnect_vpn": False}, keep_vpn=False) is False
+        assert (
+            should_disconnect_vpn({"auto_disconnect_vpn": False}, keep_vpn=False) is False
+        )
 
     def test_config_opt_out_with_keep_vpn_flag(self):
-        assert should_disconnect_vpn({"auto_disconnect_vpn": False}, keep_vpn=True) is False
+        assert (
+            should_disconnect_vpn({"auto_disconnect_vpn": False}, keep_vpn=True) is False
+        )
 
     def test_config_explicitly_true_disconnects(self):
-        assert should_disconnect_vpn({"auto_disconnect_vpn": True}, keep_vpn=False) is True
+        assert (
+            should_disconnect_vpn({"auto_disconnect_vpn": True}, keep_vpn=False) is True
+        )
 
     def test_keep_vpn_flag_overrides_config_true(self):
-        assert should_disconnect_vpn({"auto_disconnect_vpn": True}, keep_vpn=True) is False
+        assert (
+            should_disconnect_vpn({"auto_disconnect_vpn": True}, keep_vpn=True) is False
+        )
 
 
 def _make_project_ctx(config_data=None):
@@ -56,7 +64,10 @@ PROJECT_PATCHES = [
 
 ORG_PATCHES = [
     patch("riocli.organization.util.new_v2_client"),
-    patch("riocli.organization.util.find_organization_guid", return_value=("new-org-guid", "new-short")),
+    patch(
+        "riocli.organization.util.find_organization_guid",
+        return_value=("new-org-guid", "new-short"),
+    ),
     patch("riocli.organization.select.get_root_context"),
 ]
 
@@ -96,7 +107,9 @@ class TestProjectSelectVpnDisconnect:
     @patch("riocli.project.select.is_tailscale_up", return_value=True)
     @patch("riocli.project.select.stop_tailscale")
     @patch("riocli.project.select.cleanup_hosts_file")
-    def test_keep_vpn_flag_skips_disconnect_and_cleanup(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_keep_vpn_flag_skips_disconnect_and_cleanup(
+        self, mock_cleanup, mock_stop, mock_is_up
+    ):
         result, _ = self._invoke(["new-project", "--keep-vpn"], _make_project_ctx())
         assert result.exit_code == 0
         mock_stop.assert_not_called()
@@ -105,8 +118,12 @@ class TestProjectSelectVpnDisconnect:
     @patch("riocli.project.select.is_tailscale_up", return_value=True)
     @patch("riocli.project.select.stop_tailscale")
     @patch("riocli.project.select.cleanup_hosts_file")
-    def test_config_opt_out_skips_disconnect_and_cleanup(self, mock_cleanup, mock_stop, mock_is_up):
-        result, _ = self._invoke(["new-project"], _make_project_ctx({"auto_disconnect_vpn": False}))
+    def test_config_opt_out_skips_disconnect_and_cleanup(
+        self, mock_cleanup, mock_stop, mock_is_up
+    ):
+        result, _ = self._invoke(
+            ["new-project"], _make_project_ctx({"auto_disconnect_vpn": False})
+        )
         assert result.exit_code == 0
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
@@ -118,7 +135,10 @@ class TestOrgSelectVpnDisconnect:
 
         with (
             patch("riocli.organization.util.new_v2_client"),
-            patch("riocli.organization.util.find_organization_guid", return_value=("new-org-guid", "new-short")),
+            patch(
+                "riocli.organization.util.find_organization_guid",
+                return_value=("new-org-guid", "new-short"),
+            ),
             patch("riocli.organization.select.get_root_context") as mock_get_ctx,
         ):
             mock_get_ctx.return_value.obj = ctx_obj
@@ -136,8 +156,12 @@ class TestOrgSelectVpnDisconnect:
     @patch("riocli.organization.select.is_tailscale_up", return_value=True)
     @patch("riocli.organization.select.stop_tailscale")
     @patch("riocli.organization.select.cleanup_hosts_file")
-    def test_keep_vpn_flag_skips_disconnect_and_cleanup(self, mock_cleanup, mock_stop, mock_is_up):
-        result, _ = self._invoke(["new-org", "--keep-vpn", "--no-interactive"], _make_org_ctx())
+    def test_keep_vpn_flag_skips_disconnect_and_cleanup(
+        self, mock_cleanup, mock_stop, mock_is_up
+    ):
+        result, _ = self._invoke(
+            ["new-org", "--keep-vpn", "--no-interactive"], _make_org_ctx()
+        )
         assert result.exit_code == 0
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
@@ -145,8 +169,12 @@ class TestOrgSelectVpnDisconnect:
     @patch("riocli.organization.select.is_tailscale_up", return_value=True)
     @patch("riocli.organization.select.stop_tailscale")
     @patch("riocli.organization.select.cleanup_hosts_file")
-    def test_config_opt_out_skips_disconnect_and_cleanup(self, mock_cleanup, mock_stop, mock_is_up):
-        result, _ = self._invoke(["new-org", "--no-interactive"], _make_org_ctx({"auto_disconnect_vpn": False}))
+    def test_config_opt_out_skips_disconnect_and_cleanup(
+        self, mock_cleanup, mock_stop, mock_is_up
+    ):
+        result, _ = self._invoke(
+            ["new-org", "--no-interactive"], _make_org_ctx({"auto_disconnect_vpn": False})
+        )
         assert result.exit_code == 0
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
