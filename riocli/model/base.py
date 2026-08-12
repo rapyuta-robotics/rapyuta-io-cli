@@ -32,6 +32,25 @@ from riocli.jsonschema.validate import load_schema
 DELETE_POLICY_LABEL = "rapyuta.io/deletionPolicy"
 
 
+def package_key(name: str, version: str) -> str:
+    """Generate the object key for a Package.
+
+    Packages are versioned resources. The same name can legitimately
+    appear more than once in a set of manifests with different versions,
+    so the version is part of the Package's identity. Without it, the
+    Applier would treat every version of a Package as the same object and
+    silently apply only one of them.
+
+    Both the Package object and the Deployment dependency edge that refers
+    to it derive their key here, so the two agree by construction. There is
+    deliberately no special case for a missing version: any fallback would
+    apply to only one of the two sides and leave the edge pointing at a node
+    that does not exist. A non-empty version is enforced by the Package
+    models in rapyuta-io-sdk-v2.
+    """
+    return f"package:{name}:{version}"
+
+
 class Model(ABC, Munch):
     """Base class for all models.
 
@@ -121,14 +140,20 @@ class Model(ABC, Munch):
         # Using defensive strategy to get the fields.
 
         kind = obj.get("kind", "")
-        name = obj.get("metadata", {}).get("name", "")
+        metadata = obj.get("metadata", {})
+        name = metadata.get("name", "")
 
         if not kind:
             raise ValueError("kind is a required field")
         if not name:
             raise ValueError(f"[kind:{kind}] {name} is required")
 
-        return f"{kind.lower()}:{name}"
+        kind = kind.lower()
+
+        if kind == "package":
+            return package_key(name, metadata.get("version") or "")
+
+        return f"{kind}:{name}"
 
     def apply(
         self,

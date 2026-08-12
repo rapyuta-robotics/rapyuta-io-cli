@@ -20,6 +20,7 @@ from typing_extensions import override
 
 from riocli.constants import Status
 from riocli.model import Model
+from riocli.model.base import package_key
 from riocli.utils.error import (
     RetriesExhausted,
 )
@@ -61,7 +62,20 @@ class Deployment(Model):
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        return self._obj.list_dependencies()
+        dependencies = self._obj.list_dependencies() or []
+
+        # The SDK emits an unversioned "package:<name>" key for the Package
+        # dependency, but the Applier identifies Packages by name and version.
+        # Rewrite the key so the edge points at the version this Deployment
+        # actually depends on.
+        depends = self._obj.metadata.depends
+        if depends is not None:
+            dependencies = [
+                d for d in dependencies if d != f"package:{depends.name_or_guid}"
+            ]
+            dependencies.append(package_key(depends.name_or_guid, depends.version))
+
+        return dependencies or None
 
 
 def wait_for_dependencies(

@@ -6,6 +6,7 @@ import subprocess
 from dataclasses import asdict
 from types import SimpleNamespace
 
+import pytest
 from munch import Munch, munchify
 
 from riocli.compose.defaults import DEFAULT_VOLUME_MOUNTS
@@ -13,6 +14,7 @@ from riocli.compose.generate import clean_dict
 from riocli.compose.populate import (
     _build_fixup_cmd,
     build_volume_mounts,
+    find_package,
     get_volumes_requiring_fixup,
     populate,
     populate_command,
@@ -560,7 +562,7 @@ class TestPopulateDependsOn:
         )
         packages = munchify(
             {
-                "package:pkg-b": {
+                "package:pkg-b:1": {
                     "metadata": {"version": "1"},
                     "spec": {"executables": [dep_exe]},
                 }
@@ -629,7 +631,7 @@ class TestPopulateNamedVolumes:
             }
         )
         ctx = SimpleNamespace(obj=SimpleNamespace(data={}))
-        return ctx, {"deployment:svc": deployment}, {"package:svc-pkg": package}
+        return ctx, {"deployment:svc": deployment}, {"package:svc-pkg:1": package}
 
     def test_disk_mount_declared_as_top_level_volume(self):
         ctx, deployments, packages = self._cloud_fixture()
@@ -648,3 +650,40 @@ class TestPopulateNamedVolumes:
         assert compose.volumes is None
         # clean_dict drops the None volumes key entirely.
         assert "volumes" not in clean_dict(asdict(compose))
+
+
+class TestFindPackage:
+    """Packages are keyed by name and version, so a manifest may legitimately
+    carry more than one version of the same Package."""
+
+    def _packages(self):
+        return munchify(
+            {
+                "package:logger:1.0.0": {
+                    "metadata": {"name": "logger", "version": "1.0.0"},
+                    "spec": {"executables": [{"name": "v1"}]},
+                },
+                "package:logger:2.0.0": {
+                    "metadata": {"name": "logger", "version": "2.0.0"},
+                    "spec": {"executables": [{"name": "v2"}]},
+                },
+            }
+        )
+
+    def test_resolves_the_requested_version(self):
+        packages = self._packages()
+        assert find_package(packages, "logger", "1.0.0").spec.executables[0].name == "v1"
+        assert find_package(packages, "logger", "2.0.0").spec.executables[0].name == "v2"
+
+    def test_missing_version_raises(self):
+        with pytest.raises(KeyError, match="No Package found"):
+            find_package(self._packages(), "logger", "3.0.0")
+
+    def test_unversioned_key_is_not_consulted(self):
+        # object_key never emits an unversioned Package key, so a lookup must
+        # not silently resolve to one.
+        packages = munchify(
+            {"package:logger": {"metadata": {"name": "logger", "version": "1.0.0"}}}
+        )
+        with pytest.raises(KeyError, match="No Package found"):
+            find_package(packages, "logger", "1.0.0")
