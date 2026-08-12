@@ -65,8 +65,11 @@ def select_project(
     ctx.obj.save()
 
     if should_disconnect_vpn(ctx.obj.data, keep_vpn):
-        if is_tailscale_up():
-            if stop_tailscale():
+        vpn_was_up = is_tailscale_up()
+        disconnected = True
+        if vpn_was_up:
+            disconnected = stop_tailscale()
+            if disconnected:
                 click.secho(
                     f"{Symbols.SUCCESS} VPN disconnected.",
                     fg=Colors.GREEN,
@@ -76,13 +79,14 @@ def select_project(
                     f"{Symbols.WARNING} Failed to disconnect VPN.",
                     fg=Colors.YELLOW,
                 )
-        try:
-            cleanup_hosts_file()
-        except Exception as e:
-            click.secho(
-                f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-                fg=Colors.YELLOW,
-            )
+        if not vpn_was_up or disconnected:
+            try:
+                cleanup_hosts_file()
+            except Exception as e:
+                click.secho(
+                    f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
+                    fg=Colors.YELLOW,
+                )
 
     click.secho(
         f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",

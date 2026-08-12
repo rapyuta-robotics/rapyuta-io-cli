@@ -55,23 +55,6 @@ def _make_org_ctx(config_data=None):
     return obj
 
 
-PROJECT_PATCHES = [
-    patch("riocli.project.util.new_v2_client"),
-    patch("riocli.project.util.find_project_guid", return_value="new-project-guid"),
-    patch("riocli.project.util.get_project_name", return_value="new-project"),
-    patch("riocli.project.select.get_root_context"),
-]
-
-ORG_PATCHES = [
-    patch("riocli.organization.util.new_v2_client"),
-    patch(
-        "riocli.organization.util.find_organization_guid",
-        return_value=("new-org-guid", "new-short"),
-    ),
-    patch("riocli.organization.select.get_root_context"),
-]
-
-
 class TestProjectSelectVpnDisconnect:
     def _invoke(self, args, ctx_obj):
         from riocli.project.select import select_project
@@ -128,6 +111,15 @@ class TestProjectSelectVpnDisconnect:
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
 
+    @patch("riocli.project.select.is_tailscale_up", return_value=True)
+    @patch("riocli.project.select.stop_tailscale", return_value=False)
+    @patch("riocli.project.select.cleanup_hosts_file")
+    def test_hosts_not_cleaned_when_stop_fails(self, mock_cleanup, mock_stop, mock_is_up):
+        result, _ = self._invoke(["new-project"], _make_project_ctx())
+        assert result.exit_code == 0
+        mock_stop.assert_called_once()
+        mock_cleanup.assert_not_called()
+
 
 class TestOrgSelectVpnDisconnect:
     def _invoke(self, args, ctx_obj):
@@ -177,4 +169,13 @@ class TestOrgSelectVpnDisconnect:
         )
         assert result.exit_code == 0
         mock_stop.assert_not_called()
+        mock_cleanup.assert_not_called()
+
+    @patch("riocli.organization.select.is_tailscale_up", return_value=True)
+    @patch("riocli.organization.select.stop_tailscale", return_value=False)
+    @patch("riocli.organization.select.cleanup_hosts_file")
+    def test_hosts_not_cleaned_when_stop_fails(self, mock_cleanup, mock_stop, mock_is_up):
+        result, _ = self._invoke(["new-org", "--no-interactive"], _make_org_ctx())
+        assert result.exit_code == 0
+        mock_stop.assert_called_once()
         mock_cleanup.assert_not_called()
