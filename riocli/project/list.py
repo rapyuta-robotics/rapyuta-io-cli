@@ -78,7 +78,10 @@ def list_projects(
         client = new_v2_client(with_project=False)
         projects = []
         for page in walk_pages(
-            client.list_projects, organizations=[organization_guid], limit=100
+            client.list_projects,
+            organizations=[organization_guid],
+            limit=100,
+            label_selector=labels,
         ):
             projects.extend(page)
         projects = sorted(projects, key=lambda p: p.metadata.name.lower())
