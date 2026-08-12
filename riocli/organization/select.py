@@ -20,7 +20,12 @@ from riocli.auth.util import select_project
 from riocli.constants import Colors, Symbols
 from riocli.organization.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import cleanup_hosts_file
+from riocli.vpn.util import (
+    cleanup_hosts_file,
+    is_tailscale_up,
+    should_disconnect_vpn,
+    stop_tailscale,
+)
 
 
 @click.command(
@@ -30,6 +35,13 @@ from riocli.vpn.util import cleanup_hosts_file
     help_options_color=Colors.GREEN,
 )
 @click.argument("organization-name", type=str)
+@click.option(
+    "--keep-vpn",
+    is_flag=True,
+    default=False,
+    help="Keep the VPN connected after switching organizations. Skips both "
+    "VPN disconnect and hosts file cleanup.",
+)
 @click.option(
     "--interactive/--no-interactive",
     is_flag=True,
@@ -51,6 +63,7 @@ def select_organization(
     organization_name: str,
     organization_guid: str,
     organization_short_id: str,
+    keep_vpn: bool,
     interactive: bool,
     silent: bool,
 ) -> None:
@@ -103,13 +116,25 @@ def select_organization(
 
     ctx.obj.save()
 
-    try:
-        cleanup_hosts_file()
-    except Exception as e:
-        click.secho(
-            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-            fg=Colors.YELLOW,
-        )
+    if should_disconnect_vpn(ctx.obj.data, keep_vpn):
+        if is_tailscale_up():
+            if stop_tailscale():
+                click.secho(
+                    f"{Symbols.SUCCESS} VPN disconnected.",
+                    fg=Colors.GREEN,
+                )
+            else:
+                click.secho(
+                    f"{Symbols.WARNING} Failed to disconnect VPN.",
+                    fg=Colors.YELLOW,
+                )
+        try:
+            cleanup_hosts_file()
+        except Exception as e:
+            click.secho(
+                f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
+                fg=Colors.YELLOW,
+            )
 
     if ctx.obj.data.get("project_id"):
         from riocli.ssh import refresh_ssh_cert

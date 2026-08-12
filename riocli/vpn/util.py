@@ -87,6 +87,17 @@ def get_tailscale_status() -> dict:
     return json.loads(output)
 
 
+def should_disconnect_vpn(config: dict, keep_vpn: bool) -> bool:
+    """Returns True if VPN should be auto-disconnected on project/org switch.
+
+    Disconnect is skipped if --keep-vpn flag is passed, or if the user has
+    set auto_disconnect_vpn: false in their CLI config (~/.rio-cli/config.json).
+    """
+    if keep_vpn:
+        return False
+    return config.get("auto_disconnect_vpn", True)
+
+
 def install_vpn_tools(force: bool = False) -> None:
     if is_tailscale_installed():
         return

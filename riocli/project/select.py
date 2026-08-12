@@ -17,7 +17,12 @@ from click_help_colors import HelpColorsCommand
 from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import cleanup_hosts_file
+from riocli.vpn.util import (
+    cleanup_hosts_file,
+    is_tailscale_up,
+    should_disconnect_vpn,
+    stop_tailscale,
+)
 
 
 @click.command(
@@ -27,17 +32,31 @@ from riocli.vpn.util import cleanup_hosts_file
     help_options_color=Colors.GREEN,
 )
 @click.argument("project-name", type=str)
+@click.option(
+    "--keep-vpn",
+    is_flag=True,
+    default=False,
+    help="Keep the VPN connected after switching projects. Skips both "
+    "VPN disconnect and hosts file cleanup.",
+)
 @name_to_guid
 @click.pass_context
 def select_project(
     ctx: click.Context,
     project_name: str,
     project_guid: str,
+    keep_vpn: bool,
 ) -> None:
     """Switch to a different project in the current organization.
 
     The project will be set in the CLI's context and will be used
     for all the subsequent commands.
+
+    By default, if a VPN is active it will be disconnected and the
+    hosts file will be cleaned up. Use --keep-vpn to suppress this,
+    for example when you have an active SSH session into a device on
+    the previous project. You can also set ``auto_disconnect_vpn: false``
+    in ~/.rio-cli/config.json to permanently suppress auto-disconnect.
     """
     ctx = get_root_context(ctx)
 
@@ -45,13 +64,25 @@ def select_project(
     ctx.obj.data["project_name"] = project_name
     ctx.obj.save()
 
-    try:
-        cleanup_hosts_file()
-    except Exception as e:
-        click.secho(
-            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-            fg=Colors.YELLOW,
-        )
+    if should_disconnect_vpn(ctx.obj.data, keep_vpn):
+        if is_tailscale_up():
+            if stop_tailscale():
+                click.secho(
+                    f"{Symbols.SUCCESS} VPN disconnected.",
+                    fg=Colors.GREEN,
+                )
+            else:
+                click.secho(
+                    f"{Symbols.WARNING} Failed to disconnect VPN.",
+                    fg=Colors.YELLOW,
+                )
+        try:
+            cleanup_hosts_file()
+        except Exception as e:
+            click.secho(
+                f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
+                fg=Colors.YELLOW,
+            )
 
     click.secho(
         f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",
