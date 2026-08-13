@@ -17,15 +17,10 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project
-from riocli.constants import Colors, Symbols
+from riocli.constants import Colors
 from riocli.organization.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import (
-    cleanup_hosts_file,
-    is_tailscale_up,
-    should_disconnect_vpn,
-    stop_tailscale,
-)
+from riocli.vpn.util import disconnect_vpn_for_switch
 
 
 @click.command(
@@ -79,6 +74,13 @@ def select_organization(
 
     If your organization name has spaces, use quotes around the name.
 
+    By default, if a VPN is active it will be disconnected and the
+    hosts file will be cleaned up on switch. Use --keep-vpn to suppress
+    this. You can also set ``auto_disconnect_vpn: false`` in the CLI
+    config file (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS)
+    to permanently suppress auto-disconnect.
+
     Usage Examples:
 
         Set the current organization to 'Platform JP Staging'
@@ -116,29 +118,7 @@ def select_organization(
 
     ctx.obj.save()
 
-    if should_disconnect_vpn(ctx.obj.data, keep_vpn):
-        vpn_was_up = is_tailscale_up()
-        disconnected = True
-        if vpn_was_up:
-            disconnected = stop_tailscale()
-            if disconnected:
-                click.secho(
-                    f"{Symbols.SUCCESS} VPN disconnected.",
-                    fg=Colors.GREEN,
-                )
-            else:
-                click.secho(
-                    f"{Symbols.WARNING} Failed to disconnect VPN.",
-                    fg=Colors.YELLOW,
-                )
-        if not vpn_was_up or disconnected:
-            try:
-                cleanup_hosts_file()
-            except Exception as e:
-                click.secho(
-                    f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-                    fg=Colors.YELLOW,
-                )
+    disconnect_vpn_for_switch(ctx.obj, keep_vpn)
 
     if ctx.obj.data.get("project_id"):
         from riocli.ssh import refresh_ssh_cert

@@ -87,16 +87,38 @@ def get_tailscale_status() -> dict:
     return json.loads(output)
 
 
-def should_disconnect_vpn(config: dict, keep_vpn: bool) -> bool:
-    """Returns True if VPN should be auto-disconnected on project/org switch.
+def disconnect_vpn_for_switch(config: "Configuration", keep_vpn: bool) -> None:  # noqa: F821
+    """Disconnect VPN and clean up /etc/hosts when switching project or org.
 
-    When True, both the VPN tunnel and the /etc/hosts cleanup are performed.
-    Returns False (skipping both) if --keep-vpn flag is passed, or if the
-    user has set auto_disconnect_vpn: false in ~/.rio-cli/config.json.
+    Both actions are skipped together when --keep-vpn is passed or when the
+    user has set ``auto_disconnect_vpn: false`` in the CLI config file
+    (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS,
+    or the path in ``$RIO_CONFIG``).
+
+    /etc/hosts is only cleaned when Tailscale was already down or was
+    successfully disconnected — never when disconnect fails — to avoid a
+    state where hosts entries point at a dead VPN tunnel.
     """
-    if keep_vpn:
-        return False
-    return config.get("auto_disconnect_vpn", True)
+    if keep_vpn or not config.auto_disconnect_vpn:
+        return
+
+    vpn_was_up = is_tailscale_up()
+    disconnected = True
+    if vpn_was_up:
+        disconnected = stop_tailscale()
+        if disconnected:
+            click.secho(f"{Symbols.SUCCESS} VPN disconnected.", fg=Colors.GREEN)
+        else:
+            click.secho(f"{Symbols.WARNING} Failed to disconnect VPN.", fg=Colors.YELLOW)
+    if not vpn_was_up or disconnected:
+        try:
+            cleanup_hosts_file()
+        except Exception as e:
+            click.secho(
+                f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
+                fg=Colors.YELLOW,
+            )
 
 
 def install_vpn_tools(force: bool = False) -> None:

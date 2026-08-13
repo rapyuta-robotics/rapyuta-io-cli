@@ -17,12 +17,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import (
-    cleanup_hosts_file,
-    is_tailscale_up,
-    should_disconnect_vpn,
-    stop_tailscale,
-)
+from riocli.vpn.util import disconnect_vpn_for_switch
 
 
 @click.command(
@@ -56,37 +51,19 @@ def select_project(
     hosts file will be cleaned up. Use --keep-vpn to suppress this,
     for example when you have an active SSH session into a device on
     the previous project. You can also set ``auto_disconnect_vpn: false``
-    in ~/.rio-cli/config.json to permanently suppress auto-disconnect.
+    in the CLI config file (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS)
+    to permanently suppress auto-disconnect.
     """
     ctx = get_root_context(ctx)
 
+    previous_project_id = ctx.obj.current_project_id
     ctx.obj.data["project_id"] = project_guid
     ctx.obj.data["project_name"] = project_name
     ctx.obj.save()
 
-    if should_disconnect_vpn(ctx.obj.data, keep_vpn):
-        vpn_was_up = is_tailscale_up()
-        disconnected = True
-        if vpn_was_up:
-            disconnected = stop_tailscale()
-            if disconnected:
-                click.secho(
-                    f"{Symbols.SUCCESS} VPN disconnected.",
-                    fg=Colors.GREEN,
-                )
-            else:
-                click.secho(
-                    f"{Symbols.WARNING} Failed to disconnect VPN.",
-                    fg=Colors.YELLOW,
-                )
-        if not vpn_was_up or disconnected:
-            try:
-                cleanup_hosts_file()
-            except Exception as e:
-                click.secho(
-                    f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-                    fg=Colors.YELLOW,
-                )
+    if project_guid != previous_project_id:
+        disconnect_vpn_for_switch(ctx.obj, keep_vpn)
 
     click.secho(
         f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",
