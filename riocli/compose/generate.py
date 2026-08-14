@@ -81,6 +81,31 @@ from riocli.utils import print_centered_text
     default=False,
     help="Merge new services into existing compose file instead of overwriting.",
 )
+@click.option(
+    "--configs-path",
+    "configs_path",
+    default=None,
+    help="Host path to bind-mount in place of /opt/rapyuta/configs in the generated compose "
+    "file. Volumes redirected here are skipped by the init-fixperms permission fixup, since "
+    "they now point at your own local files rather than the device.",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+)
+@click.option(
+    "--ignore-volume-source",
+    "ignore_volume_source",
+    multiple=True,
+    default=(),
+    help="gitignore-style pattern matched against a volume's full host-side path, as declared "
+    "in the manifest's subPath (before any --configs-path rewrite) -- drops the bind entirely "
+    "instead of mounting it. Applies to deployment-declared volumes and to the default mounts "
+    "other than the /opt/rapyuta/configs bind, which --configs-path controls instead. "
+    "Repeatable; evaluated in order, last match wins; prefix with '!' to re-include a path an "
+    "earlier pattern excluded (e.g. --ignore-volume-source '/opt/rapyuta/configs/station/*' "
+    "--ignore-volume-source '!/opt/rapyuta/configs/station/sim-nginx.conf.template'). "
+    "Independent of --configs-path -- applies whether or not that flag is also given.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -93,6 +118,8 @@ def generate(
     append_services: bool,
     files: tuple[str, ...],
     branch: str = None,
+    configs_path: Path | None = None,
+    ignore_volume_source: tuple[str, ...] = (),
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -122,6 +149,23 @@ def generate(
 
             rio compose generate templates/
             rio compose generate --chart --append ioconfig-syncer
+
+        Bind-mount a local directory in place of /opt/rapyuta/configs:
+
+            rio compose generate templates/ --configs-path ./local-configs
+
+        Bind-mount a local directory but drop binds under a sub-path entirely
+        (e.g. no local equivalent exists for it):
+
+            rio compose generate templates/ --configs-path ./local-configs \\
+                --ignore-volume-source '/opt/rapyuta/configs/auth/*' \\
+                --ignore-volume-source '/opt/rapyuta/configs/station/*' \\
+                --ignore-volume-source '!/opt/rapyuta/configs/station/sim-nginx.conf.template'
+
+        Drop a bind entirely without redirecting anything else (independent of
+        --configs-path):
+
+            rio compose generate templates/ --ignore-volume-source '/opt/rapyuta/configs/auth/*'
     """
 
     if not path:
@@ -150,6 +194,8 @@ def generate(
             values=values,
             secrets=secrets,
             files=files,
+            configs_path=configs_path.as_posix() if configs_path else None,
+            ignore_volume_source=ignore_volume_source,
         )
         if append_services and existing_services:
             compose_doc["services"] = merge_compose_services(
@@ -166,6 +212,8 @@ def generate_compose_file(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     files: tuple[str, ...],
+    configs_path: str | None = None,
+    ignore_volume_source: tuple[str, ...] = (),
 ) -> dict:
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -183,7 +231,11 @@ def generate_compose_file(
 
     print_centered_text("Converting Manifests")
     docker_compose_manifest = populate(
-        ctx=ctx, deployments=deployments, packages=packages
+        ctx=ctx,
+        deployments=deployments,
+        packages=packages,
+        configs_path=configs_path,
+        ignore_volume_source=ignore_volume_source,
     )
 
     return clean_dict(asdict(docker_compose_manifest))
