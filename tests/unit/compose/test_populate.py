@@ -5,16 +5,18 @@ import stat
 import subprocess
 from dataclasses import asdict
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
 from munch import Munch, munchify
 
-from riocli.compose.defaults import DEFAULT_VOLUME_MOUNTS
 from riocli.compose.generate import clean_dict
 from riocli.compose.populate import (
     _build_fixup_cmd,
+    _substitute_configs_path,
     build_volume_mounts,
     find_package,
+    get_default_volume_mounts,
     get_volumes_requiring_fixup,
     populate,
     populate_command,
@@ -64,6 +66,282 @@ class TestPopulateEntrypoint:
         exe = munchify({"entrypoint": "./owm_bootstrap.sh", "command": "--foo bar"})
         assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
         assert populate_command(exe) == "--foo bar"
+
+
+class TestPopulateHealthcheck:
+    def test_no_liveness_probe_returns_none(self):
+        assert populate_healthcheck(munchify({})) is None
+
+    def test_no_exec_command_returns_none(self):
+        exe = munchify({"livenessProbe": {"exec": {}}})
+        assert populate_healthcheck(exe) is None
+
+    def test_initial_delay_seconds_becomes_start_period(self):
+        exe = munchify(
+            {
+                "livenessProbe": {
+                    "exec": {"command": ["rosnode", "list"]},
+                    "initialDelaySeconds": 45,
+                }
+            }
+        )
+        hc = populate_healthcheck(exe)
+        assert hc.start_period == "45s"
+
+    def test_missing_initial_delay_seconds_leaves_start_period_none(self):
+        exe = munchify({"livenessProbe": {"exec": {"command": ["rosnode", "list"]}}})
+        hc = populate_healthcheck(exe)
+        assert hc.start_period is None
+
+
+class TestSubstituteConfigsPath:
+    def test_no_configs_path_leaves_host_path_unchanged(self):
+        assert (
+            _substitute_configs_path("/opt/rapyuta/configs/wms/settings.yaml", None)
+            == "/opt/rapyuta/configs/wms/settings.yaml"
+        )
+
+    def test_none_host_path_passthrough(self):
+        assert _substitute_configs_path(None, "/local") is None
+
+    def test_exact_configs_dir_rewritten(self):
+        assert _substitute_configs_path("/opt/rapyuta/configs", "/local") == "/local"
+
+    def test_subpath_rewritten_preserving_suffix(self):
+        assert (
+            _substitute_configs_path("/opt/rapyuta/configs/wms/settings.yaml", "/local")
+            == "/local/wms/settings.yaml"
+        )
+
+    def test_path_outside_configs_dir_untouched(self):
+        assert (
+            _substitute_configs_path("/var/spool/print/csv", "/local")
+            == "/var/spool/print/csv"
+        )
+
+    def test_ignore_pattern_drops_matching_subpath(self):
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/auth/openid-client.json",
+                "/local",
+                ["/opt/rapyuta/configs/auth/*"],
+            )
+            is None
+        )
+
+    def test_ignore_pattern_directory_style_prefix_match(self):
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/maps/site.yaml",
+                "/local",
+                ["/opt/rapyuta/configs/maps"],
+            )
+            is None
+        )
+
+    def test_ignore_pattern_exact_directory_itself_matches(self):
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/maps", "/local", ["/opt/rapyuta/configs/maps"]
+            )
+            is None
+        )
+
+    def test_ignore_pattern_matches_any_absolute_path_not_just_configs_dir(self):
+        """Not scoped to CONFIGS_DIR at all -- any absolute host path a
+        deployment declares is a valid pattern target."""
+        assert (
+            _substitute_configs_path("/var/lib/minio/", "/local", ["/var/lib/minio/*"])
+            is None
+        )
+        assert (
+            _substitute_configs_path("/var/lib/minio", "/local", ["/var/lib/minio"])
+            is None
+        )
+
+    def test_ignore_pattern_non_matching_subpath_still_rewritten(self):
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/wms/settings.yaml",
+                "/local",
+                ["/opt/rapyuta/configs/auth/*"],
+            )
+            == "/local/wms/settings.yaml"
+        )
+
+    def test_negated_pattern_reincludes_specific_file(self):
+        patterns = [
+            "/opt/rapyuta/configs/station/*",
+            "!/opt/rapyuta/configs/station/sim-nginx.conf.template",
+        ]
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/station/sim-nginx.conf.template",
+                "/local",
+                patterns,
+            )
+            == "/local/station/sim-nginx.conf.template"
+        )
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/station/station.launch", "/local", patterns
+            )
+            is None
+        )
+
+    def test_last_match_wins_when_negation_precedes_broader_pattern(self):
+        # Order matters: a later broader drop re-excludes what an earlier
+        # negation re-included.
+        patterns = [
+            "!/opt/rapyuta/configs/station/sim-nginx.conf.template",
+            "/opt/rapyuta/configs/station/*",
+        ]
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/station/sim-nginx.conf.template",
+                "/local",
+                patterns,
+            )
+            is None
+        )
+
+    def test_ignore_pattern_drops_even_without_configs_path(self):
+        """Ignoring and redirecting are independent operations on the same
+        bind -- dropping a matched path must work with no configs_path at all."""
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/auth/openid-client.json",
+                None,
+                ["/opt/rapyuta/configs/auth/*"],
+            )
+            is None
+        )
+
+    def test_non_matching_path_left_alone_without_configs_path(self):
+        assert (
+            _substitute_configs_path(
+                "/opt/rapyuta/configs/wms/settings.yaml",
+                None,
+                ["/opt/rapyuta/configs/auth/*"],
+            )
+            == "/opt/rapyuta/configs/wms/settings.yaml"
+        )
+
+
+class TestBuildVolumeMountsWithIgnore:
+    def test_ignored_custom_volume_is_omitted(self):
+        dep = munchify(
+            {
+                "spec": {
+                    "volumes": [
+                        {
+                            "subPath": "/opt/rapyuta/configs/auth/openid-client.json",
+                            "mountPath": "/usr/share/caddy/openid-client.json",
+                        },
+                        {
+                            "subPath": "/opt/rapyuta/configs/wms/settings.yaml",
+                            "mountPath": "/opt/rapyuta/configs/wms/settings.yaml",
+                        },
+                    ]
+                }
+            }
+        )
+        volumes = build_volume_mounts(
+            dep, set(), "/local", ["/opt/rapyuta/configs/auth/*"]
+        )
+        assert not any("openid-client.json" in v for v in volumes)
+        assert any(
+            v == "/local/wms/settings.yaml:/opt/rapyuta/configs/wms/settings.yaml"
+            for v in volumes
+        )
+
+    def test_ignore_works_without_configs_path_too(self):
+        """A deployment running against a device-like setup where
+        /opt/rapyuta/configs genuinely exists can still drop a specific
+        sub-path (e.g. an unprovisioned secret) without redirecting anything."""
+        dep = munchify(
+            {
+                "spec": {
+                    "volumes": [
+                        {
+                            "subPath": "/opt/rapyuta/configs/auth/openid-client.json",
+                            "mountPath": "/usr/share/caddy/openid-client.json",
+                        },
+                        {
+                            "subPath": "/opt/rapyuta/configs/wms/settings.yaml",
+                            "mountPath": "/opt/rapyuta/configs/wms/settings.yaml",
+                        },
+                    ]
+                }
+            }
+        )
+        volumes = build_volume_mounts(dep, set(), None, ["/opt/rapyuta/configs/auth/*"])
+        assert not any("openid-client.json" in v for v in volumes)
+        assert (
+            "/opt/rapyuta/configs/wms/settings.yaml:/opt/rapyuta/configs/wms/settings.yaml"
+            in volumes
+        )
+
+    def test_default_top_level_mount_unaffected_by_ignore(self):
+        """The blanket /opt/rapyuta/configs default mount is a single whole-tree
+        bind, not an enumerable per-file volume -- ignore patterns only apply
+        to individually declared deployment volumes."""
+        dep = munchify({"spec": {"volumes": []}})
+        volumes = build_volume_mounts(
+            dep,
+            set(),
+            "/local",
+            ["/opt/rapyuta/configs/auth/*", "/opt/rapyuta/configs/maps"],
+        )
+        assert "/local:/opt/rapyuta/configs:rslave" in volumes
+
+
+class TestGetDefaultVolumeMounts:
+    def test_configs_path_overrides_default_mount_source(self):
+        volumes = get_default_volume_mounts("/local")
+        assert "/local:/opt/rapyuta/configs:rslave" in volumes
+
+    def test_no_configs_path_uses_literal_configs_dir(self):
+        volumes = get_default_volume_mounts(None)
+        assert "/opt/rapyuta/configs:/opt/rapyuta/configs:rslave" in volumes
+
+
+class TestGetVolumesRequiringFixupWithIgnore:
+    def test_ignored_fixup_volume_is_dropped(self):
+        dep = _make_deployment(
+            [
+                {
+                    "subPath": "/opt/rapyuta/configs/auth/openid-client.json",
+                    "mountPath": "/usr/share/caddy/openid-client.json",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 644,
+                },
+            ]
+        )
+        result = get_volumes_requiring_fixup(
+            {"dep": dep},
+            configs_path="/local",
+            ignore_volume_source=["/opt/rapyuta/configs/auth/*"],
+        )
+        assert result == []
+
+    def test_ignored_fixup_volume_is_dropped_without_configs_path(self):
+        dep = _make_deployment(
+            [
+                {
+                    "subPath": "/opt/rapyuta/configs/auth/openid-client.json",
+                    "mountPath": "/usr/share/caddy/openid-client.json",
+                    "uid": 1000,
+                    "gid": 1000,
+                    "perm": 644,
+                },
+            ]
+        )
+        result = get_volumes_requiring_fixup(
+            {"dep": dep}, ignore_volume_source=["/opt/rapyuta/configs/auth/*"]
+        )
+        assert result == []
 
 
 class TestGetVolumesRequiringFixup:
@@ -375,7 +653,7 @@ class TestBuildVolumeMounts:
         dep = _make_deployment([])
         named: set[str] = set()
         mounts = build_volume_mounts(dep, named)
-        assert mounts == DEFAULT_VOLUME_MOUNTS
+        assert mounts == get_default_volume_mounts()
         assert named == set()
 
     def test_device_bind_mount_unchanged(self):
@@ -413,13 +691,13 @@ class TestBuildVolumeMounts:
         dep = _make_deployment([{"mountPath": "/data", "depends": {"kind": "disk"}}])
         named: set[str] = set()
         mounts = build_volume_mounts(dep, named)
-        assert mounts == DEFAULT_VOLUME_MOUNTS
+        assert mounts == get_default_volume_mounts()
         assert named == set()
 
     def test_volume_without_mountpath_is_skipped(self):
         dep = _make_deployment([{"subPath": "/host/data"}])
         mounts = build_volume_mounts(dep, set())
-        assert mounts == DEFAULT_VOLUME_MOUNTS
+        assert mounts == get_default_volume_mounts()
 
     def test_disk_kind_capitalized_becomes_named_volume(self):
         # SDK DiskDepends defaults to "Disk"; the capitalized spelling must match too.
@@ -467,7 +745,15 @@ class TestBuildVolumeMounts:
 
     def test_device_runtime_keeps_default_mounts(self):
         dep = munchify({"spec": {"runtime": "device", "volumes": []}})
-        assert build_volume_mounts(dep, set()) == DEFAULT_VOLUME_MOUNTS
+        assert build_volume_mounts(dep, set()) == get_default_volume_mounts()
+
+    def test_configs_path_redirects_default_and_device_bind_mounts(self):
+        dep = _make_deployment(
+            [{"subPath": "/opt/rapyuta/configs/wms/settings.yaml", "mountPath": "/data"}]
+        )
+        mounts = build_volume_mounts(dep, set(), "/local")
+        assert "/local:/opt/rapyuta/configs:rslave" in mounts
+        assert "/local/wms/settings.yaml:/data" in mounts
 
     def test_subpath_on_disk_mount_warns_but_mounts_whole_volume(self):
         class _RecordingSpinner:
@@ -492,7 +778,7 @@ class TestBuildVolumeMounts:
         assert any("subPath" in w and "sub" in w for w in spinner.writes)
 
 
-class TestPopulateHealthcheck:
+class TestPopulateHealthcheckProbes:
     def test_no_probe_returns_none(self):
         assert populate_healthcheck(munchify({})) is None
 
@@ -650,6 +936,104 @@ class TestPopulateNamedVolumes:
         assert compose.volumes is None
         # clean_dict drops the None volumes key entirely.
         assert "volumes" not in clean_dict(asdict(compose))
+
+
+class TestPopulateFixpermsDependsOnWiring:
+    def test_service_declaring_fixup_volume_depends_on_init_fixperms(self):
+        """End-to-end through populate(): a deployment volume declaring
+        uid/gid/perm must make its service wait on init-fixperms, not just
+        produce a fixup entry -- covers the depends_on wiring loop that no
+        other test drives through populate() itself."""
+        package = munchify(
+            {
+                "metadata": {"version": "1.0"},
+                "spec": {
+                    "executables": [
+                        {"name": "server", "docker": {"image": "acme/server:1.0"}}
+                    ],
+                },
+            }
+        )
+        deployment = munchify(
+            {
+                "metadata": {
+                    "name": "dep1",
+                    "depends": {"nameOrGUID": "server-pkg", "version": "1.0"},
+                },
+                "spec": {
+                    "volumes": [
+                        {
+                            "subPath": "/host/settings.yaml",
+                            "mountPath": "/app/settings.yaml",
+                            "uid": 1000,
+                            "gid": 1000,
+                            "perm": 644,
+                        }
+                    ],
+                },
+            }
+        )
+        deployments = {"deployment:dep1": deployment}
+        packages = {"package:server-pkg:1.0": package}
+        ctx = MagicMock(obj=MagicMock(data={}))
+
+        result = populate(ctx=ctx, deployments=deployments, packages=packages)
+
+        assert "init-fixperms" in result.services
+        service = result.services["dep1_server"]
+        assert (
+            service.depends_on["init-fixperms"].condition
+            == "service_completed_successfully"
+        )
+
+    def test_service_with_configs_path_redirected_volume_has_no_depends_on(self):
+        """A volume redirected under --configs-path is the developer's own
+        local file, not a device path -- it must not trigger init-fixperms
+        (which would chown/chmod that local file as root), so the service
+        gets no depends_on edge for it either."""
+        package = munchify(
+            {
+                "metadata": {"version": "1.0"},
+                "spec": {
+                    "executables": [
+                        {"name": "server", "docker": {"image": "acme/server:1.0"}}
+                    ],
+                },
+            }
+        )
+        deployment = munchify(
+            {
+                "metadata": {
+                    "name": "dep1",
+                    "depends": {"nameOrGUID": "server-pkg", "version": "1.0"},
+                },
+                "spec": {
+                    "volumes": [
+                        {
+                            "subPath": "/opt/rapyuta/configs/settings.yaml",
+                            "mountPath": "/app/settings.yaml",
+                            "uid": 1000,
+                            "gid": 1000,
+                            "perm": 644,
+                        }
+                    ],
+                },
+            }
+        )
+        deployments = {"deployment:dep1": deployment}
+        packages = {"package:server-pkg:1.0": package}
+        ctx = MagicMock(obj=MagicMock(data={}))
+
+        result = populate(
+            ctx=ctx,
+            deployments=deployments,
+            packages=packages,
+            configs_path="/local",
+        )
+
+        assert "init-fixperms" not in result.services
+        service = result.services["dep1_server"]
+        assert not service.depends_on
 
 
 class TestFindPackage:

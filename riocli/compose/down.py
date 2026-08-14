@@ -57,6 +57,28 @@ from riocli.constants.colors import Colors
     default=False,
     help="Treat the argument as a chart name and resolve inputs from it.",
 )
+@click.option(
+    "--configs-path",
+    "configs_path",
+    default=None,
+    help="Host path to bind-mount in place of /opt/rapyuta/configs in the generated compose "
+    "file. Only takes effect when the compose file has to be (re)generated because it's "
+    "missing or empty -- pass the same value used with `rio compose up`/`generate` so a "
+    "regenerated file doesn't fall back to the device paths.",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+)
+@click.option(
+    "--ignore-volume-source",
+    "ignore_volume_source",
+    multiple=True,
+    default=(),
+    help="gitignore-style pattern matched against a volume's full host-side path -- drops "
+    "the bind entirely instead of mounting it. Only takes effect when the compose file has "
+    "to be (re)generated; see --configs-path. Repeatable; evaluated in order, last match "
+    "wins; prefix with '!' to re-include a path an earlier pattern excluded.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def down(
@@ -67,12 +89,16 @@ def down(
     path: str,
     use_chart: bool,
     files: tuple[str, ...],
+    configs_path: Path | None = None,
+    ignore_volume_source: tuple[str, ...] = (),
 ):
     """
     Stop and remove services defined in the Docker Compose file.
 
     If the compose file does not exist, it will be generated using the provided manifest(s),
-    values, and secret files before bringing the services down.
+    values, and secret files before bringing the services down. Pass --configs-path and/or
+    --ignore-volume-source in that case if you used them with `up`/`generate`, so the
+    regenerated file doesn't fall back to the un-overridden device paths.
 
     Examples:
 
@@ -113,6 +139,8 @@ def down(
                 values=values,
                 secrets=secrets,
                 files=files,
+                configs_path=configs_path.as_posix() if configs_path else None,
+                ignore_volume_source=ignore_volume_source,
             )
             write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 

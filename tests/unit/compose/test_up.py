@@ -5,6 +5,38 @@ from click.testing import CliRunner
 from riocli.compose.up import up
 
 
+class TestUpCommandIgnoreVolumeSource:
+    @patch("riocli.compose.up.DockerComposeManager")
+    @patch("riocli.compose.up.write_compose_yaml")
+    @patch("riocli.compose.up.generate_compose_file")
+    def test_ignore_volume_source_accepted_without_configs_path(
+        self, mock_gen, mock_write, mock_mgr_cls, tmp_path
+    ):
+        mock_gen.return_value = {"services": {}}
+        mgr = MagicMock()
+        mgr.validate_docker_availability.return_value = True
+        mgr.up.return_value = True
+        mock_mgr_cls.return_value = mgr
+
+        runner = CliRunner()
+        result = runner.invoke(
+            up,
+            [
+                "-p",
+                str(tmp_path),
+                "--ignore-volume-source",
+                "/opt/rapyuta/configs/auth/*",
+                "some-manifest.yaml",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        mock_gen.assert_called_once()
+        assert mock_gen.call_args.kwargs["configs_path"] is None
+        assert mock_gen.call_args.kwargs["ignore_volume_source"] == (
+            "/opt/rapyuta/configs/auth/*",
+        )
+
+
 class TestUpCommandChartFlag:
     def test_chart_flag_requires_chart_name(self, tmp_path):
         runner = CliRunner()

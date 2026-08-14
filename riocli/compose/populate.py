@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+import fnmatch
 import shlex
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import click
 from munch import Munch
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
 from riocli.compose.defaults import (
     CLOUD_RUNTIME,
-    DEFAULT_VOLUME_MOUNTS,
+    CONFIGS_DIR,
     generate_roscore_service,
+    get_default_volume_mounts,
 )
 from riocli.compose.model import DependsCondition, DockerCompose, HealthCheck, Service
 from riocli.constants.colors import Colors
@@ -33,6 +38,8 @@ def populate(
     ctx: click.Context,
     deployments: dict[str, dict],
     packages: dict[str, dict],
+    configs_path: str | None = None,
+    ignore_volume_source: Sequence[str] = (),
     *args,
     **kwargs,
 ) -> DockerCompose:
@@ -42,6 +49,11 @@ def populate(
     Args:
         deployments: Dictionary of deployment definitions.
         packages: Dictionary of package definitions.
+        configs_path: Host-side path to bind-mount in place of CONFIGS_DIR
+            wherever CONFIGS_DIR appears as a volume's host path.
+        ignore_volume_source: gitignore-style patterns matched against a volume's
+            full host-side path -- binds matching one are dropped entirely.
+            Independent of configs_path; applies whether or not it's also given.
 
     Returns:
         DockerCompose object representing the final configuration.
@@ -61,6 +73,8 @@ def populate(
                 packages=packages,
                 services=services,
                 named_volumes=named_volumes,
+                configs_path=configs_path,
+                ignore_volume_source=ignore_volume_source,
                 spinner=spinner,
             )
             processed_deployments[key] = deployment
@@ -76,7 +90,9 @@ def populate(
     spinner.text = click.style("Conversion successful.", fg=Colors.BRIGHT_GREEN)
     spinner.green.ok(Symbols.SUCCESS)
 
-    fixup_vols = get_volumes_requiring_fixup(processed_deployments)
+    fixup_vols = get_volumes_requiring_fixup(
+        processed_deployments, configs_path, ignore_volume_source
+    )
     if fixup_vols:
         fix_cmds = [_build_fixup_cmd(entry) for entry in fixup_vols]
         fixperms_vols = [
@@ -95,9 +111,7 @@ def populate(
             if name == "init-fixperms":
                 continue
             if any(
-                isinstance(vol, str)
-                and len(vol.split(":")) >= 2
-                and vol.split(":")[1] in affected_paths
+                isinstance(vol, str) and _get_volume_target(vol) in affected_paths
                 for vol in getattr(svc, "volumes", [])
             ):
                 if svc.depends_on is None:
@@ -160,14 +174,103 @@ def _build_fixup_cmd(entry: dict) -> str:
     return f"if [ -f {path} ]; then {file_block}; else {dir_block}; fi"
 
 
-def get_volumes_requiring_fixup(deployments: dict[str, dict]) -> list[dict]:
+def _get_volume_target(vol: str) -> str | None:
+    """Extracts the container-side mount path from a compose volume string.
+
+    Parses from the right, not `vol.split(":")[1]`, so a host path containing
+    a literal ':' doesn't shift the field positions -- e.g. a Compose short
+    volume syntax quirk rather than a Windows accommodation (this project does
+    not target Windows); relevant now that --configs-path lets a user point
+    at any host directory name, including one with a colon in it. The trailing
+    segment is treated as a mode ("rw", "ro", "rslave", ...) rather than the
+    container path whenever it doesn't look like an absolute path.
+    """
+    parts = vol.split(":")
+    if len(parts) < 2:
+        return None
+    if len(parts) >= 3 and not parts[-1].startswith("/"):
+        return parts[-2]
+    return parts[-1]
+
+
+def _is_ignored_volume_source(host_path: str, ignore_patterns: Sequence[str]) -> bool:
+    """gitignore-style match against a volume's full host-side path.
+
+    Patterns are evaluated in order, last match wins; a leading '!' negates a
+    preceding match (so a later, more specific pattern can re-include a path an
+    earlier, broader pattern excluded -- e.g. ["/opt/rapyuta/configs/station/*",
+    "!/opt/rapyuta/configs/station/sim-nginx.conf.template"]). A pattern matches
+    host_path itself (fnmatch-style glob) or, treated as a directory prefix, any
+    path under it. Not scoped to CONFIGS_DIR or configs_path in any way -- any
+    absolute host path a deployment declares as a volume source is a valid
+    pattern target.
+    """
+    ignored = False
+    for raw in ignore_patterns:
+        negate = raw.startswith("!")
+        pattern = (raw[1:] if negate else raw).rstrip("/")
+        if not pattern:
+            continue
+        if fnmatch.fnmatch(host_path, pattern) or host_path.startswith(pattern + "/"):
+            ignored = not negate
+    return ignored
+
+
+def _under_configs_dir(host_path: str) -> bool:
+    """True if host_path is CONFIGS_DIR itself or a path inside it."""
+    return host_path == CONFIGS_DIR or host_path.startswith(CONFIGS_DIR + "/")
+
+
+def _substitute_configs_path(
+    host_path: str | None,
+    configs_path: str | None,
+    ignore_patterns: Sequence[str] = (),
+) -> str | None:
+    """Rewrites a volume's host path from under CONFIGS_DIR to under configs_path, if given.
+
+    Returns None (signalling "drop this volume") when host_path matches one of
+    ignore_patterns -- lets callers omit binds that have no local equivalent
+    instead of pointing them at a directory that doesn't exist. Independent of
+    configs_path: ignoring and redirecting are two separate operations on the
+    same bind, so ignore_patterns is checked first and applies whether or not
+    configs_path is given.
+    """
+    if not host_path:
+        return host_path
+    if ignore_patterns and _is_ignored_volume_source(host_path, ignore_patterns):
+        return None
+    if not configs_path:
+        return host_path
+    if host_path == CONFIGS_DIR:
+        return configs_path
+    if _under_configs_dir(host_path):
+        return configs_path.rstrip("/") + host_path[len(CONFIGS_DIR) :]
+    return host_path
+
+
+def get_volumes_requiring_fixup(
+    deployments: dict[str, dict],
+    configs_path: str | None = None,
+    ignore_volume_source: Sequence[str] = (),
+) -> list[dict]:
+    """Collects volumes declaring uid/gid/perm into init-fixperms fixup entries.
+
+    Skips any volume whose subPath was redirected under configs_path: that
+    bind now points at the developer's own local directory, and running
+    chown/chmod as root against it (as init-fixperms does for real device
+    paths) would change ownership/mode of the developer's files rather than
+    fixing up a device path -- see init-fixperms's root user and _build_fixup_cmd.
+    """
     volumes_by_path: dict[tuple, dict] = {}
     for dep in deployments.values():
         for volume in dep.spec.get("volumes", []):
             uid, gid, perm = volume.get("uid"), volume.get("gid"), volume.get("perm")
             if uid is None and gid is None and perm is None:
                 continue
-            host = volume.get("subPath")
+            sub_path = volume.get("subPath")
+            if configs_path and sub_path and _under_configs_dir(sub_path):
+                continue
+            host = _substitute_configs_path(sub_path, configs_path, ignore_volume_source)
             container = volume.get("mountPath")
             if not host or not container:
                 continue
@@ -228,6 +331,8 @@ def _process_deployment_services(
     packages: dict[str, dict],
     services: dict[str, Service],
     named_volumes: set[str],
+    configs_path: str | None = None,
+    ignore_volume_source: Sequence[str] = (),
     spinner=None,
 ) -> None:
     """Process a single deployment and add its services to the services dictionary.
@@ -252,7 +357,9 @@ def _process_deployment_services(
         restart_policy = "no"
 
     # Build volume mounts, dependencies, and environment variables
-    volume_mounts = build_volume_mounts(deployment, named_volumes, spinner=spinner)
+    volume_mounts = build_volume_mounts(
+        deployment, named_volumes, configs_path, ignore_volume_source, spinner=spinner
+    )
     ros_enabled = _is_ros_enabled(deployment=deployment, package=package)
     if ros_enabled and "ros-master" not in services:
         services["ros-master"] = generate_roscore_service()
@@ -322,7 +429,11 @@ def create_service(
 
 
 def build_volume_mounts(
-    deployment: dict, named_volumes: set[str], spinner=None
+    deployment: dict,
+    named_volumes: set[str],
+    configs_path: str | None = None,
+    ignore_volume_source: Sequence[str] = (),
+    spinner=None,
 ) -> list[str]:
     """
     Constructs a list of volume mount strings for a given deployment.
@@ -349,14 +460,34 @@ def build_volume_mounts(
     Args:
         deployment: The deployment definition dictionary.
         named_volumes: Mutable set collecting disk-backed named-volume names.
+        configs_path: Host-side path to bind-mount in place of CONFIGS_DIR
+            wherever CONFIGS_DIR appears as a volume's host path (device
+            bind mounts only; cloud disk mounts have no host path).
+        ignore_volume_source: gitignore-style patterns matched against a volume's
+            full host-side path -- binds matching one are dropped entirely.
+            Independent of configs_path; applies whether or not it's also given.
         spinner: Optional spinner used to surface subPath warnings.
 
     Returns:
         List of Docker volume mount strings.
     """
-    # Device runtime gets the standard host mounts; cloud starts empty.
+    # Device runtime gets the standard host mounts (optionally redirected under
+    # configs_path, with ignore_volume_source able to drop individual default
+    # mounts other than the whole-tree CONFIGS_DIR bind -- see
+    # test_default_top_level_mount_unaffected_by_ignore); cloud starts empty.
     runtime = deployment.spec.get("runtime")
-    service_volumes = [] if runtime == CLOUD_RUNTIME else DEFAULT_VOLUME_MOUNTS.copy()
+    if runtime == CLOUD_RUNTIME:
+        service_volumes = []
+    else:
+        service_volumes = get_default_volume_mounts(configs_path)
+        if ignore_volume_source:
+            service_volumes = service_volumes[:1] + [
+                vol
+                for vol in service_volumes[1:]
+                if not _is_ignored_volume_source(
+                    vol.split(":", 1)[0], ignore_volume_source
+                )
+            ]
 
     # Add custom volumes from deployment
     for volume in deployment.spec.get("volumes", []):
@@ -385,8 +516,12 @@ def build_volume_mounts(
             named_volumes.add(disk_name)
             continue
 
-        # Device bind mount -> host path mounted at container path.
-        src = volume.get("subPath")
+        # Device bind mount -> host path mounted at container path, subject to
+        # the same configs_path redirect / ignore_volume_source drop as the
+        # default CONFIGS_DIR mount above.
+        src = _substitute_configs_path(
+            volume.get("subPath"), configs_path, ignore_volume_source
+        )
         if not src:
             continue
 
