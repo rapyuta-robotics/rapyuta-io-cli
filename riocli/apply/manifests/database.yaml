@@ -17,6 +17,10 @@ spec:
     # from the primary device's IP on primaryInterface — do not set it.
     # standby:
     #   primaryInterface: eth0
+    #   # Network the primary trusts for replication in its pg_hba.conf.
+    #   # Defaults to 10.0.0.0/8; set it when the fleet is on another network,
+    #   # or standbys resolve a valid primaryHost and are then refused by pg_hba.
+    #   cidr: 10.0.0.0/8
     #   devices:
     #     - deviceName: edge-node-02
     #       dataDirectory: /opt/rapyuta/volumes/orders-db  # defaults to the primary's
