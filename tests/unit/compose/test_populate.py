@@ -777,6 +777,48 @@ class TestBuildVolumeMounts:
         assert "my-disk:/data" in mounts
         assert any("subPath" in w and "sub" in w for w in spinner.writes)
 
+    def test_configs_path_warns_when_redirected_target_missing_on_disk(self, tmp_path):
+        class _RecordingSpinner:
+            def __init__(self):
+                self.writes: list[str] = []
+
+            def write(self, text):
+                self.writes.append(text)
+
+        dep = _make_deployment(
+            [{"subPath": "/opt/rapyuta/configs/server/hello.txt", "mountPath": "/data"}]
+        )
+        spinner = _RecordingSpinner()
+        configs_dir = str(tmp_path)
+
+        mounts = build_volume_mounts(dep, set(), configs_dir, spinner=spinner)
+
+        expected_host = f"{configs_dir}/server/hello.txt"
+        assert f"{expected_host}:/data" in mounts
+        assert any(
+            "does not exist locally" in w and expected_host in w for w in spinner.writes
+        )
+
+    def test_configs_path_no_warning_when_redirected_target_exists(self, tmp_path):
+        class _RecordingSpinner:
+            def __init__(self):
+                self.writes: list[str] = []
+
+            def write(self, text):
+                self.writes.append(text)
+
+        (tmp_path / "server").mkdir()
+        (tmp_path / "server" / "hello.txt").write_text("hi")
+
+        dep = _make_deployment(
+            [{"subPath": "/opt/rapyuta/configs/server/hello.txt", "mountPath": "/data"}]
+        )
+        spinner = _RecordingSpinner()
+        mounts = build_volume_mounts(dep, set(), str(tmp_path), spinner=spinner)
+
+        assert f"{tmp_path}/server/hello.txt:/data" in mounts
+        assert not any("does not exist locally" in w for w in spinner.writes)
+
 
 class TestPopulateHealthcheckProbes:
     def test_no_probe_returns_none(self):
