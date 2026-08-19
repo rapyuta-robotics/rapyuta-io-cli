@@ -5,6 +5,44 @@ from click.testing import CliRunner
 from riocli.compose.down import down
 
 
+class TestDownCommandIgnoreVolumeSource:
+    @patch("riocli.compose.down.DockerComposeManager")
+    @patch("riocli.compose.down.write_compose_yaml")
+    @patch("riocli.compose.down.generate_compose_file")
+    def test_configs_path_and_ignore_volume_source_passed_through(
+        self, mock_gen, mock_write, mock_mgr_cls, tmp_path
+    ):
+        mock_gen.return_value = {"services": {}}
+        mgr = MagicMock()
+        mgr.check_empty_file.return_value = False
+        mgr.validate_docker_availability.return_value = True
+        mgr.down.return_value = True
+        mock_mgr_cls.return_value = mgr
+
+        configs_dir = tmp_path / "configs"
+        configs_dir.mkdir()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            down,
+            [
+                "-p",
+                str(tmp_path),
+                "--configs-path",
+                str(configs_dir),
+                "--ignore-volume-source",
+                "/opt/rapyuta/configs/auth/*",
+                "some-manifest.yaml",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        mock_gen.assert_called_once()
+        assert mock_gen.call_args.kwargs["configs_path"] == str(configs_dir)
+        assert mock_gen.call_args.kwargs["ignore_volume_source"] == (
+            "/opt/rapyuta/configs/auth/*",
+        )
+
+
 class TestDownCommandChartFlag:
     def test_chart_flag_requires_chart_name(self, tmp_path):
         runner = CliRunner()
