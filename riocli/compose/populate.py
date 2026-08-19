@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import fnmatch
-import os
 import shlex
 from typing import TYPE_CHECKING, Any
 
@@ -521,33 +520,11 @@ def build_volume_mounts(
         # Device bind mount -> host path mounted at container path, subject to
         # the same configs_path redirect / ignore_volume_source drop as the
         # default CONFIGS_DIR mount above.
-        sub_path = volume.get("subPath")
-        src = _substitute_configs_path(sub_path, configs_path, ignore_volume_source)
+        src = _substitute_configs_path(
+            volume.get("subPath"), configs_path, ignore_volume_source
+        )
         if not src:
             continue
-
-        # A subPath redirected under configs_path but missing on disk isn't an
-        # error -- Docker auto-creates the mount point, but always as a
-        # directory, even where the manifest means a file. init-fixperms skips
-        # configs_path-redirected volumes (see get_volumes_requiring_fixup), so
-        # nothing corrects that afterwards; warn here instead so a missing
-        # local file surfaces as a clear message rather than a container-side
-        # "Is a directory" failure.
-        if (
-            configs_path
-            and sub_path
-            and _under_configs_dir(sub_path)
-            and not os.path.exists(src)
-            and spinner is not None
-        ):
-            spinner.write(
-                click.style(
-                    f"{Symbols.WARNING} --configs-path: '{src}' does not exist "
-                    f"locally (from subPath '{sub_path}'); Docker will create an "
-                    f"empty directory there, which won't be fixed up.",
-                    fg=Colors.YELLOW,
-                )
-            )
 
         # Determine volume mode based on permissions
         perm = volume.get("perm")
