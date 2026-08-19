@@ -481,10 +481,11 @@ def build_volume_mounts(
     else:
         service_volumes = get_default_volume_mounts(configs_path)
         if ignore_volume_source:
-            service_volumes = service_volumes[:1] + [
+            service_volumes = [
                 vol
-                for vol in service_volumes[1:]
-                if not _is_ignored_volume_source(
+                for vol in service_volumes
+                if _get_volume_target(vol) == CONFIGS_DIR
+                or not _is_ignored_volume_source(
                     vol.split(":", 1)[0], ignore_volume_source
                 )
             ]
