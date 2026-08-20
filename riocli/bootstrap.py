@@ -15,6 +15,7 @@
 __version__ = "10.0.3"
 
 import os
+from typing import NoReturn
 
 import click
 import rapyuta_io
@@ -104,6 +105,81 @@ def version():
     click.echo(f"rio {__version__} / SDK {rapyuta_io.__version__}")
 
 
+def _abort_update(e: Exception) -> NoReturn:
+    """Report a failed update attempt and exit non-zero."""
+    click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
+    raise SystemExit(1) from e
+
+
+def _report_latest() -> bool:
+    click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
+    return False
+
+
+def _confirm_update(latest: str, silent: bool) -> None:
+    click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
+    if not silent:
+        _ = click.confirm("Do you want to update?", abort=True, default=False)
+
+
+def _update_pip(silent: bool) -> bool:
+    """Upgrade a pip installation from PyPI. Returns whether it updated."""
+    available, latest = check_for_updates(__version__)
+    if not available:
+        return _report_latest()
+
+    _confirm_update(latest, silent)
+
+    try:
+        _ = pip_install_cli(version=latest)
+    except Exception as e:
+        _abort_update(e)
+
+    return True
+
+
+def _update_appimage(target: str, silent: bool) -> bool:
+    """Replace the running AppImage from its Azure Blob channel.
+
+    ``target`` is the AppImage file itself (the APPIMAGE env var), not
+    sys.executable — that is the bundled interpreter inside the mounted
+    AppImage. Returns whether it updated.
+    """
+    try:
+        channel = appimage.channel_for_version(__version__)
+    except ValueError as e:
+        click.secho(
+            f"{Symbols.ERROR} Cannot determine update channel: {e}", fg=Colors.RED
+        )
+        raise SystemExit(1) from e
+
+    if channel is None:
+        click.secho(
+            f"{Symbols.WARNING} This is a development build; auto-update is "
+            "disabled. Rebuild from your branch or install a release.",
+            fg=Colors.YELLOW,
+        )
+        return False
+
+    try:
+        manifest = appimage.fetch_manifest(channel)
+        latest = manifest["version"]
+    except Exception as e:
+        _abort_update(e)
+
+    if not appimage.update_available(channel, latest, __version__):
+        return _report_latest()
+
+    _confirm_update(latest, silent)
+
+    try:
+        appimage.download_and_replace(channel, manifest, target=target)
+    except Exception as e:
+        _abort_update(e)
+
+    return True
+
+
 @cli.command("update")
 @click.option(
     "-f",
@@ -132,62 +208,13 @@ def update(silent: bool) -> None:
     # old "python" in sys.executable heuristic mis-classifies AppImages.)
     appimage_path = os.environ.get("APPIMAGE")
 
-    if not appimage_path:
-        available, latest = check_for_updates(__version__)
-        if not available:
-            click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
-            return
-        click.secho(f"🎉 A newer version ({latest}) is available.", fg=Colors.GREEN)
-        if not silent:
-            _ = click.confirm("Do you want to update?", abort=True, default=False)
-        try:
-            _ = pip_install_cli(version=latest)
-        except Exception as e:
-            click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
-            raise SystemExit(1) from e
+    if appimage_path:
+        updated = _update_appimage(appimage_path, silent)
+    else:
+        updated = _update_pip(silent)
+
+    if updated:
         click.secho(f"{Symbols.SUCCESS} Update successful!", fg=Colors.GREEN)
-        return
-
-    # AppImage installation: update from our Azure Blob channel, replacing the
-    # AppImage file itself (target=APPIMAGE, not sys.executable — that is the
-    # bundled interpreter inside the mounted AppImage).
-    try:
-        channel = appimage.channel_for_version(__version__)
-    except ValueError as e:
-        click.secho(
-            f"{Symbols.ERROR} Cannot determine update channel: {e}", fg=Colors.RED
-        )
-        raise SystemExit(1) from e
-    if channel is None:
-        click.secho(
-            f"{Symbols.WARNING} This is a development build; auto-update is "
-            "disabled. Rebuild from your branch or install a release.",
-            fg=Colors.YELLOW,
-        )
-        return
-
-    try:
-        manifest = appimage.fetch_manifest(channel)
-        version = manifest["version"]
-    except Exception as e:
-        click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
-        raise SystemExit(1) from e
-
-    if not appimage.update_available(channel, version, __version__):
-        click.secho("🎉 You are using the latest version", fg=Colors.GREEN)
-        return
-
-    click.secho(f"🎉 A newer version ({version}) is available.", fg=Colors.GREEN)
-    if not silent:
-        _ = click.confirm("Do you want to update?", abort=True, default=False)
-
-    try:
-        appimage.download_and_replace(channel, manifest, target=appimage_path)
-    except Exception as e:
-        click.secho(f"{Symbols.ERROR} Failed to update: {e}", fg=Colors.RED)
-        raise SystemExit(1) from e
-
-    click.secho(f"{Symbols.SUCCESS} Update successful!", fg=Colors.GREEN)
 
 
 cli.add_command(apply)
