@@ -16,6 +16,7 @@ from hashlib import sha256
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 
 from riocli.utils import appimage
 
@@ -165,3 +166,51 @@ def test_download_and_replace_checksum_mismatch(monkeypatch, tmp_path):
         appimage.download_and_replace("release", manifest, target=str(target))
     # original must be untouched on mismatch
     assert target.read_bytes() == b"OLD"
+
+
+def test_download_failure_does_not_blame_permissions(monkeypatch, tmp_path, capsys):
+    """A network error during the download must not suggest running as root.
+
+    requests' exceptions subclass OSError, so a single `except OSError` around
+    both the download and the file swap would print the permissions hint for
+    an unrelated connection failure.
+    """
+    manifest = {"version": "10.6.0", "file": "rio.AppImage", "sha256": "deadbeef"}
+
+    def _boom(url, **kw):
+        raise requests.exceptions.ConnectionError("connection reset")
+
+    monkeypatch.setattr(appimage.requests, "get", _boom)
+    target = tmp_path / "rio"
+    target.write_bytes(b"OLD")
+    with pytest.raises(requests.exceptions.ConnectionError):
+        appimage.download_and_replace("release", manifest, target=str(target))
+    assert "root user" not in capsys.readouterr().out
+    # the original binary and the temp directory are both left clean
+    assert target.read_bytes() == b"OLD"
+    assert list(tmp_path.iterdir()) == [target]
+
+
+def test_swap_failure_warns_about_permissions(monkeypatch, tmp_path, capsys):
+    """A genuine OSError during the swap keeps the root-user hint."""
+    payload = b"APPIMAGE-BYTES"
+    manifest = {
+        "version": "10.6.0",
+        "file": "rio.AppImage",
+        "sha256": sha256(payload).hexdigest(),
+    }
+    monkeypatch.setattr(
+        appimage.requests, "get", lambda url, **kw: _fake_response(content=payload)
+    )
+
+    def _denied(src, dst):
+        raise PermissionError("read-only file system")
+
+    monkeypatch.setattr(appimage.os, "replace", _denied)
+    target = tmp_path / "rio"
+    target.write_bytes(b"OLD")
+    with pytest.raises(PermissionError):
+        appimage.download_and_replace("release", manifest, target=str(target))
+    assert "root user" in capsys.readouterr().out
+    assert target.read_bytes() == b"OLD"
+    assert list(tmp_path.iterdir()) == [target]

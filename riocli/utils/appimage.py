@@ -105,12 +105,18 @@ def fetch_manifest(channel: str) -> dict:
     return manifest
 
 
-def _unlink_quietly(path: str | None) -> None:
-    if path is not None:
-        try:
-            os.unlink(path)
-        except FileNotFoundError:
-            pass
+def _unlink_quietly(path: str) -> None:
+    try:
+        os.unlink(path)
+    except FileNotFoundError:
+        pass
+
+
+def _warn_permissions() -> None:
+    click.secho(
+        f"{Symbols.WARNING} Please consider running as a root user.",
+        fg=Colors.YELLOW,
+    )
 
 
 def download_and_replace(channel: str, manifest: dict, target: str | None = None) -> None:
@@ -129,14 +135,21 @@ def download_and_replace(channel: str, manifest: dict, target: str | None = None
             "Manifest missing 'sha256' — refusing to install unverified binary"
         )
 
-    target_path = Path(target)
-    tmp_path = None
+    # Temp file in the target's own directory so os.replace below is an atomic
+    # same-filesystem rename. A failure here means that directory is not
+    # writable, which is worth the root-user hint.
+    try:
+        fd, tmp_path = tempfile.mkstemp(dir=Path(target).parent, prefix=".rio-update-")
+    except OSError:
+        _warn_permissions()
+        raise
+
+    # Download and verify first: any failure here leaves the installed
+    # AppImage untouched. This stays a separate try from the swap below
+    # because requests' exceptions subclass OSError, so a shared handler
+    # would blame permissions for what is really a network or HTTP error.
     digest = sha256()
     try:
-        # Temp file in the target's own directory so os.replace is an atomic
-        # same-filesystem rename. Stream the download (AppImages are tens of
-        # MB) and hash incrementally to bound peak memory.
-        fd, tmp_path = tempfile.mkstemp(dir=target_path.parent, prefix=".rio-update-")
         with os.fdopen(fd, "wb") as f:
             with requests.get(
                 appimage_url(channel, manifest["file"]),
@@ -144,22 +157,23 @@ def download_and_replace(channel: str, manifest: dict, target: str | None = None
                 stream=True,
             ) as resp:
                 resp.raise_for_status()
+                # Stream and hash incrementally (AppImages are tens of MB)
+                # to bound peak memory.
                 for chunk in resp.iter_content(chunk_size=1024 * 1024):
                     f.write(chunk)
                     digest.update(chunk)
         if digest.hexdigest() != expected:
             raise ValueError("Checksum mismatch for the downloaded AppImage")
+    except Exception:
+        _unlink_quietly(tmp_path)
+        raise
+
+    # Swap the verified binary in. Only plain OS errors reach here, so an
+    # OSError really does mean permissions.
+    try:
         os.chmod(tmp_path, 0o755)
         os.replace(tmp_path, target)
     except OSError:
         _unlink_quietly(tmp_path)
-        click.secho(
-            f"{Symbols.WARNING} Please consider running as a root user.",
-            fg=Colors.YELLOW,
-        )
-        raise
-    except Exception:
-        # Any non-OS failure (checksum mismatch, network error) must still
-        # clean up the partial temp file and leave the original untouched.
-        _unlink_quietly(tmp_path)
+        _warn_permissions()
         raise
