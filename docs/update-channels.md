@@ -40,7 +40,19 @@ will function. **Do not put secret values in source files or commit history.**
 These secrets are consumed by:
 
 - `.github/workflows/upload-appimage.yml` — devel pushes (`CHANNEL=devel`) and PR builds (`CHANNEL=dev`).
-- `.github/workflows/release.yml` — tagged releases (`CHANNEL=release`).
+- `.github/workflows/release.yml` — tagged releases (`CHANNEL=release`), via the `.releaserc.json` prepare step.
+
+## Build and publish scripts
+
+The AppImage pipeline is split across several scripts so that building stays free of
+CI-only side effects:
+
+| Script | Role |
+|---|---|
+| `scripts/build-rio-appimage.sh` | Builds the AppImage from the current tree. No network uploads, no edits to tracked files — safe to run by hand. |
+| `scripts/stamp-channel-version.sh` | **CI only.** Rewrites `__version__` in `riocli/bootstrap.py` with the channel marker. Requires `CHANNEL`; a no-op for `release` (where `bump-version.sh` already set the version). Run before the build so the marker lands in the wheel. |
+| `scripts/publish-rio-appimage.sh` | **CI only.** Installs azcopy and uploads the built AppImage — plus `latest.json` on the `devel`/`release` channels — to the matching container. A no-op when the Azure secrets are absent (e.g. fork PRs). |
+| `scripts/branch-slug.sh` | Prints the sanitized branch identifier. Single source of truth shared by the version stamp, the `dev/<slug>/` upload path, and the PR-comment URL. |
 
 ## Azure Blob infra (provisioned)
 
