@@ -37,10 +37,10 @@ class Restore(Model):
 
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
-        _ = v2_client.delete_restore(
-            database=self._obj.spec.database,
-            name=self._obj.metadata.name,
-        )
+        # The API exposes no restore delete: a restore runs to a terminal phase
+        # and stays as an audit record. Deleting the target database is what
+        # stops one that is still in flight.
+        raise NotImplementedError
 
     @override
     def list_dependencies(self) -> list[str] | None:
