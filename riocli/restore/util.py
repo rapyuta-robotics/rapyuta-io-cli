@@ -44,7 +44,15 @@ def fetch_restores(
 def display_restore_list(restores: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ("GUID", "Name", "Source", "Databases", "Phase", "Restored")
+        headers = (
+            "GUID",
+            "Name",
+            "Source",
+            "Databases",
+            "Phase",
+            "Step",
+            "Restored",
+        )
 
     data = []
     for restore in restores:
@@ -53,6 +61,9 @@ def display_restore_list(restores: typing.Any, show_header: bool = True):
         # which is the only record of what actually landed.
         phase = getattr(status, "phase", None) if status else None
         restored = getattr(status, "restored_databases", None) if status else None
+        # A restore holds one phase for minutes, so the step is what separates
+        # progress from a stall.
+        step = getattr(status, "step", None) if status else None
         requested = restore.spec.databases
 
         data.append(
@@ -62,6 +73,7 @@ def display_restore_list(restores: typing.Any, show_header: bool = True):
                 _source_summary(restore.spec.source),
                 ", ".join(requested) if requested else "all",
                 phase or "Unknown",
+                step or "-",
                 ", ".join(restored) if restored else "-",
             ]
         )
