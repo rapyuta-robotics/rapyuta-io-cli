@@ -16,7 +16,6 @@ import click
 
 from riocli.constants import Colors
 from riocli.restore.create import create_restore
-from riocli.restore.delete import delete_restore
 from riocli.restore.inspect import inspect_restore
 from riocli.restore.list import list_restores
 from riocli.utils import AliasedGroup
@@ -48,4 +47,3 @@ def restore() -> None:
 restore.add_command(list_restores)
 restore.add_command(inspect_restore)
 restore.add_command(create_restore)
-restore.add_command(delete_restore)
