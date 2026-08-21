@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 from rapyuta_io_sdk_v2 import Restore
 
-from riocli.restore.util import _source_summary
+from riocli.restore.util import _source_summary, display_restore_list
 
 
-def _restore(source: dict) -> Restore:
+def _restore(source: dict, status: dict | None = None) -> Restore:
     return Restore.model_validate(
         {
             "apiVersion": "api.rapyuta.io/v2",
             "kind": "Restore",
             "metadata": {"name": "orders-restore", "guid": "restore-aaaaaaaaaaaaaaaa"},
             "spec": {"database": "orders-db", "source": source},
+            "status": status,
         }
     )
 
@@ -45,3 +48,23 @@ def test_source_summary_data_directory():
         _source_summary(r.spec.source)
         == "dataDirectory: /opt/rapyuta/volumes/orders-db/17"
     )
+
+
+def test_step_is_shown_alongside_the_phase(capsys):
+    # A restore sits in Running for minutes, so the phase alone cannot tell
+    # progress from a stall.
+    r = _restore(
+        {"type": "backup", "fileUpload": "fileupload-abc123"},
+        {"phase": "Running", "step": "loading orders"},
+    )
+
+    display_restore_list([r])
+    out = capsys.readouterr().out
+
+    assert "Running" in out
+    assert "loading orders" in out
+
+
+def test_missing_status_does_not_break_the_table(capsys):
+    display_restore_list([_restore({"type": "backup", "fileUpload": "fileupload-x"})])
+    assert "Unknown" in capsys.readouterr().out
