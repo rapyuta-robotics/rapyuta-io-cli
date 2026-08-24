@@ -17,7 +17,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors, Symbols
-from riocli.restore.util import display_restore_list
+from riocli.database.restore.util import display_restore_list
 
 
 @click.command(
@@ -133,16 +133,16 @@ def create_restore(
 
         Restore one logical database from an uploaded archive
 
-            $ rio restore create orders-restore -d orders-db \\
+            $ rio database restore create orders-restore -d orders-db \\
                 -u orders_20260101T020000.tar.gz --db orders
 
         Restore every logical database the archive holds
 
-            $ rio restore create orders-restore -d orders-db -u fileupload-abc123
+            $ rio database restore create orders-restore -d orders-db -u fileupload-abc123
 
         Migrate a v17 cluster into a new v18 database
 
-            $ rio restore create orders-migrate -d orders-db-v18 \\
+            $ rio database restore create orders-migrate -d orders-db-v18 \\
                 --source dataDirectory \\
                 --old-data-directory /opt/rapyuta/volumes/orders-db \\
                 --source-version 17
@@ -209,7 +209,7 @@ def create_restore(
         click.secho(f"{Symbols.SUCCESS} Restore started", fg=Colors.GREEN)
         display_restore_list([restore], show_header=True)
         click.secho(
-            f"\nFollow it with: rio restore inspect {restore_name} -d {database}",
+            f"\nFollow it with: rio database restore inspect {restore_name} -d {database}",
             fg=Colors.YELLOW,
         )
     except Exception as e:

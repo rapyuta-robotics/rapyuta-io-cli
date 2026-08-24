@@ -44,7 +44,6 @@ from riocli.package import package
 from riocli.parameter import parameter
 from riocli.permission import permission
 from riocli.project import project
-from riocli.restore import restore
 from riocli.role import role
 from riocli.secret import secret
 from riocli.service_account import service_account
@@ -170,7 +169,6 @@ cli.add_command(completion)
 cli.add_command(parameter)
 cli.add_command(database)
 cli.add_command(backup)
-cli.add_command(restore)
 cli.add_command(disk)
 cli.add_command(shell)
 cli.add_command(deprecated_repl)
