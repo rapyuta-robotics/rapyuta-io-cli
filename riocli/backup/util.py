@@ -51,7 +51,6 @@ def display_backup_list(backups: typing.Any, show_header: bool = True):
             "Schedule",
             "Phase",
             "Step",
-            "Archives",
         )
 
     data = []
@@ -61,7 +60,6 @@ def display_backup_list(backups: typing.Any, show_header: bool = True):
         # The recover dominates a run, so the phase alone cannot tell a slow
         # backup from a stuck one.
         step = getattr(status, "step", None) if status else None
-        uploads = getattr(status, "file_uploads", None) if status else None
         data.append(
             [
                 backup.metadata.guid,
@@ -71,7 +69,6 @@ def display_backup_list(backups: typing.Any, show_header: bool = True):
                 backup.spec.schedule or "-",
                 phase or "Unknown",
                 step or "-",
-                len(uploads) if uploads else 0,
             ]
         )
 
