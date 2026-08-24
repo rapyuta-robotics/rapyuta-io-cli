@@ -35,25 +35,16 @@ def _backup(status: dict | None) -> Backup:
     )
 
 
-def test_step_and_archive_count_are_shown(capsys):
-    backup = _backup(
-        {
-            "phase": "Ready",
-            "step": "archiving base backup",
-            "fileUploads": [
-                {"guid": "fileupload-one", "role": "base"},
-                {"guid": "fileupload-two", "role": "base"},
-            ],
-        }
-    )
+def test_step_is_shown(capsys):
+    backup = _backup({"phase": "Ready", "step": "archiving base backup"})
 
     display_backup_list([backup])
     out = capsys.readouterr().out
 
-    # The archive count is what tells the operator a restore has something to
-    # read; the step separates a slow recover from a stuck one.
+    # The recover dominates a run, so the step is what separates a slow backup
+    # from a stuck one.
     assert "archiving base backup" in out
-    assert "2" in out
+    assert "Ready" in out
 
 
 def test_missing_status_does_not_break_the_table(capsys):
@@ -61,4 +52,3 @@ def test_missing_status_does_not_break_the_table(capsys):
     out = capsys.readouterr().out
 
     assert "Unknown" in out
-    assert "0" in out

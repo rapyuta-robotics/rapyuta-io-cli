@@ -68,3 +68,24 @@ def test_step_is_shown_alongside_the_phase(capsys):
 def test_missing_status_does_not_break_the_table(capsys):
     display_restore_list([_restore({"type": "backup", "fileUpload": "fileupload-x"})])
     assert "Unknown" in capsys.readouterr().out
+
+
+def test_delete_object_is_a_noop_not_an_exception():
+    # Model.delete() catches only HttpNotFoundError, so a NotImplementedError here
+    # aborts `rio delete -f` for every other resource in the same bundle. A
+    # restore is an audit record with no delete route: skipping it is correct.
+    from riocli.database.restore.model import Restore as RestoreResource
+
+    r = RestoreResource(
+        {
+            "apiVersion": "api.rapyuta.io/v2",
+            "kind": "Restore",
+            "metadata": {"name": "orders-restore"},
+            "spec": {
+                "database": "orders-db",
+                "source": {"type": "backup", "fileUpload": "fileupload-abc"},
+            },
+        }
+    )
+
+    assert r.delete_object(v2_client=None) is None
