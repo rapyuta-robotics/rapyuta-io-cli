@@ -37,10 +37,12 @@ class Restore(Model):
 
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
-        # The API exposes no restore delete: a restore runs to a terminal phase
-        # and stays as an audit record. Deleting the target database is what
-        # stops one that is still in flight.
-        raise NotImplementedError
+        # A no-op, not NotImplementedError. The API exposes no restore delete: a
+        # restore runs to a terminal phase and stays as an audit record, and
+        # deleting the target database is what stops one still in flight. Model
+        # .delete() only catches HttpNotFoundError, so raising here aborts
+        # `rio delete -f` for every other resource in the same bundle.
+        return None
 
     @override
     def list_dependencies(self) -> list[str] | None:
