@@ -18,6 +18,7 @@ from riocli.constants import Colors
 from riocli.database.delete import delete_database
 from riocli.database.inspect import inspect_database
 from riocli.database.list import list_databases
+from riocli.database.restore import restore
 from riocli.utils import AliasedGroup
 
 
@@ -30,7 +31,8 @@ from riocli.utils import AliasedGroup
 def database() -> None:
     """Manage PostgreSQL databases.
 
-    Create, list, inspect, and delete managed databases.
+    Create, list, inspect, and delete managed databases, and restore data
+    into a running one with ``rio database restore``.
     Use ``rio apply`` to create or update databases from a manifest file.
     """
     pass
@@ -39,3 +41,4 @@ def database() -> None:
 database.add_command(list_databases)
 database.add_command(inspect_database)
 database.add_command(delete_database)
+database.add_command(restore)

@@ -29,6 +29,7 @@ from riocli.config import get_config_from_context
 from riocli.constants import Colors
 from riocli.constants.symbols import Symbols
 from riocli.database.model import Database
+from riocli.database.restore.model import Restore
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
 from riocli.disk.model import Disk
@@ -36,7 +37,6 @@ from riocli.network.model import Network
 from riocli.organization.model import Organization
 from riocli.package.model import Package
 from riocli.project.model import Project
-from riocli.restore.model import Restore
 from riocli.role.model import Role, RoleBinding
 from riocli.secret.model import Secret
 from riocli.service_account.model import ServiceAccount

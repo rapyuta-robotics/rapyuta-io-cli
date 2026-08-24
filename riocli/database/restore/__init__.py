@@ -15,9 +15,9 @@
 import click
 
 from riocli.constants import Colors
-from riocli.restore.create import create_restore
-from riocli.restore.inspect import inspect_restore
-from riocli.restore.list import list_restores
+from riocli.database.restore.create import create_restore
+from riocli.database.restore.inspect import inspect_restore
+from riocli.database.restore.list import list_restores
 from riocli.utils import AliasedGroup
 
 
