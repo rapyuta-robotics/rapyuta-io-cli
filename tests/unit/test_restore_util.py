@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rapyuta_io_sdk_v2 import Restore
 
-from riocli.restore.util import _source_summary, display_restore_list
+from riocli.database.restore.util import _source_summary, display_restore_list
 
 
 def _restore(source: dict, status: dict | None = None) -> Restore:

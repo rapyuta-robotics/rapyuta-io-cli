@@ -14,15 +14,14 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io_sdk_v2 import walk_pages
 
 from riocli.config import new_v2_client
 from riocli.constants import Colors
-from riocli.restore.util import display_restore_list
+from riocli.utils import inspect_with_format
 
 
 @click.command(
-    "list",
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -33,24 +32,35 @@ from riocli.restore.util import display_restore_list
     "database",
     type=click.STRING,
     required=True,
-    help="Database whose restores to list",
+    help="Database the restore belongs to",
 )
-def list_restores(database: str) -> None:
-    """List a database's restores.
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+)
+@click.argument("restore-name", type=str)
+def inspect_restore(database: str, format_type: str, restore_name: str) -> None:
+    """Inspect a restore by its name.
 
-    Restores are kept after they finish, so this is the database's restore
-    history: what was restored, from where, and whether it landed.
+    The status carries the outcome the device reported: the phase, the failure
+    message with a log tail when it failed, and the logical databases that were
+    actually loaded.
 
     Usage Examples:
 
-        $ rio restore list --database orders-db
+        $ rio database restore inspect orders-db-restore --database orders-db
+
+        $ rio database restore inspect orders-db-restore -d orders-db --format json
     """
     try:
-        client = new_v2_client(with_project=True)
-        restores = []
-        for page in walk_pages(client.list_restores, database=database):
-            restores.extend(page)
-        display_restore_list(restores, show_header=True)
+        client = new_v2_client()
+        restore = client.get_restore(database=database, name=restore_name)
+        inspect_with_format(
+            restore.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
