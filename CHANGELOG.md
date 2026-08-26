@@ -1,3 +1,13 @@
+## [10.8.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.8.0...v10.8.1) (2026-08-26)
+
+
+### Bug Fixes
+
+* **apply:** key Packages by name and version ([d0b7506](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/d0b7506cc0162078aeb1ba4eb890fd19aa65a057)), closes [rapyuta-robotics/rapyuta_io#2299](https://github.com/rapyuta-robotics/rapyuta_io/issues/2299)
+* **deployment:** apply the --device filter in deployment list ([47aad3d](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/47aad3d223c8b6c584982f3a3099d3a17845d30a)), closes [rapyuta-robotics/rapyuta_io#2300](https://github.com/rapyuta-robotics/rapyuta_io/issues/2300)
+* **package:** match the --filter substring anywhere in the package name ([18946e8](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/18946e8354f296e46f4217ee9c0c997c9b7e8230)), closes [rapyuta-robotics/rapyuta_io#2302](https://github.com/rapyuta-robotics/rapyuta_io/issues/2302)
+* **project:** apply the --label filter in project list ([ba9cf05](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/ba9cf052997a644a8080a848528d9b291fb851fd)), closes [rapyuta-robotics/rapyuta_io#2301](https://github.com/rapyuta-robotics/rapyuta_io/issues/2301)
+
 # [10.8.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.7.0...v10.8.0) (2026-08-05)
 
 
