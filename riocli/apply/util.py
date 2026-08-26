@@ -105,7 +105,15 @@ def process_files_values_secrets(
 
     for path_item in files:
         path_glob = parse_variadic_path_args(path_item)
-        glob_files.extend([f for f in path_glob if os.path.isfile(f)])
+        matched = [f for f in path_glob if os.path.isfile(f)]
+        if not matched:
+            # A typo'd filename or a stray extra argument silently vanishes
+            # here otherwise - the caller only errors out if *every* file
+            # argument matches nothing, so a mix of real files and one bad
+            # argument would apply/template only the real ones with no
+            # indication anything was skipped.
+            click.secho(f"⚠️  No files matched: {path_item}", fg=Colors.YELLOW)
+        glob_files.extend(matched)
 
     # Remove value files from template files list.
     abs_values = values
