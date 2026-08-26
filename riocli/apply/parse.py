@@ -314,6 +314,11 @@ class Applier:
                     if obj is None:
                         continue
                     key, loaded = self._load_object(obj)
+                    # Objects are keyed by their identity, so a repeated key
+                    # would overwrite an earlier object and drop it from the
+                    # operation without a trace.
+                    if key in loaded_objects:
+                        raise Exception(f"duplicate resource {key} in {f}")
                     loaded_objects[key] = loaded
                     loaded_manifests.append(obj)
 

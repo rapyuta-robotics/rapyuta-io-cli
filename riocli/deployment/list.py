@@ -46,7 +46,7 @@ DEFAULT_PHASES = [
 @click.option(
     "--device",
     prompt_required=False,
-    default="",
+    default=None,
     type=str,
     help="Filter the Deployment list by Device name",
 )
@@ -71,18 +71,22 @@ DEFAULT_PHASES = [
     "--wide", "-w", is_flag=True, default=False, help="Print more details", type=bool
 )
 def list_deployments(
-    device: str,
+    device: str | None,
     phase: list[str],
     labels: list[str],
     wide: bool = False,
 ) -> None:
     """List the deployments in the current project
 
-    You can filter the deployments by phase and labels.
+    You can filter the deployments by device, phase and labels.
 
     The -w or --wide flag prints more details about the deployments.
 
     Usage Examples:
+
+      Filter by device
+
+      $ rio deployment list --device my-device
 
       Filter by phase
 
@@ -96,7 +100,10 @@ def list_deployments(
         client = new_v2_client(with_project=True)
         deployments = []
         for page in walk_pages(
-            client.list_deployments, label_selector=labels, phases=phase
+            client.list_deployments,
+            label_selector=labels,
+            phases=phase,
+            device_name=device,
         ):
             deployments.extend(page)
         deployments = sorted(deployments, key=lambda d: d.metadata.name.lower())

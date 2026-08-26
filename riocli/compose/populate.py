@@ -14,6 +14,7 @@ from riocli.compose.defaults import (
 from riocli.compose.model import DependsCondition, DockerCompose, HealthCheck, Service
 from riocli.constants.colors import Colors
 from riocli.constants.symbols import Symbols
+from riocli.model.base import package_key
 from riocli.utils.spinner import with_spinner
 
 # Constants
@@ -464,13 +465,13 @@ def find_package(packages: dict[str, dict], name: str, version: str) -> dict:
     """
     Finds a package by name and version in the provided dictionary.
     """
-    pkg = packages.get(f"package:{name}")
+    # Packages are keyed by name and version, so a manifest carrying several
+    # versions of the same Package resolves to the right one. The key encodes
+    # the version, which is what the caller asked for, so there is nothing
+    # left to cross-check afterwards.
+    pkg = packages.get(package_key(name, version))
     if not pkg:
-        raise KeyError(f"No Package found with name '{name}'")
-    if str(pkg.get("metadata", {}).get("version")) != str(version):
-        raise ValueError(
-            f"Version mismatch: expected {version}, found {pkg['metadata'].get('version')}"
-        )
+        raise KeyError(f"No Package found with name '{name}' and version '{version}'")
     return pkg
 
 
