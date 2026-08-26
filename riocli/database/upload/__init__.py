@@ -15,11 +15,8 @@
 import click
 
 from riocli.constants import Colors
-from riocli.database.delete import delete_database
-from riocli.database.inspect import inspect_database
-from riocli.database.list import list_databases
-from riocli.database.restore import restore
-from riocli.database.upload import upload
+from riocli.database.upload.delete import delete_upload
+from riocli.database.upload.list import list_uploads
 from riocli.utils import AliasedGroup
 
 
@@ -29,18 +26,15 @@ from riocli.utils import AliasedGroup
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-def database() -> None:
-    """Manage PostgreSQL databases.
+def upload() -> None:
+    """Uploaded backup archives of a database.
 
-    Create, list, inspect, and delete managed databases, and restore data
-    into a running one with ``rio database restore``.
-    Use ``rio apply`` to create or update databases from a manifest file.
+    An archive is in object storage, not on the device that wrote it, so these
+    are listed per database rather than per device. They outlive both the
+    uploading device and the Backup record that produced them.
     """
     pass
 
 
-database.add_command(list_databases)
-database.add_command(inspect_database)
-database.add_command(delete_database)
-database.add_command(restore)
-database.add_command(upload)
+upload.add_command(list_uploads)
+upload.add_command(delete_upload)
