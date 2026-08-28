@@ -28,7 +28,12 @@ from munch import Munch
 from python_hosts import Hosts, HostsEntry
 from rapyuta_io_sdk_v2 import Client as v2Client
 
-from riocli.config import get_config_from_context, new_client, new_v2_client
+from riocli.config import (
+    Configuration,
+    get_config_from_context,
+    new_client,
+    new_v2_client,
+)
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 
@@ -85,6 +90,40 @@ def stop_tailscale() -> bool:
 def get_tailscale_status() -> dict:
     output, _ = run_bash_with_return_code("tailscale status --json")
     return json.loads(output)
+
+
+def disconnect_vpn_for_switch(config: Configuration, keep_vpn: bool) -> None:
+    """Disconnect VPN and clean up /etc/hosts when switching project or org.
+
+    Both actions are skipped together when --keep-vpn is passed or when the
+    user has set ``auto_disconnect_vpn: false`` in the CLI config file
+    (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS,
+    or the path in ``$RIO_CONFIG``).
+
+    /etc/hosts is only cleaned when Tailscale was already down or was
+    successfully disconnected — never when disconnect fails — to avoid a
+    state where hosts entries point at a dead VPN tunnel.
+    """
+    if keep_vpn or not config.auto_disconnect_vpn:
+        return
+
+    vpn_was_up = is_tailscale_up()
+    disconnected = True
+    if vpn_was_up:
+        disconnected = stop_tailscale()
+        if disconnected:
+            click.secho(f"{Symbols.SUCCESS} VPN disconnected.", fg=Colors.GREEN)
+        else:
+            click.secho(f"{Symbols.WARNING} Failed to disconnect VPN.", fg=Colors.YELLOW)
+    if not vpn_was_up or disconnected:
+        try:
+            cleanup_hosts_file()
+        except Exception as e:
+            click.secho(
+                f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
+                fg=Colors.YELLOW,
+            )
 
 
 def install_vpn_tools(force: bool = False) -> None:

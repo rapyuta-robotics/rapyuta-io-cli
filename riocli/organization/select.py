@@ -17,10 +17,10 @@ import click
 from click_help_colors import HelpColorsCommand
 
 from riocli.auth.util import select_project
-from riocli.constants import Colors, Symbols
+from riocli.constants import Colors
 from riocli.organization.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import cleanup_hosts_file
+from riocli.vpn.util import disconnect_vpn_for_switch
 
 
 @click.command(
@@ -30,6 +30,13 @@ from riocli.vpn.util import cleanup_hosts_file
     help_options_color=Colors.GREEN,
 )
 @click.argument("organization-name", type=str)
+@click.option(
+    "--keep-vpn",
+    is_flag=True,
+    default=False,
+    help="Keep the VPN connected after switching organizations. Skips both "
+    "VPN disconnect and hosts file cleanup.",
+)
 @click.option(
     "--interactive/--no-interactive",
     is_flag=True,
@@ -51,6 +58,7 @@ def select_organization(
     organization_name: str,
     organization_guid: str,
     organization_short_id: str,
+    keep_vpn: bool,
     interactive: bool,
     silent: bool,
 ) -> None:
@@ -65,6 +73,13 @@ def select_organization(
     use the `--no-interactive` or `--silent` flag.
 
     If your organization name has spaces, use quotes around the name.
+
+    By default, if a VPN is active it will be disconnected and the
+    hosts file will be cleaned up on switch. Use --keep-vpn to suppress
+    this. You can also set ``auto_disconnect_vpn: false`` in the CLI
+    config file (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS)
+    to permanently suppress auto-disconnect.
 
     Usage Examples:
 
@@ -103,13 +118,7 @@ def select_organization(
 
     ctx.obj.save()
 
-    try:
-        cleanup_hosts_file()
-    except Exception as e:
-        click.secho(
-            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-            fg=Colors.YELLOW,
-        )
+    disconnect_vpn_for_switch(ctx.obj, keep_vpn)
 
     if ctx.obj.data.get("project_id"):
         from riocli.ssh import refresh_ssh_cert
