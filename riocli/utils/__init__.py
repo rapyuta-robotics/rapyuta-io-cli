@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-import os
 import random
 import shlex
 import string
@@ -20,9 +19,7 @@ import subprocess
 import sys
 import uuid
 from collections.abc import Iterable
-from pathlib import Path
-from shutil import get_terminal_size, move
-from tempfile import TemporaryDirectory
+from shutil import get_terminal_size
 from typing import Any
 from uuid import UUID
 
@@ -31,10 +28,9 @@ import requests
 import semver
 import yaml
 from click_help_colors import HelpColorsGroup
-from munch import munchify
 from tabulate import tabulate
 
-from riocli.constants import Colors, Symbols
+from riocli.constants import Colors
 from riocli.utils.alias import AliasedGroup as AliasedGroup
 
 
@@ -166,10 +162,6 @@ def print_separator(color: str = "blue"):
     click.secho(" " * col, bg=color)
 
 
-def is_pip_installation() -> bool:
-    return "python" in sys.executable
-
-
 def check_for_updates(current_version: str) -> tuple[bool, str]:
     try:
         package_info = requests.get("https://pypi.org/pypi/rapyuta-io-cli/json").json()
@@ -208,57 +200,6 @@ def pip_install_cli(
         command.append("--force-reinstall")
 
     return subprocess.run(command, check=True)
-
-
-def update_appimage(version: str):
-    """
-    Updates the AppImage locally
-    """
-    if not version:
-        raise ValueError("version cannot be empty")
-
-    # URL to get the latest release metadata
-    url = "https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases/latest"
-
-    try:
-        response = requests.get(url)
-        data = munchify(response.json())
-    except Exception as e:
-        click.secho(f"Failed to fetch release info: {e}", fg=Colors.RED)
-        raise SystemExit(1) from e
-
-    asset = None
-    for a in data.get("assets", []):
-        if "AppImage" in a.name and version in a.name:
-            asset = a
-            break
-
-    if asset is None:
-        raise Exception("Failed to retrieve the download URL for the latest AppImage")
-
-    # Download the AppImage
-    try:
-        response = requests.get(asset.browser_download_url)
-    except Exception as e:
-        raise Exception(f"Failed to download the new version: {e}")
-
-    with TemporaryDirectory() as tmp:
-        # Save the binary in a temp dir
-        save_to = Path(tmp) / "rio"
-        save_to.write_bytes(response.content)
-        os.chmod(save_to, 0o755)
-        # Now replace the current executable with the new file
-        try:
-            os.remove(sys.executable)
-            move(save_to, sys.executable)
-        except OSError as e:
-            click.secho(
-                f"{Symbols.WARNING} Please consider running as a root user.",
-                fg=Colors.YELLOW,
-            )
-            raise e
-        except Exception as e:
-            raise e
 
 
 def generate_short_guid() -> str:

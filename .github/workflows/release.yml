@@ -27,3 +27,6 @@ jobs:
           MINIO_URL: ${{ secrets.MINIO_URL }}
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET: ${{ secrets.MINIO_SECRET }}
+          CHANNEL: release
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
