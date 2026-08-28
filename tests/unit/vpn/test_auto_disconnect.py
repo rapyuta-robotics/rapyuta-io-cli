@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
 from click.testing import CliRunner
+
+from riocli.config.config import Configuration
 
 
 def _make_project_ctx(auto_disconnect_vpn=True, project_id="old-guid"):
@@ -161,3 +164,37 @@ class TestOrgSelectVpnDisconnect:
         assert result.exit_code == 0
         mock_stop.assert_called_once()
         mock_cleanup.assert_not_called()
+
+
+def _make_config(data: dict) -> Configuration:
+    config = Configuration.__new__(Configuration)
+    config.data = data
+    return config
+
+
+class TestConfigurationVpnProperties:
+    def test_auto_disconnect_vpn_default_when_key_absent(self):
+        assert _make_config({}).auto_disconnect_vpn is True
+
+    def test_auto_disconnect_vpn_false_when_bool_false(self):
+        assert _make_config({"auto_disconnect_vpn": False}).auto_disconnect_vpn is False
+
+    def test_auto_disconnect_vpn_true_when_bool_true(self):
+        assert _make_config({"auto_disconnect_vpn": True}).auto_disconnect_vpn is True
+
+    @pytest.mark.parametrize("v", ["false", "False", "FALSE", "0", "no", "No"])
+    def test_auto_disconnect_vpn_false_for_falsy_strings(self, v):
+        assert _make_config({"auto_disconnect_vpn": v}).auto_disconnect_vpn is False
+
+    @pytest.mark.parametrize("v", ["true", "True", "yes", "1"])
+    def test_auto_disconnect_vpn_true_for_truthy_strings(self, v):
+        assert _make_config({"auto_disconnect_vpn": v}).auto_disconnect_vpn is True
+
+    def test_current_project_id_none_when_key_absent(self):
+        assert _make_config({}).current_project_id is None
+
+    def test_current_project_id_none_when_empty_string(self):
+        assert _make_config({"project_id": ""}).current_project_id is None
+
+    def test_current_project_id_returns_guid(self):
+        assert _make_config({"project_id": "abc-123"}).current_project_id == "abc-123"

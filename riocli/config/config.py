@@ -219,7 +219,10 @@ class Configuration:
 
     @property
     def auto_disconnect_vpn(self: Configuration) -> bool:
-        return bool(self.data.get("auto_disconnect_vpn", self.AUTO_DISCONNECT_VPN))
+        v = self.data.get("auto_disconnect_vpn", self.AUTO_DISCONNECT_VPN)
+        if isinstance(v, str):
+            return v.lower() not in ("false", "0", "no")
+        return bool(v)
 
     @property
     def current_project_id(self: Configuration) -> str | None:

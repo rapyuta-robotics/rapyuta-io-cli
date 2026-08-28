@@ -28,7 +28,12 @@ from munch import Munch
 from python_hosts import Hosts, HostsEntry
 from rapyuta_io_sdk_v2 import Client as v2Client
 
-from riocli.config import get_config_from_context, new_client, new_v2_client
+from riocli.config import (
+    Configuration,
+    get_config_from_context,
+    new_client,
+    new_v2_client,
+)
 from riocli.constants import Colors, Symbols
 from riocli.utils import run_bash, run_bash_with_return_code
 
@@ -87,7 +92,7 @@ def get_tailscale_status() -> dict:
     return json.loads(output)
 
 
-def disconnect_vpn_for_switch(config: "Configuration", keep_vpn: bool) -> None:  # noqa: F821
+def disconnect_vpn_for_switch(config: Configuration, keep_vpn: bool) -> None:
     """Disconnect VPN and clean up /etc/hosts when switching project or org.
 
     Both actions are skipped together when --keep-vpn is passed or when the
