@@ -62,6 +62,10 @@ def create_backup(
     A scheduled backup runs on the given cron schedule; an on-demand backup
     runs immediately.
 
+    An on-demand backup requires the database to already have a healthy
+    scheduled backup: it reuses that backup's Barman pod and WAL stream, and
+    Barman cannot take a backup without a running WAL receiver.
+
     Usage Examples:
 
         Create a scheduled nightly backup
