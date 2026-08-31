@@ -64,7 +64,8 @@ def delete_backup(
 ) -> None:
     """Delete one or more backups with a name or regex pattern.
 
-    Deleting a backup also removes its linked file-upload archives.
+    Archives outlive the backup that produced them, so this does not delete
+    them. Remove one explicitly with `rio database upload delete`.
 
     Usage Examples:
 
