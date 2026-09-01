@@ -92,7 +92,9 @@ class Client:
     def __init__(self, auth_token: str, email_id: str = None):
         self._token = auth_token
         self._email_id = email_id
-        self._host = os.environ.get(HWIL_URL_ENV_VAR) or self.HWIL_URL
+        # rstrip so an override with a trailing slash (http://127.0.0.1:8000/)
+        # does not produce "//device/" in every request URL below.
+        self._host = (os.environ.get(HWIL_URL_ENV_VAR) or self.HWIL_URL).rstrip("/")
 
     def create_device(
         self: Client,
