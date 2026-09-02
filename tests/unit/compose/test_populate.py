@@ -299,9 +299,7 @@ class TestBuildVolumeMountsWithIgnore:
         default mount too -- matched pre-redirect, so it works even with
         --configs-path given."""
         dep = munchify({"spec": {"volumes": []}})
-        volumes = build_volume_mounts(
-            dep, set(), "/local", ["/opt/rapyuta/configs"]
-        )
+        volumes = build_volume_mounts(dep, set(), "/local", ["/opt/rapyuta/configs"])
         assert not any(":/opt/rapyuta/configs:" in v for v in volumes)
 
     def test_default_top_level_mount_matched_regardless_of_list_order(self):
@@ -321,9 +319,7 @@ class TestBuildVolumeMountsWithIgnore:
             "riocli.compose.populate.get_default_volume_mounts",
             return_value=reordered,
         ):
-            volumes = build_volume_mounts(
-                dep, set(), "/local", ["/opt/rapyuta/configs"]
-            )
+            volumes = build_volume_mounts(dep, set(), "/local", ["/opt/rapyuta/configs"])
         assert not any(":/opt/rapyuta/configs:" in v for v in volumes)
         assert "/var/log/riouser:/var/log/riouser:rslave" in volumes
 
