@@ -8,16 +8,19 @@ set -uxe
 # AppRun runs Python with -I and cannot see them at runtime.
 export PYTHONNOUSERSITE=1
 
-# Installing minio client
-wget https://dl.min.io/client/mc/release/linux-amd64/mc
-chmod +x mc
+# Downloading Python AppImage and appImage tool databases
+BLOB_BASE="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net"
+BLOB_PATH="mirror/appimages"
 
-# Setting up mc config
-./mc alias set local $MINIO_URL $MINIO_ACCESS_KEY $MINIO_SECRET
+wget --output-document="scripts/appimagetool-x86_64.AppImage" "$BLOB_BASE/$BLOB_PATH/appimagetool-x86_64.AppImage"
+wget --output-document="scripts/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage" "$BLOB_BASE/$BLOB_PATH/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage"
 
-# Copying Python AppImage and appImage tool databases
-./mc cp -r local/appimages/appimagetool-x86_64.AppImage scripts/
-./mc cp -r local/appimages/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage scripts/
+# Pinned checksums of the mirrored artifacts; update when bumping either one.
+sha256sum --check - <<'SUM'
+b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2  scripts/appimagetool-x86_64.AppImage
+b5c8e6624b17673e86b999666f8d2ddd16c8a78e0127ae572f2a1c702801d45e  scripts/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage
+SUM
+
 chmod +x scripts/*.AppImage
 
 # Creating rio-cli wheel

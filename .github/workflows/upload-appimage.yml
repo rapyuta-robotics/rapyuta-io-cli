@@ -33,9 +33,7 @@ jobs:
         run: ./scripts/build-rio-appimage.sh
         shell: bash
         env:
-          MINIO_URL: ${{ secrets.MINIO_URL }}
-          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
-          MINIO_SECRET: ${{ secrets.MINIO_SECRET }}
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
 
       - name: Publish AppImage to Azure Blob
         run: ./scripts/publish-rio-appimage.sh
