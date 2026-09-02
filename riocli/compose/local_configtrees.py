@@ -52,7 +52,13 @@ def generate_local_configtree_services(
     Returns:
         Dict of service name -> Service.
     """
-    files = tree_files or tuple(sorted(p.name for p in configtree_dir.glob("*.y*ml")))
+    files = tree_files or tuple(
+        sorted(
+            p.name
+            for pattern in ("*.yaml", "*.yml")
+            for p in configtree_dir.glob(pattern)
+        )
+    )
     if not files:
         raise click.UsageError(f"No ConfigTree YAML files found under {configtree_dir}")
 

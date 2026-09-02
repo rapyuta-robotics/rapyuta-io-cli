@@ -18,6 +18,8 @@ class TestGenerateLocalConfigtreeServices:
         (tmp_path / "common.yaml").write_text("{}")
         (tmp_path / "wms.yml").write_text("{}")
         (tmp_path / "notes.txt").write_text("ignored")
+        # Regression: a loose "*.y*ml" glob previously also matched this.
+        (tmp_path / "weird.yXXXml").write_text("ignored")
 
         services = generate_local_configtree_services(tmp_path, "http://etcd:2379")
 
