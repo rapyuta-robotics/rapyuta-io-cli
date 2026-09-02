@@ -1,8 +1,7 @@
 #! /bin/bash
 # Local variant of build-rio-appimage.sh: pulls appimagetool and the Python
-# AppImage from GitHub releases instead of the internal MinIO bucket (no
-# credentials needed), and keeps every downloaded, extracted and generated
-# file inside ./local-build/. CI still uses build-rio-appimage.sh.
+# AppImage from GitHub releases, and keeps every downloaded, extracted and
+# generated file inside ./local-build/. CI still uses build-rio-appimage.sh.
 
 set -ueo pipefail
 
