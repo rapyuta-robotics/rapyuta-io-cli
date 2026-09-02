@@ -260,6 +260,8 @@ def get_volumes_requiring_fixup(
     chown/chmod as root against it (as init-fixperms does for real device
     paths) would change ownership/mode of the developer's files rather than
     fixing up a device path -- see init-fixperms's root user and _build_fixup_cmd.
+    No generate-time existence check either: generate and up/down can run on
+    different machines, so the generation host's filesystem proves nothing.
     """
     volumes_by_path: dict[tuple, dict] = {}
     for dep in deployments.values():
@@ -472,9 +474,10 @@ def build_volume_mounts(
         List of Docker volume mount strings.
     """
     # Device runtime gets the standard host mounts (optionally redirected under
-    # configs_path, with ignore_volume_source able to drop individual default
-    # mounts other than the whole-tree CONFIGS_DIR bind -- see
-    # test_default_top_level_mount_unaffected_by_ignore); cloud starts empty.
+    # configs_path, with ignore_volume_source able to drop any default mount,
+    # including the whole-tree CONFIGS_DIR bind -- matched against CONFIGS_DIR
+    # itself, not the redirected host path, so patterns stay written against
+    # the un-rewritten path like every other ignore match); cloud starts empty.
     runtime = deployment.spec.get("runtime")
     if runtime == CLOUD_RUNTIME:
         service_volumes = []
@@ -484,9 +487,11 @@ def build_volume_mounts(
             service_volumes = [
                 vol
                 for vol in service_volumes
-                if _get_volume_target(vol) == CONFIGS_DIR
-                or not _is_ignored_volume_source(
-                    vol.split(":", 1)[0], ignore_volume_source
+                if not _is_ignored_volume_source(
+                    CONFIGS_DIR
+                    if _get_volume_target(vol) == CONFIGS_DIR
+                    else vol.split(":", 1)[0],
+                    ignore_volume_source,
                 )
             ]
 
