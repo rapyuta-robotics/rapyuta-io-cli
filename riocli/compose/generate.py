@@ -99,8 +99,9 @@ from riocli.utils import print_centered_text
     default=(),
     help="gitignore-style pattern matched against a volume's full host-side path, as declared "
     "in the manifest's subPath (before any --configs-path rewrite) -- drops the bind entirely "
-    "instead of mounting it. Applies to deployment-declared volumes and to the default mounts "
-    "other than the /opt/rapyuta/configs bind, which --configs-path controls instead. "
+    "instead of mounting it. Applies to deployment-declared volumes and to the default mounts, "
+    "including the /opt/rapyuta/configs bind -- matched against /opt/rapyuta/configs itself, "
+    "not any --configs-path redirect. "
     "Repeatable; evaluated in order, last match wins; prefix with '!' to re-include a path an "
     "earlier pattern excluded (e.g. --ignore-volume-source '/opt/rapyuta/configs/station/*' "
     "--ignore-volume-source '!/opt/rapyuta/configs/station/sim-nginx.conf.template'). "

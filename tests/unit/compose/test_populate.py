@@ -282,10 +282,9 @@ class TestBuildVolumeMountsWithIgnore:
             in volumes
         )
 
-    def test_default_top_level_mount_unaffected_by_ignore(self):
-        """The blanket /opt/rapyuta/configs default mount is a single whole-tree
-        bind, not an enumerable per-file volume -- ignore patterns only apply
-        to individually declared deployment volumes."""
+    def test_default_top_level_mount_unaffected_by_narrower_pattern(self):
+        """A pattern scoped to a sub-path (not the whole tree) doesn't drop
+        the blanket /opt/rapyuta/configs default mount."""
         dep = munchify({"spec": {"volumes": []}})
         volumes = build_volume_mounts(
             dep,
@@ -294,6 +293,16 @@ class TestBuildVolumeMountsWithIgnore:
             ["/opt/rapyuta/configs/auth/*", "/opt/rapyuta/configs/maps"],
         )
         assert "/local:/opt/rapyuta/configs:rslave" in volumes
+
+    def test_default_top_level_mount_dropped_by_matching_pattern(self):
+        """A pattern matching /opt/rapyuta/configs itself drops the whole-tree
+        default mount too -- matched pre-redirect, so it works even with
+        --configs-path given."""
+        dep = munchify({"spec": {"volumes": []}})
+        volumes = build_volume_mounts(
+            dep, set(), "/local", ["/opt/rapyuta/configs"]
+        )
+        assert not any(":/opt/rapyuta/configs:" in v for v in volumes)
 
 
 class TestGetDefaultVolumeMounts:
