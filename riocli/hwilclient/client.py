@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import http
 import json
-import os
 import time
 from typing import TYPE_CHECKING
 
@@ -62,12 +61,6 @@ def handle_server_errors(response: requests.Response):
         raise Exception("unknown server error")
 
 
-# Set RIO_HWIL_URL to point the CLI at a non-production HWIL server, e.g. a
-# locally running one (http://127.0.0.1:8000) when testing device manifests
-# against unreleased HWIL changes. Unset, the CLI targets production.
-HWIL_URL_ENV_VAR = "RIO_HWIL_URL"
-
-
 class Client:
     """
     HWILv3 API Client
@@ -89,12 +82,14 @@ class Client:
         },
     }
 
-    def __init__(self, auth_token: str, email_id: str = None):
+    def __init__(self, auth_token: str, email_id: str = None, hwil_host: str = None):
         self._token = auth_token
         self._email_id = email_id
-        # rstrip so an override with a trailing slash (http://127.0.0.1:8000/)
-        # does not produce "//device/" in every request URL below.
-        self._host = (os.environ.get(HWIL_URL_ENV_VAR) or self.HWIL_URL).rstrip("/")
+        # hwil_host comes from the CLI configuration and points at a
+        # non-production HWIL server; production is the default. rstrip so a
+        # configured host with a trailing slash does not produce "//device/"
+        # in every request URL below.
+        self._host = (hwil_host or self.HWIL_URL).rstrip("/")
 
     def create_device(
         self: Client,
