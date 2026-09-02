@@ -5,7 +5,7 @@ import stat
 import subprocess
 from dataclasses import asdict
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from munch import Munch, munchify
@@ -303,6 +303,29 @@ class TestBuildVolumeMountsWithIgnore:
             dep, set(), "/local", ["/opt/rapyuta/configs"]
         )
         assert not any(":/opt/rapyuta/configs:" in v for v in volumes)
+
+    def test_default_top_level_mount_matched_regardless_of_list_order(self):
+        """The configs-bind match must key off what the mount is
+        (its container target), not where it sits in the default mounts
+        list -- reordering get_default_volume_mounts()'s output must not
+        change which entry --ignore-volume-source can drop."""
+        reordered = [
+            "/var/log/riouser:/var/log/riouser:rslave",
+            "/local:/opt/rapyuta/configs:rslave",
+            "/var/log/rapyuta/deployments:/var/log/rapyuta/deployments:rslave",
+            "/var/lib/docker/containers:/var/lib/docker/containers:rslave",
+            "/dev:/dev:rslave",
+        ]
+        dep = munchify({"spec": {"volumes": []}})
+        with patch(
+            "riocli.compose.populate.get_default_volume_mounts",
+            return_value=reordered,
+        ):
+            volumes = build_volume_mounts(
+                dep, set(), "/local", ["/opt/rapyuta/configs"]
+            )
+        assert not any(":/opt/rapyuta/configs:" in v for v in volumes)
+        assert "/var/log/riouser:/var/log/riouser:rslave" in volumes
 
 
 class TestGetDefaultVolumeMounts:

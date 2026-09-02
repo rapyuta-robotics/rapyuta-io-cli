@@ -178,10 +178,12 @@ def _get_volume_target(vol: str) -> str | None:
     """Extracts the container-side mount path from a compose volume string.
 
     Parses from the right, not `vol.split(":")[1]`, so a host path containing
-    a literal ':' doesn't shift the field positions -- e.g. a Compose short
-    volume syntax quirk rather than a Windows accommodation (this project does
-    not target Windows); relevant now that --configs-path lets a user point
-    at any host directory name, including one with a colon in it. The trailing
+    a literal ':' doesn't shift the field positions. --configs-path lets a
+    user point at any host directory name, so this now covers two real
+    cases: a Linux path containing a literal ':' (legal there), and a Windows
+    drive-letter path like "C:/Users/dev/x" (Path.as_posix() keeps the drive
+    colon) -- both would have their container path mis-parsed by
+    `vol.split(":")[1]`, and both are handled correctly here. The trailing
     segment is treated as a mode ("rw", "ro", "rslave", ...) rather than the
     container path whenever it doesn't look like an absolute path.
     """
