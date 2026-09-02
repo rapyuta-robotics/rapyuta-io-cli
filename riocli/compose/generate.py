@@ -18,6 +18,7 @@ from riocli.compose.defaults import (
     DEFAULT_COMPOSE_FILENAME,
     DEVICE_RUNTIME,
 )
+from riocli.compose.local_configtrees import generate_local_configtree_services
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -81,6 +82,29 @@ from riocli.utils import print_centered_text
     default=False,
     help="Merge new services into existing compose file instead of overwriting.",
 )
+@click.option(
+    "--local-configtrees",
+    is_flag=True,
+    default=False,
+    help="Emit a local config-tree API, bootstrap, and ioconfig-syncer, wired for use "
+    "with a local `docker compose` stack. Requires --configtree-dir.",
+)
+@click.option(
+    "--configtree-dir",
+    default=None,
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+    help="Directory of ConfigTree YAML files to bootstrap into the local config-tree "
+    "API. Required with --local-configtrees.",
+)
+@click.option(
+    "--configtree-etcd-endpoint",
+    default="http://localhost:2379",
+    help="etcd endpoint the ioconfig-syncer syncs the config tree into. Services "
+    "default to host networking, so this is normally localhost + the etcd "
+    "service's port. Used with --local-configtrees.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -91,6 +115,9 @@ def generate(
     path: Path,
     use_chart: bool,
     append_services: bool,
+    local_configtrees: bool,
+    configtree_dir: Path | None,
+    configtree_etcd_endpoint: str,
     files: tuple[str, ...],
     branch: str = None,
 ) -> None:
@@ -122,10 +149,17 @@ def generate(
 
             rio compose generate templates/
             rio compose generate --chart --append ioconfig-syncer
+
+        Emit a local config-tree API/bootstrap/syncer stack alongside the manifests:
+
+            rio compose generate templates/ -v values.yaml --local-configtrees \\
+                --configtree-dir ./configtrees
     """
 
     if not path:
         click.secho("No path specified.", fg=Colors.RED)
+    if local_configtrees and not configtree_dir:
+        raise click.UsageError("--local-configtrees requires --configtree-dir.")
     compose_path = path.absolute() / file_name
 
     # Snapshot existing services before generating (for --append)
@@ -151,6 +185,17 @@ def generate(
             secrets=secrets,
             files=files,
         )
+        if local_configtrees:
+            local_services = generate_local_configtree_services(
+                configtree_dir=configtree_dir,
+                etcd_endpoint=configtree_etcd_endpoint,
+            )
+            compose_doc["services"].update(
+                {
+                    name: clean_dict(asdict(service))
+                    for name, service in local_services.items()
+                }
+            )
         if append_services and existing_services:
             compose_doc["services"] = merge_compose_services(
                 existing_services, compose_doc["services"]

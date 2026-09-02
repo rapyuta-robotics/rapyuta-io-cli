@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pathlib import Path
 
 import click
@@ -6,11 +7,13 @@ from click_help_colors import HelpColorsCommand
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
 from riocli.compose.generate import (
+    clean_dict,
     generate_compose_file,
     resolve_chart_inputs,
     validate_chart_files,
     write_compose_yaml,
 )
+from riocli.compose.local_configtrees import generate_local_configtree_services
 from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
 
@@ -70,6 +73,29 @@ from riocli.utils import print_centered_text
     default=False,
     help="Treat the argument as a chart name instead of a file path.",
 )
+@click.option(
+    "--local-configtrees",
+    is_flag=True,
+    default=False,
+    help="Emit a local config-tree API, bootstrap, and ioconfig-syncer, wired for use "
+    "with a local `docker compose` stack. Requires --configtree-dir.",
+)
+@click.option(
+    "--configtree-dir",
+    default=None,
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+    help="Directory of ConfigTree YAML files to bootstrap into the local config-tree "
+    "API. Required with --local-configtrees.",
+)
+@click.option(
+    "--configtree-etcd-endpoint",
+    default="http://localhost:2379",
+    help="etcd endpoint the ioconfig-syncer syncs the config tree into. Services "
+    "default to host networking, so this is normally localhost + the etcd "
+    "service's port. Used with --local-configtrees.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def up(
@@ -81,6 +107,9 @@ def up(
     detach: bool,
     build: bool,
     use_chart: bool,
+    local_configtrees: bool,
+    configtree_dir: Path | None,
+    configtree_etcd_endpoint: str,
     files: tuple[str, ...],
 ):
     """
@@ -112,7 +141,15 @@ def up(
         Generate from a chart and start services:
 
             rio compose up --chart ioconfig-syncer -v my-values.yaml
+
+        Start with a local config-tree API/bootstrap/syncer stack:
+
+            rio compose up templates/ -v values.yaml --local-configtrees \\
+                --configtree-dir ./configtrees
     """
+
+    if local_configtrees and not configtree_dir:
+        raise click.UsageError("--local-configtrees requires --configtree-dir.")
 
     chart_obj = None
     if use_chart:
@@ -130,6 +167,17 @@ def up(
             values=values,
             secrets=secrets,
         )
+        if local_configtrees:
+            local_services = generate_local_configtree_services(
+                configtree_dir=configtree_dir,
+                etcd_endpoint=configtree_etcd_endpoint,
+            )
+            compose_doc["services"].update(
+                {
+                    name: clean_dict(asdict(service))
+                    for name, service in local_services.items()
+                }
+            )
         write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
         if not compose_manager.validate_docker_availability():
