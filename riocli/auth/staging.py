@@ -52,6 +52,7 @@ def environment(ctx: click.Context, interactive: bool, silent: bool, name: str):
         ctx.obj.data.pop("rip_host", None)
         ctx.obj.data.pop("v2api_host", None)
         ctx.obj.data.pop("oidc_host", None)
+        ctx.obj.data.pop("hwil_host", None)
     else:
         _configure_environment(ctx.obj, name)
 

@@ -82,10 +82,14 @@ class Client:
         },
     }
 
-    def __init__(self, auth_token: str, email_id: str = None):
+    def __init__(self, auth_token: str, email_id: str = None, hwil_host: str = None):
         self._token = auth_token
         self._email_id = email_id
-        self._host = self.HWIL_URL
+        # hwil_host comes from the CLI configuration and points at a
+        # non-production HWIL server; production is the default. rstrip so a
+        # configured host with a trailing slash does not produce "//device/"
+        # in every request URL below.
+        self._host = (hwil_host or self.HWIL_URL).rstrip("/")
 
     def create_device(
         self: Client,
