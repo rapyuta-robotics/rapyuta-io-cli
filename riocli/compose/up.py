@@ -81,7 +81,8 @@ from riocli.utils import print_centered_text
     is_flag=True,
     default=False,
     help="Emit a local config-tree API service, wired for use with a local "
-    "`docker compose` stack.",
+    "`docker compose` stack. Takes priority over a manifest-declared service of "
+    "the same name (warns and overwrites it).",
 )
 @click.argument("files", nargs=-1)
 @click.pass_context
