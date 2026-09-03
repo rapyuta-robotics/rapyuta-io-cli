@@ -17,6 +17,7 @@ from pathlib import Path
 import click
 from benedict import benedict
 from click_help_colors import HelpColorsCommand
+from ruamel.yaml import YAML as _YAML
 from yaspin.core import Yaspin
 
 from riocli.config import new_v2_client
@@ -94,7 +95,7 @@ from riocli.utils.spinner import with_spinner
     "--override",
     "overrides",
     type=click.Path(exists=True),
-    default=None,
+    default=(),
     multiple=True,
     help="Override values for keys in the imported files.",
 )
@@ -277,6 +278,13 @@ def split_metadata(data: Iterable) -> (Iterable, Iterable):
     return content, metadata
 
 
+def _load_yaml_file(path: str) -> dict:
+    """Load a YAML file using YAML 1.2 (ruamel.yaml) to avoid implicit type coercions."""
+    _yaml = _YAML(typ="safe")
+    with open(path) as f:
+        return _yaml.load(f) or {}
+
+
 def _process_files_with_overrides(
     files: Iterable[str],
     overrides: Iterable[str],
@@ -295,7 +303,10 @@ def _process_files_with_overrides(
         if f.endswith("json"):
             file_format = "json"
 
-        data[file_prefix] = benedict(f, format=file_format)
+        if file_format == "json":
+            data[file_prefix] = benedict(f, format="json")
+        else:
+            data[file_prefix] = benedict(_load_yaml_file(f))
         spinner.write(
             click.style(
                 f"{Symbols.SUCCESS} File {f} processed.",
@@ -313,7 +324,11 @@ def _process_files_with_overrides(
         if f.endswith("json"):
             file_format = "json"
 
-        override.merge(benedict(f, format=file_format).unflatten(separator="/"))
+        if file_format == "json":
+            loaded = benedict(f, format="json")
+        else:
+            loaded = benedict(_load_yaml_file(f))
+        override.merge(loaded.unflatten(separator="/"))
 
         spinner.write(
             click.style(

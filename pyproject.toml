@@ -58,6 +58,7 @@ dependencies = [
     "cryptography>=40.0.0",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
+    "ruamel-yaml>=0.17.0",
 ]
 
 [dependency-groups]
