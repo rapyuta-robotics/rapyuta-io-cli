@@ -282,3 +282,22 @@ class TestGenerateCommandAppendFlag:
         written_doc = mock_write.call_args.kwargs["compose_dict"]
         assert "svc-base" not in written_doc["services"]
         assert "svc-new" in written_doc["services"]
+
+
+class TestGenerateCommandLocalConfigtreesFlag:
+    @patch("riocli.compose.generate.write_compose_yaml")
+    @patch("riocli.compose.generate.generate_compose_file")
+    def test_merges_local_configtree_service(self, mock_gen, mock_write, tmp_path):
+        mock_gen.return_value = {"services": {"svc-new": {"image": "new"}}}
+
+        runner = CliRunner()
+        runner.invoke(
+            generate,
+            ["--local-configtrees", "-p", str(tmp_path), "manifest.yaml"],
+            obj=MagicMock(data={}),
+            catch_exceptions=False,
+        )
+
+        written_doc = mock_write.call_args.kwargs["compose_dict"]
+        assert "svc-new" in written_doc["services"]
+        assert "v2-apiserver_v2-apiserver" in written_doc["services"]

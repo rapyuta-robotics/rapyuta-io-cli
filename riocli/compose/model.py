@@ -55,6 +55,7 @@ class Service:
     network_mode: str | None = DEFAULT_NETWORK_MODE
     mem_limit: str | None = None
     cpus: str | float | None = None
+    tmpfs: list[str] | None = None
 
 
 @dataclass

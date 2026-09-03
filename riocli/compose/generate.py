@@ -18,6 +18,10 @@ from riocli.compose.defaults import (
     DEFAULT_COMPOSE_FILENAME,
     DEVICE_RUNTIME,
 )
+from riocli.compose.local_configtrees import (
+    generate_local_configtree_services,
+    warn_on_local_configtree_collisions,
+)
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -81,6 +85,14 @@ from riocli.utils import print_centered_text
     default=False,
     help="Merge new services into existing compose file instead of overwriting.",
 )
+@click.option(
+    "--local-configtrees",
+    is_flag=True,
+    default=False,
+    help="Emit a local config-tree API service, wired for use with a local "
+    "`docker compose` stack. Takes priority over a manifest-declared service of "
+    "the same name (warns and overwrites it).",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -91,6 +103,7 @@ def generate(
     path: Path,
     use_chart: bool,
     append_services: bool,
+    local_configtrees: bool,
     files: tuple[str, ...],
     branch: str = None,
 ) -> None:
@@ -122,6 +135,10 @@ def generate(
 
             rio compose generate templates/
             rio compose generate --chart --append ioconfig-syncer
+
+        Emit a local config-tree API service alongside the manifests:
+
+            rio compose generate templates/ -v values.yaml --local-configtrees
     """
 
     if not path:
@@ -151,6 +168,15 @@ def generate(
             secrets=secrets,
             files=files,
         )
+        if local_configtrees:
+            local_services = generate_local_configtree_services()
+            warn_on_local_configtree_collisions(compose_doc["services"], local_services)
+            compose_doc["services"].update(
+                {
+                    name: clean_dict(asdict(service))
+                    for name, service in local_services.items()
+                }
+            )
         if append_services and existing_services:
             compose_doc["services"] = merge_compose_services(
                 existing_services, compose_doc["services"]
