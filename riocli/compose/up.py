@@ -77,24 +77,8 @@ from riocli.utils import print_centered_text
     "--local-configtrees",
     is_flag=True,
     default=False,
-    help="Emit a local config-tree API, bootstrap, and ioconfig-syncer, wired for use "
-    "with a local `docker compose` stack. Requires --configtree-dir.",
-)
-@click.option(
-    "--configtree-dir",
-    default=None,
-    type=click.Path(
-        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
-    ),
-    help="Directory of ConfigTree YAML files to bootstrap into the local config-tree "
-    "API. Required with --local-configtrees.",
-)
-@click.option(
-    "--configtree-etcd-endpoint",
-    default="http://localhost:2379",
-    help="etcd endpoint the ioconfig-syncer syncs the config tree into. Services "
-    "default to host networking, so this is normally localhost + the etcd "
-    "service's port. Used with --local-configtrees.",
+    help="Emit a local config-tree API service, wired for use with a local "
+    "`docker compose` stack.",
 )
 @click.argument("files", nargs=-1)
 @click.pass_context
@@ -108,8 +92,6 @@ def up(
     build: bool,
     use_chart: bool,
     local_configtrees: bool,
-    configtree_dir: Path | None,
-    configtree_etcd_endpoint: str,
     files: tuple[str, ...],
 ):
     """
@@ -142,14 +124,10 @@ def up(
 
             rio compose up --chart ioconfig-syncer -v my-values.yaml
 
-        Start with a local config-tree API/bootstrap/syncer stack:
+        Start with a local config-tree API service:
 
-            rio compose up templates/ -v values.yaml --local-configtrees \\
-                --configtree-dir ./configtrees
+            rio compose up templates/ -v values.yaml --local-configtrees
     """
-
-    if local_configtrees and not configtree_dir:
-        raise click.UsageError("--local-configtrees requires --configtree-dir.")
 
     chart_obj = None
     if use_chart:
@@ -168,10 +146,7 @@ def up(
             secrets=secrets,
         )
         if local_configtrees:
-            local_services = generate_local_configtree_services(
-                configtree_dir=configtree_dir,
-                etcd_endpoint=configtree_etcd_endpoint,
-            )
+            local_services = generate_local_configtree_services()
             compose_doc["services"].update(
                 {
                     name: clean_dict(asdict(service))
