@@ -320,6 +320,6 @@ class TestGenerateCommandLocalConfigtreesFlag:
 
         written_doc = mock_write.call_args.kwargs["compose_dict"]
         assert "svc-new" in written_doc["services"]
-        assert "v2-apiserver" in written_doc["services"]
-        assert "v2configtree-bootstrap" in written_doc["services"]
-        assert "ioconfig-syncer" in written_doc["services"]
+        assert "v2-apiserver_v2-apiserver" in written_doc["services"]
+        assert "v2configtree_bootstrap_v2configtree_bootstrap" in written_doc["services"]
+        assert "ioconfig_syncer_ioconfig_syncer" in written_doc["services"]

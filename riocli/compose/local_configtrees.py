@@ -24,9 +24,9 @@ CONFIGTREE_API_IMAGE = "quay.io/rapyuta/configtrees:latest"
 CONFIGTREE_BOOTSTRAP_IMAGE = "quay.io/rapyuta/v2config_bootstrap:1.0"
 CONFIGTREE_SYNCER_IMAGE = "quay.io/rapyuta/ioconfig-syncer:latest"
 
-CONFIGTREE_API_SERVICE = "v2-apiserver"
-CONFIGTREE_BOOTSTRAP_SERVICE = "v2configtree-bootstrap"
-CONFIGTREE_SYNCER_SERVICE = "ioconfig-syncer"
+CONFIGTREE_API_SERVICE = "v2-apiserver_v2-apiserver"
+CONFIGTREE_BOOTSTRAP_SERVICE = "v2configtree_bootstrap_v2configtree_bootstrap"
+CONFIGTREE_SYNCER_SERVICE = "ioconfig_syncer_ioconfig_syncer"
 
 CONFIGTREE_API_PORT = 8080
 CONFIGTREE_MOUNT_PATH = "/configtrees"
