@@ -18,7 +18,10 @@ from riocli.compose.defaults import (
     DEFAULT_COMPOSE_FILENAME,
     DEVICE_RUNTIME,
 )
-from riocli.compose.local_configtrees import generate_local_configtree_services
+from riocli.compose.local_configtrees import (
+    generate_local_configtree_services,
+    warn_on_local_configtree_collisions,
+)
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -166,6 +169,7 @@ def generate(
         )
         if local_configtrees:
             local_services = generate_local_configtree_services()
+            warn_on_local_configtree_collisions(compose_doc["services"], local_services)
             compose_doc["services"].update(
                 {
                     name: clean_dict(asdict(service))

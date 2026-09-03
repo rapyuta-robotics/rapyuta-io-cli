@@ -9,11 +9,33 @@ ConfigTree data locally has something to talk to.
 
 from __future__ import annotations
 
+import click
+
 from riocli.compose.model import HealthCheck, Service
+from riocli.constants.colors import Colors
 
 CONFIGTREE_API_IMAGE = "quay.io/rapyuta/configtrees:latest"
 CONFIGTREE_API_SERVICE = "v2-apiserver_v2-apiserver"
 CONFIGTREE_API_PORT = 8080
+
+
+def warn_on_local_configtree_collisions(
+    existing_services: dict, local_services: dict[str, Service]
+) -> None:
+    """Warns when a --local-configtrees service name collides with an existing one.
+
+    Service names are derived from a manifest's own deployment/exec names, so a
+    manifest that happens to declare the same name (e.g. a leftover hand-rolled
+    "v2-apiserver" deployment) silently loses its own definition to the merge that
+    follows this check -- this at least surfaces it instead of merging silently.
+    """
+    for name in local_services:
+        if name in existing_services:
+            click.secho(
+                f"Warning: --local-configtrees service '{name}' overwrites an "
+                "existing service of the same name.",
+                fg=Colors.YELLOW,
+            )
 
 
 def generate_local_configtree_services() -> dict[str, Service]:

@@ -13,7 +13,10 @@ from riocli.compose.generate import (
     validate_chart_files,
     write_compose_yaml,
 )
-from riocli.compose.local_configtrees import generate_local_configtree_services
+from riocli.compose.local_configtrees import (
+    generate_local_configtree_services,
+    warn_on_local_configtree_collisions,
+)
 from riocli.constants.colors import Colors
 from riocli.utils import print_centered_text
 
@@ -147,6 +150,7 @@ def up(
         )
         if local_configtrees:
             local_services = generate_local_configtree_services()
+            warn_on_local_configtree_collisions(compose_doc["services"], local_services)
             compose_doc["services"].update(
                 {
                     name: clean_dict(asdict(service))
