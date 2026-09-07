@@ -51,6 +51,19 @@ class TestProjectSelectVpnDisconnect:
         mock_stop.assert_called_once()
         mock_cleanup.assert_called_once()
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=False)
+    @patch("riocli.vpn.util.is_tailscale_up")
+    @patch("riocli.vpn.util.stop_tailscale")
+    @patch("riocli.vpn.util.cleanup_hosts_file")
+    def test_skips_everything_when_tailscale_not_installed(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
+        result, _ = self._invoke(["new-project"], _make_project_ctx())
+        assert result.exit_code == 0
+        mock_is_up.assert_not_called()
+        mock_stop.assert_not_called()
+        mock_cleanup.assert_not_called()
+
     @patch("riocli.vpn.util.is_tailscale_up", return_value=False)
     @patch("riocli.vpn.util.stop_tailscale")
     @patch("riocli.vpn.util.cleanup_hosts_file")

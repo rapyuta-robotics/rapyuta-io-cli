@@ -105,7 +105,7 @@ def disconnect_vpn_for_switch(config: Configuration, keep_vpn: bool) -> None:
     successfully disconnected — never when disconnect fails — to avoid a
     state where hosts entries point at a dead VPN tunnel.
     """
-    if keep_vpn or not config.auto_disconnect_vpn:
+    if keep_vpn or not config.auto_disconnect_vpn or not is_tailscale_installed():
         return
 
     vpn_was_up = is_tailscale_up()
