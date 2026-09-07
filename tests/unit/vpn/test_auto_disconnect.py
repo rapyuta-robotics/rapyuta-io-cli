@@ -46,28 +46,34 @@ class TestProjectSelectVpnDisconnect:
     @patch("riocli.vpn.util.is_tailscale_up")
     @patch("riocli.vpn.util.stop_tailscale")
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_skips_everything_when_tailscale_not_installed(
+    def test_cleans_hosts_but_skips_binary_when_tailscale_not_installed(
         self, mock_cleanup, mock_stop, mock_is_up, mock_installed
     ):
         result, _ = self._invoke(["new-project"], _make_project_ctx())
         assert result.exit_code == 0
         mock_is_up.assert_not_called()
         mock_stop.assert_not_called()
-        mock_cleanup.assert_not_called()
+        mock_cleanup.assert_called_once()
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=True)
     @patch("riocli.vpn.util.is_tailscale_up", return_value=True)
     @patch("riocli.vpn.util.stop_tailscale", return_value=True)
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_disconnects_vpn_when_tailscale_up(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_disconnects_vpn_when_tailscale_up(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
         result, _ = self._invoke(["new-project"], _make_project_ctx())
         assert result.exit_code == 0
         mock_stop.assert_called_once()
         mock_cleanup.assert_called_once()
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=True)
     @patch("riocli.vpn.util.is_tailscale_up", return_value=False)
     @patch("riocli.vpn.util.stop_tailscale")
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_skips_stop_when_tailscale_not_up(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_skips_stop_when_tailscale_not_up(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
         result, _ = self._invoke(["new-project"], _make_project_ctx())
         assert result.exit_code == 0
         mock_stop.assert_not_called()
@@ -97,10 +103,13 @@ class TestProjectSelectVpnDisconnect:
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=True)
     @patch("riocli.vpn.util.is_tailscale_up", return_value=True)
     @patch("riocli.vpn.util.stop_tailscale", return_value=False)
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_hosts_not_cleaned_when_stop_fails(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_hosts_not_cleaned_when_stop_fails(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
         result, _ = self._invoke(["new-project"], _make_project_ctx())
         assert result.exit_code == 0
         mock_stop.assert_called_once()
@@ -134,10 +143,13 @@ class TestOrgSelectVpnDisconnect:
             mock_get_ctx.return_value.obj = ctx_obj
             return CliRunner().invoke(select_organization, args), mock_get_ctx
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=True)
     @patch("riocli.vpn.util.is_tailscale_up", return_value=True)
     @patch("riocli.vpn.util.stop_tailscale", return_value=True)
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_disconnects_vpn_when_tailscale_up(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_disconnects_vpn_when_tailscale_up(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
         result, _ = self._invoke(["new-org", "--no-interactive"], _make_org_ctx())
         assert result.exit_code == 0
         mock_stop.assert_called_once()
@@ -169,10 +181,13 @@ class TestOrgSelectVpnDisconnect:
         mock_stop.assert_not_called()
         mock_cleanup.assert_not_called()
 
+    @patch("riocli.vpn.util.is_tailscale_installed", return_value=True)
     @patch("riocli.vpn.util.is_tailscale_up", return_value=True)
     @patch("riocli.vpn.util.stop_tailscale", return_value=False)
     @patch("riocli.vpn.util.cleanup_hosts_file")
-    def test_hosts_not_cleaned_when_stop_fails(self, mock_cleanup, mock_stop, mock_is_up):
+    def test_hosts_not_cleaned_when_stop_fails(
+        self, mock_cleanup, mock_stop, mock_is_up, mock_installed
+    ):
         result, _ = self._invoke(["new-org", "--no-interactive"], _make_org_ctx())
         assert result.exit_code == 0
         mock_stop.assert_called_once()
