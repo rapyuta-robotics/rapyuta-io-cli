@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pathlib import Path
 
 import click
@@ -6,10 +7,15 @@ from click_help_colors import HelpColorsCommand
 from riocli.compose.compose import DockerComposeManager
 from riocli.compose.defaults import DEFAULT_COMPOSE_FILENAME
 from riocli.compose.generate import (
+    clean_dict,
     generate_compose_file,
     resolve_chart_inputs,
     validate_chart_files,
     write_compose_yaml,
+)
+from riocli.compose.local_configtrees import (
+    generate_local_configtree_services,
+    warn_on_local_configtree_collisions,
 )
 from riocli.constants.colors import Colors
 
@@ -58,6 +64,17 @@ from riocli.constants.colors import Colors
     help="Treat the argument as a chart name and resolve inputs from it.",
 )
 @click.option(
+    "--local-configtrees",
+    is_flag=True,
+    default=False,
+    help="Emit a local config-tree API service, wired for use with a local "
+    "`docker compose` stack. Takes priority over a manifest-declared service of "
+    "the same name (warns and overwrites it). Only used if the compose file has "
+    "to be regenerated (missing or empty) -- pass the same flag used for "
+    "`generate`/`up` to avoid leaking an orphaned container when the compose "
+    "file didn't survive between calls.",
+)
+@click.option(
     "--configs-path",
     "configs_path",
     default=None,
@@ -88,6 +105,7 @@ def down(
     secrets: tuple[str, ...],
     path: str,
     use_chart: bool,
+    local_configtrees: bool,
     files: tuple[str, ...],
     configs_path: Path | None = None,
     ignore_volume_source: tuple[str, ...] = (),
@@ -117,6 +135,11 @@ def down(
         Stop services started from a chart:
 
             rio compose down --chart ioconfig-syncer
+
+        Bring down a stack that was started with --local-configtrees, when the
+        compose file might need regenerating first:
+
+            rio compose down templates/ -v values.yaml --local-configtrees
     """
 
     chart_obj = None
@@ -142,6 +165,17 @@ def down(
                 configs_path=configs_path.as_posix() if configs_path else None,
                 ignore_volume_source=ignore_volume_source,
             )
+            if local_configtrees:
+                local_services = generate_local_configtree_services()
+                warn_on_local_configtree_collisions(
+                    compose_doc["services"], local_services
+                )
+                compose_doc["services"].update(
+                    {
+                        name: clean_dict(asdict(service))
+                        for name, service in local_services.items()
+                    }
+                )
             write_compose_yaml(output_path=compose_path, compose_dict=compose_doc)
 
         if not compose_manager.validate_docker_availability():

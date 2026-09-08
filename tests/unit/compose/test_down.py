@@ -102,3 +102,57 @@ class TestDownCommandChartFlag:
             obj=MagicMock(data={}),
         )
         chart_obj.cleanup.assert_called_once()
+
+
+class TestDownCommandLocalConfigtreesFlag:
+    @patch("riocli.compose.down.write_compose_yaml")
+    @patch("riocli.compose.down.DockerComposeManager")
+    @patch("riocli.compose.down.generate_compose_file")
+    def test_merges_local_configtree_service_when_regenerating(
+        self, mock_gen, mock_mgr_cls, mock_write, tmp_path
+    ):
+        mock_gen.return_value = {"services": {"svc-new": {"image": "new"}}}
+        mgr = MagicMock()
+        mgr.validate_docker_availability.return_value = True
+        mgr.down.return_value = True
+        # No compose file on disk → the regenerate-then-merge path runs
+        mgr.check_empty_file.return_value = True
+        mock_mgr_cls.return_value = mgr
+
+        runner = CliRunner()
+        runner.invoke(
+            down,
+            ["--local-configtrees", "-p", str(tmp_path), "manifest.yaml"],
+            obj=MagicMock(data={}),
+            catch_exceptions=False,
+        )
+
+        written_doc = mock_write.call_args.kwargs["compose_dict"]
+        assert "svc-new" in written_doc["services"]
+        assert "v2-apiserver_v2-apiserver" in written_doc["services"]
+
+    @patch("riocli.compose.down.write_compose_yaml")
+    @patch("riocli.compose.down.DockerComposeManager")
+    @patch("riocli.compose.down.generate_compose_file")
+    def test_does_not_regenerate_when_compose_file_already_exists(
+        self, mock_gen, mock_mgr_cls, mock_write, tmp_path
+    ):
+        compose_file = tmp_path / "docker-compose.yaml"
+        compose_file.write_text("services:\n  svc-existing:\n    image: old\n")
+        mgr = MagicMock()
+        mgr.validate_docker_availability.return_value = True
+        mgr.down.return_value = True
+        mgr.check_empty_file.return_value = False
+        mock_mgr_cls.return_value = mgr
+
+        runner = CliRunner()
+        runner.invoke(
+            down,
+            ["--local-configtrees", "-p", str(tmp_path), "manifest.yaml"],
+            obj=MagicMock(data={}),
+            catch_exceptions=False,
+        )
+
+        # Existing file is reused as-is; no regeneration/merge, no write.
+        mock_gen.assert_not_called()
+        mock_write.assert_not_called()
