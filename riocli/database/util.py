@@ -38,10 +38,24 @@ def fetch_databases(
     return result
 
 
+def _standby_summary(db: typing.Any) -> str:
+    """running/desired standby count, or "-" when the database has no standbys."""
+    standby = getattr(db.spec.postgres, "standby", None) if db.spec.postgres else None
+    desired = len(standby.devices) if standby and standby.devices else 0
+    if not desired:
+        return "-"
+
+    status = getattr(db.status, "postgres", None) if db.status else None
+    reported = (status.standby or []) if status else []
+    running = sum(1 for s in reported if s.phase == "running")
+
+    return f"{running}/{desired}"
+
+
 def display_database_list(databases: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ("GUID", "Name", "Phase", "Device", "Version")
+        headers = ("GUID", "Name", "Phase", "Device", "Standby", "Version")
 
     data = []
     for db in databases:
@@ -57,6 +71,7 @@ def display_database_list(databases: typing.Any, show_header: bool = True):
                 db.metadata.name,
                 phase or "Unknown",
                 primary or "-",
+                _standby_summary(db),
                 version or "-",
             ]
         )
