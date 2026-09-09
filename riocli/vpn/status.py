@@ -83,7 +83,10 @@ def status(ctx: click.Context, wide: bool = False):
 def display_vpn_status(wide: bool = False):
     s = get_tailscale_status()
 
-    nodes = s.get("Peer", {})
+    nodes = s.get("Peer")
+    if nodes is None:
+        nodes = dict()
+
     nodes.update({"me": s.get("Self")})
 
     headers = ["IP", "DNS Name", "OS", "Online", "Active"]
