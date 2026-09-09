@@ -1,3 +1,10 @@
+## [10.9.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.9.0...v10.9.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **vpn:** fix the rio vpn status to add null check at peer list ([04bf70c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/04bf70c878defda169b52d1c0a45b75edefcab0a))
+
 # [10.9.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.8.1...v10.9.0) (2026-09-09)
 
 
