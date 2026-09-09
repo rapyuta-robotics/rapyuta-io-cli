@@ -1,3 +1,27 @@
+# [10.9.0](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.8.1...v10.9.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* **compose:** select CONFIGS_DIR default mount by target, not position ([90ee95c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/90ee95c9b3ce0c17d3daed0fbc4459b3e14902f9))
+* **package:** rename environmentArgs to environmentVars for consistency ([2c66871](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/2c66871302470ccb4761138a6c3a5220c8bc22be))
+* **vpn:** guard disconnect_vpn_for_switch against missing tailscale binary ([#580](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/580)) ([0898e0c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/0898e0c257db4c64586e13c1dfbec9365395de90))
+
+
+### Features
+
+* **compose:** add --configs-path and --ignore-volume-source overrides ([873bf4c](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/873bf4cab585b8ac5d1fefb6bd11ed8ff13802c5)), closes [rapyuta-io-cli#555](https://github.com/rapyuta-io-cli/issues/555)
+* **compose:** add --local-configtrees to generate/up/down ([4492feb](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/4492feb888407ed87e981909fa8d86d407f2846c))
+* **compose:** let --ignore-volume-source drop the /opt/rapyuta/configs default mount ([435c328](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/435c328643731ea2c9cb41de6fc9ba24993201d6))
+* **compose:** warn when a --configs-path redirected target is missing ([00943ce](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/00943ce57daadcff801393c3b92a32b89214799c))
+* **update:** host AppImages on Azure Blob to fix GitHub rate-limit on rio update ([#545](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/545)) ([1364d19](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/1364d199f91b5a2ab1491f8275f971f43324e275)), closes [#1](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/1) [#2](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/2) [#3](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/3) [#4](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/4) [#7](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/7) [#5](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/5) [#6](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/6) [#8](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/8)
+* **vpn:** auto-disconnect VPN on project and organization switch ([#568](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/568)) ([fb54352](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/fb54352c2fabe246ae5bcee4ce8bc314e7afdc2d)), closes [#2108](https://github.com/rapyuta-robotics/rapyuta-io-cli/issues/2108)
+
+
+### Reverts
+
+* Revert "feat(compose): warn when a --configs-path redirected target is missing" ([a10112b](https://github.com/rapyuta-robotics/rapyuta-io-cli/commit/a10112b830ca25ff453acf67793327366cddc280))
+
 ## [10.8.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.8.0...v10.8.1) (2026-08-26)
 
 
