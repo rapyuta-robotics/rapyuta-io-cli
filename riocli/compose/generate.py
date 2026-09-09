@@ -18,6 +18,10 @@ from riocli.compose.defaults import (
     DEFAULT_COMPOSE_FILENAME,
     DEVICE_RUNTIME,
 )
+from riocli.compose.local_configtrees import (
+    generate_local_configtree_services,
+    warn_on_local_configtree_collisions,
+)
 from riocli.compose.populate import populate
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
@@ -81,6 +85,40 @@ from riocli.utils import print_centered_text
     default=False,
     help="Merge new services into existing compose file instead of overwriting.",
 )
+@click.option(
+    "--local-configtrees",
+    is_flag=True,
+    default=False,
+    help="Emit a local config-tree API service, wired for use with a local "
+    "`docker compose` stack. Takes priority over a manifest-declared service of "
+    "the same name (warns and overwrites it).",
+)
+@click.option(
+    "--configs-path",
+    "configs_path",
+    default=None,
+    help="Host path to bind-mount in place of /opt/rapyuta/configs in the generated compose "
+    "file. Volumes redirected here are skipped by the init-fixperms permission fixup, since "
+    "they now point at your own local files rather than the device.",
+    type=click.Path(
+        exists=True, dir_okay=True, file_okay=False, path_type=Path, resolve_path=True
+    ),
+)
+@click.option(
+    "--ignore-volume-source",
+    "ignore_volume_source",
+    multiple=True,
+    default=(),
+    help="gitignore-style pattern matched against a volume's full host-side path, as declared "
+    "in the manifest's subPath (before any --configs-path rewrite) -- drops the bind entirely "
+    "instead of mounting it. Applies to deployment-declared volumes and to the default mounts, "
+    "including the /opt/rapyuta/configs bind -- matched against /opt/rapyuta/configs itself, "
+    "not any --configs-path redirect. "
+    "Repeatable; evaluated in order, last match wins; prefix with '!' to re-include a path an "
+    "earlier pattern excluded (e.g. --ignore-volume-source '/opt/rapyuta/configs/station/*' "
+    "--ignore-volume-source '!/opt/rapyuta/configs/station/sim-nginx.conf.template'). "
+    "Independent of --configs-path -- applies whether or not that flag is also given.",
+)
 @click.argument("files", nargs=-1)
 @click.pass_context
 def generate(
@@ -91,8 +129,11 @@ def generate(
     path: Path,
     use_chart: bool,
     append_services: bool,
+    local_configtrees: bool,
     files: tuple[str, ...],
     branch: str = None,
+    configs_path: Path | None = None,
+    ignore_volume_source: tuple[str, ...] = (),
 ) -> None:
     """
     Convert Rapyuta.io manifests into a Docker Compose YAML file.
@@ -122,6 +163,27 @@ def generate(
 
             rio compose generate templates/
             rio compose generate --chart --append ioconfig-syncer
+
+        Emit a local config-tree API service alongside the manifests:
+
+            rio compose generate templates/ -v values.yaml --local-configtrees
+
+        Bind-mount a local directory in place of /opt/rapyuta/configs:
+
+            rio compose generate templates/ --configs-path ./local-configs
+
+        Bind-mount a local directory but drop binds under a sub-path entirely
+        (e.g. no local equivalent exists for it):
+
+            rio compose generate templates/ --configs-path ./local-configs \\
+                --ignore-volume-source '/opt/rapyuta/configs/auth/*' \\
+                --ignore-volume-source '/opt/rapyuta/configs/station/*' \\
+                --ignore-volume-source '!/opt/rapyuta/configs/station/sim-nginx.conf.template'
+
+        Drop a bind entirely without redirecting anything else (independent of
+        --configs-path):
+
+            rio compose generate templates/ --ignore-volume-source '/opt/rapyuta/configs/auth/*'
     """
 
     if not path:
@@ -150,7 +212,18 @@ def generate(
             values=values,
             secrets=secrets,
             files=files,
+            configs_path=configs_path.as_posix() if configs_path else None,
+            ignore_volume_source=ignore_volume_source,
         )
+        if local_configtrees:
+            local_services = generate_local_configtree_services()
+            warn_on_local_configtree_collisions(compose_doc["services"], local_services)
+            compose_doc["services"].update(
+                {
+                    name: clean_dict(asdict(service))
+                    for name, service in local_services.items()
+                }
+            )
         if append_services and existing_services:
             compose_doc["services"] = merge_compose_services(
                 existing_services, compose_doc["services"]
@@ -166,6 +239,8 @@ def generate_compose_file(
     values: tuple[str, ...],
     secrets: tuple[str, ...],
     files: tuple[str, ...],
+    configs_path: str | None = None,
+    ignore_volume_source: tuple[str, ...] = (),
 ) -> dict:
     glob_files, abs_values, abs_secrets = process_files_values_secrets(
         files, values, secrets
@@ -183,7 +258,11 @@ def generate_compose_file(
 
     print_centered_text("Converting Manifests")
     docker_compose_manifest = populate(
-        ctx=ctx, deployments=deployments, packages=packages
+        ctx=ctx,
+        deployments=deployments,
+        packages=packages,
+        configs_path=configs_path,
+        ignore_volume_source=ignore_volume_source,
     )
 
     return clean_dict(asdict(docker_compose_manifest))

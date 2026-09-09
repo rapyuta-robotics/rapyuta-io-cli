@@ -107,6 +107,32 @@ class TestResolveChartInputs:
         assert values[0].endswith("values.yaml")
 
 
+class TestGenerateCommandIgnoreVolumeSource:
+    @patch("riocli.compose.generate.write_compose_yaml")
+    @patch("riocli.compose.generate.generate_compose_file")
+    def test_ignore_volume_source_accepted_without_configs_path(
+        self, mock_gen, mock_write, tmp_path
+    ):
+        mock_gen.return_value = {"services": {}}
+        runner = CliRunner()
+        result = runner.invoke(
+            generate,
+            [
+                "-p",
+                str(tmp_path),
+                "--ignore-volume-source",
+                "/opt/rapyuta/configs/auth/*",
+                "some-manifest.yaml",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        mock_gen.assert_called_once()
+        assert mock_gen.call_args.kwargs["configs_path"] is None
+        assert mock_gen.call_args.kwargs["ignore_volume_source"] == (
+            "/opt/rapyuta/configs/auth/*",
+        )
+
+
 class TestGenerateCommandChartFlag:
     def test_chart_flag_requires_chart_name(self, tmp_path):
         runner = CliRunner()
@@ -282,3 +308,22 @@ class TestGenerateCommandAppendFlag:
         written_doc = mock_write.call_args.kwargs["compose_dict"]
         assert "svc-base" not in written_doc["services"]
         assert "svc-new" in written_doc["services"]
+
+
+class TestGenerateCommandLocalConfigtreesFlag:
+    @patch("riocli.compose.generate.write_compose_yaml")
+    @patch("riocli.compose.generate.generate_compose_file")
+    def test_merges_local_configtree_service(self, mock_gen, mock_write, tmp_path):
+        mock_gen.return_value = {"services": {"svc-new": {"image": "new"}}}
+
+        runner = CliRunner()
+        runner.invoke(
+            generate,
+            ["--local-configtrees", "-p", str(tmp_path), "manifest.yaml"],
+            obj=MagicMock(data={}),
+            catch_exceptions=False,
+        )
+
+        written_doc = mock_write.call_args.kwargs["compose_dict"]
+        assert "svc-new" in written_doc["services"]
+        assert "v2-apiserver_v2-apiserver" in written_doc["services"]

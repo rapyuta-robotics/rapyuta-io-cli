@@ -33,13 +33,13 @@ spec:
     type: docker
     docker:
       image: postgres:13
-  environmentArgs:
+  environmentVars:
   - name: POSTGRES_PASSWORD
-    value: testpass
+    default: testpass
   - name: POSTGRES_USER
-    value: testuser
+    default: testuser
   - name: POSTGRES_DB
-    value: testdb
+    default: testdb
 ---
 apiVersion: api.rapyuta.io/v2
 kind: Package

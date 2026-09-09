@@ -32,6 +32,12 @@
             }
         ],
         [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "scripts/publish-rio-appimage.sh"
+            }
+        ],
+        [
             "@semantic-release/git",
             {
                 "assets": ["CHANGELOG.md", "riocli/bootstrap.py"],

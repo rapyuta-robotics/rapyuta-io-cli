@@ -57,6 +57,7 @@ class Configuration:
     OIDC_SERVER = "https://oidc.rapyuta.io"
     DIFF_TOOL = "diff"
     MERGE_TOOL = "vimdiff"
+    AUTO_DISCONNECT_VPN = True
     DEVICE_FLOW_CLIENT_ID = "rio-cli"
 
     def __init__(self, filepath: str | None = None):
@@ -215,6 +216,18 @@ class Configuration:
     @property
     def oidc_server(self: Configuration) -> str:
         return self.data.get("oidc_host", self.OIDC_SERVER)
+
+    @property
+    def auto_disconnect_vpn(self: Configuration) -> bool:
+        v = self.data.get("auto_disconnect_vpn", self.AUTO_DISCONNECT_VPN)
+        if isinstance(v, str):
+            return v.lower() not in ("false", "0", "no")
+        return bool(v)
+
+    @property
+    def current_project_id(self: Configuration) -> str | None:
+        """Current project guid, or None if no project is selected. Never raises."""
+        return self.data.get("project_id") or None
 
     @property
     def machine_id(self: Configuration):

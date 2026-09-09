@@ -17,7 +17,7 @@ from click_help_colors import HelpColorsCommand
 from riocli.constants import Colors, Symbols
 from riocli.project.util import name_to_guid
 from riocli.utils.context import get_root_context
-from riocli.vpn.util import cleanup_hosts_file
+from riocli.vpn.util import disconnect_vpn_for_switch
 
 
 @click.command(
@@ -27,31 +27,43 @@ from riocli.vpn.util import cleanup_hosts_file
     help_options_color=Colors.GREEN,
 )
 @click.argument("project-name", type=str)
+@click.option(
+    "--keep-vpn",
+    is_flag=True,
+    default=False,
+    help="Keep the VPN connected after switching projects. Skips both "
+    "VPN disconnect and hosts file cleanup.",
+)
 @name_to_guid
 @click.pass_context
 def select_project(
     ctx: click.Context,
     project_name: str,
     project_guid: str,
+    keep_vpn: bool,
 ) -> None:
     """Switch to a different project in the current organization.
 
     The project will be set in the CLI's context and will be used
     for all the subsequent commands.
+
+    By default, if a VPN is active it will be disconnected and the
+    hosts file will be cleaned up. Use --keep-vpn to suppress this,
+    for example when you have an active SSH session into a device on
+    the previous project. You can also set ``auto_disconnect_vpn: false``
+    in the CLI config file (``~/.config/rio-cli/config.json`` on Linux,
+    ``~/Library/Application Support/rio-cli/config.json`` on macOS)
+    to permanently suppress auto-disconnect.
     """
     ctx = get_root_context(ctx)
 
+    previous_project_id = ctx.obj.current_project_id
     ctx.obj.data["project_id"] = project_guid
     ctx.obj.data["project_name"] = project_name
     ctx.obj.save()
 
-    try:
-        cleanup_hosts_file()
-    except Exception as e:
-        click.secho(
-            f"{Symbols.WARNING} Failed to clean up hosts file: {str(e)}",
-            fg=Colors.YELLOW,
-        )
+    if project_guid != previous_project_id:
+        disconnect_vpn_for_switch(ctx.obj, keep_vpn)
 
     click.secho(
         f"{Symbols.SUCCESS} Project {project_name} ({project_guid}) is selected!",
