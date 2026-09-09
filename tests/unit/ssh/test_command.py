@@ -971,3 +971,123 @@ class TestE2ESignFlow:
         sign_call = mock_client.sign_ssh_public_key.call_args
         # user_guid should not be in kwargs
         assert "user_guid" not in (sign_call.kwargs or {})
+
+
+class TestOrgScopedCertificate:
+    """Tests for the ``--org`` flag on ``rio ssh-cert``."""
+
+    @staticmethod
+    def _org_client(certificate: str = "org-cert"):
+        """A v2 client whose organization sign method returns *certificate*."""
+        client = MagicMock()
+        client.sign_org_ssh_public_key.return_value.certificate = certificate
+        return client
+
+    @patch("riocli.ssh.is_ssh_agent_available", return_value=False)
+    @patch("riocli.ssh.get_config_from_context")
+    def test_org_flag_calls_org_sdk_method(self, mock_get_config, _mock_agent, ssh_dir):
+        config = _make_config_for_dir(ssh_dir)
+        client = self._org_client()
+        config.new_v2_client.return_value = client
+        config.data = {"organization_id": "org-xyz"}
+        mock_get_config.return_value = config
+
+        from riocli.ssh.cert import ssh
+
+        result = CliRunner().invoke(ssh, ["--org"], catch_exceptions=False)
+
+        assert result.exit_code == 0
+
+        # The organization method is used, and the project one is not touched.
+        client.sign_org_ssh_public_key.assert_called_once()
+        client.sign_ssh_public_key.assert_not_called()
+
+        assert config.ssh_certificate.read_text().startswith("org-cert")
+
+    @patch("riocli.ssh.is_ssh_agent_available", return_value=False)
+    @patch("riocli.ssh.get_config_from_context")
+    def test_without_org_flag_uses_project_sdk_method(
+        self, mock_get_config, _mock_agent, ssh_dir
+    ):
+        config = _make_config_for_dir(ssh_dir)
+        mock_get_config.return_value = config
+
+        from riocli.ssh.cert import ssh
+
+        result = CliRunner().invoke(ssh, [], catch_exceptions=False)
+
+        assert result.exit_code == 0
+        client = config.new_v2_client.return_value
+        client.sign_ssh_public_key.assert_called_once()
+        client.sign_org_ssh_public_key.assert_not_called()
+
+    @patch("riocli.ssh.is_ssh_agent_available", return_value=False)
+    @patch("riocli.ssh.get_config_from_context")
+    def test_org_flag_composes_with_other_flags(
+        self, mock_get_config, _mock_agent, ssh_dir
+    ):
+        """--org must not disable the rest of the command's behaviour."""
+        config = _make_config_for_dir(ssh_dir)
+        client = self._org_client()
+        config.new_v2_client.return_value = client
+        config.data = {"organization_id": "org-xyz"}
+        mock_get_config.return_value = config
+
+        from riocli.ssh.cert import ssh
+
+        result = CliRunner().invoke(
+            ssh, ["--org", "--force", "--no-agent"], catch_exceptions=False
+        )
+
+        assert result.exit_code == 0
+        client.sign_org_ssh_public_key.assert_called_once()
+
+    @patch("riocli.ssh.is_ssh_agent_available", return_value=False)
+    @patch("riocli.ssh.get_config_from_context")
+    def test_switching_scope_resigns_even_when_cert_is_valid(
+        self, mock_get_config, _mock_agent, ssh_dir
+    ):
+        """A cached project certificate must not be reused for --org.
+
+        The two scopes carry different principals, so the reuse fast-path has to
+        key on the scope rather than only on the project. Without this the user
+        would silently keep a project certificate while believing they hold an
+        organization one.
+        """
+        config = _make_config_for_dir(ssh_dir)
+        config.data = {"project_id": "project-abc", "organization_id": "org-xyz"}
+        mock_get_config.return_value = config
+
+        from riocli.ssh.cert import ssh
+
+        # First: a project-scoped certificate, which records its scope.
+        assert CliRunner().invoke(ssh, [], catch_exceptions=False).exit_code == 0
+        config.new_v2_client.return_value.sign_ssh_public_key.assert_called_once()
+
+        # Then the same command with --org, without --force. The cached
+        # certificate is still within its lifetime, so only the scope change can
+        # trigger a re-sign.
+        client = self._org_client()
+        config.new_v2_client.return_value = client
+
+        assert CliRunner().invoke(ssh, ["--org"], catch_exceptions=False).exit_code == 0
+        client.sign_org_ssh_public_key.assert_called_once()
+
+
+class TestSDKContract:
+    """Guards the CLI's assumptions about the installed SDK.
+
+    Every other test in this file mocks the v2 client, so a missing SDK method
+    is invisible to them: ``MagicMock`` answers any call. That makes a version
+    skew fail only at runtime, with an ``AttributeError`` in front of the user.
+    These assertions fail at test time instead.
+    """
+
+    def test_sdk_exposes_the_methods_the_cli_calls(self):
+        from rapyuta_io_sdk_v2 import Client
+
+        for method in ("sign_ssh_public_key", "sign_org_ssh_public_key"):
+            assert hasattr(Client, method), (
+                f"installed rapyuta-io-sdk-v2 has no {method}; "
+                "the CLI's SDK pin is behind what `rio ssh-cert` requires"
+            )

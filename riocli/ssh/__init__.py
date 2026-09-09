@@ -79,6 +79,21 @@ def _resolve_key_paths(key_path, use_system_key, config):
     return priv, pub, cert, False
 
 
+def _sign_public_key(client, public_key: str, org: bool) -> str:
+    """Sign ``public_key`` and return the certificate, at project or org scope.
+
+    The organization certificate reaches every device in the organization rather
+    than only those in the selected project, and requires the organization admin
+    role; the server rejects the request otherwise.
+    """
+    request = SSHKeySignRequest(publicKey=public_key)
+
+    if org:
+        return client.sign_org_ssh_public_key(body=request).certificate
+
+    return client.sign_ssh_public_key(body=request).certificate
+
+
 @with_spinner(text="Signing SSH public key...")
 def _do_sign_cert(
     ctx: click.Context,
@@ -86,6 +101,7 @@ def _do_sign_cert(
     force: bool,
     use_system_key: bool,
     key_path: str | None,
+    org: bool = False,
     spinner: Yaspin = None,  # type: ignore[assignment]  # injected by @with_spinner
 ) -> None:
     try:
@@ -153,8 +169,14 @@ def _do_sign_cert(
         project_id = config.data.get("project_id")
         margin = resolve_margin(None)
 
-        project_matches = (not project_id) or read_saved_project(state_path) == project_id
-        if not force and is_cert_valid(cert_path, margin=margin) and project_matches:
+        # The saved state records which scope the cached certificate was issued
+        # for. An organization certificate carries different principals from a
+        # project one, so switching between them must force a re-sign even while
+        # the cached certificate is still within its lifetime.
+        scope_id = f"org:{config.data.get('organization_id')}" if org else project_id
+
+        scope_matches = (not scope_id) or read_saved_project(state_path) == scope_id
+        if not force and is_cert_valid(cert_path, margin=margin) and scope_matches:
             expiry = format_cert_expiry(cert_path)
             spinner.write(
                 click.style(
@@ -198,8 +220,7 @@ def _do_sign_cert(
 
         # ----- 5. Call the SDK to sign the key ----- #
         client = config.new_v2_client()
-        request = SSHKeySignRequest(publicKey=public_key)
-        response = client.sign_ssh_public_key(body=request)
+        certificate = _sign_public_key(client, public_key, org)
 
         # ----- 6. Remove old identity & write the new certificate ----- #
         # Remove BEFORE overwriting the cert file so the old identity
@@ -207,11 +228,11 @@ def _do_sign_cert(
         if agent_available:
             remove_from_ssh_agent(private_path)
 
-        write_certificate(cert_path, response.certificate)
+        write_certificate(cert_path, certificate)
 
-        # Save project id after successful renewal so next run can fast-path.
-        if project_id:
-            save_project(state_path, project_id)
+        # Save the scope after successful renewal so the next run can fast-path.
+        if scope_id:
+            save_project(state_path, scope_id)
 
         spinner.write(
             click.style(
@@ -307,6 +328,20 @@ def _do_sign_cert(
         "Does not load into ssh-agent unless --agent is also passed."
     ),
 )
+@click.option(
+    "--org",
+    "org",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help=(
+        "Sign an organization-scoped certificate that reaches every device in "
+        "the current organization, instead of one scoped to the selected "
+        "project. Requires the organization admin role. Hidden from --help by "
+        "design: it is a recovery path, documented in the recovery runbook "
+        "rather than in day-to-day CLI help."
+    ),
+)
 @click.pass_context
 def ssh_cert(
     ctx: click.Context,
@@ -314,6 +349,7 @@ def ssh_cert(
     force: bool,
     use_system_key: bool,
     key_path: str | None,
+    org: bool,
 ) -> None:
     """Sign your SSH public key and optionally load the certificate into ssh-agent.
 
@@ -343,7 +379,7 @@ def ssh_cert(
     if use_system_key and key_path is not None:
         ctx.fail("--use-system-key and --key-path are mutually exclusive.")
 
-    _do_sign_cert(ctx, agent, force, use_system_key, key_path)
+    _do_sign_cert(ctx, agent, force, use_system_key, key_path, org)
 
 
 ssh_cert.add_command(install_wrapper)
@@ -358,7 +394,14 @@ def refresh_ssh_cert(ctx: click.Context) -> None:
     still stands even if cert renewal fails.
     """
     try:
-        ctx.invoke(ssh_cert, force=True, agent=True, use_system_key=False, key_path=None)
+        ctx.invoke(
+            ssh_cert,
+            force=True,
+            agent=True,
+            use_system_key=False,
+            key_path=None,
+            org=False,
+        )
     except SystemExit as e:
         if e.code != 0:
             click.secho(
