@@ -80,7 +80,10 @@ done_ "$(ls -1 "$WHEEL_DIR" | tail -1)"
 
 step "Setting up AppRun and rio.desktop"
 # Custom AppRun uses Python's -I (isolated mode) to prevent host Python
-# environment leakage.
+# environment leakage. squashfs-root/AppRun is a symlink to
+# usr/bin/python3.13, so cp without the unlink first writes *through* it and
+# destroys the bundled interpreter.
+rm -f squashfs-root/AppRun
 cp "$ROOT/scripts/AppRun" squashfs-root/AppRun
 chmod +x squashfs-root/AppRun
 
