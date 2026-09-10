@@ -67,6 +67,14 @@ from riocli.database.restore.util import display_restore_list
     help="Barman backup ID to restore. Defaults to the backup's latest run",
 )
 @click.option(
+    "--target-time",
+    "target_time",
+    type=click.STRING,
+    default=None,
+    help="RFC3339 point in time to roll forward to. Only honoured while the "
+    "device still holds the backup in its barman store",
+)
+@click.option(
     "--old-data-directory",
     "old_data_directory",
     type=click.STRING,
@@ -115,6 +123,7 @@ def create_restore(
     file_upload: str,
     backup_name: str,
     backup_run_id: str,
+    target_time: str,
     old_data_directory: str,
     source_version: str,
     databases: list[str],
@@ -140,6 +149,11 @@ def create_restore(
 
             $ rio database restore create orders-restore -d orders-db -u fileupload-abc123
 
+        Roll forward to a point in time (device must still hold the backup)
+
+            $ rio database restore create orders-pitr -d orders-db \\
+                -u fileupload-abc123 --target-time 2026-01-01T02:00:00Z
+
         Migrate a v17 cluster into a new v18 database
 
             $ rio database restore create orders-migrate -d orders-db-v18 \\
@@ -163,7 +177,17 @@ def create_restore(
             source["backupName"] = backup_name
         if backup_run_id:
             source["backupRunID"] = backup_run_id
+        if target_time:
+            source["targetTime"] = target_time
     else:
+        # An old data directory is a fixed snapshot with no WAL to replay.
+        if target_time:
+            click.secho(
+                "--target-time is only supported when --source is backup",
+                fg=Colors.RED,
+            )
+            raise SystemExit(1)
+
         if not old_data_directory or not source_version:
             click.secho(
                 "--old-data-directory and --source-version are required when "
