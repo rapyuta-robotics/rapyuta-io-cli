@@ -16,8 +16,12 @@ wget --output-document="scripts/appimagetool-x86_64.AppImage" "$BLOB_BASE/$BLOB_
 wget --output-document="scripts/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage" "$BLOB_BASE/$BLOB_PATH/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage"
 
 # Pinned checksums of the mirrored artifacts; update when bumping either one.
+# appimagetool must be >= 1.9.x: older releases embed a type-2 runtime that
+# dlopen()s libfuse.so.2, which Ubuntu 22.04+ no longer ships, so the produced
+# AppImage dies with "dlopen(): error loading libfuse.so.2" on modern distros.
+# 1.9.1 embeds the statically linked runtime and needs no FUSE library.
 sha256sum --check - <<'SUM'
-b90f4a8b18967545fda78a445b27680a1642f1ef9488ced28b65398f2be7add2  scripts/appimagetool-x86_64.AppImage
+ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  scripts/appimagetool-x86_64.AppImage
 b5c8e6624b17673e86b999666f8d2ddd16c8a78e0127ae572f2a1c702801d45e  scripts/python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage
 SUM
 
@@ -62,6 +66,9 @@ rm -rf "$WHEEL_DIR" && mkdir -p "$WHEEL_DIR"
 
 # Replacing AppRun with a custom script that uses Python's -I (isolated
 # mode) to completely prevent host Python environment leakage.
+# squashfs-root/AppRun is a symlink to usr/bin/python3.13, so cp without the
+# unlink first writes *through* it and destroys the bundled interpreter.
+rm -f squashfs-root/AppRun
 cp AppRun squashfs-root/AppRun
 chmod +x squashfs-root/AppRun
 
