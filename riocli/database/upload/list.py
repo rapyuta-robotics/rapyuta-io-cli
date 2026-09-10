@@ -27,17 +27,28 @@ from riocli.database.upload.util import display_archive_list
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.argument("database", type=click.STRING)
-def list_uploads(database: str) -> None:
-    """List a database's uploaded backup archives.
+@click.option(
+    "--database",
+    "-d",
+    type=click.STRING,
+    default=None,
+    help="Name or GUID of the source database. Omit to list the whole project.",
+)
+def list_uploads(database: str | None) -> None:
+    """List uploaded backup archives.
 
     The Upload ID is what ``rio database restore create --file-upload`` takes.
     Archives are found by the database they belong to, so they remain listed
-    after the uploading device is deleted.
+    after the uploading device is deleted -- and after the database itself is,
+    which is when only its GUID is left to name it by.
 
     Usage Examples:
 
-        $ rio database upload list orders-db
+        $ rio database upload list
+
+        $ rio database upload list --database orders-db
+
+        $ rio database upload list --database database-dafpt8r2a2ss73e3pvg0
     """
     try:
         client = new_v2_client(with_project=True)

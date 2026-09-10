@@ -27,11 +27,12 @@ from riocli.utils import AliasedGroup
     help_options_color=Colors.GREEN,
 )
 def upload() -> None:
-    """Uploaded backup archives of a database.
+    """Uploaded backup archives.
 
-    An archive is in object storage, not on the device that wrote it, so these
-    are listed per database rather than per device. They outlive both the
-    uploading device and the Backup record that produced them.
+    An archive is in object storage, not on the device that wrote it, and it
+    outlives the uploading device, the Backup record that produced it and its
+    source database. So these are listed project-wide, optionally narrowed to
+    one database with --database.
     """
     pass
 
