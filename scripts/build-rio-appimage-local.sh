@@ -6,7 +6,7 @@
 set -ueo pipefail
 
 APPIMAGETOOL_URL=https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
-PYTHON_APPIMAGE=python3.13.14-cp313-cp313-manylinux_2_28_x86_64.AppImage
+PYTHON_APPIMAGE=python3.13.15-cp313-cp313-manylinux_2_28_x86_64.AppImage
 PYTHON_APPIMAGE_URL=https://github.com/niess/python-appimage/releases/download/python3.13/$PYTHON_APPIMAGE
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
