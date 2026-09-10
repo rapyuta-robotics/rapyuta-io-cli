@@ -43,11 +43,23 @@ def fetch_backups(
 def display_backup_list(backups: typing.Any, show_header: bool = True):
     headers = []
     if show_header:
-        headers = ("GUID", "Name", "Type", "Database", "Schedule", "Phase")
+        headers = (
+            "GUID",
+            "Name",
+            "Type",
+            "Database",
+            "Schedule",
+            "Phase",
+            "Step",
+        )
 
     data = []
     for backup in backups:
-        phase = getattr(backup.status, "phase", None) if backup.status else None
+        status = backup.status
+        phase = getattr(status, "phase", None) if status else None
+        # The recover dominates a run, so the phase alone cannot tell a slow
+        # backup from a stuck one.
+        step = getattr(status, "step", None) if status else None
         data.append(
             [
                 backup.metadata.guid,
@@ -56,6 +68,7 @@ def display_backup_list(backups: typing.Any, show_header: bool = True):
                 backup.spec.database,
                 backup.spec.schedule or "-",
                 phase or "Unknown",
+                step or "-",
             ]
         )
 

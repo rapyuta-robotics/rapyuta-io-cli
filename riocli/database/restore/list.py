@@ -16,9 +16,9 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import walk_pages
 
-from riocli.backup.util import display_backup_list
 from riocli.config import new_v2_client
 from riocli.constants import Colors
+from riocli.database.restore.util import display_restore_list
 
 
 @click.command(
@@ -32,40 +32,25 @@ from riocli.constants import Colors
     "-d",
     "database",
     type=click.STRING,
-    default=None,
-    help="Filter backups by their source database",
+    required=True,
+    help="Database whose restores to list",
 )
-@click.option(
-    "--label",
-    "-l",
-    "labels",
-    multiple=True,
-    type=click.STRING,
-    default=(),
-    help="Filter the backup list by labels",
-)
-def list_backups(database: str, labels: list[str]) -> None:
-    """List the backups in the current project.
+def list_restores(database: str) -> None:
+    """List a database's restores.
 
-    Backups are first-class resources and survive the deletion of their
-    source database.
+    Restores are kept after they finish, so this is the database's restore
+    history: what was restored, from where, and whether it landed.
 
     Usage Examples:
 
-        $ rio backup list
-
-        $ rio backup list --database orders-db
-
-        $ rio backup list -l app=orders
+        $ rio database restore list --database orders-db
     """
     try:
         client = new_v2_client(with_project=True)
-        backups = []
-        for page in walk_pages(
-            client.list_backups, label_selector=labels, database=database
-        ):
-            backups.extend(page)
-        display_backup_list(backups, show_header=True)
+        restores = []
+        for page in walk_pages(client.list_restores, database=database):
+            restores.extend(page)
+        display_restore_list(restores, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

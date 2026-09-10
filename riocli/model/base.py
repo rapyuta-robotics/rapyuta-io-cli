@@ -79,6 +79,10 @@ class Model(ABC, Munch):
     schema that are defined in the schema files.
     """
 
+    # Why the server refused a create it reported as a conflict. A class
+    # attribute, so Munch sets it as a real attribute and not a manifest key.
+    exists_reason: str | None = None
+
     @abstractmethod
     def create_object(
         self,
@@ -200,6 +204,11 @@ class Model(ABC, Munch):
                 # If we received Unauthorized in creation, raise it again.
                 if isinstance(e, UnauthorizedAccessError):
                     raise e
+
+                # The SDK maps every 409 to HttpAlreadyExistsError, so a create
+                # refused on a precondition lands here too. Carry the server's
+                # reason out; without it the refusal is reported as a no-op.
+                self.exists_reason = str(e)
 
                 return ApplyResult.EXISTS
 
