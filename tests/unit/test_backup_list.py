@@ -14,8 +14,12 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock, patch
+
+from click.testing import CliRunner
 from rapyuta_io_sdk_v2 import Backup
 
+from riocli.backup.list import list_backups
 from riocli.backup.util import display_backup_list
 
 
@@ -52,3 +56,16 @@ def test_missing_status_does_not_break_the_table(capsys):
     out = capsys.readouterr().out
 
     assert "Unknown" in out
+
+
+def test_database_filter_reaches_the_api():
+    # The flag is documented; the list must actually be scoped server-side
+    # rather than silently returning every backup in the project.
+    with (
+        patch("riocli.backup.list.new_v2_client", return_value=MagicMock()),
+        patch("riocli.backup.list.walk_pages", return_value=iter([[]])) as walk,
+    ):
+        result = CliRunner().invoke(list_backups, ["--database", "orders-db"])
+
+    assert result.exit_code == 0
+    assert walk.call_args.kwargs["database"] == "orders-db"
