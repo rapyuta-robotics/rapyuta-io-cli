@@ -31,10 +31,6 @@ def _make_deployment(volumes: list[dict]) -> Munch:
 
 
 class TestPopulateEntrypoint:
-    # populate_entrypoint() only feeds `rio compose generate`'s local Docker
-    # Compose output. Real device deployments (`rio apply`) never read an
-    # `entrypoint` field -- it has no effect there, only in this pipeline.
-
     def test_missing_entrypoint_returns_none(self):
         assert populate_entrypoint(munchify({"command": "foo"})) is None
 
@@ -66,6 +62,20 @@ class TestPopulateEntrypoint:
         exe = munchify({"entrypoint": "./owm_bootstrap.sh", "command": "--foo bar"})
         assert populate_entrypoint(exe) == "./owm_bootstrap.sh"
         assert populate_command(exe) == "--foo bar"
+
+    def test_run_as_bash_not_applied_with_entrypoint(self):
+        exe = munchify(
+            {
+                "entrypoint": ["/bin/sh", "-c"],
+                "command": "sleep infinity",
+                "runAsBash": True,
+            }
+        )
+        assert populate_command(exe) == "sleep infinity"
+
+    def test_run_as_bash_applied_without_entrypoint(self):
+        exe = munchify({"command": "sleep infinity", "runAsBash": True})
+        assert populate_command(exe) == ["/bin/bash", "-c", "sleep infinity"]
 
 
 class TestPopulateHealthcheck:

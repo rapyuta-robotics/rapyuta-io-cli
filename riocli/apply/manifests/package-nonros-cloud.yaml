@@ -13,6 +13,7 @@ spec:
   executables: # Required
     - name: "exec-docker"
       type: docker # Options: [docker (default), preInstalled]
+      # entrypoint: ["/bin/sh", "-c"] # Optional, docker only. Overrides the image ENTRYPOINT; list with the executable path first; runAsBash is ignored when set
       command: # Command supports both array and string
         - "sleep infinity"
       # command: "sleep infinity"
