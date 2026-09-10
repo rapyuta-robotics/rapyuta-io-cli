@@ -555,7 +555,9 @@ def populate_command(exe: dict) -> list[str] | str | None:
 
     result: list[str] | str | None = None
 
-    if exe.get("runAsBash") in (True, "true"):
+    # Same rule as the SDK: a custom entrypoint already decides how `command`
+    # is run, and an extra bash wrap would leave the command unused.
+    if exe.get("runAsBash") in (True, "true") and not exe.get("entrypoint"):
         cmd_str = cmd_raw if isinstance(cmd_raw, str) else " ".join(cmd_raw)
         result = ["/bin/bash", "-c", cmd_str]
     elif isinstance(cmd_raw, list) and len(cmd_raw) == 1:
@@ -591,12 +593,6 @@ def populate_entrypoint(exe: dict) -> list[str] | str | None:
     ENTRYPOINT, this replaces the image's ENTRYPOINT outright -- needed when an
     executable must run a different process than the image's default launcher
     (e.g. a bootstrap script instead of the image's normal server process).
-
-    NOTE: this only affects `rio compose generate`'s local Docker Compose
-    output. Real device deployments (`rio apply`) don't read this field at
-    all -- there is no ENTRYPOINT-override concept in the device runtime,
-    only `command`. Declaring `entrypoint` in a manifest has zero effect
-    outside the compose pipeline.
     """
     if "entrypoint" not in exe or exe.get("entrypoint") is None:
         return None
