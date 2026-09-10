@@ -21,7 +21,15 @@ from riocli.utils import tabulate_data
 def display_archive_list(archives: list[BackupArchive], show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ("Upload ID", "Filename", "Backup", "Run", "Status", "Size")
+        headers = (
+            "Upload ID",
+            "Filename",
+            "Database",
+            "Backup",
+            "Run",
+            "Status",
+            "Size",
+        )
 
     data = []
     for a in archives:
@@ -29,6 +37,7 @@ def display_archive_list(archives: list[BackupArchive], show_header: bool = True
             [
                 a.guid,
                 a.filename or "-",
+                a.database_guid or "-",
                 a.backup_name or "-",
                 a.backup_run_id or "-",
                 a.status or "-",

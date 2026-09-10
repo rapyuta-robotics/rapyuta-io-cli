@@ -35,26 +35,39 @@ from riocli.utils.spinner import with_spinner
     default=False,
     help="Skip confirmation",
 )
-@click.argument("database", type=click.STRING)
+@click.option(
+    "--database",
+    "-d",
+    type=click.STRING,
+    default=None,
+    help="Name or GUID of the database the archive must belong to.",
+)
 @click.argument("upload-guid", type=click.STRING)
 @with_spinner(text="Deleting archive...")
-def delete_upload(database: str, upload_guid: str, force: bool, spinner=None) -> None:
-    """Delete one uploaded backup archive of a database.
+def delete_upload(
+    database: str | None, upload_guid: str, force: bool, spinner=None
+) -> None:
+    """Delete one uploaded backup archive.
 
     Archives outlive their backup and their database, so this is the only thing
     that removes one. The blob goes with it.
 
     Usage Examples:
 
-        $ rio database upload delete orders-db fileupload-abc123
+        $ rio database upload delete fileupload-abc123
+
+        $ rio database upload delete fileupload-abc123 --database orders-db
     """
     with spinner.hidden():
         if not force:
-            click.confirm(f"Delete archive {upload_guid} of {database}?", abort=True)
+            target = f"archive {upload_guid}"
+            if database:
+                target += f" of {database}"
+            click.confirm(f"Delete {target}?", abort=True)
 
     try:
         client = new_v2_client(with_project=True)
-        client.delete_database_upload(database=database, guid=upload_guid)
+        client.delete_database_upload(guid=upload_guid, database=database)
         spinner.text = click.style("Archive deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
     except Exception as e:
