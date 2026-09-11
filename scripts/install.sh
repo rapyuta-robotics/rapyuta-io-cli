@@ -31,6 +31,13 @@ if [ "$#" -gt 1 ]; then
   usage
 fi
 
+### Check that jq is available for parsing the release manifest
+if ! command -v jq >/dev/null 2>&1; then
+  echo -e "\033[1;31mError: jq is required to install rio. Please install jq and try again.\033[0m"
+  echo -e "\033[1;31mUbuntu/Debian: sudo apt-get install jq\033[0m"
+  exit 1
+fi
+
 ### Set the AppImage release channel described in docs/update-channels.md
 BASE_URL="${RIO_APPIMAGE_BASE_URL:-https://riocliartifacts.blob.core.windows.net}"
 BASE_URL="${BASE_URL%/}"
@@ -59,16 +66,23 @@ fi
 ### Fetch release information from the public release-channel manifest
 RELEASE_DATA=$(curl -fsSL "$MANIFEST_URL")
 
-### Extract the release details from the manifest
-VERSION=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p')
-ASSET_FILE=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"file"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p')
-EXPECTED_SHA256=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"sha256"[[:space:]]*:[[:space:]]*"([[:xdigit:]]{64})".*/\1/p')
-
-### Check that the manifest contains all required release details
-if [ -z "$VERSION" ] || [ -z "$ASSET_FILE" ] || [ -z "$EXPECTED_SHA256" ]; then
+### Parse and validate the required release details from the manifest
+if ! MANIFEST_VALUES=$(printf '%s' "$RELEASE_DATA" | jq -er '
+  if type != "object"
+    or (.version | type) != "string"
+    or (.version | length) == 0
+    or (.file | type) != "string"
+    or (.file | length) == 0
+    or (.sha256 | type) != "string"
+    or (.sha256 | test("^[0-9A-Fa-f]{64}$") | not)
+  then error("missing or invalid version, file, or sha256")
+  else [.version, .file, .sha256] | @tsv
+  end
+'); then
   echo -e "\033[1;31mError: Invalid release manifest at $MANIFEST_URL\033[0m"
   exit 1
 fi
+IFS=$'\t' read -r VERSION ASSET_FILE EXPECTED_SHA256 <<< "$MANIFEST_VALUES"
 
 ### The channel manifest only describes the latest release
 if [ -n "${TAG:-}" ] && [ "${TAG#v}" != "$VERSION" ]; then
