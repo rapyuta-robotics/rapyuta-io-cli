@@ -31,8 +31,11 @@ if [ "$#" -gt 1 ]; then
   usage
 fi
 
-### Set the repository base URL (hardcoded)
-BASE_URL="https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases"
+### Set the AppImage release channel described in docs/update-channels.md
+BASE_URL="${RIO_APPIMAGE_BASE_URL:-https://riocliartifacts.blob.core.windows.net}"
+BASE_URL="${BASE_URL%/}"
+CHANNEL="release"
+MANIFEST_URL="$BASE_URL/$CHANNEL/latest.json"
 
 ### Print the rapyuta.io banner ascii art
 echo -n 'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBfICAgICAgICAgIF8gICAgIC
@@ -47,26 +50,33 @@ echo -ne '\n\n'
 if [ "$#" -eq 0 ]; then
   # Download the latest release if no tag is specified
   echo -e "\033[1;34m⏳ Downloading the latest release...\033[0m"
-  API_URL="$BASE_URL/latest"
 else
   # Download the specified release tag
   echo -e "\033[1;34m⏳ Downloading release $1...\033[0m"
   TAG="$1"
-  API_URL="$BASE_URL/tags/$TAG"
 fi
 
-### Fetch release information from GitHub API
-RELEASE_DATA=$(curl -s "$API_URL")
+### Fetch release information from the public release-channel manifest
+RELEASE_DATA=$(curl -fsSL "$MANIFEST_URL")
 
-### Extract the asset URL from the release data
-ASSET_URL=$(echo "$RELEASE_DATA" | grep '"browser_download_url":' | grep '.AppImage' | sed -E 's/.*"browser_download_url":\s*"(https:[^"]*)".*/\1/')
+### Extract the release details from the manifest
+VERSION=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p')
+ASSET_FILE=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"file"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p')
+EXPECTED_SHA256=$(printf '%s' "$RELEASE_DATA" | sed -nE 's/.*"sha256"[[:space:]]*:[[:space:]]*"([[:xdigit:]]{64})".*/\1/p')
 
-### Check if the asset URL was found
-if [ "$ASSET_URL" = "null" ] || [ -z "$ASSET_URL" ]; then
-  # Error: No assets found in release
-  echo -e "\033[1;31mError: No assets found in release \"$TAG\" for the repository rapyuta-robotics/rapyuta-io-cli\033[0m"
+### Check that the manifest contains all required release details
+if [ -z "$VERSION" ] || [ -z "$ASSET_FILE" ] || [ -z "$EXPECTED_SHA256" ]; then
+  echo -e "\033[1;31mError: Invalid release manifest at $MANIFEST_URL\033[0m"
   exit 1
 fi
+
+### The channel manifest only describes the latest release
+if [ -n "${TAG:-}" ] && [ "${TAG#v}" != "$VERSION" ]; then
+  echo -e "\033[1;31mError: Release \"$TAG\" is not the latest release ($VERSION).\033[0m"
+  exit 1
+fi
+
+ASSET_URL="$BASE_URL/$CHANNEL/$ASSET_FILE"
 
 ### Set the temporary download location in /tmp
 TEMP_PATH=$(mktemp)
@@ -76,6 +86,12 @@ trap 'rm -f "$TEMP_PATH"' EXIT INT TERM
 
 ### Download the asset with a progress bar
 curl -fSL -o "$TEMP_PATH" --progress-bar "$ASSET_URL"
+
+### Verify the downloaded AppImage against the release manifest
+if ! printf '%s  %s\n' "$EXPECTED_SHA256" "$TEMP_PATH" | sha256sum --check --status; then
+  echo -e "\033[1;31mError: Checksum verification failed for release $VERSION.\033[0m"
+  exit 1
+fi
 
 ### Install the asset to /usr/local/bin
 sudo install -C -m 755 "$TEMP_PATH" /usr/local/bin/rio
