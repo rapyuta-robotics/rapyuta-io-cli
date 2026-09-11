@@ -1,0 +1,37 @@
+dl.py.method > dd {
+    display: none;
+    transition: 0.1s;
+    padding-left: 2rem;
+}
+
+.py.method > dt {
+    padding: 6px 0rem 6px 4rem;
+    background: #f8f8f8;
+    margin-left: 2rem;
+}
+
+.py.method > dt:after {
+    content: '▼';
+    position: relative;
+    right: 0;
+    float: right;
+    font-size: 10px;
+    top: 3px;
+    color: #2b8cee;
+}
+
+.py.method > dt.expanded:after {
+    content: '▲';
+}
+
+.py.method > dt.expanded {
+    margin-bottom: 1rem;
+}
+
+.sidebar-tree label {
+    display: none;
+}
+
+.sidebar-logo {
+    padding: 1rem;
+}
