@@ -199,8 +199,10 @@ class Applier:
                 )
 
             if result == ApplyResult.EXISTS:
+                reason = getattr(obj, "exists_reason", None)
                 message_with_prompt(
-                    f"{Symbols.INFO} {obj_key} already exists",
+                    f"{Symbols.INFO} {obj_key} already exists"
+                    + (f": {reason}" if reason else ""),
                     fg=Colors.WHITE,
                     spinner=spinner,
                 )
