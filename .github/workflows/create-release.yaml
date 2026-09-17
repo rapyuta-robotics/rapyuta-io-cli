@@ -1,0 +1,36 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        description: Baymax workflow dispatch correlation UUID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: create-release
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create release
+        uses: rapyuta-robotics/rapyuta-io-actions/create-release@main
+        with:
+          development_branch: devel
+          production_branch: main
+          app_private_key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
+          correlation_id: ${{ inputs.correlation_id }}
+          callback_url: ${{ vars.BAYMAX_CREATE_RELEASE_CALLBACK_URL }}
+          oidc_audience: ${{ vars.BAYMAX_OIDC_AUDIENCE }}
