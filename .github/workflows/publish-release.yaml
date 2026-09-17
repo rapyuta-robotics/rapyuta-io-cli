@@ -1,0 +1,27 @@
+name: Publish release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: publish-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Publish release
+        uses: rapyuta-robotics/rapyuta-io-actions/publish-release@main
+        with:
+          app_private_key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
