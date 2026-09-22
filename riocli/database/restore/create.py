@@ -52,21 +52,6 @@ from riocli.database.restore.util import display_restore_list
     "(required when --source is backup). See `rio device uploads list`",
 )
 @click.option(
-    "--backup",
-    "-b",
-    "backup_name",
-    type=click.STRING,
-    default=None,
-    help="Source backup name, recorded as provenance",
-)
-@click.option(
-    "--backup-run",
-    "backup_run_id",
-    type=click.STRING,
-    default=None,
-    help="Barman backup ID to restore. Defaults to the backup's latest run",
-)
-@click.option(
     "--target-time",
     "target_time",
     type=click.STRING,
@@ -121,8 +106,6 @@ def create_restore(
     database: str,
     source_type: str,
     file_upload: str,
-    backup_name: str,
-    backup_run_id: str,
     target_time: str,
     old_data_directory: str,
     source_version: str,
@@ -172,11 +155,6 @@ def create_restore(
 
         source["fileUpload"] = file_upload
 
-        # Provenance: neither resolves the archive, both make the record readable.
-        if backup_name:
-            source["backupName"] = backup_name
-        if backup_run_id:
-            source["backupRunID"] = backup_run_id
         if target_time:
             source["targetTime"] = target_time
     else:
