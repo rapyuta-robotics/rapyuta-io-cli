@@ -18,6 +18,7 @@ from riocli.constants import Colors
 from riocli.database.restore.create import create_restore
 from riocli.database.restore.inspect import inspect_restore
 from riocli.database.restore.list import list_restores
+from riocli.database.restore.stop import stop_restore
 from riocli.utils import AliasedGroup
 
 
@@ -47,3 +48,4 @@ def restore() -> None:
 restore.add_command(list_restores)
 restore.add_command(inspect_restore)
 restore.add_command(create_restore)
+restore.add_command(stop_restore)
