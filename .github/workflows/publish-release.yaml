@@ -21,7 +21,82 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Publish release
+      - name: Validate AppImage upload secrets
+        shell: bash
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$AZURE_STORAGE_ACCOUNT" ]]; then
+            echo "AZURE_STORAGE_ACCOUNT must be set for release AppImage publishing." >&2
+            exit 1
+          fi
+          if [[ -z "$AZURE_SAS_TOKEN" ]]; then
+            echo "AZURE_SAS_TOKEN must be set for release AppImage publishing." >&2
+            exit 1
+          fi
+
+      - name: Publish GitHub release
+        id: publish-release
         uses: rapyuta-robotics/rapyuta-io-actions/publish-release@main
         with:
           app_private_key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Build rio AppImage
+        shell: bash
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          RELEASE_VERSION: ${{ steps.publish-release.outputs.release_version }}
+        run: ./scripts/build-rio-appimage.sh "$RELEASE_VERSION"
+
+      - name: Publish rio AppImage to Azure Blob
+        shell: bash
+        env:
+          CHANNEL: release
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+        run: ./scripts/publish-rio-appimage.sh
+
+      - name: Resolve AppImage asset
+        id: appimage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          appimage_path="$(find scripts -maxdepth 1 -type f -name 'rio*.AppImage' -print -quit)"
+          if [[ -z "$appimage_path" ]]; then
+            echo "No rio AppImage was produced under scripts/." >&2
+            exit 1
+          fi
+
+          appimage_file="$(basename "$appimage_path")"
+
+          {
+            echo "appimage_path=${appimage_path}"
+            echo "appimage_file=${appimage_file}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub App token for asset upload
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: Iv23liFjNsuBdosbyBzO
+          private-key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+
+      - name: Attach AppImage to GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RELEASE_TAG: ${{ steps.publish-release.outputs.release_tag }}
+          APPIMAGE_PATH: ${{ steps.appimage.outputs.appimage_path }}
+        run: |
+          set -euo pipefail
+          gh release upload "$RELEASE_TAG" "$APPIMAGE_PATH" --clobber

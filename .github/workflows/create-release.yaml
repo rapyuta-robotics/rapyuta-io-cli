@@ -25,7 +25,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Create release
+        id: create-release
         uses: rapyuta-robotics/rapyuta-io-actions/create-release@main
         with:
           development_branch: devel
@@ -34,3 +43,4 @@ jobs:
           correlation_id: ${{ inputs.correlation_id }}
           callback_url: ${{ vars.BAYMAX_CREATE_RELEASE_CALLBACK_URL }}
           oidc_audience: ${{ vars.BAYMAX_OIDC_AUDIENCE }}
+          version_bump_hook: scripts/update-uv-dependency.sh
