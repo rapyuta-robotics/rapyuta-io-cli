@@ -37,10 +37,28 @@ jobs:
             echo "AZURE_SAS_TOKEN must be set for release AppImage publishing." >&2
             exit 1
           fi
+      
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: Iv23liFjNsuBdosbyBzO
+          private-key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY}}
+          owner: ${{ github.repository_owner }}
+          repositories: rapyuta-io-actions
+
+      - name: Checkout private actions
+        uses: actions/checkout@v6
+        with:
+          repository: rapyuta-robotics/rapyuta-io-actions
+          ref: main
+          token: ${{ steps.app-token.outputs.token }}
+          path: .github/rapyuta-io-actions
+          persist-credentials: false                   
 
       - name: Publish GitHub release
         id: publish-release
-        uses: rapyuta-robotics/rapyuta-io-actions/publish-release@main
+        uses: ./.github/rapyuta-io-actions/publish-release
         with:
           app_private_key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
 
@@ -82,7 +100,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub App token for asset upload
-        id: app-token
+        id: app-token-upload
         uses: actions/create-github-app-token@v3
         with:
           client-id: Iv23liFjNsuBdosbyBzO
@@ -94,7 +112,7 @@ jobs:
       - name: Attach AppImage to GitHub release
         shell: bash
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token-upload.outputs.token }}
           RELEASE_TAG: ${{ steps.publish-release.outputs.release_tag }}
           APPIMAGE_PATH: ${{ steps.appimage.outputs.appimage_path }}
         run: |
