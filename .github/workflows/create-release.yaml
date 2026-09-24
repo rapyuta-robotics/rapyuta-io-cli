@@ -51,6 +51,9 @@ jobs:
           path: .github/rapyuta-io-actions
           persist-credentials: false
 
+      - name: Exclude private actions checkout from git status
+        run: echo ".github/rapyuta-io-actions/" >> .git/info/exclude
+
       - name: Create release
         id: create-release
         uses: ./.github/rapyuta-io-actions/create-release
