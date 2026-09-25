@@ -16,9 +16,9 @@ import click
 from click_help_colors import HelpColorsCommand
 from rapyuta_io_sdk_v2 import walk_pages
 
-from riocli.backup.util import display_backup_list
 from riocli.config import new_v2_client
 from riocli.constants import Colors
+from riocli.database.upload.util import display_archive_list
 
 
 @click.command(
@@ -30,42 +30,32 @@ from riocli.constants import Colors
 @click.option(
     "--database",
     "-d",
-    "database",
     type=click.STRING,
     default=None,
-    help="Filter backups by their source database",
+    help="Name or GUID of the source database. Omit to list the whole project.",
 )
-@click.option(
-    "--label",
-    "-l",
-    "labels",
-    multiple=True,
-    type=click.STRING,
-    default=(),
-    help="Filter the backup list by labels",
-)
-def list_backups(database: str, labels: list[str]) -> None:
-    """List the backups in the current project.
+def list_uploads(database: str | None) -> None:
+    """List uploaded backup archives.
 
-    Backups are first-class resources and survive the deletion of their
-    source database.
+    The Upload ID is what ``rio database restore create --file-upload`` takes.
+    Archives are found by the database they belong to, so they remain listed
+    after the uploading device is deleted -- and after the database itself is,
+    which is when only its GUID is left to name it by.
 
     Usage Examples:
 
-        $ rio backup list
+        $ rio database upload list
 
-        $ rio backup list --database orders-db
+        $ rio database upload list --database orders-db
 
-        $ rio backup list -l app=orders
+        $ rio database upload list --database database-dafpt8r2a2ss73e3pvg0
     """
     try:
         client = new_v2_client(with_project=True)
-        backups = []
-        for page in walk_pages(
-            client.list_backups, label_selector=labels, database=database
-        ):
-            backups.extend(page)
-        display_backup_list(backups, show_header=True)
+        archives = []
+        for page in walk_pages(client.list_database_uploads, database=database):
+            archives.extend(page)
+        display_archive_list(archives, show_header=True)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

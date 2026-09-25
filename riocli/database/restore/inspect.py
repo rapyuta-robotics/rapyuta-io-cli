@@ -14,15 +14,14 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io_sdk_v2 import walk_pages
 
-from riocli.backup.util import display_backup_list
 from riocli.config import new_v2_client
 from riocli.constants import Colors
+from riocli.utils import inspect_with_format
 
 
 @click.command(
-    "list",
+    "inspect",
     cls=HelpColorsCommand,
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
@@ -32,40 +31,36 @@ from riocli.constants import Colors
     "-d",
     "database",
     type=click.STRING,
-    default=None,
-    help="Filter backups by their source database",
+    required=True,
+    help="Database the restore belongs to",
 )
 @click.option(
-    "--label",
-    "-l",
-    "labels",
-    multiple=True,
-    type=click.STRING,
-    default=(),
-    help="Filter the backup list by labels",
+    "--format",
+    "-f",
+    "format_type",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
 )
-def list_backups(database: str, labels: list[str]) -> None:
-    """List the backups in the current project.
+@click.argument("restore-name", type=str)
+def inspect_restore(database: str, format_type: str, restore_name: str) -> None:
+    """Inspect a restore by its name.
 
-    Backups are first-class resources and survive the deletion of their
-    source database.
+    The status carries the outcome the device reported: the phase, the failure
+    message with a log tail when it failed, and the logical databases that were
+    actually loaded.
 
     Usage Examples:
 
-        $ rio backup list
+        $ rio database restore inspect orders-db-restore --database orders-db
 
-        $ rio backup list --database orders-db
-
-        $ rio backup list -l app=orders
+        $ rio database restore inspect orders-db-restore -d orders-db --format json
     """
     try:
-        client = new_v2_client(with_project=True)
-        backups = []
-        for page in walk_pages(
-            client.list_backups, label_selector=labels, database=database
-        ):
-            backups.extend(page)
-        display_backup_list(backups, show_header=True)
+        client = new_v2_client()
+        restore = client.get_restore(database=database, name=restore_name)
+        inspect_with_format(
+            restore.model_dump(exclude_none=True, by_alias=True), format_type
+        )
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
