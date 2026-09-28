@@ -15,7 +15,6 @@
 import click
 
 from riocli.constants import Colors
-from riocli.database.upload.delete import delete_upload
 from riocli.database.upload.list import list_uploads
 from riocli.utils import AliasedGroup
 
@@ -38,4 +37,3 @@ def upload() -> None:
 
 
 upload.add_command(list_uploads)
-upload.add_command(delete_upload)
