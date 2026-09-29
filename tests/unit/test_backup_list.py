@@ -40,14 +40,14 @@ def _backup(status: dict | None) -> Backup:
 
 
 def test_step_is_shown(capsys):
-    backup = _backup({"phase": "Ready", "step": "archiving base backup"})
+    backup = _backup({"phase": "Ready", "step": "Uploading"})
 
     display_backup_list([backup])
     out = capsys.readouterr().out
 
     # The recover dominates a run, so the step is what separates a slow backup
     # from a stuck one.
-    assert "archiving base backup" in out
+    assert "Uploading" in out
     assert "Ready" in out
 
 

@@ -55,14 +55,14 @@ def test_step_is_shown_alongside_the_phase(capsys):
     # progress from a stall.
     r = _restore(
         {"type": "backup", "fileUpload": "fileupload-abc123"},
-        {"phase": "Running", "step": "loading orders"},
+        {"phase": "Running", "step": "Transferring"},
     )
 
     display_restore_list([r])
     out = capsys.readouterr().out
 
     assert "Running" in out
-    assert "loading orders" in out
+    assert "Transferring" in out
 
 
 def test_missing_status_does_not_break_the_table(capsys):
