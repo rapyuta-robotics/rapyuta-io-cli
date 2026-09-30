@@ -5,6 +5,13 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.10.0] - 2026-09-30
+
+### ✨ Features
+
+- Show image name and tag in deployment manifest (#589)
+
+
 ## [10.9.1](https://github.com/rapyuta-robotics/rapyuta-io-cli/compare/v10.9.0...v10.9.1) (2026-09-09)
 
 
