@@ -16,6 +16,7 @@ from rapyuta_io_sdk_v2 import Client as v2Client
 from rapyuta_io_sdk_v2 import Restore as RestoreModel
 from typing_extensions import override
 
+from riocli.constants import DeleteResult
 from riocli.model import Model
 
 
@@ -36,13 +37,10 @@ class Restore(Model):
         raise NotImplementedError
 
     @override
-    def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
-        # A no-op, not NotImplementedError. The API exposes no restore delete: a
-        # restore runs to a terminal phase and stays as an audit record, and
-        # deleting the target database is what stops one still in flight. Model
-        # .delete() only catches HttpNotFoundError, so raising here aborts
-        # `rio delete -f` for every other resource in the same bundle.
-        return None
+    def delete_object(self, v2_client: v2Client, *args, **kwargs) -> DeleteResult:
+        # The API has no restore delete: a restore stays as an audit record. Raising
+        # instead would abort `rio delete -f` for the rest of the bundle.
+        return DeleteResult.RETAINED
 
     @override
     def list_dependencies(self) -> list[str] | None:

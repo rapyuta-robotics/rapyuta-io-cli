@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 from rapyuta_io_sdk_v2 import Restore
 
+from riocli.constants import DeleteResult
 from riocli.database.restore.util import _source_summary, display_restore_list
 
 
@@ -70,13 +73,10 @@ def test_missing_status_does_not_break_the_table(capsys):
     assert "Unknown" in capsys.readouterr().out
 
 
-def test_delete_object_is_a_noop_not_an_exception():
-    # Model.delete() catches only HttpNotFoundError, so a NotImplementedError here
-    # aborts `rio delete -f` for every other resource in the same bundle. A
-    # restore is an audit record with no delete route: skipping it is correct.
+def _restore_resource():
     from riocli.database.restore.model import Restore as RestoreResource
 
-    r = RestoreResource(
+    return RestoreResource(
         {
             "apiVersion": "api.rapyuta.io/v2",
             "kind": "Restore",
@@ -88,4 +88,46 @@ def test_delete_object_is_a_noop_not_an_exception():
         }
     )
 
-    assert r.delete_object(v2_client=None) is None
+
+def test_delete_reports_a_restore_as_retained():
+    # The API has no restore delete, so the audit record stays; raising instead
+    # would abort `rio delete -f` for every other resource in the bundle.
+    v2 = MagicMock()
+    result = _restore_resource().delete(
+        client=MagicMock(),
+        v2_client=v2,
+        config=MagicMock(),
+        retry_count=0,
+        retry_interval=0,
+    )
+
+    assert result == DeleteResult.RETAINED
+    assert v2.method_calls == []
+
+
+def test_delete_manifest_prints_retained_for_a_restore_and_deleted_otherwise():
+    from riocli.apply.parse import Applier
+    from riocli.secret.model import Secret
+
+    applier = Applier.__new__(Applier)
+    applier.config = MagicMock()
+    applier.objects = {"restore:orders-restore": _restore_resource()}
+
+    applier.objects["secret:db-creds"] = Secret(
+        {
+            "apiVersion": "api.rapyuta.io/v2",
+            "kind": "Secret",
+            "metadata": {"name": "db-creds"},
+            "spec": {"type": "Opaque", "data": {"USER": "appuser"}},
+        }
+    )
+
+    lines = {}
+    for key in applier.objects:
+        spinner = MagicMock()
+        applier._delete_manifest(key, v2_client=MagicMock(), spinner=spinner)
+        lines[key] = spinner.write.call_args.args[0]
+
+    assert "Retained" in lines["restore:orders-restore"]
+    assert "Deleted" not in lines["restore:orders-restore"]
+    assert "Deleted" in lines["secret:db-creds"]

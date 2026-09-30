@@ -31,7 +31,7 @@ from riocli.apply.util import (
     message_with_prompt,
     print_objects_table,
 )
-from riocli.constants import ApplyResult, Colors, Symbols
+from riocli.constants import ApplyResult, Colors, DeleteResult, Symbols
 from riocli.exceptions import (
     LoggedOut,
     NoOrganizationSelected,
@@ -257,14 +257,23 @@ class Applier:
             return
 
         try:
+            result = DeleteResult.DELETED
             if not dryrun and can_delete:
-                obj.delete(
+                result = obj.delete(
                     client=client,
                     v2_client=v2_client,
                     config=self.config,
                     retry_count=retry_count,
                     retry_interval=retry_interval,
                 )
+
+            if result == DeleteResult.RETAINED:
+                message_with_prompt(
+                    f"{Symbols.INFO} Retained {obj_key}",
+                    fg=Colors.WHITE,
+                    spinner=spinner,
+                )
+                return
 
             message_with_prompt(
                 f"{Symbols.SUCCESS} Deleted {obj_key}",
