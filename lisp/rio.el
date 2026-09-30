@@ -3,7 +3,7 @@
 ;; Copyright (C) 2025 Rapyuta Robotics
 
 ;; Author: Ankit Gadiya <ankit.gadiya@rapyuta-robotics.com>
-;; Version: 9.12.3
+;; Version: 10.10.0
 ;; Package-Requires: ((emacs "29.1") (transient "0.4.0"))
 ;; Keywords: tools
 ;; URL: https://github.com/rapyuta-robotics/rapyuta-io-cli

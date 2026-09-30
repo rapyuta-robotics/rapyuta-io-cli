@@ -40,7 +40,7 @@ will function. **Do not put secret values in source files or commit history.**
 These secrets are consumed by:
 
 - `.github/workflows/upload-appimage.yml` — devel pushes (`CHANNEL=devel`) and PR builds (`CHANNEL=dev`).
-- `.github/workflows/release.yml` — tagged releases (`CHANNEL=release`), via the `.releaserc.json` prepare step.
+- `.github/workflows/publish-release.yaml` — tagged releases (`CHANNEL=release`), after release branches are merged to `main`. It also uploads the AppImage as a GitHub release asset.
 
 ## Build and publish scripts
 

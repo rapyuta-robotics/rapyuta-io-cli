@@ -1,0 +1,67 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      correlation_id:
+        description: Baymax workflow dispatch correlation UUID
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: create-release
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: Iv23liFjNsuBdosbyBzO
+          private-key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY}}
+          owner: ${{ github.repository_owner }}
+          repositories: rapyuta-io-actions
+
+      - name: Checkout private actions
+        uses: actions/checkout@v6
+        with:
+          repository: rapyuta-robotics/rapyuta-io-actions
+          ref: main
+          token: ${{ steps.app-token.outputs.token }}
+          path: .github/rapyuta-io-actions
+          persist-credentials: false
+
+      - name: Exclude private actions checkout from git status
+        run: echo ".github/rapyuta-io-actions/" >> .git/info/exclude
+
+      - name: Create release
+        id: create-release
+        uses: ./.github/rapyuta-io-actions/create-release
+        with:
+          development_branch: devel
+          production_branch: main
+          app_private_key: ${{ secrets.BAYMAX_RR_PRIVATE_KEY }}
+          correlation_id: ${{ inputs.correlation_id }}
+          callback_url: ${{ vars.BAYMAX_CREATE_RELEASE_CALLBACK_URL }}
+          oidc_audience: ${{ vars.BAYMAX_OIDC_AUDIENCE }}
+          version_bump_hook: scripts/update-uv-dependency.sh
