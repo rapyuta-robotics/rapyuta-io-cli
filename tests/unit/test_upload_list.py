@@ -17,8 +17,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
+from rapyuta_io_sdk_v2.models import BackupArchive
 
 from riocli.database.upload.list import list_uploads
+from riocli.database.upload.util import display_archive_list
 
 
 def _run(args: list[str]):
@@ -45,3 +47,28 @@ def test_no_database_lists_the_whole_project():
 
     assert result.exit_code == 0
     assert walk.call_args.kwargs["database"] is None
+
+
+def test_archive_table_shows_the_upload_id_restore_takes(capsys):
+    # The Upload ID is the --file-upload input, so a column regression breaks restores.
+    display_archive_list(
+        [
+            BackupArchive.model_validate(
+                {
+                    "guid": "fileupload-x",
+                    "backupRunID": "20260101T020000",
+                    "status": "Completed",
+                    "totalSize": 2 * 1024**3,
+                }
+            ),
+            BackupArchive.model_validate({"guid": "fileupload-y"}),
+        ]
+    )
+    out = capsys.readouterr().out
+
+    assert "Upload ID" in out
+    assert "fileupload-x" in out
+    assert "20260101T020000" in out
+    assert "2.00 GB" in out
+    assert "fileupload-y" in out
+    assert out.splitlines()[-1].split().count("-") >= 3
