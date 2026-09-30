@@ -49,7 +49,7 @@ from riocli.database.restore.util import display_restore_list
     type=click.STRING,
     default=None,
     help="Uploaded archive to restore: its file-upload GUID or filename "
-    "(required when --source is backup). See `rio device uploads list`",
+    "(required when --source is backup). See `rio database upload list`",
 )
 @click.option(
     "--target-time",
@@ -64,7 +64,9 @@ from riocli.database.restore.util import display_restore_list
     "old_data_directory",
     type=click.STRING,
     default=None,
-    help="Absolute path of the old cluster (required when --source is dataDirectory)",
+    help="Absolute path of the old cluster: the database's dataDirectory plus its "
+    "major version, e.g. /opt/rapyuta/volumes/orders-db/17 "
+    "(required when --source is dataDirectory)",
 )
 @click.option(
     "--source-version",
@@ -141,7 +143,7 @@ def create_restore(
 
             $ rio database restore create orders-migrate -d orders-db-v18 \\
                 --source dataDirectory \\
-                --old-data-directory /opt/rapyuta/volumes/orders-db \\
+                --old-data-directory /opt/rapyuta/volumes/orders-db/17 \\
                 --source-version 17
     """
     source = {"type": source_type}

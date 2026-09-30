@@ -45,7 +45,7 @@ def test_step_is_shown(capsys):
     display_backup_list([backup])
     out = capsys.readouterr().out
 
-    # The recover dominates a run, so the step is what separates a slow backup
+    # The recovery dominates a run, so the step is what separates a slow backup
     # from a stuck one.
     assert "Uploading" in out
     assert "Ready" in out

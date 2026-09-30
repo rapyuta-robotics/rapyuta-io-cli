@@ -14,12 +14,12 @@ spec:
     # --- type: backup ---
     # The archive to restore, by file-upload GUID or filename. A backup produces
     # many archives over its life, so the one to load is named directly.
-    # `rio device uploads list <device>` shows both columns.
+    # `rio database upload list` prints the GUID in its Upload ID column.
     fileUpload: fileupload-d9upialugeis73e1to40
-    # Both are derived from the upload's own metadata and can be omitted. Set
-    # them only to override: backupName selects the restore image's major
-    # version, and the pair is what lets the device find the backup in its own
-    # barman store instead of downloading the archive back.
+    # Provenance only: fileUpload selects the archive. Both are filled in from
+    # the upload's own metadata, so omit them; a value that disagrees with it is
+    # rejected. The device uses the pair to find the backup in its own barman
+    # store instead of downloading the archive back.
     # backupName: orders-nightly
     # backupRunID: "20260101T020000"
     # Point in time to roll forward to. Honoured only when the device still

@@ -38,9 +38,10 @@ def list_uploads(database: str | None) -> None:
     """List uploaded backup archives.
 
     The Upload ID is what ``rio database restore create --file-upload`` takes.
-    Archives are found by the database they belong to, so they remain listed
-    after the uploading device is deleted -- and after the database itself is,
-    which is when only its GUID is left to name it by.
+    Archives are listed by the database they belong to, so they stay listed
+    after the uploading device is deleted. They also stay listed after the
+    database is deleted; pass its GUID to --database then, since the name no
+    longer resolves.
 
     Usage Examples:
 

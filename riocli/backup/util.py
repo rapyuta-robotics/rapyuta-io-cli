@@ -57,7 +57,7 @@ def display_backup_list(backups: typing.Any, show_header: bool = True):
     for backup in backups:
         status = backup.status
         phase = getattr(status, "phase", None) if status else None
-        # The recover dominates a run, so the phase alone cannot tell a slow
+        # The recovery dominates a run, so the phase alone cannot tell a slow
         # backup from a stuck one.
         step = getattr(status, "step", None) if status else None
         data.append(
