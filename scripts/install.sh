@@ -32,7 +32,7 @@ if [ "$#" -gt 1 ]; then
 fi
 
 ### Set the repository base URL (hardcoded)
-BASE_URL="https://api.github.com/repos/rapyuta-robotics/rapyuta-io-cli/releases"
+BASE_URL="https://github.com/rapyuta-robotics/rapyuta-io-cli/releases"
 
 ### Print the rapyuta.io banner ascii art
 echo -n 'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBfICAgICAgICAgIF8gICAgIC
@@ -43,30 +43,26 @@ p8X3wgIFxfXyxffCAuX18vIFxfXywgfFxfXyxffFxfX1xfXyxfKF8pX3xcX19fLyANCi
 AgICAgICAgICB8X3wgICAgfF9fXy8gICAgICAgICAgICAgICAgICAgICAgICAgIA==' | base64 -d
 echo -ne '\n\n'
 
-### Get the tag or assume the latest release if no tag is provided
+### Resolve the release tag.
+### The unauthenticated GitHub API is rate limited to 60 requests/hour per IP,
+### which silently breaks this script behind shared/corporate NATs. The
+### /releases/latest redirect is not rate limited, so follow that instead.
 if [ "$#" -eq 0 ]; then
-  # Download the latest release if no tag is specified
-  echo -e "\033[1;34m⏳ Downloading the latest release...\033[0m"
-  API_URL="$BASE_URL/latest"
+  TAG=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$BASE_URL/latest" | sed 's|.*/tag/||')
 else
-  # Download the specified release tag
-  echo -e "\033[1;34m⏳ Downloading release $1...\033[0m"
   TAG="$1"
-  API_URL="$BASE_URL/tags/$TAG"
 fi
 
-### Fetch release information from GitHub API
-RELEASE_DATA=$(curl -s "$API_URL")
-
-### Extract the asset URL from the release data
-ASSET_URL=$(echo "$RELEASE_DATA" | grep '"browser_download_url":' | grep '.AppImage' | sed -E 's/.*"browser_download_url":\s*"(https:[^"]*)".*/\1/')
-
-### Check if the asset URL was found
-if [ "$ASSET_URL" = "null" ] || [ -z "$ASSET_URL" ]; then
-  # Error: No assets found in release
-  echo -e "\033[1;31mError: No assets found in release \"$TAG\" for the repository rapyuta-robotics/rapyuta-io-cli\033[0m"
+if [ -z "$TAG" ]; then
+  echo -e "\033[1;31mError: could not resolve the latest release tag from $BASE_URL/latest\033[0m"
   exit 1
 fi
+
+### Assets are named rio-<version>-x86_64.AppImage, where <version> is the tag
+### without its leading "v".
+ASSET_URL="$BASE_URL/download/$TAG/rio-${TAG#v}-x86_64.AppImage"
+
+echo -e "\033[1;34m⏳ Downloading release $TAG...\033[0m"
 
 ### Set the temporary download location in /tmp
 TEMP_PATH=$(mktemp)
