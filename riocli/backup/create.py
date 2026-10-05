@@ -60,11 +60,13 @@ def create_backup(
     """Create a backup for a database.
 
     A scheduled backup runs on the given cron schedule; an on-demand backup
-    runs immediately.
+    runs once, immediately, and ends in Succeeded or Failed. A finished
+    on-demand backup is kept as a record until you delete it.
 
-    An on-demand backup requires the database to already have a healthy
-    scheduled backup: it reuses that backup's Barman pod and WAL stream, and
-    Barman cannot take a backup without a running WAL receiver.
+    An on-demand backup requires the database to already have a running
+    scheduled backup: it reuses that backup's Barman pod and WAL stream. A
+    restore of the same database waits for a running on-demand backup to
+    finish, and an on-demand backup waits for a running restore.
 
     Usage Examples:
 
