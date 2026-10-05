@@ -34,3 +34,12 @@ class ApplyResult(str, Enum):
     CREATED = "Created"
     UPDATED = "Updated"
     EXISTS = "Exists"
+
+
+class DeleteResult(str, Enum):
+    @override
+    def __str__(self):
+        return str(self.value)
+
+    DELETED = "Deleted"
+    RETAINED = "Retained"

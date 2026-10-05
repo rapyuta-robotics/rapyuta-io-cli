@@ -61,7 +61,9 @@ def list_backups(database: str, labels: list[str]) -> None:
     try:
         client = new_v2_client(with_project=True)
         backups = []
-        for page in walk_pages(client.list_backups, label_selector=labels):
+        for page in walk_pages(
+            client.list_backups, label_selector=labels, database=database
+        ):
             backups.extend(page)
         display_backup_list(backups, show_header=True)
     except Exception as e:

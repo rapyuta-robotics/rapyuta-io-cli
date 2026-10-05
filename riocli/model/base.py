@@ -25,7 +25,7 @@ from rapyuta_io_sdk_v2.exceptions import (
 )
 
 from riocli.config.config import Configuration
-from riocli.constants import ApplyResult
+from riocli.constants import ApplyResult, DeleteResult
 from riocli.exceptions import ResourceNotFound
 from riocli.jsonschema.validate import load_schema
 
@@ -67,7 +67,7 @@ class Model(ABC, Munch):
         pass
 
     @override
-    def delete_object(self, *args, **kwargs) -> None:
+    def delete_object(self, *args, **kwargs) -> DeleteResult | None:
         pass
 
     @override
@@ -78,6 +78,10 @@ class Model(ABC, Munch):
     by the subclasses. It validates the model against the corresponding
     schema that are defined in the schema files.
     """
+
+    # Why the server refused a create it reported as a conflict. A class
+    # attribute, so Munch sets it as a real attribute and not a manifest key.
+    exists_reason: str | None = None
 
     @abstractmethod
     def create_object(
@@ -115,9 +119,9 @@ class Model(ABC, Munch):
         config: Configuration,
         retry_count: int,
         retry_interval: int,
-    ) -> None:
-        """
-        Delete the object using passed clients and configuration.
+    ) -> DeleteResult | None:
+        """Delete the object using passed clients and configuration. Return
+        DeleteResult.RETAINED when the server keeps it; None means deleted.
         """
         raise NotImplementedError
 
@@ -201,6 +205,11 @@ class Model(ABC, Munch):
                 if isinstance(e, UnauthorizedAccessError):
                     raise e
 
+                # The SDK maps every 409 to HttpAlreadyExistsError, so a create
+                # refused on a precondition lands here too. Carry the server's
+                # reason out; without it the refusal is reported as a no-op.
+                self.exists_reason = str(e)
+
                 return ApplyResult.EXISTS
 
     def delete(
@@ -210,10 +219,10 @@ class Model(ABC, Munch):
         config: Configuration,
         retry_count: int,
         retry_interval: int,
-    ) -> None:
-        """Delete the object."""
+    ) -> DeleteResult:
+        """Delete the object and report whether the server removed or kept it."""
         try:
-            _ = self.delete_object(
+            result = self.delete_object(
                 client=client,
                 v2_client=v2_client,
                 config=config,
@@ -222,6 +231,8 @@ class Model(ABC, Munch):
             )
         except HttpNotFoundError:
             raise ResourceNotFound
+
+        return result or DeleteResult.DELETED
 
     @classmethod
     def validate(cls, d: Mapping[str, Any]) -> None:
