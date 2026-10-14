@@ -119,6 +119,8 @@ definitions:
         enum:
           - docker
           - preInstalled
+      entrypoint:
+        "$ref": "#/definitions/commandSpec"
       command:
         "$ref": "#/definitions/commandSpec"
       runAsBash:
@@ -176,6 +178,8 @@ definitions:
         default: docker
         enum:
           - docker
+      entrypoint:
+        "$ref": "#/definitions/commandSpec"
       command:
         "$ref": "#/definitions/commandSpec"
       runAsBash:

@@ -5,6 +5,13 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.11.0] - 2026-10-14
+
+### ✨ Features
+
+- *(package)* Add entrypoint to package schema and examples
+
+
 ## [10.10.0] - 2026-09-30
 
 ### ✨ Features
