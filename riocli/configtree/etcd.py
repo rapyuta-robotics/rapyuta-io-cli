@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import time
 from base64 import b64encode
 
@@ -20,12 +21,38 @@ from etcd3gw import Etcd3Client
 from riocli.configtree.util import serialize_value
 
 
+def _parse_etcd_endpoint(endpoint_str: str) -> tuple[str, int]:
+    """Parse etcd endpoint string into host and port.
+
+    Supports formats: "host", "host:port"
+    """
+    if ':' in endpoint_str:
+        host, port_str = endpoint_str.rsplit(':', 1)
+        try:
+            return host, int(port_str)
+        except ValueError:
+            return endpoint_str, 2379
+    return endpoint_str, 2379
+
+
 def import_in_etcd(
     data: dict,
-    endpoint: str,
-    port: int | None = 2379,
+    endpoint: str | None = None,
+    port: int | None = None,
     prefix: str | None = None,
 ) -> None:
+    # Use environment variable if endpoint not provided
+    if endpoint is None:
+        endpoint = os.getenv("ETCD_ENDPOINT", "localhost")
+
+    # Handle comma-separated list of endpoints (use first one for single connection)
+    if ',' in endpoint:
+        endpoint = endpoint.split(',')[0].strip()
+
+    # Parse endpoint if port is not separately provided
+    if port is None:
+        endpoint, port = _parse_etcd_endpoint(endpoint)
+
     cli = Etcd3Client(host=endpoint, port=port)
 
     try:
