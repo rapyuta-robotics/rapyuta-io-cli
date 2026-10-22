@@ -5,6 +5,13 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.11.1] - 2026-10-22
+
+### 🐛 Bug Fixes
+
+- *(security)* Refresh Certifi and AppImage CA bundles
+
+
 ## [10.11.0] - 2026-10-14
 
 ### ✨ Features
