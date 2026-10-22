@@ -39,14 +39,6 @@ from riocli.utils.spinner import with_spinner
     "--force", "-f", is_flag=True, default=False, help="Skip confirmation", type=bool
 )
 @click.option(
-    "--skip-device-ack",
-    is_flag=True,
-    default=False,
-    help="Delete without waiting for the hosting devices to confirm teardown. "
-    "Use when a device is offline. Also deletes the database's backups and "
-    "stops its restores; an offline device keeps its postgres pod.",
-)
-@click.option(
     "-a",
     "--all",
     "delete_all",
@@ -65,7 +57,6 @@ from riocli.utils.spinner import with_spinner
 @with_spinner(text="Deleting database...")
 def delete_database(
     force: bool,
-    skip_device_ack: bool,
     database_name_or_regex: str,
     delete_all: bool = False,
     workers: int = 10,
@@ -82,10 +73,6 @@ def delete_database(
         Delete without confirmation
 
             $ rio database delete orders-db --force
-
-        Delete a database whose device is offline
-
-            $ rio database delete orders-db --skip-device-ack
 
         Delete all databases in the project
 
@@ -126,7 +113,7 @@ def delete_database(
             )
 
     try:
-        f = functools.partial(_apply_delete, client, skip_device_ack)
+        f = functools.partial(_apply_delete, client)
         result = apply_func_with_result(
             f=f, items=databases, workers=workers, key=lambda x: x[0]
         )
@@ -159,11 +146,9 @@ def delete_database(
         raise SystemExit(1) from e
 
 
-def _apply_delete(
-    client: Client, skip_device_ack: bool, result: Queue, database: Database
-) -> None:
+def _apply_delete(client: Client, result: Queue, database: Database) -> None:
     try:
-        client.delete_database(name=database.metadata.name, force=skip_device_ack)
+        client.delete_database(name=database.metadata.name)
         result.put((database.metadata.name, True, "Database deleted successfully"))
     except Exception as e:
         result.put((database.metadata.name, False, str(e)))
