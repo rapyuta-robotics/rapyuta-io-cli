@@ -14,8 +14,9 @@ export TCL_LIBRARY="${APPDIR}/usr/share/tcltk/tcl8.6"
 export TK_LIBRARY="${APPDIR}/usr/share/tcltk/tk8.6"
 export TKPATH="${TK_LIBRARY}"
 
-# Export SSL certificate
+# Use the refreshed bundle for Python/OpenSSL, HTTPX and Requests.
 export SSL_CERT_FILE="${APPDIR}/opt/_internal/certs.pem"
+export REQUESTS_CA_BUNDLE="${SSL_CERT_FILE}"
 
 # Prevent .pyc writes to the read-only squashfs filesystem
 export PYTHONDONTWRITEBYTECODE=1

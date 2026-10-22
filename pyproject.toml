@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
     "argparse>=1.4.0",
+    "certifi>=2026.10.19",
     "click-completion>=0.5.2",
     "click-help-colors>=0.9.1",
     "click-repl>=0.2.0",

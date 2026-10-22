@@ -36,8 +36,15 @@ cd scripts
 ./python3.13.7-cp313-cp313-manylinux_2_28_x86_64.AppImage --appimage-extract
 
 # Bundling RIO CLI in AppImage
-./squashfs-root/AppRun -m pip install --upgrade pip
+./squashfs-root/AppRun -m pip install --upgrade 'pip>=26.2.2'
 ./squashfs-root/AppRun -m pip install rapyuta_io_cli-*.whl
+
+# Refresh the runtime's CA bundle from the patched Certifi installed with rio.
+# Some runtimes already symlink certs.pem to Certifi; others keep a separate copy.
+CERTIFI_BUNDLE=$(./squashfs-root/AppRun -I -m certifi)
+if [[ ! "$CERTIFI_BUNDLE" -ef squashfs-root/opt/_internal/certs.pem ]]; then
+    cp "$CERTIFI_BUNDLE" squashfs-root/opt/_internal/certs.pem
+fi
 
 # Force-reinstall cryptography with a manylinux_2_28 wheel so the
 # AppImage works on systems with GLIBC >= 2.28 (Ubuntu 20.04+).
