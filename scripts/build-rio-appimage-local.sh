@@ -52,9 +52,16 @@ rm -rf squashfs-root
 done_ "local-build/squashfs-root"
 
 step "Installing the rio CLI into the AppImage"
-./squashfs-root/AppRun -m pip install --quiet --upgrade pip
+./squashfs-root/AppRun -m pip install --quiet --upgrade 'pip>=26.2.2'
 ./squashfs-root/AppRun -m pip install --quiet "$WHEEL"
 done_ "rio installed"
+
+# Refresh the runtime's CA bundle from the patched Certifi installed with rio.
+# Some runtimes already symlink certs.pem to Certifi; others keep a separate copy.
+CERTIFI_BUNDLE=$(./squashfs-root/AppRun -I -m certifi)
+if [[ ! "$CERTIFI_BUNDLE" -ef squashfs-root/opt/_internal/certs.pem ]]; then
+    cp "$CERTIFI_BUNDLE" squashfs-root/opt/_internal/certs.pem
+fi
 
 # Force-reinstall cryptography with a manylinux_2_28 wheel so the AppImage
 # works on systems with GLIBC >= 2.28 (Ubuntu 20.04+). Without this, hosts
