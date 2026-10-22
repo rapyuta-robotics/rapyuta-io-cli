@@ -8,18 +8,20 @@ updates:
     schedule:
       interval: weekly
       day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
     groups:
+      python-major:
+        update-types:
+          - major
       python-minor-patch:
         update-types:
           - minor
           - patch
     ignore:
-      # Major bumps are handled manually.
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
       # Pinned with == in pyproject.toml, so ignored.
       - dependency-name: "yaspin"
       # Pinned with == in pyproject.toml, so ignored.
@@ -31,6 +33,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
     open-pull-requests-limit: 3
     commit-message:
       prefix: "ci(deps)"
