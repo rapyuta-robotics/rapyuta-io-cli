@@ -1,0 +1,44 @@
+version: 2
+
+updates:
+  # Python dependencies (pyproject.toml + uv.lock)
+  - package-ecosystem: uv
+    directory: /
+    target-branch: devel
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      python-major:
+        update-types:
+          - major
+      python-minor-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Pinned with == in pyproject.toml, so ignored.
+      - dependency-name: "yaspin"
+      # Pinned with == in pyproject.toml, so ignored.
+      - dependency-name: "python-benedict"
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: devel
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions:
+        patterns:
+          - "*"
