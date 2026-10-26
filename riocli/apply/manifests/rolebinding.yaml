@@ -14,3 +14,10 @@ spec:
   domain:
     kind: Project # Options: [Organization, Project, UserGroup
     name: project01
+  # Optional access window (RFC 3339 with an offset). With notAfter the
+  # binding is time-bound and is removed after it ends; notBefore defaults to
+  # the time of creation. Re-applying with the same notBefore and a new
+  # notAfter replaces the window. Not supported for UserGroup subjects or
+  # domains.
+  # notBefore: "2026-10-27T09:00:00+09:00"
+  # notAfter: "2026-10-27T17:00:00+09:00"
