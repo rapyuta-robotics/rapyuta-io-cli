@@ -19,7 +19,8 @@ from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors
-from riocli.utils import tabulate_data
+from riocli.role import window
+from riocli.utils import inspect_with_format, tabulate_data
 
 
 @click.command(
@@ -82,13 +83,31 @@ def list_roles(ctx: click.Context, labels: list[str] | None = None):
     default=(),
     help="Filter the rolebindings list by labels",
 )
+@click.option(
+    "--format",
+    "-f",
+    "format_type",
+    type=click.Choice(["json", "yaml"]),
+    default=None,
+    help="Print the bindings as JSON or YAML, with windows in UTC",
+)
 @click.pass_context
-def list_role_bindings(ctx: click.Context, labels: list[str] | None = None):
+def list_role_bindings(
+    ctx: click.Context,
+    labels: list[str] | None = None,
+    format_type: str | None = None,
+):
     """List all the rolebindings in current organization.
+
+    Time-bound bindings show their window in local time and their status:
+    how long until they start, how long is left, or "ended" until they are
+    removed. Permanent bindings leave these columns empty.
 
     Usage:
 
         $ rio role list-bindings
+
+        $ rio role list-bindings --format json
     """
     try:
         config = get_config_from_context(ctx)
@@ -96,10 +115,21 @@ def list_role_bindings(ctx: click.Context, labels: list[str] | None = None):
         role_bindings = []
         for items in walk_pages(client.list_role_bindings, label_selector=labels):
             role_bindings.extend(items)
-        _display_rolebindings_list(role_bindings)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)
+
+    if format_type:
+        inspect_with_format(
+            [
+                r.model_dump(mode="json", by_alias=True, exclude_none=True)
+                for r in role_bindings
+            ],
+            format_type,
+        )
+        return
+
+    _display_rolebindings_list(role_bindings)
 
 
 def _display_role_list(
@@ -124,12 +154,20 @@ def _display_role_list(
 
 
 def _display_rolebindings_list(rolebindings: list[Munch], show_header: bool = True):
-    headers = ["Role", "Domain", "Subject"] if show_header else []
+    headers = (
+        ["Role", "Domain", "Subject", "Not Before", "Not After", "Status"]
+        if show_header
+        else []
+    )
+    now = window.utcnow()
     data = [
         [
             r.spec.role_ref.name,
             _format_domain(r.spec.domain),
             _format_subject(r.spec.subject),
+            window.format_time(r.spec.not_before) if r.spec.not_before else "",
+            window.format_time(r.spec.not_after) if r.spec.not_after else "",
+            window.window_status(r.spec.not_before, r.spec.not_after, now),
         ]
         for r in rolebindings
     ]

@@ -15,6 +15,7 @@ import click
 
 from riocli.role.bind import bind
 from riocli.role.delete import delete_role
+from riocli.role.extend import extend
 from riocli.role.inspect_role import inspect_role
 from riocli.role.list import list_role_bindings, list_roles
 from riocli.role.unbind import unbind
@@ -37,4 +38,5 @@ role.add_command(list_role_bindings)
 role.add_command(inspect_role)
 role.add_command(bind)
 role.add_command(unbind)
+role.add_command(extend)
 role.add_command(delete_role)
