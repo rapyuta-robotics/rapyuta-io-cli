@@ -14,13 +14,18 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from munch import Munch
-from rapyuta_io_sdk_v2 import Client
 from yaspin.api import Yaspin
 
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
+from riocli.role.select import (
+    AmbiguousBindingError,
+    display_candidates,
+    find_bindings,
+    select_binding,
+)
 from riocli.role.util import get_domain, get_subject
+from riocli.role.window import parse_time
 from riocli.utils.spinner import with_spinner
 
 
@@ -33,6 +38,18 @@ from riocli.utils.spinner import with_spinner
 @click.argument("role", type=str)
 @click.argument("domain", type=str)
 @click.argument("subject", type=str)
+@click.option(
+    "--not-after",
+    type=str,
+    default=None,
+    help="Remove the time-bound binding that ends at this time (ISO 8601).",
+)
+@click.option(
+    "--permanent",
+    is_flag=True,
+    default=False,
+    help="Remove the permanent binding.",
+)
 @click.pass_context
 @with_spinner(text="Unbinding...")
 def unbind(
@@ -40,6 +57,8 @@ def unbind(
     role: str,
     domain: str,
     subject: str,
+    not_after: str | None = None,
+    permanent: bool = False,
     spinner: Yaspin | None = None,
 ) -> None:
     """Unbind a role from the Subject.
@@ -66,23 +85,33 @@ def unbind(
     Examples: Project:site-01, "Organization:Product JP Staging",
     "UserGroup:roboops".
 
+    A Subject can hold a permanent binding and several time-bound bindings
+    of the same Role in the same domain. When more than one matches, the
+    command lists them and removes nothing; select one with --not-after
+    (its end, as shown by 'rio role list-bindings') or --permanent.
+
     Usage Examples:
 
         $ rio role unbind project_admin Project:site-01 User:user@rapyuta.io
 
+        \b
+        $ rio role unbind project_admin Project:site-01 User:user@rapyuta.io \\
+        --not-after 2026-10-27T17:00:00+09:00
+
     """
     assert spinner is not None
+
+    if not_after and permanent:
+        raise click.UsageError("use either --not-after or --permanent, not both")
+
+    end = parse_time(not_after) if not_after else None
 
     try:
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
 
-        domain_kind, domain_name = get_domain(domain)
-        subject_kind, subject_name = get_subject(subject)
-
-        binding = _find_role_binding(
-            client, role, subject_kind, subject_name, domain_kind, domain_name
-        )
+        candidates = find_bindings(client, role, get_subject(subject), get_domain(domain))
+        binding = select_binding(candidates, not_after=end, permanent=permanent)
         if binding is None:
             spinner.text = click.style("Binding does not exist.", fg=Colors.YELLOW)
             spinner.green.ok(Symbols.INFO)
@@ -93,29 +122,16 @@ def unbind(
         _ = client.update_role_binding(payload)
         spinner.text = click.style("Binding deleted successfully.", fg=Colors.GREEN)
         spinner.green.ok(Symbols.SUCCESS)
-    except Exception as e:
-        spinner.text = click.style(f"Failed to delete binding: {e}.", fg=Colors.GREEN)
-        spinner.green.ok(Symbols.ERROR)
+    except AmbiguousBindingError as e:
+        with spinner.hidden():
+            display_candidates(e.candidates)
+        spinner.text = click.style(
+            "More than one binding matches; select one with --not-after or --permanent.",
+            fg=Colors.RED,
+        )
+        spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
-
-
-def _find_role_binding(
-    client: Client,
-    role: str,
-    subject_kind: str,
-    subject_name: str,
-    domain_kind: str,
-    domain_name: str,
-) -> Munch | None:
-    role_bindings = client.list_role_bindings(
-        role_names=role,
-        subject_names=subject_name,
-        subject_kinds=subject_kind,
-        domain_names=domain_name,
-        domain_kinds=domain_kind,
-    )
-
-    if len(role_bindings.items) == 0:
-        return
-
-    return role_bindings.items[0]
+    except Exception as e:
+        spinner.text = click.style(f"Failed to delete binding: {e}.", fg=Colors.RED)
+        spinner.red.fail(Symbols.ERROR)
+        raise SystemExit(1)
