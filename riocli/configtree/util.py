@@ -289,10 +289,11 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
+        file_data = _materialize_secret_refs(file_data)
         if not isinstance(file_data, dict):
             continue
         file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
-        final_data = benedict(_materialize_secret_refs(file_data))
+        final_data = benedict(file_data)
         if file_format == "yaml":
             final_data.to_yaml(filepath=file_path)
         elif file_format == "json":

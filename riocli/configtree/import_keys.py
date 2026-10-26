@@ -179,6 +179,13 @@ def import_keys(
 
     if etcd_endpoint:
         try:
+            secret_ref_keys = [k for k, v in data.items() if isinstance(v, SecretRef)]
+            if secret_ref_keys:
+                raise ValueError(
+                    "secret-ref keys are not supported when importing to etcd: "
+                    f"{', '.join(secret_ref_keys)}"
+                )
+
             import_in_etcd(
                 data=data, endpoint=etcd_endpoint, port=etcd_port, prefix=etcd_prefix
             )
