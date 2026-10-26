@@ -22,7 +22,7 @@ from yaspin.core import Yaspin
 from riocli.config import new_v2_client
 from riocli.configtree.etcd import import_in_etcd
 from riocli.configtree.revision import Revision
-from riocli.configtree.util import Metadata, export_to_files
+from riocli.configtree.util import Metadata, SecretRef, export_to_files, parse_secret_ref
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
 
@@ -211,7 +211,16 @@ def import_keys(
                 if isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
 
-                rev.store(key=key, value=value, perms=644, metadata=key_metadata)
+                if isinstance(value, SecretRef):
+                    rev.store_secret_ref(
+                        key=key,
+                        secret_name=value.secret_name,
+                        secret_key=value.secret_key,
+                        metadata=key_metadata,
+                    )
+                else:
+                    rev.store(key=key, value=value, perms=644, metadata=key_metadata)
+
                 spinner.write(
                     click.style(
                         f"\t{Symbols.SUCCESS} Key {key} added.",
@@ -256,6 +265,14 @@ def split_metadata(data: Iterable) -> (Iterable, Iterable):
     for key, value in data.items():
         if not isinstance(value, dict):
             content[key] = value
+            continue
+
+        secret_ref = parse_secret_ref(value)
+        if secret_ref is not None:
+            content[key] = secret_ref
+            secret_ref_meta = value.get("metadata")
+            if isinstance(secret_ref_meta, dict):
+                metadata[key] = Metadata(secret_ref_meta)
             continue
 
         potential_content = value.get("value")
