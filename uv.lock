@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1727,7 +1727,7 @@ requires-dist = [
     { name = "pytz" },
     { name = "pyyaml", specifier = ">=5.4.1" },
     { name = "rapyuta-io", specifier = ">=3.1.0" },
-    { name = "rapyuta-io-sdk-v2", specifier = ">=0.10.0" },
+    { name = "rapyuta-io-sdk-v2", git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Ftimebound-role-bindings" },
     { name = "requests", specifier = ">=2.20.0" },
     { name = "semver", specifier = ">=3.0.0" },
     { name = "setuptools" },
@@ -1755,16 +1755,12 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.10.0"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Ftimebound-role-bindings#ec66bf79967227594bc152ebd62efdad80269f6e" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
     { name = "python-benedict" },
     { name = "pyyaml" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/02/8b/f7843927f56b6851d38121263b77ae3d71c76842cd6b38931ef4f983a780/rapyuta_io_sdk_v2-0.10.0.tar.gz", hash = "sha256:5d65ba55194c81d5e8b0c0beb700e3da2d27532657291e214cbb4dca4dde90e1", size = 188578, upload-time = "2026-10-14T14:56:48.422Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e3/b3/88ce6d8c096e4ad1b8a540a196e54f83b796be04b2e77b8f3b81568e30d9/rapyuta_io_sdk_v2-0.10.0-py3-none-any.whl", hash = "sha256:9eb5f1baf2c6f0e1c8c2390c547e5af63db000eb675fbb511220d768b60f2992", size = 61745, upload-time = "2026-10-14T14:56:46.603Z" },
 ]
 
 [[package]]
