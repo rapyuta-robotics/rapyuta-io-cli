@@ -48,7 +48,7 @@ from riocli.utils.spinner import with_spinner
     "--permanent",
     is_flag=True,
     default=False,
-    help="Remove the permanent binding.",
+    help="Remove the permanent binding, when ended windows awaiting cleanup also match.",
 )
 @click.pass_context
 @with_spinner(text="Unbinding...")
@@ -85,10 +85,11 @@ def unbind(
     Examples: Project:site-01, "Organization:Product JP Staging",
     "UserGroup:roboops".
 
-    A Subject can hold a permanent binding and several time-bound bindings
-    of the same Role in the same domain. When more than one matches, the
-    command lists them and removes nothing; select one with --not-after
-    (its end, as shown by 'rio role list-bindings') or --permanent.
+    A Subject can hold several time-bound bindings of the same Role in the
+    same domain, and a permanent one beside windows that have ended but not
+    been cleaned up yet. When more than one matches, the command lists them
+    and removes nothing; select one with --not-after (its end, as shown by
+    'rio role list-bindings') or --permanent.
 
     Usage Examples:
 

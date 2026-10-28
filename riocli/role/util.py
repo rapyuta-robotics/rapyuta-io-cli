@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
+from datetime import datetime
 
 from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2.utils import walk_pages
@@ -57,9 +58,40 @@ def get_subject(input: str) -> tuple[str, str]:
     if len(splits) < 2:
         raise Exception(f"subject {input} is invalid")
 
-    domain_kind = splits[0].lower()
+    subject_kind = splits[0].lower()
 
-    if domain_kind not in ("user", "usergroup", "serviceaccount"):
-        raise Exception(f"subject kind {domain_kind} is invalid")
+    if subject_kind not in ("user", "usergroup", "serviceaccount"):
+        raise Exception(f"subject kind {subject_kind} is invalid")
+
+    # The server stores user emails in lower case.
+    if subject_kind == "user":
+        return splits[0], splits[1].lower()
 
     return splits[0], splits[1]
+
+
+def binding_body(
+    organization_guid: str,
+    role: str,
+    domain: tuple[str, str],
+    subject: tuple[str, str],
+    not_before: datetime | None = None,
+    not_after: datetime | None = None,
+    labels: dict | None = None,
+) -> dict:
+    """The role binding request item for one binding, with its window if any."""
+    spec = {
+        "roleRef": {"name": role},
+        "domain": {"kind": domain[0], "name": domain[1]},
+        "subject": {"kind": subject[0], "name": subject[1]},
+    }
+    if not_before is not None:
+        spec["notBefore"] = not_before.isoformat()
+    if not_after is not None:
+        spec["notAfter"] = not_after.isoformat()
+
+    metadata: dict = {"organizationGUID": organization_guid}
+    if labels:
+        metadata["labels"] = labels
+
+    return {"metadata": metadata, "spec": spec}

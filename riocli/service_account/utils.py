@@ -17,6 +17,8 @@ from datetime import datetime, timedelta, timezone
 import click
 import parsedatetime as pdt
 
+from riocli.utils.time import format_duration
+
 
 def parse_human_readable_time_to_iso(time_str: str | None) -> str | None:
     """
@@ -101,20 +103,4 @@ def calculate_time_remaining(expiry_datetime: datetime) -> str:
     if expiry_datetime <= now:
         return "Expired"
 
-    time_diff = expiry_datetime - now
-    days = time_diff.days
-    hours, remainder = divmod(time_diff.seconds, 3600)
-    minutes, _ = divmod(remainder, 60)
-
-    parts = []
-    if days > 0:
-        parts.append(f"{days} day{'s' if days != 1 else ''}")
-    if hours > 0:
-        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
-    if minutes > 0:
-        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
-
-    if not parts:
-        return "Less than 1 minute"
-
-    return ", ".join(parts)
+    return format_duration(expiry_datetime - now)

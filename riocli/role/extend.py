@@ -14,7 +14,6 @@
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io_sdk_v2 import BulkRoleBindingUpdate
 from yaspin.api import Yaspin
 
 from riocli.config import get_config_from_context
@@ -26,7 +25,7 @@ from riocli.role.select import (
     find_bindings,
     select_binding,
 )
-from riocli.role.util import get_domain, get_subject
+from riocli.role.util import binding_body, get_domain, get_subject
 from riocli.utils.spinner import with_spinner
 
 
@@ -50,7 +49,7 @@ from riocli.utils.spinner import with_spinner
     "duration",
     type=str,
     default=None,
-    help="New length of the access window from now, for example 8h or 30m.",
+    help="New end as a duration from now, not from the window's start, for example 8h or 30m.",
 )
 @click.option(
     "--current-not-after",
@@ -75,6 +74,9 @@ def extend(
     The binding is replaced in one request by a binding with the same Role,
     Subject, domain and start, and the new end. The end can be earlier or
     later than the current one. Use 'rio role unbind' to end access now.
+
+    --for counts from now, not from the window's start, so for a window that
+    hasn't started it can end before the start; use --not-after there.
 
     Subject and Domain take the same form as in 'rio role bind'. When the
     Subject holds more than one time-bound binding of the Role in the domain,
@@ -123,24 +125,17 @@ def extend(
             raise SystemExit(1)
 
         spec = current.spec
-        new_spec = {
-            "roleRef": {"name": spec.role_ref.name},
-            "subject": {"kind": spec.subject.kind, "name": spec.subject.name},
-            "domain": {"kind": spec.domain.kind, "name": spec.domain.name},
-            "notAfter": end.isoformat(),
-        }
-        if spec.not_before is not None:
-            new_spec["notBefore"] = spec.not_before.isoformat()
-
-        metadata = {"organizationGUID": config.organization_guid}
-        if current.metadata.labels:
-            metadata["labels"] = current.metadata.labels
-
+        new = binding_body(
+            config.organization_guid,
+            spec.role_ref.name,
+            (spec.domain.kind, spec.domain.name),
+            (spec.subject.kind, spec.subject.name),
+            not_before=spec.not_before,
+            not_after=end,
+            labels=current.metadata.labels,
+        )
         result = client.update_role_binding(
-            {
-                "oldBindings": [current],
-                "newBindings": [{"metadata": metadata, "spec": new_spec}],
-            }
+            {"oldBindings": [current], "newBindings": [new]}
         )
     except AmbiguousBindingError as e:
         with spinner.hidden():
@@ -159,7 +154,7 @@ def extend(
 
     # Show the window as the server stored it.
     start = spec.not_before
-    if isinstance(result, BulkRoleBindingUpdate) and result.new_bindings:
+    if result.new_bindings:
         created = result.new_bindings[0].spec
         start, end = created.not_before, created.not_after or end
 

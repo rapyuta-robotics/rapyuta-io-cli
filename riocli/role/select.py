@@ -13,8 +13,10 @@
 # limitations under the License.
 """Selecting one role binding among those of the same role, subject and domain.
 
-A permanent binding and any number of time-bound ones may coexist, so commands
-that act on one binding must pick it explicitly when several match.
+A subject can hold several time-bound bindings of a role in a domain. The
+server rejects a permanent binding beside an active window, but one can sit
+beside an ended window until cleanup removes it. Commands that act on one
+binding pick it explicitly when several match.
 """
 
 from datetime import datetime
@@ -22,7 +24,7 @@ from datetime import datetime
 from rapyuta_io_sdk_v2 import Client, RoleBinding
 from rapyuta_io_sdk_v2.utils import walk_pages
 
-from riocli.role.window import format_time
+from riocli.role.window import format_time, same_time
 from riocli.utils import tabulate_data
 
 
@@ -81,8 +83,7 @@ def select_binding(
         candidates = [
             b
             for b in candidates
-            if b.spec.not_after is not None
-            and _to_second(b.spec.not_after) == _to_second(not_after)
+            if b.spec.not_after is not None and same_time(b.spec.not_after, not_after)
         ]
 
     if not candidates:
@@ -106,7 +107,3 @@ def display_candidates(candidates: list[RoleBinding]) -> None:
         for b in candidates
     ]
     tabulate_data(data, ["Role", "Domain", "Subject", "Not Before", "Not After"])
-
-
-def _to_second(t: datetime) -> datetime:
-    return t.replace(microsecond=0)

@@ -60,10 +60,10 @@ def test_table_shows_window_and_status(runner, listed):
     assert len(lines) == 4
     assert lines[0].rstrip().endswith("User:engineer@example.com")
     assert "2026-10-26T11:10:00+09:00" in lines[1]
-    assert lines[1].rstrip().endswith("2h 10m left")
+    assert lines[1].rstrip().endswith("2 hours, 10 minutes left")
     assert "2026-10-26T09:30:00+09:00" in lines[2]
-    assert lines[2].rstrip().endswith("starts in 30m")
-    assert lines[3].rstrip().endswith("ended")
+    assert lines[2].rstrip().endswith("starts in 30 minutes")
+    assert lines[3].rstrip().endswith("Expired")
 
 
 @pytest.mark.parametrize("fmt, load", [("json", json.loads), ("yaml", yaml.safe_load)])

@@ -114,25 +114,28 @@ class TestWindowStatus:
     def test_active(self):
         end = NOW + timedelta(hours=2, minutes=10, seconds=59)
 
-        assert window_status(None, end, NOW) == "2h 10m left"
+        assert window_status(None, end, NOW) == "2 hours, 10 minutes left"
 
     def test_active_with_start_in_past(self):
         start = NOW - timedelta(hours=1)
         end = NOW + timedelta(minutes=45)
 
-        assert window_status(start, end, NOW) == "45m left"
+        assert window_status(start, end, NOW) == "45 minutes left"
 
     def test_not_started(self):
         start = NOW + timedelta(days=1, hours=3)
         end = start + timedelta(hours=8)
 
-        assert window_status(start, end, NOW) == "starts in 1d 3h"
+        assert window_status(start, end, NOW) == "starts in 1 day, 3 hours"
 
     def test_ended(self):
-        assert window_status(None, NOW, NOW) == "ended"
+        assert window_status(None, NOW, NOW) == "Expired"
 
     def test_less_than_a_minute(self):
-        assert window_status(None, NOW + timedelta(seconds=30), NOW) == "0m left"
+        assert (
+            window_status(None, NOW + timedelta(seconds=30), NOW)
+            == "Less than 1 minute left"
+        )
 
 
 class TestFormat:

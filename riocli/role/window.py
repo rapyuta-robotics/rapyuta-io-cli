@@ -19,6 +19,8 @@ from datetime import datetime, timedelta, timezone
 import click
 from dateutil.parser import isoparse
 
+from riocli.utils.time import format_duration
+
 _DURATION = re.compile(r"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?$")
 
 
@@ -46,7 +48,12 @@ def parse_time(value: str) -> datetime:
 
 
 def parse_duration(value: str) -> timedelta:
-    """Parse a duration such as 8h, 90m, 1d or 2h30m."""
+    """Parse a duration such as 8h, 90m, 1d or 2h30m.
+
+    This is not the grammar of 'rio service-account token create --expiry'
+    ('3 days', 'in 2 hours'): that parser drops time zone offsets, which
+    --not-before and --not-after must keep.
+    """
     match = _DURATION.match(value)
     if not value or match is None:
         raise click.UsageError(
@@ -93,7 +100,10 @@ def resolve_window(
 def window_status(
     not_before: datetime | None, not_after: datetime | None, now: datetime
 ) -> str:
-    """Return 'starts in …', '… left', 'ended', or '' for a permanent binding."""
+    """Return 'starts in …', '… left', 'Expired', or '' for a permanent binding.
+
+    Durations use the same wording as 'rio service-account token list'.
+    """
     if not_after is None:
         return ""
 
@@ -103,18 +113,15 @@ def window_status(
     if now < not_after:
         return f"{format_duration(not_after - now)} left"
 
-    return "ended"
+    return "Expired"
 
 
-def format_duration(d: timedelta) -> str:
-    """Format a duration rounded down to minutes: '1d 3h', '2h 10m', '45m'."""
-    minutes = int(d.total_seconds()) // 60
-    days, minutes = divmod(minutes, 24 * 60)
-    hours, minutes = divmod(minutes, 60)
+def same_time(a: datetime | None, b: datetime | None) -> bool:
+    """Whether two optional times are equal to the second; both None counts as equal."""
+    if a is None or b is None:
+        return a is b
 
-    parts = [f"{n}{unit}" for n, unit in ((days, "d"), (hours, "h"), (minutes, "m")) if n]
-
-    return " ".join(parts) or "0m"
+    return a.replace(microsecond=0) == b.replace(microsecond=0)
 
 
 def format_time(t: datetime) -> str:

@@ -48,6 +48,16 @@ def manifest(not_before=None, not_after=None) -> dict:
     }
 
 
+@pytest.fixture(autouse=True)
+def clock():
+    # Before START and END, so the manifests' windows haven't ended.
+    with patch(
+        "riocli.role.model.utcnow",
+        return_value=datetime(2026, 10, 25, 0, 0, tzinfo=timezone.utc),
+    ) as mock:
+        yield mock
+
+
 @pytest.fixture
 def existing():
     with patch("riocli.role.model.find_bindings", return_value=[]) as mock:
@@ -117,6 +127,28 @@ class TestApply:
         ]
 
         assert apply(RoleBinding(manifest(START, END)), client) == ApplyResult.EXISTS
+
+    def test_kind_conflict_is_not_sent_twice(self, existing):
+        # A permanent binding exists; the server rejects the window with 409.
+        existing.return_value = [make_binding("rb-perm")]
+        client = MagicMock()
+        client.update_role_binding.side_effect = HttpAlreadyExistsError(
+            "a permanent and a time-bound binding ... conflict with existing binding rb-perm"
+        )
+
+        with pytest.raises(HttpAlreadyExistsError, match="rb-perm"):
+            apply(RoleBinding(manifest(START, END)), client)
+
+        assert client.update_role_binding.call_count == 1
+
+    def test_ended_window_is_skipped(self, existing, clock):
+        clock.return_value = datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)
+        client = MagicMock()
+
+        assert apply(RoleBinding(manifest(START, END)), client) == ApplyResult.EXPIRED
+
+        client.update_role_binding.assert_not_called()
+        existing.assert_not_called()
 
     def test_same_start_is_replaced(self, existing):
         existing.return_value = [

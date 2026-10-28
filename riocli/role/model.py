@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 
 from munch import Munch
 from rapyuta_io_sdk_v2 import Client
@@ -21,9 +20,10 @@ from rapyuta_io_sdk_v2 import RoleBinding as RoleBindingModel
 from rapyuta_io_sdk_v2.exceptions import HttpAlreadyExistsError, HttpNotFoundError
 from typing_extensions import override
 
+from riocli.constants import ApplyResult
 from riocli.model import Model
 from riocli.role.select import find_bindings
-from riocli.role.window import format_time
+from riocli.role.window import format_time, same_time, utcnow
 
 _CREATE = "create"
 _EXISTS = "exists"
@@ -68,13 +68,29 @@ class RoleBinding(Model):
         self._obj = RoleBindingModel.model_validate(self)
 
     @override
+    def apply(self, *args, **kwargs) -> ApplyResult:
+        # A window that has ended can't be created again, so a manifest kept
+        # in git is skipped instead of failing every apply after its end.
+        end = self._obj.spec.not_after
+        if end is not None and end <= utcnow():
+            return ApplyResult.EXPIRED
+
+        return super().apply(*args, **kwargs)
+
+    @override
     def create_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
         action, _ = self._plan(v2_client)
         if action != _CREATE:
             # Model.apply continues with update_object.
             raise HttpAlreadyExistsError("role binding already exists")
 
-        return v2_client.update_role_binding(self._bulk())  # pyright:ignore[reportReturnType]
+        try:
+            return v2_client.update_role_binding(self._bulk())  # pyright:ignore[reportReturnType]
+        except HttpAlreadyExistsError as e:
+            # Model.apply retries through update_object; keep the server's
+            # reason in case the conflict is with a binding of the other kind.
+            self._create_conflict = e
+            raise
 
     @override
     def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
@@ -83,6 +99,12 @@ class RoleBinding(Model):
             # Model.apply reports this as "already exists".
             raise NotImplementedError
 
+        conflict = getattr(self, "_create_conflict", None)
+        if action == _CREATE and conflict is not None:
+            # Still nothing to replace, so the create's 409 wasn't a race with
+            # the same binding; sending it again would get the same 409.
+            raise conflict
+
         old = [current] if action == _REPLACE else []
         return v2_client.update_role_binding(self._bulk(old))  # pyright:ignore[reportReturnType]
 
@@ -90,7 +112,7 @@ class RoleBinding(Model):
     def delete_object(self, v2_client: Client, *args, **kwargs) -> None:
         spec = self._obj.spec
         for b in self._find(v2_client):
-            if _same_time(b.spec.not_before, spec.not_before) and _same_time(
+            if same_time(b.spec.not_before, spec.not_before) and same_time(
                 b.spec.not_after, spec.not_after
             ):
                 _ = v2_client.update_role_binding({"oldBindings": [b], "newBindings": []})
@@ -127,9 +149,9 @@ class RoleBinding(Model):
             b
             for b in candidates
             if b.spec.not_after is not None
-            and _same_time(b.spec.not_before, spec.not_before)
+            and same_time(b.spec.not_before, spec.not_before)
         ]
-        if any(_same_time(b.spec.not_after, spec.not_after) for b in same_start):
+        if any(same_time(b.spec.not_after, spec.not_after) for b in same_start):
             return _EXISTS, None
 
         if len(same_start) > 1:
@@ -147,10 +169,3 @@ class RoleBinding(Model):
             return _REPLACE, same_start[0]
 
         return _CREATE, None
-
-
-def _same_time(a: datetime | None, b: datetime | None) -> bool:
-    if a is None or b is None:
-        return a is b
-
-    return a.replace(microsecond=0) == b.replace(microsecond=0)
