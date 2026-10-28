@@ -5,6 +5,13 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.12.0] - 2026-10-28
+
+### ✨ Features
+
+- Database parent cli (#564)
+
+
 ## [10.11.1] - 2026-10-22
 
 ### 🐛 Bug Fixes
