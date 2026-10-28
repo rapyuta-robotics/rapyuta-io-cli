@@ -87,7 +87,7 @@ def list_roles(ctx: click.Context, labels: list[str] | None = None):
     "--format",
     "-f",
     "format_type",
-    type=click.Choice(["json", "yaml"]),
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
     default=None,
     help="Print the bindings as JSON or YAML, with windows in UTC",
 )

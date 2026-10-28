@@ -34,3 +34,4 @@ class ApplyResult(str, Enum):
     CREATED = "Created"
     UPDATED = "Updated"
     EXISTS = "Exists"
+    EXPIRED = "Expired"

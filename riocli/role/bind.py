@@ -20,7 +20,7 @@ from yaspin.api import Yaspin
 from riocli.config import get_config_from_context
 from riocli.constants import Colors, Symbols
 from riocli.role import window
-from riocli.role.util import get_domain, get_subject
+from riocli.role.util import binding_body, get_domain, get_subject
 from riocli.utils.spinner import with_spinner
 
 
@@ -120,39 +120,15 @@ def bind(
         config = get_config_from_context(ctx)
         client = config.new_v2_client(with_project=False)
 
-        domain_kind, domain_name = get_domain(domain)
-        subject_kind, subject_name = get_subject(subject)
-
-        binding = {
-            "newBindings": [
-                {
-                    "metadata": {
-                        "organizationGUID": config.organization_guid,
-                    },
-                    "spec": {
-                        "roleRef": {
-                            "name": role,
-                        },
-                        "domain": {
-                            "kind": domain_kind,
-                            "name": domain_name,
-                        },
-                        "subject": {
-                            "kind": subject_kind,
-                            "name": subject_name,
-                        },
-                    },
-                }
-            ],
-            "oldBindings": [],
-        }
-        spec = binding["newBindings"][0]["spec"]
-        if start is not None:
-            spec["notBefore"] = start.isoformat()
-        if end is not None:
-            spec["notAfter"] = end.isoformat()
-
-        result = client.update_role_binding(binding)
+        new = binding_body(
+            config.organization_guid,
+            role,
+            get_domain(domain),
+            get_subject(subject),
+            not_before=start,
+            not_after=end,
+        )
+        result = client.update_role_binding({"newBindings": [new], "oldBindings": []})
     except Exception as e:
         spinner.text = click.style(f"Failed to create binding: {e}.", fg=Colors.RED)
         spinner.red.fail(Symbols.ERROR)
@@ -176,11 +152,8 @@ def bind(
     spinner.green.ok(Symbols.SUCCESS)
 
 
-def _created_binding(result):
-    if isinstance(result, BulkRoleBindingUpdate) and result.new_bindings:
-        return result.new_bindings[0]
-
-    return None
+def _created_binding(result: BulkRoleBindingUpdate):
+    return result.new_bindings[0] if result.new_bindings else None
 
 
 def _remove_unbounded(client: Client, created, label: str, spinner: Yaspin) -> None:

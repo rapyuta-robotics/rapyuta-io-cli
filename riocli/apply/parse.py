@@ -206,6 +206,14 @@ class Applier:
                 )
                 return
 
+            if result == ApplyResult.EXPIRED:
+                message_with_prompt(
+                    f"{Symbols.INFO} {obj_key} expired, skipped",
+                    fg=Colors.WHITE,
+                    spinner=spinner,
+                )
+                return
+
             message_with_prompt(
                 f"{Symbols.SUCCESS} {result} {obj_key}",
                 fg=Colors.GREEN,

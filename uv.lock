@@ -1755,7 +1755,7 @@ dev = [
 [[package]]
 name = "rapyuta-io-sdk-v2"
 version = "0.10.0"
-source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Ftimebound-role-bindings#ec66bf79967227594bc152ebd62efdad80269f6e" }
+source = { git = "https://github.com/rapyuta-robotics/rapyuta-io-sdk-v2?rev=feat%2Ftimebound-role-bindings#d39278bd3fe12d5f2c6cd433b5220f1fe0c80a9f" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic-settings" },
