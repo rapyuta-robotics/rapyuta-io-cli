@@ -126,7 +126,7 @@ def display_config_trees(trees: Iterable, show_header: bool = True) -> None:
 def display_config_tree_keys(keys: dict, show_header: bool = True) -> None:
     headers = []
     if show_header:
-        headers = ["Key", "Metadata", "Checksum"]
+        headers = ["Key", "Metadata", "Checksum", "Secret Ref"]
 
     data = []
     for key, val in keys.items():
@@ -134,7 +134,11 @@ def display_config_tree_keys(keys: dict, show_header: bool = True) -> None:
         if isinstance(metadata, Munch):
             metadata = unmunchify(metadata)
 
-        data.append([key, metadata, val.get("checksum")])
+        secret_ref = val.get("valueFrom", None)
+        if isinstance(secret_ref, Munch):
+            secret_ref = unmunchify(secret_ref)
+
+        data.append([key, metadata, val.get("checksum"), secret_ref])
 
     tabulate_data(data, headers=headers)
 
@@ -198,6 +202,68 @@ class Metadata:
         return self.data
 
 
+class SecretRef:
+    """A key whose value resolves from a Secret instead of carrying literal data.
+
+    Kept as a non-dict wrapper, like Metadata, so that benedict's flatten/
+    unflatten does not recurse into its fields.
+    """
+
+    def __init__(self: SecretRef, secret_name: str, secret_key: str):
+        self.secret_name = secret_name
+        self.secret_key = secret_key
+
+    def to_dict(self: SecretRef) -> dict:
+        return {
+            "valueFrom": {
+                "secretKeyRef": {
+                    "name": self.secret_name,
+                    "key": self.secret_key,
+                }
+            }
+        }
+
+
+def parse_secret_ref(value: Any) -> SecretRef | None:
+    """Recognize a ``{"valueFrom": {"secretKeyRef": {...}}}`` wrapper shape.
+
+    An optional sibling "metadata" key is allowed alongside "valueFrom";
+    anything else disqualifies the match so that unrelated content shaped
+    like this isn't misread as a secret reference.
+    """
+    if not isinstance(value, dict) or "valueFrom" not in value:
+        return None
+
+    if not set(value.keys()) <= {"valueFrom", "metadata"}:
+        return None
+
+    value_from = value.get("valueFrom")
+    if not isinstance(value_from, dict):
+        return None
+
+    secret_key_ref = value_from.get("secretKeyRef")
+    if not isinstance(secret_key_ref, dict):
+        return None
+
+    secret_name = secret_key_ref.get("name")
+    secret_key = secret_key_ref.get("key")
+    if not secret_name or not secret_key:
+        return None
+
+    return SecretRef(secret_name=secret_name, secret_key=secret_key)
+
+
+def _materialize_secret_refs(value: Any) -> Any:
+    """Recursively convert SecretRef leaves back to plain dicts for serialization."""
+    if isinstance(value, SecretRef):
+        return value.to_dict()
+    if isinstance(value, dict):
+        return {k: _materialize_secret_refs(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_materialize_secret_refs(v) for v in value]
+    return value
+
+
 def serialize_value(value: Any) -> str:
     """Serialize a key's value to a string for storage.
 
@@ -223,6 +289,7 @@ def export_to_files(base_dir: str, data: dict, file_format: str = "yaml") -> Non
     base_dir = os.path.abspath(base_dir)
 
     for file_name, file_data in data.items():
+        file_data = _materialize_secret_refs(file_data)
         if not isinstance(file_data, dict):
             continue
         file_path = os.path.join(base_dir, f"{file_name}.{file_format}")
@@ -306,6 +373,16 @@ def combine_metadata(keys: dict) -> dict:
     result = {}
 
     for key, val in keys.items():
+        value_from = val.get("valueFrom", None)
+        if value_from is not None:
+            entry = {"valueFrom": value_from}
+            metadata = val.get("metadata", None)
+            if metadata:
+                entry["metadata"] = metadata
+
+            result[key] = entry
+            continue
+
         data = val.get("data", None)
         if data is not None:
             data = b64decode(data).decode("utf-8")

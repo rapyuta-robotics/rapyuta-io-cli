@@ -24,6 +24,7 @@ from riocli.configtree.import_keys import split_metadata
 from riocli.configtree.revision import Revision
 from riocli.configtree.util import (
     Metadata,
+    SecretRef,
     combine_metadata,
     fetch_last_milestone_keys,
     fetch_ref_keys,
@@ -155,7 +156,15 @@ def merge_revisions(
                 if key_metadata is not None and isinstance(key_metadata, Metadata):
                     key_metadata = key_metadata.get_dict()
 
-                rev.store(key=key, value=value, perms=644, metadata=key_metadata)
+                if isinstance(value, SecretRef):
+                    rev.store_secret_ref(
+                        key=key,
+                        secret_name=value.secret_name,
+                        secret_key=value.secret_key,
+                        metadata=key_metadata,
+                    )
+                else:
+                    rev.store(key=key, value=value, perms=644, metadata=key_metadata)
 
         payload = {
             "kind": "ConfigTree",
@@ -208,6 +217,10 @@ def is_fast_merge_possible(base: dict, source: dict) -> bool:
 
         source_data, base_data = source_value.get("data"), value.get("data")
         if source_data != base_data:
+            return False
+
+        source_ref, base_ref = source_value.get("valueFrom"), value.get("valueFrom")
+        if source_ref != base_ref:
             return False
 
         source_meta, base_meta = source_value.get("metadata"), value.get("metadata")
