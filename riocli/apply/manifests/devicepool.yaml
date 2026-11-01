@@ -1,0 +1,20 @@
+apiVersion: "apiextensions.rapyuta.io/v1"
+kind: "DevicePool"
+metadata:
+  name: "qa-informer-3k" # Required; lowercase letters, digits and hyphens, unique in HWIL
+  labels: # Optional; copied to the pool in HWIL
+    team: qa
+spec:
+  devices: 3000 # Required; 1 to 10000 emulated rapyuta.io devices
+  deploymentsPerDevice: 15 # Required; deployments created on every device
+  mode: lite # Options: [lite (default): no salt, densest | full: salt-onboarded, devices show ONLINE]
+  expireAfter: 6h # Optional ["m", "h", "d"]; HWIL deletes the pool after this (5m minimum, 24h maximum, default 12h)
+  wait: true # Optional [True, False (default)]; wait for READY/DEGRADED/FAILED on apply and DELETED on delete
+  deviceNamePrefix: qa3k # Optional; defaults to the pool name without hyphens
+  deployment: # Optional; defaults to the built-in flapper package
+    package: rio-scale-flap
+    version: v1.0.2
+    namePrefix: flap
+  vm: # Optional; HWIL sizes the VMs itself
+    cpu: 32 # Options: [16, 32]
+    devicesPerVm: 600 # lite: up to 700, full: up to 450

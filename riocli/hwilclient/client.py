@@ -16,8 +16,8 @@ from __future__ import annotations
 import http
 import json
 import time
-from typing import TYPE_CHECKING
 
+import requests
 from munch import Munch, munchify
 from rapyuta_io.utils import ConflictError, RetriesExhausted, UnauthorizedError
 from rapyuta_io.utils.rest_client import HttpMethod, RestClient
@@ -25,8 +25,24 @@ from rapyuta_io.utils.rest_client import HttpMethod, RestClient
 from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
 
-if TYPE_CHECKING:
-    import requests
+
+class PoolNotFound(Exception):
+    """No HWIL device pool with that name or id."""
+
+
+def _check_pool_response(response: requests.Response) -> None:
+    """Raise for a /pool/ error: 404 is PoolNotFound, 400 carries HWIL's validation messages."""
+    if response.status_code == http.HTTPStatus.NOT_FOUND:
+        raise PoolNotFound("hwil device pool not found")
+    if response.status_code == http.HTTPStatus.BAD_REQUEST:
+        try:
+            detail = json.dumps(response.json())
+        except ValueError:
+            detail = response.text
+        raise ValueError(f"hwil rejected the pool: {detail}")
+    handle_server_errors(response)
+    if response.status_code >= 400:
+        raise Exception(f"hwil: {response.status_code} {response.text}")
 
 
 def handle_server_errors(response: requests.Response):
@@ -246,3 +262,41 @@ class Client:
             header["X-Email-ID"] = self._email_id
 
         return header
+
+    # ---- device pools (/pool/) -------------------------------------------------------------------------------------
+
+    def create_pool(self: Client, body: dict) -> Munch:
+        """Create a device pool; HWIL answers 202 and builds it in the background."""
+        r = requests.post(
+            f"{self._host}/pool/", json=body, headers=self._get_auth_header(), timeout=60
+        )
+        _check_pool_response(r)
+        return munchify(r.json())
+
+    def list_pools(self: Client) -> list[Munch]:
+        """List device pools, newest first as HWIL returns them."""
+        r = requests.get(
+            f"{self._host}/pool/", headers=self._get_auth_header(), timeout=60
+        )
+        _check_pool_response(r)
+        data = r.json()
+        return munchify(data if isinstance(data, list) else data.get("results", []))
+
+    def get_pool(self: Client, name_or_id: str | int) -> Munch:
+        """Get a device pool by name or id."""
+        r = requests.get(
+            f"{self._host}/pool/{name_or_id}/",
+            headers=self._get_auth_header(),
+            timeout=60,
+        )
+        _check_pool_response(r)
+        return munchify(r.json())
+
+    def delete_pool(self: Client, name_or_id: str | int) -> None:
+        """Start deleting a device pool; HWIL answers 202 (idempotent on DELETING/DELETED pools)."""
+        r = requests.delete(
+            f"{self._host}/pool/{name_or_id}/",
+            headers=self._get_auth_header(),
+            timeout=60,
+        )
+        _check_pool_response(r)
