@@ -211,16 +211,28 @@ def test_apply_says_why_a_changed_pool_is_not_updated():
     assert "cannot be resized" in p.exists_reason
 
 
-def test_apply_refuses_the_name_of_a_deleted_pool():
-    """HWIL keeps pool names unique forever: re-applying a deleted pool's name is a 409, say so up front"""
+def test_apply_explains_a_name_still_reserved_by_a_deleted_pool():
+    """HWIL before v2.32 keeps a deleted pool's name reserved and answers 409: say why, not just already exists"""
+    from rapyuta_io.utils import ConflictError
+
     h = hwil(get_pool=[pool("DELETED")])
+    h.create_pool.side_effect = ConflictError("already exists")
     c = config()
     c.new_hwil_client.return_value = h
     with pytest.raises(Exception, match="new name"):
         manifest().apply(
             client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
         )
-    h.create_pool.assert_not_called()
+
+
+def test_apply_recreates_a_deleted_pool_where_names_are_reusable():
+    h = hwil(get_pool=[pool("DELETED")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    result = manifest().apply(
+        client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+    )
+    assert result == ApplyResult.CREATED and h.create_pool.called
 
 
 # ---- delete ----------------------------------------------------------------------------------------------------------
@@ -311,6 +323,7 @@ def test_cleanup_deletes_only_the_pools_labelled_objects(monkeypatch):
         ),
     )
     v1 = MagicMock()
+    v1.delete_device.return_value = Munch(status_code=200)
     v1.get_all_devices.return_value = [
         Munch(uuid="u1", name="qa-0001", labels=[Munch(key="pool", value="41")]),
         Munch(uuid="u2", name="other", labels=[Munch(key="pool", value="7")]),
@@ -429,3 +442,83 @@ def test_cleanup_reports_objects_that_were_already_gone(monkeypatch):
         "devices_failed": 0,
         "already_gone": 1,
     }
+
+
+# ---- PR #612 review (Copilot) ----------------------------------------------------------------------------------------
+
+
+def test_apply_refuses_a_same_named_pool_in_another_target():
+    """pool names are global in HWIL: a pool of this name in another environment/project is not this manifest's"""
+    h = hwil(get_pool=[pool("READY", environment="pr1534")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    with pytest.raises(pool_util.PoolEnvironmentError, match="pr1534"):
+        manifest().apply(
+            client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+        )
+    h.create_pool.assert_not_called()
+
+
+def test_delete_refuses_a_pool_in_another_target():
+    h = hwil(get_pool=[pool("READY", project_guid="project-other")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    with pytest.raises(pool_util.PoolEnvironmentError, match="project-other"):
+        manifest().delete(
+            client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+        )
+    h.delete_pool.assert_not_called()
+
+
+def test_dependencies_name_the_custom_package_version():
+    assert manifest().list_dependencies() is None
+    p = manifest(deployment={"package": "flap", "version": "v1.0.2"})
+    assert p.list_dependencies() == ["package:flap:v1.0.2"]
+
+
+def test_reapply_with_wait_waits_for_an_existing_pool(monkeypatch):
+    monkeypatch.setattr(pool_util.time, "sleep", lambda s: None)
+    h = hwil(get_pool=[pool("BOOTSTRAPPING"), pool("BOOTSTRAPPING"), pool("READY")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    result = manifest(wait=True).apply(
+        client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+    )
+    assert result == ApplyResult.EXISTS and h.get_pool.call_count == 3
+    h.create_pool.assert_not_called()
+
+
+def test_reapply_reports_an_existing_failed_pool():
+    h = hwil(get_pool=[pool("FAILED", reason="token_rejected")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    with pytest.raises(Exception, match="token_rejected"):
+        manifest().apply(
+            client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+        )
+
+
+def test_reapply_refuses_a_pool_being_deleted():
+    h = hwil(get_pool=[pool("DELETING")])
+    c = config()
+    c.new_hwil_client.return_value = h
+    with pytest.raises(pool_util.PoolStateError, match="DELETING"):
+        manifest().apply(
+            client=None, v2_client=None, config=c, retry_count=1, retry_interval=1
+        )
+    h.create_pool.assert_not_called()
+
+
+def test_cleanup_reads_the_v1_device_delete_status(monkeypatch):
+    """rapyuta_io's delete_device returns the HTTP response instead of raising: 404 is gone, other errors failed"""
+    monkeypatch.setattr(pool_util, "walk_pages", lambda fn, **kw: iter([]))
+    v1 = MagicMock()
+    v1.get_all_devices.return_value = [
+        Munch(uuid=u, name=u, labels=[Munch(key="pool", value="41")])
+        for u in ("ok", "gone", "bad")
+    ]
+    v1.delete_device.side_effect = lambda uuid: Munch(
+        status_code={"ok": 200, "gone": 404, "bad": 400}[uuid]
+    )
+    r = pool_util.cleanup_pool(pool("DELETED"), config(), MagicMock(), v1)
+    assert r["devices"] == 1 and r["already_gone"] == 1 and r["devices_failed"] == 1

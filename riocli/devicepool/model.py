@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import click
+from rapyuta_io.utils import ConflictError
 from typing_extensions import override
 
 from riocli.config.config import Configuration
@@ -24,6 +25,7 @@ from riocli.devicepool import util
 from riocli.exceptions import ResourceNotFound
 from riocli.hwilclient.client import PoolNotFound
 from riocli.model import Model
+from riocli.model.base import package_key
 
 if TYPE_CHECKING:
     from munch import Munch
@@ -51,7 +53,9 @@ class DevicePool(Model):
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        return None
+        # a custom deployment package applied in the same run must exist before HWIL creates the pool's deployments
+        d = self.spec.get("deployment")
+        return [package_key(d.package, d.version)] if d else None
 
     @override
     def apply(self, *args, config: Configuration | None = None, **kwargs) -> ApplyResult:
@@ -63,10 +67,18 @@ class DevicePool(Model):
         except PoolNotFound:
             existing = None
 
-        if existing is not None:
-            if existing.state == "DELETED":
+        if existing is not None and existing.state != "DELETED":
+            # pool names are global in HWIL: a pool of this name elsewhere is not this manifest's pool
+            util.check_target(existing, config)
+            if existing.state == "DELETING":
+                raise util.PoolStateError(
+                    f"device pool {name} is DELETING: apply it again once it is DELETED"
+                )
+            if self.spec.wait and existing.state not in util.UP_TERMINAL:
+                existing = util.wait_for_pool(client, existing.id, util.UP_TERMINAL)
+            if existing.state == "FAILED":
                 raise Exception(
-                    f"device pool {name} was deleted and HWIL keeps pool names unique: apply it under a new name"
+                    f"device pool {name} FAILED: {existing.get('reason') or 'no reason given'}"
                 )
             changed = self._changed(existing)
             if changed:
@@ -76,7 +88,13 @@ class DevicePool(Model):
                 )
             return ApplyResult.EXISTS
 
-        created = client.create_pool(util.pool_body(self, config))
+        try:
+            created = client.create_pool(util.pool_body(self, config))
+        except ConflictError:
+            # HWIL before v2.32 keeps the name of a deleted pool reserved
+            raise Exception(
+                f"device pool {name} was deleted and this HWIL keeps pool names reserved: apply it under a new name"
+            )
         if self.spec.wait:
             p = util.wait_for_pool(client, created.id, util.UP_TERMINAL)
             if p.state == "FAILED":
@@ -98,6 +116,7 @@ class DevicePool(Model):
             raise ResourceNotFound
         if p.state == "DELETED":
             raise ResourceNotFound
+        util.check_target(p, config)
 
         client.delete_pool(p.id)
         if self.spec.wait:

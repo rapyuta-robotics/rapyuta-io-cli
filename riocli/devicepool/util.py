@@ -47,6 +47,16 @@ def cli_environment(config) -> str:
     return config.data.get("environment", "ga")
 
 
+def check_target(pool: Munch, config) -> None:
+    """Refuse a pool that lives in another environment or project than the CLI points at (HWIL names are global)."""
+    env, project = cli_environment(config), config.data.get("project_id")
+    if pool.environment != env or pool.project_guid != project:
+        raise PoolEnvironmentError(
+            f"device pool {pool.name} lives in {pool.environment}/{pool.project_guid}, the CLI points at "
+            f"{env}/{project}: switch environment and project first"
+        )
+
+
 def pool_body(pool, config) -> dict[str, Any]:
     """POST /pool/ body: the manifest's spec plus the `rio` block from the CLI config (users never type tokens)."""
     env = cli_environment(config)
@@ -154,12 +164,7 @@ def cleanup_pool(
             f"device pool {pool.name} is {pool.state}: cleanup removes what a finished teardown left behind, "
             f"delete the pool first (`rio hwil pool delete {pool.name}`)"
         )
-    env, project = cli_environment(config), config.data.get("project_id")
-    if pool.environment != env or pool.project_guid != project:
-        raise PoolEnvironmentError(
-            f"device pool {pool.name} lives in {pool.environment}/{pool.project_guid}, the CLI points at {env}/{project}: "
-            "switch environment and project first"
-        )
+    check_target(pool, config)
     selector = f"pool={pool.id}"
     # the listing also returns Stopped deployments: those are deleted already (riocli e2e 2026-11-01)
     names = [
@@ -179,7 +184,16 @@ def cleanup_pool(
         )
 
     uuids = [d.uuid for d in v1_client.get_all_devices() if labelled(d)]
-    dev_ok, dev_gone, dev_failed = _delete_all(uuids, v1_client.delete_device, parallel)
+
+    def delete_device(uuid: str) -> None:
+        # rapyuta_io's delete_device returns the HTTP response instead of raising (riocli/device/delete.py)
+        status = getattr(v1_client.delete_device(uuid), "status_code", None)
+        if status == 404:
+            raise LookupError("device not found")
+        if status is not None and status >= 400:
+            raise RuntimeError(f"device delete answered HTTP {status}")
+
+    dev_ok, dev_gone, dev_failed = _delete_all(uuids, delete_device, parallel)
     return {
         "deployments": dep_ok,
         "deployments_failed": dep_failed,
