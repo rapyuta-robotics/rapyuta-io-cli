@@ -6,7 +6,7 @@ metadata:
     team: qa
 spec:
   devices: 3000 # Required; 1 to 10000 emulated rapyuta.io devices
-  deploymentsPerDevice: 15 # Required; deployments created on every device
+  deploymentsPerDevice: 15 # Required; 0 to 15 deployments created on every device
   mode: lite # Options: [lite (default): no salt, densest | full: salt-onboarded, devices show ONLINE]
   expireAfter: 6h # Optional ["m", "h", "d"]; HWIL deletes the pool after this (5m minimum, 24h maximum, default 12h)
   wait: true # Optional [True, False (default)]; wait for READY/DEGRADED/FAILED on apply and DELETED on delete

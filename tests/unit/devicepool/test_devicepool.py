@@ -522,3 +522,10 @@ def test_cleanup_reads_the_v1_device_delete_status(monkeypatch):
     )
     r = pool_util.cleanup_pool(pool("DELETED"), config(), MagicMock(), v1)
     assert r["devices"] == 1 and r["already_gone"] == 1 and r["devices_failed"] == 1
+
+
+def test_schema_caps_deployments_per_device_like_hwil():
+    """HWIL refuses more than POOL_MAX_DEPLOYMENTS_PER_DEVICE (15): fail at validation, before any request"""
+    assert manifest(deploymentsPerDevice=15).spec.deploymentsPerDevice == 15
+    with pytest.raises(ValidationError):
+        manifest(deploymentsPerDevice=16)
