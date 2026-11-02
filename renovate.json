@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>rapyuta-robotics/workflows//renovate/default"],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["dependencies", "security"],
+    "groupName": "security updates"
+  },
+  "packageRules": [
+    {
+      "description": "Commit prefix for Python and GitHub Actions updates.",
+      "matchManagers": ["pep621", "github-actions"],
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "deps"
+    },
+    {
+      "description": "Pinned with == in pyproject.toml, so ignored.",
+      "matchManagers": ["pep621"],
+      "matchPackageNames": ["yaspin", "python-benedict"],
+      "enabled": false
+    }
+  ]
+}
