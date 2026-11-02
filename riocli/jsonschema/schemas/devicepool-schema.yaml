@@ -1,0 +1,99 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+title: DevicePool
+$ref: "#/definitions/devicePool"
+definitions:
+  stringMap:
+    type: object
+    additionalProperties:
+      type: string
+
+  metadata:
+    type: object
+    properties:
+      name:
+        # HWIL pool name rule
+        type: string
+        pattern: "^[a-z][a-z0-9-]{0,40}$"
+      labels:
+        $ref: "#/definitions/stringMap"
+    required:
+      - name
+
+  devicePool:
+    type: object
+    properties:
+      apiVersion:
+        const: apiextensions.rapyuta.io/v1
+      kind:
+        const: DevicePool
+      metadata:
+        $ref: "#/definitions/metadata"
+      spec:
+        $ref: "#/definitions/devicePoolSpec"
+    required:
+      - apiVersion
+      - kind
+      - metadata
+      - spec
+
+  devicePoolSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      devices:
+        type: integer
+        minimum: 1
+        maximum: 10000
+      deploymentsPerDevice:
+        # HWIL's POOL_MAX_DEPLOYMENTS_PER_DEVICE: 600 devices x 15 per VM is the validated load
+        type: integer
+        minimum: 0
+        maximum: 15
+      mode:
+        # lite: no salt, densest; full: salt-onboarded, online devices
+        enum:
+          - lite
+          - full
+        default: lite
+      expireAfter:
+        # HWIL deletes the pool once this has passed (5m minimum, 24h maximum)
+        type: string
+        pattern: "^([0-9]+[smhd])+$"
+        default: 12h
+      wait:
+        # wait until the pool is READY, DEGRADED or FAILED (and DELETED on delete)
+        type: boolean
+        default: false
+      deviceNamePrefix:
+        # defaults to the pool name without hyphens
+        type: string
+        pattern: "^[a-z][a-z0-9]{0,15}$"
+      deployment:
+        # what every device runs; defaults to the built-in flapper package
+        type: object
+        additionalProperties: false
+        properties:
+          package:
+            type: string
+          version:
+            type: string
+          namePrefix:
+            type: string
+        required:
+          - package
+          - version
+      vm:
+        type: object
+        additionalProperties: false
+        properties:
+          cpu:
+            enum:
+              - 16
+              - 32
+          devicesPerVm:
+            type: integer
+            minimum: 1
+    required:
+      - devices
+      - deploymentsPerDevice
