@@ -21,6 +21,7 @@ from riocli.apply.parse import Applier
 from riocli.apply.util import print_objects_table
 from riocli.deployment.model import Deployment
 from riocli.model.base import Model, package_key
+from riocli.package.model import Package
 
 PACKAGE_V1 = {
     "apiVersion": "api.rapyuta.io/v2",
@@ -200,3 +201,79 @@ class TestPrintObjectsTable:
         out = capsys.readouterr().out
         assert "Version" not in out
         assert "Net" in out
+
+
+def opaque_secret(name: str) -> dict:
+    return {
+        "apiVersion": "apiextensions.rapyuta.io/v1",
+        "kind": "Secret",
+        "metadata": {"name": name},
+        "spec": {"type": "Opaque", "data": {"KEY": "value"}},
+    }
+
+
+def secret_env(name: str, secret: str) -> dict:
+    return {"name": name, "valueFrom": {"secretKeyRef": {"name": secret, "key": "KEY"}}}
+
+
+PACKAGE_READS_SECRET = {
+    **PACKAGE_V1,
+    "spec": {**PACKAGE_V1["spec"], "environmentVars": [secret_env("USER", "creds")]},
+}
+
+DEPLOYMENT_READS_SECRET = {
+    **DEPLOYMENT_ON_V1,
+    "spec": {"runtime": "cloud", "envArgs": [secret_env("USER", "creds")]},
+}
+
+OTHER_PACKAGE = {**PACKAGE_V1, "metadata": {"name": "other", "version": "1.0.0"}}
+
+
+class TestSecretKeyRefDependency:
+    def test_package_depends_on_secret_from_env(self):
+        package = Package(munchify(PACKAGE_READS_SECRET))
+        assert "secret:creds" in package.list_dependencies()
+
+    def test_deployment_depends_on_secret_from_env_args(self):
+        deployment = Deployment(munchify(DEPLOYMENT_READS_SECRET))
+        assert "secret:creds" in deployment.list_dependencies()
+
+    def test_package_without_secret_ref_has_no_secret_dependency(self):
+        assert Package(munchify(PACKAGE_V1)).list_dependencies() is None
+
+
+class TestApplierSecretKeyRefOrdering:
+    def _applier(self, tmp_path, objects):
+        path = write_manifest(tmp_path, "chart.yaml", objects)
+        return Applier([path], [], [], MagicMock())
+
+    def test_secret_is_applied_first_and_deleted_last(self, tmp_path):
+        # Secret listed last, so the order cannot come from file order.
+        objects = [PACKAGE_READS_SECRET, DEPLOYMENT_READS_SECRET, opaque_secret("creds")]
+
+        assert self._applier(tmp_path, objects)._get_apply_order() == [
+            ("secret:creds",),
+            ("package:logger:1.0.0",),
+            ("deployment:logger-old",),
+        ]
+        assert list(self._applier(tmp_path, objects)._get_delete_order()) == [
+            ("deployment:logger-old",),
+            ("package:logger:1.0.0",),
+            ("secret:creds",),
+        ]
+
+    def test_package_not_reading_the_secret_is_not_held_back(self, tmp_path):
+        objects = [PACKAGE_READS_SECRET, OTHER_PACKAGE, opaque_secret("creds")]
+
+        batches = self._applier(tmp_path, objects)._get_apply_order()
+        assert set(batches[0]) == {"secret:creds", "package:other:1.0.0"}
+        assert batches[1] == ("package:logger:1.0.0",)
+
+    def test_secret_already_on_platform_is_skipped(self, tmp_path):
+        # The Secret is referenced but not in the manifests; the Applier skips
+        # dependencies it does not manage, so the order is unchanged.
+        objects = [PACKAGE_READS_SECRET, DEPLOYMENT_READS_SECRET]
+        applier = self._applier(tmp_path, objects)
+
+        order = [key for batch in applier._get_apply_order() for key in batch]
+        assert order.index("package:logger:1.0.0") < order.index("deployment:logger-old")
