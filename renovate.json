@@ -4,7 +4,9 @@
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["dependencies", "security"],
-    "groupName": "security updates"
+    "groupName": "security updates",
+    "groupSlug": "security-updates",
+    "separateMajorMinor": false
   },
   "packageRules": [
     {
@@ -18,6 +20,26 @@
       "matchManagers": ["pep621"],
       "matchPackageNames": ["yaspin", "python-benedict"],
       "enabled": false
+    },
+    {
+      "description": "All Python majors share one PR per run.",
+      "matchManagers": ["pep621"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "python dependencies",
+      "groupSlug": "python"
+    },
+    {
+      "description": "All GitHub Actions majors share one PR per run, separate from Python.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "github actions",
+      "groupSlug": "github-actions",
+      "dependencyDashboardApproval": false
+    },
+    {
+      "description": "Every update waits for a human to review and merge it, even when CI passes.",
+      "matchPackageNames": ["*"],
+      "automerge": false
     }
   ]
 }
