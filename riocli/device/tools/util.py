@@ -25,6 +25,8 @@ from riocli.device.execute import execute_async
 from riocli.utils import random_string, run_bash
 from riocli.utils.execute import run_on_device
 
+_COPY_SUCCESS = "__RIO_COPY_SUCCESS__"
+
 
 def run_tunnel_on_device(device_guid: str, remote_port: int, path: str) -> None:
     config = Configuration()
@@ -91,7 +93,7 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
             f"Response: {response!r}"
         )
 
-    run_bash(f'curl -o "{dest}" "{url}"')
+    run_bash(f'curl -f -o "{dest}" "{url}"')
 
 
 def copy_to_device(
@@ -112,18 +114,16 @@ def copy_to_device(
       3. If run_async=True, delegate streaming to execute_async from execute.py.
          (We allow empty output as success; execute_async may raise if device returns nothing.)
       4. If run_async=False, perform synchronous execution and print output if any.
-
-    Note: File transfer command (curl -s -o) typically produces no stdout on success.
-          We treat empty output as success for sync mode.
+         The copy fails unless the device prints the success marker.
     """
     config = Configuration()
     path = random_string(8, 5)
     remote_cmd = (
-        f"curl -s -o {dest} {config.piping_server}/{path} && echo '__RIO_COPY_SUCCESS__'"
+        f"curl -sSf -o {dest} {config.piping_server}/{path} && echo '{_COPY_SUCCESS}'"
     )
 
     # Start background upload from local machine to piping server.
-    run_bash(f"curl -sT {src} {config.piping_server}/{path}", bg=True)
+    run_bash(f"curl -sSfT {src} {config.piping_server}/{path}", bg=True)
 
     client = new_client()
     # Build command similarly to execute.py (bash -c wrapping) for consistency.
@@ -157,7 +157,8 @@ def copy_to_device(
             click.secho(f">>> {device_name}({device_guid})", fg=Colors.YELLOW)
             if output:
                 click.echo(f"{output}\n")
-            # Empty output is normal for quiet curl success
+            if _COPY_SUCCESS not in output:
+                raise Exception(f"Failed to copy '{src}' to {device_name}:{dest}")
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e
