@@ -16,8 +16,8 @@ from rapyuta_io_sdk_v2 import Backup as BackupModel
 from rapyuta_io_sdk_v2 import Client as v2Client
 from typing_extensions import override
 
-from riocli.database.util import wait_until_deleted, wait_until_listed
 from riocli.model import Model
+from riocli.utils import wait_until_deleted, wait_until_listed
 
 
 class Backup(Model):
@@ -43,5 +43,4 @@ class Backup(Model):
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        # The source database is the backup's only dependency.
-        return [f"database:{self._obj.spec.database}"]
+        return self._obj.list_dependencies()

@@ -17,6 +17,8 @@ import shlex
 import string
 import subprocess
 import sys
+import time
+import typing
 import uuid
 from collections.abc import Iterable
 from shutil import get_terminal_size
@@ -28,6 +30,7 @@ import requests
 import semver
 import yaml
 from click_help_colors import HelpColorsGroup
+from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 from tabulate import tabulate
 
 from riocli.constants import Colors
@@ -243,3 +246,43 @@ def print_centered_text(text: str, color: str = Colors.YELLOW):
     col, _ = get_terminal_size()
     text = click.style(f" {text} ".center(col, "-"), fg=color, bold=True)
     click.echo(text, file=sys.stderr)
+
+
+def wait_until_listed(
+    get: typing.Callable[[str], typing.Any],
+    kind: str,
+    name: str,
+    timeout: int = 60,
+    interval: int = 5,
+) -> None:
+    """Block until get(name) finds the resource; apply ordering cannot see a
+    dependency that another apply is still creating."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            get(name)
+            return
+        except HttpNotFoundError as e:
+            if time.monotonic() >= deadline:
+                raise Exception(f"{kind} {name} not found after {timeout}s") from e
+            time.sleep(interval)
+
+
+def wait_until_deleted(
+    get: typing.Callable[[str], typing.Any],
+    kind: str,
+    name: str,
+    timeout: int = 60,
+    interval: int = 5,
+) -> None:
+    """Block until get(name) returns 404; the server removes the row only after the
+    device acks, and until then it blocks deleting the parent."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            get(name)
+        except HttpNotFoundError:
+            return
+        if time.monotonic() >= deadline:
+            raise Exception(f"{kind} {name} still present {timeout}s after delete")
+        time.sleep(interval)

@@ -13,11 +13,9 @@
 # limitations under the License.
 
 import re
-import time
 import typing
 
 from rapyuta_io_sdk_v2 import Client
-from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
 
 from riocli.utils import tabulate_data
 
@@ -79,43 +77,3 @@ def display_database_list(databases: typing.Any, show_header: bool = True):
         )
 
     tabulate_data(data, headers)
-
-
-def wait_until_listed(
-    get: typing.Callable[[str], typing.Any],
-    kind: str,
-    name: str,
-    timeout: int = 60,
-    interval: int = 5,
-) -> None:
-    """Block until get(name) finds the resource; apply ordering cannot see a
-    dependency that another apply is still creating."""
-    deadline = time.monotonic() + timeout
-    while True:
-        try:
-            get(name)
-            return
-        except HttpNotFoundError as e:
-            if time.monotonic() >= deadline:
-                raise Exception(f"{kind} {name} not found after {timeout}s") from e
-            time.sleep(interval)
-
-
-def wait_until_deleted(
-    get: typing.Callable[[str], typing.Any],
-    kind: str,
-    name: str,
-    timeout: int = 60,
-    interval: int = 5,
-) -> None:
-    """Block until get(name) returns 404; the server removes the row only after the
-    device acks, and until then it blocks deleting the parent."""
-    deadline = time.monotonic() + timeout
-    while True:
-        try:
-            get(name)
-        except HttpNotFoundError:
-            return
-        if time.monotonic() >= deadline:
-            raise Exception(f"{kind} {name} still present {timeout}s after delete")
-        time.sleep(interval)
