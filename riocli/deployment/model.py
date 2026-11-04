@@ -20,7 +20,7 @@ from typing_extensions import override
 
 from riocli.constants import Status
 from riocli.model import Model
-from riocli.model.base import package_key
+from riocli.model.base import package_key, secret_ref_keys
 from riocli.utils.error import (
     RetriesExhausted,
 )
@@ -74,6 +74,11 @@ class Deployment(Model):
                 d for d in dependencies if d != f"package:{depends.name_or_guid}"
             ]
             dependencies.append(package_key(depends.name_or_guid, depends.version))
+
+        # Add the Secrets that envArgs read through valueFrom.secretKeyRef.
+        for key in secret_ref_keys(self._obj.spec.envArgs):
+            if key not in dependencies:
+                dependencies.append(key)
 
         return dependencies or None
 
