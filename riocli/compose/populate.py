@@ -28,7 +28,7 @@ VOLUME_PERMISSIONS = {
     777: "rw",
 }
 
-FIXPERMS_IMAGE = "alpine:latest"
+FIXPERMS_IMAGE = "quay.io/rapyuta/alpine:latest"
 
 ROS_MASTER_URI = "http://127.0.0.1:1234"
 
