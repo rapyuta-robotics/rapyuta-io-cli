@@ -16,6 +16,7 @@ from rapyuta_io_sdk_v2 import Client as v2Client
 from rapyuta_io_sdk_v2 import Database as DatabaseModel
 from typing_extensions import override
 
+from riocli.database.util import wait_until_deleted, wait_until_listed
 from riocli.model import Model
 
 
@@ -27,6 +28,8 @@ class Database(Model):
 
     @override
     def create_object(self, v2_client: v2Client, *args, **kwargs) -> DatabaseModel:
+        for name in self._secret_names():
+            wait_until_listed(v2_client.get_secret, "secret", name)
         return v2_client.create_database(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
@@ -36,7 +39,24 @@ class Database(Model):
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
         _ = v2_client.delete_database(self._obj.metadata.name)
+        wait_until_deleted(v2_client.get_database, "database", self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        return None
+        return [f"secret:{name}" for name in self._secret_names()] or None
+
+    def _secret_names(self) -> list[str]:
+        postgres = self._obj.spec.postgres
+        users = postgres.users if postgres is not None else None
+        if users is None:
+            return []
+
+        names: set[str] = set()
+        for creds in (users.primary, users.backup, users.replication):
+            if creds is None:
+                continue
+            for ref in (creds.username, creds.password):
+                if ref is not None and ref.name:
+                    names.add(ref.name)
+
+        return sorted(names)

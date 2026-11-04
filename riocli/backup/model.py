@@ -16,6 +16,7 @@ from rapyuta_io_sdk_v2 import Backup as BackupModel
 from rapyuta_io_sdk_v2 import Client as v2Client
 from typing_extensions import override
 
+from riocli.database.util import wait_until_deleted, wait_until_listed
 from riocli.model import Model
 
 
@@ -27,6 +28,7 @@ class Backup(Model):
 
     @override
     def create_object(self, v2_client: v2Client, *args, **kwargs) -> BackupModel:
+        wait_until_listed(v2_client.get_database, "database", self._obj.spec.database)
         return v2_client.create_backup(body=self._obj)  # pyright:ignore[reportArgumentType]
 
     @override
@@ -37,6 +39,7 @@ class Backup(Model):
     @override
     def delete_object(self, v2_client: v2Client, *args, **kwargs) -> None:
         _ = v2_client.delete_backup(self._obj.metadata.name)
+        wait_until_deleted(v2_client.get_backup, "backup", self._obj.metadata.name)
 
     @override
     def list_dependencies(self) -> list[str] | None:
