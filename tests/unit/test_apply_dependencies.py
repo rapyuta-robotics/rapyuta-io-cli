@@ -20,11 +20,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 from rapyuta_io_sdk_v2.exceptions import HttpNotFoundError
+from waiting import TimeoutExpired, wait
 
 from riocli.apply.parse import Applier
 from riocli.backup.model import Backup
 from riocli.database.model import Database
-from riocli.utils import wait_until_deleted, wait_until_listed
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -79,7 +79,7 @@ def test_database_waits_for_its_secret_before_create():
     client = MagicMock()
     client.get_secret.side_effect = [HttpNotFoundError("nf"), MagicMock()]
 
-    with patch("riocli.utils.time.sleep"):
+    with patch("time.sleep"):
         Database(_DATABASE).create_object(v2_client=client)
 
     assert client.get_secret.call_count == 2
@@ -90,24 +90,28 @@ def test_backup_waits_for_its_database_before_create():
     client = MagicMock()
     client.get_database.side_effect = [HttpNotFoundError("nf"), MagicMock()]
 
-    with patch("riocli.utils.time.sleep"):
+    with patch("time.sleep"):
         Backup(_BACKUP).create_object(v2_client=client)
 
     client.get_database.assert_called_with("db")
     client.create_backup.assert_called_once()
 
 
-def test_wait_gives_up_after_timeout():
-    get = MagicMock(side_effect=HttpNotFoundError("nf"))
+def _wait_no_time(*args, **kwargs):
+    return wait(*args, **{**kwargs, "timeout_seconds": 0, "sleep_seconds": 0})
+
+
+def test_create_wait_gives_up_after_timeout():
+    client = MagicMock()
+    client.get_database.side_effect = HttpNotFoundError("nf")
 
     with (
-        patch("riocli.utils.time.sleep"),
-        patch("riocli.utils.time.monotonic", side_effect=[0, 10, 61]),
+        patch("riocli.backup.model.wait", _wait_no_time),
+        pytest.raises(TimeoutExpired, match="waiting for database db to exist"),
     ):
-        with pytest.raises(Exception, match="database db not found after 60s"):
-            wait_until_listed(get, "database", "db")
+        Backup(_BACKUP).create_object(v2_client=client)
 
-    assert get.call_count == 2
+    client.create_backup.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -120,20 +124,17 @@ def test_delete_returns_only_once_the_resource_is_gone(model, manifest, getter):
     client = MagicMock()
     getattr(client, getter).side_effect = [MagicMock(), HttpNotFoundError("nf")]
 
-    with patch("riocli.utils.time.sleep"):
+    with patch("time.sleep"):
         model(manifest).delete_object(v2_client=client)
 
     assert getattr(client, getter).call_count == 2
 
 
 def test_delete_wait_gives_up_after_timeout():
-    get = MagicMock(return_value=MagicMock())
+    client = MagicMock()
 
     with (
-        patch("riocli.utils.time.sleep"),
-        patch("riocli.utils.time.monotonic", side_effect=[0, 10, 61]),
-        pytest.raises(Exception, match="backup bk still present 60s after delete"),
+        patch("riocli.backup.model.wait", _wait_no_time),
+        pytest.raises(TimeoutExpired, match="waiting for backup bk to be deleted"),
     ):
-        wait_until_deleted(get, "backup", "bk")
-
-    assert get.call_count == 2
+        Backup(_BACKUP).delete_object(v2_client=client)
