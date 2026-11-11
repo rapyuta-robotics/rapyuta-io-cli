@@ -6,7 +6,7 @@ on:
 
 jobs:
   upload:
-    runs-on: aks-spot-4cpu
+    runs-on: ubuntu-latest
     environment: release
     permissions:
       id-token: write
