@@ -18,6 +18,7 @@ from rapyuta_io_sdk_v2 import Client
 from rapyuta_io_sdk_v2.utils import walk_pages
 
 from riocli.role.model import Role
+from riocli.role.select import normalize_subject_name
 
 
 def fetch_roles(
@@ -63,11 +64,7 @@ def get_subject(input: str) -> tuple[str, str]:
     if subject_kind not in ("user", "usergroup", "serviceaccount"):
         raise Exception(f"subject kind {subject_kind} is invalid")
 
-    # The server stores user emails in lower case.
-    if subject_kind == "user":
-        return splits[0], splits[1].lower()
-
-    return splits[0], splits[1]
+    return splits[0], normalize_subject_name(splits[0], splits[1])
 
 
 def binding_body(

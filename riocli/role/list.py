@@ -100,7 +100,7 @@ def list_role_bindings(
     """List all the rolebindings in current organization.
 
     Time-bound bindings show their window in local time and their status:
-    how long until they start, how long is left, or "ended" until they are
+    how long until they start, how long is left, or "Expired" until they are
     removed. Permanent bindings leave these columns empty.
 
     Usage:

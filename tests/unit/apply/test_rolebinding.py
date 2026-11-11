@@ -29,10 +29,10 @@ START = "2026-10-26T00:00:00Z"
 END = "2026-10-26T08:00:00Z"
 
 
-def manifest(not_before=None, not_after=None) -> dict:
+def manifest(not_before=None, not_after=None, subject="engineer@example.com") -> dict:
     spec = {
         "roleRef": {"kind": "Role", "name": "rio-project_admin"},
-        "subject": {"kind": "User", "name": "engineer@example.com"},
+        "subject": {"kind": "User", "name": subject},
         "domain": {"kind": "Project", "name": "warehouse-prod"},
     }
     if not_before is not None:
@@ -231,3 +231,52 @@ class TestDelete:
             delete(RoleBinding(manifest(START, END)), client)
 
         client.update_role_binding.assert_not_called()
+
+
+class TestUserSubjectCase:
+    """The server stores user emails in lower case and filters by exact name."""
+
+    SUBJECT = "Engineer@Example.com"
+
+    @pytest.fixture
+    def stored(self):
+        bindings = []
+
+        def by_exact_name(client, role, subject, domain):
+            return [b for b in bindings if b.spec.subject.name == subject[1]]
+
+        with patch("riocli.role.model.find_bindings", side_effect=by_exact_name):
+            yield bindings
+
+    def test_create(self, stored):
+        client = MagicMock()
+
+        obj = RoleBinding(manifest(START, END, subject=self.SUBJECT))
+        assert apply(obj, client) == ApplyResult.CREATED
+        assert body(client)["oldBindings"] == []
+
+    def test_unchanged_reapply_exists(self, stored):
+        stored.append(make_binding("rb-tb", not_before=START, not_after=END))
+        client = MagicMock()
+
+        obj = RoleBinding(manifest(START, END, subject=self.SUBJECT))
+        assert apply(obj, client) == ApplyResult.EXISTS
+        client.update_role_binding.assert_not_called()
+
+    def test_same_start_new_end_replaces(self, stored):
+        stored.append(make_binding("rb-old", not_before=START, not_after=END))
+        client = MagicMock()
+
+        later = "2026-10-26T11:00:00Z"
+        obj = RoleBinding(manifest(START, later, subject=self.SUBJECT))
+        assert apply(obj, client) == ApplyResult.UPDATED
+        assert client.update_role_binding.call_count == 1
+        assert [b.metadata.guid for b in body(client)["oldBindings"]] == ["rb-old"]
+
+    def test_delete_finds_binding(self, stored):
+        stored.append(make_binding("rb-tb", not_before=START, not_after=END))
+        client = MagicMock()
+
+        delete(RoleBinding(manifest(START, END, subject=self.SUBJECT)), client)
+
+        assert [b.metadata.guid for b in body(client)["oldBindings"]] == ["rb-tb"]

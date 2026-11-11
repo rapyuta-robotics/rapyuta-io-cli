@@ -31,6 +31,8 @@ SHIFT = make_binding(
     "rb-shift", not_before="2026-10-25T23:00:00Z", not_after="2026-10-26T03:00:00Z"
 )
 LATER = make_binding("rb-later", not_after="2026-10-26T12:00:00Z")
+# Ended before NOW, still listed until cleanup removes it.
+ENDED = make_binding("rb-ended", not_after="2026-10-25T20:00:00Z")
 
 
 @pytest.fixture
@@ -112,6 +114,29 @@ def test_current_not_after_selects_one(runner, client, bindings):
     assert result.exit_code == 0, result.output
     body = client.update_role_binding.call_args.args[0]
     assert [b.metadata.guid for b in body["oldBindings"]] == ["rb-shift"]
+
+
+def test_ended_window_is_skipped(runner, client, bindings):
+    bindings.return_value = [ENDED, LATER]
+
+    result = runner.invoke(extend, [*ARGS, "--for", "30m"])
+
+    assert result.exit_code == 0, result.output
+    body = client.update_role_binding.call_args.args[0]
+    assert [b.metadata.guid for b in body["oldBindings"]] == ["rb-later"]
+
+
+def test_current_not_after_selects_ended_window(runner, client, bindings):
+    bindings.return_value = [ENDED, LATER]
+
+    result = runner.invoke(
+        extend,
+        [*ARGS, "--for", "30m", "--current-not-after", "2026-10-26T05:00:00+09:00"],
+    )
+
+    assert result.exit_code == 0, result.output
+    body = client.update_role_binding.call_args.args[0]
+    assert [b.metadata.guid for b in body["oldBindings"]] == ["rb-ended"]
 
 
 def test_no_time_bound_binding(runner, client, bindings):
