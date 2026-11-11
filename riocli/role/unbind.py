@@ -25,7 +25,7 @@ from riocli.role.select import (
     select_binding,
 )
 from riocli.role.util import get_domain, get_subject
-from riocli.role.window import parse_time
+from riocli.role.window import parse_time, utcnow
 from riocli.utils.spinner import with_spinner
 
 
@@ -48,7 +48,7 @@ from riocli.utils.spinner import with_spinner
     "--permanent",
     is_flag=True,
     default=False,
-    help="Remove the permanent binding, when ended windows awaiting cleanup also match.",
+    help="Remove the permanent binding when time-bound ones also match.",
 )
 @click.pass_context
 @with_spinner(text="Unbinding...")
@@ -86,10 +86,10 @@ def unbind(
     "UserGroup:roboops".
 
     A Subject can hold several time-bound bindings of the same Role in the
-    same domain, and a permanent one beside windows that have ended but not
-    been cleaned up yet. When more than one matches, the command lists them
-    and removes nothing; select one with --not-after (its end, as shown by
-    'rio role list-bindings') or --permanent.
+    same domain. Windows that have ended but not been cleaned up yet are
+    skipped unless --not-after names one. When more than one matches, the
+    command lists them and removes nothing; select one with --not-after (its
+    end, as shown by 'rio role list-bindings') or --permanent.
 
     Usage Examples:
 
@@ -112,7 +112,9 @@ def unbind(
         client = config.new_v2_client(with_project=False)
 
         candidates = find_bindings(client, role, get_subject(subject), get_domain(domain))
-        binding = select_binding(candidates, not_after=end, permanent=permanent)
+        binding = select_binding(
+            candidates, not_after=end, permanent=permanent, now=utcnow()
+        )
         if binding is None:
             spinner.text = click.style("Binding does not exist.", fg=Colors.YELLOW)
             spinner.green.ok(Symbols.INFO)

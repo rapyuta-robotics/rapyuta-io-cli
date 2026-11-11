@@ -20,13 +20,15 @@ import pytest
 from rapyuta_io_sdk_v2.exceptions import MethodNotAllowedError
 
 from riocli.role.unbind import unbind
-from tests.unit.role.conftest import make_binding
+from tests.unit.role.conftest import NOW, make_binding
 
 ARGS = ["rio-project_admin", "Project:warehouse-prod", "User:engineer@example.com"]
 
 PERMANENT = make_binding("rb-perm")
 MORNING = make_binding("rb-am", not_after="2026-10-26T03:00:00Z")
 EVENING = make_binding("rb-pm", not_after="2026-10-26T12:00:00Z")
+# Ended before NOW, still listed until cleanup removes it.
+ENDED = make_binding("rb-ended", not_after="2026-10-25T20:00:00Z")
 
 
 @pytest.fixture
@@ -34,7 +36,10 @@ def client():
     client = MagicMock()
     config = MagicMock(organization_guid="org-1")
     config.new_v2_client.return_value = client
-    with patch("riocli.role.unbind.get_config_from_context", return_value=config):
+    with (
+        patch("riocli.role.unbind.get_config_from_context", return_value=config),
+        patch("riocli.role.unbind.utcnow", return_value=NOW),
+    ):
         yield client
 
 
@@ -101,6 +106,24 @@ def test_permanent_selects_one(runner, client, bindings):
 
     assert result.exit_code == 0, result.output
     assert removed(client) == ["rb-perm"]
+
+
+def test_ended_window_is_skipped(runner, client, bindings):
+    bindings.return_value = [PERMANENT, ENDED]
+
+    result = runner.invoke(unbind, ARGS)
+
+    assert result.exit_code == 0, result.output
+    assert removed(client) == ["rb-perm"]
+
+
+def test_not_after_selects_ended_window(runner, client, bindings):
+    bindings.return_value = [PERMANENT, ENDED]
+
+    result = runner.invoke(unbind, [*ARGS, "--not-after", "2026-10-26T05:00:00+09:00"])
+
+    assert result.exit_code == 0, result.output
+    assert removed(client) == ["rb-ended"]
 
 
 def test_not_after_with_permanent_is_usage_error(runner, client, bindings):

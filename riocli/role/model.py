@@ -22,7 +22,7 @@ from typing_extensions import override
 
 from riocli.constants import ApplyResult
 from riocli.model import Model
-from riocli.role.select import find_bindings
+from riocli.role.select import find_bindings, normalize_subject_name
 from riocli.role.window import format_time, same_time, utcnow
 
 _CREATE = "create"
@@ -132,7 +132,10 @@ class RoleBinding(Model):
         return find_bindings(
             v2_client,
             spec.role_ref.name,
-            (spec.subject.kind, spec.subject.name),
+            (
+                spec.subject.kind,
+                normalize_subject_name(spec.subject.kind, spec.subject.name),
+            ),
             (spec.domain.kind, spec.domain.name),
         )
 

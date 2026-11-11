@@ -16,7 +16,8 @@
 A subject can hold several time-bound bindings of a role in a domain. The
 server rejects a permanent binding beside an active window, but one can sit
 beside an ended window until cleanup removes it. Commands that act on one
-binding pick it explicitly when several match.
+binding skip ended windows unless one is named, and pick one explicitly when
+several match.
 """
 
 from datetime import datetime
@@ -32,6 +33,14 @@ class AmbiguousBindingError(Exception):
     def __init__(self, candidates: list[RoleBinding]):
         super().__init__("more than one binding matches")
         self.candidates = candidates
+
+
+def normalize_subject_name(kind: str, name: str) -> str:
+    """The subject name as the server stores it: user emails in lower case."""
+    if kind.lower() == "user":
+        return name.lower()
+
+    return name
 
 
 def find_bindings(
@@ -70,12 +79,15 @@ def select_binding(
     candidates: list[RoleBinding],
     not_after: datetime | None = None,
     permanent: bool = False,
+    now: datetime | None = None,
 ) -> RoleBinding | None:
     """Pick one binding.
 
     With permanent, the binding without a window; with not_after, the binding
-    ending at that time (to the second). Returns None when nothing matches and
-    raises AmbiguousBindingError when more than one does.
+    ending at that time (to the second). Otherwise, with now, windows ending at
+    or before now are skipped: they stay listed until cleanup removes them, and
+    the server ignores them too. Returns None when nothing matches and raises
+    AmbiguousBindingError when more than one does.
     """
     if permanent:
         candidates = [b for b in candidates if b.spec.not_after is None]
@@ -84,6 +96,10 @@ def select_binding(
             b
             for b in candidates
             if b.spec.not_after is not None and same_time(b.spec.not_after, not_after)
+        ]
+    elif now is not None:
+        candidates = [
+            b for b in candidates if b.spec.not_after is None or b.spec.not_after > now
         ]
 
     if not candidates:

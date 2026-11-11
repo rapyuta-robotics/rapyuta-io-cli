@@ -20,14 +20,20 @@ from unittest.mock import MagicMock
 import pytest
 from rapyuta_io_sdk_v2 import RoleBindingList
 
-from riocli.role.select import AmbiguousBindingError, find_bindings, select_binding
-from tests.unit.role.conftest import make_binding
+from riocli.role.select import (
+    AmbiguousBindingError,
+    find_bindings,
+    normalize_subject_name,
+    select_binding,
+)
+from tests.unit.role.conftest import NOW, make_binding
 
 PERMANENT = make_binding("rb-perm")
 MORNING = make_binding("rb-am", not_after="2026-10-26T03:00:00Z")
 EVENING = make_binding(
     "rb-pm", not_before="2026-10-26T09:00:00Z", not_after="2026-10-26T12:00:00Z"
 )
+ENDED = make_binding("rb-ended", not_after="2026-10-25T20:00:00Z")
 
 
 def mock_client(items: list) -> MagicMock:
@@ -71,6 +77,17 @@ class TestFindBindings:
         assert found == [PERMANENT]
 
 
+class TestSubjectName:
+    def test_user_email_is_lower_cased(self):
+        assert (
+            normalize_subject_name("user", "Engineer@Example.com")
+            == "engineer@example.com"
+        )
+
+    def test_other_kinds_are_unchanged(self):
+        assert normalize_subject_name("UserGroup", "RoboOps") == "RoboOps"
+
+
 class TestSelectBinding:
     def test_no_match(self):
         assert select_binding([]) is None
@@ -96,3 +113,20 @@ class TestSelectBinding:
 
     def test_permanent_selects_binding_without_window(self):
         assert select_binding([PERMANENT, MORNING, EVENING], permanent=True) is PERMANENT
+
+    def test_now_skips_ended_windows(self):
+        assert select_binding([PERMANENT, ENDED], now=NOW) is PERMANENT
+
+    def test_window_ending_at_now_counts_as_ended(self):
+        at_now = make_binding("rb-now", not_after="2026-10-26T00:00:00Z")
+
+        assert select_binding([at_now, MORNING], now=NOW) is MORNING
+
+    def test_not_after_selects_ended_window_despite_now(self):
+        end = datetime(2026, 10, 25, 20, 0, tzinfo=timezone.utc)
+
+        assert select_binding([PERMANENT, ENDED], not_after=end, now=NOW) is ENDED
+
+    def test_without_now_ended_windows_are_kept(self):
+        with pytest.raises(AmbiguousBindingError):
+            select_binding([PERMANENT, ENDED])

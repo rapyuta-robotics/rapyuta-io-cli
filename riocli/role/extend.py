@@ -78,10 +78,11 @@ def extend(
     --for counts from now, not from the window's start, so for a window that
     hasn't started it can end before the start; use --not-after there.
 
-    Subject and Domain take the same form as in 'rio role bind'. When the
-    Subject holds more than one time-bound binding of the Role in the domain,
-    select one with --current-not-after (its end, as shown by
-    'rio role list-bindings').
+    Subject and Domain take the same form as in 'rio role bind'. Windows that
+    have ended but not been cleaned up yet are skipped unless
+    --current-not-after names one. When the Subject holds more than one
+    time-bound binding of the Role in the domain, select one with
+    --current-not-after (its end, as shown by 'rio role list-bindings').
 
     Usage Examples:
 
@@ -118,7 +119,7 @@ def extend(
             for b in find_bindings(client, role, get_subject(subject), get_domain(domain))
             if b.spec.not_after is not None
         ]
-        current = select_binding(candidates, not_after=current_end)
+        current = select_binding(candidates, not_after=current_end, now=now)
         if current is None:
             spinner.text = click.style("No time-bound binding matches.", fg=Colors.RED)
             spinner.red.fail(Symbols.ERROR)
