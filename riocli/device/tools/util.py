@@ -13,7 +13,8 @@
 # limitations under the License.
 import os
 import time
-from shlex import join
+from shlex import join, quote
+from subprocess import CalledProcessError
 
 import click
 from rapyuta_io.clients import Command
@@ -24,6 +25,8 @@ from riocli.constants import Colors
 from riocli.device.execute import execute_async
 from riocli.utils import random_string, run_bash
 from riocli.utils.execute import run_on_device
+
+_COPY_SUCCESS = "__RIO_COPY_SUCCESS__"
 
 
 def run_tunnel_on_device(device_guid: str, remote_port: int, path: str) -> None:
@@ -91,7 +94,10 @@ def copy_from_device(device_guid: str, src: str, dest: str) -> None:
             f"Response: {response!r}"
         )
 
-    run_bash(f'curl -o "{dest}" "{url}"')
+    try:
+        run_bash(f'curl -f -o "{dest}" "{url}"')
+    except CalledProcessError as e:
+        raise Exception(f"Failed to download '{src}' (curl exit {e.returncode})") from e
 
 
 def copy_to_device(
@@ -110,20 +116,19 @@ def copy_to_device(
       1. Start background upload (local -> piping server) via curl -T.
       2. Execute curl on device to download file to destination path.
       3. If run_async=True, delegate streaming to execute_async from execute.py.
-         (We allow empty output as success; execute_async may raise if device returns nothing.)
       4. If run_async=False, perform synchronous execution and print output if any.
-
-    Note: File transfer command (curl -s -o) typically produces no stdout on success.
-          We treat empty output as success for sync mode.
+      5. In both modes the copy fails unless the device prints the success marker line.
     """
     config = Configuration()
     path = random_string(8, 5)
     remote_cmd = (
-        f"curl -s -o {dest} {config.piping_server}/{path} && echo '__RIO_COPY_SUCCESS__'"
+        f"curl -sSf -o {quote(dest)} {quote(f'{config.piping_server}/{path}')}"
+        f" && echo '{_COPY_SUCCESS}'"
     )
 
-    # Start background upload from local machine to piping server.
-    run_bash(f"curl -sT {src} {config.piping_server}/{path}", bg=True)
+    # Start background upload from local machine to piping server. Its exit code
+    # is never read: failure is detected only through the device-side marker.
+    run_bash(f"curl -sSfT {src} {config.piping_server}/{path}", bg=True)
 
     client = new_client()
     # Build command similarly to execute.py (bash -c wrapping) for consistency.
@@ -139,7 +144,7 @@ def copy_to_device(
     try:
         if run_async:
             # Delegates execution + streaming to existing async helper
-            execute_async(
+            result = execute_async(
                 client=client,
                 device_guids=[device_guid],
                 device_dict={device_guid: device_name},
@@ -153,11 +158,13 @@ def copy_to_device(
                 command=cmd_obj,
                 timeout=timeout,
             )
-            output = result.get(device_guid, "")
             click.secho(f">>> {device_name}({device_guid})", fg=Colors.YELLOW)
-            if output:
-                click.echo(f"{output}\n")
-            # Empty output is normal for quiet curl success
+            if result.get(device_guid):
+                click.echo(f"{result[device_guid]}\n")
+
+        output = result.get(device_guid) or ""
+        if _COPY_SUCCESS not in (line.strip() for line in output.splitlines()):
+            raise Exception(f"Failed to copy '{src}' to {device_name}:{dest}")
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1) from e

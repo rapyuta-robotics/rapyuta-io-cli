@@ -166,7 +166,7 @@ def execute_async(client, device_guids, device_dict, command, timeout):
 
     jid = result.get("jid")
 
-    get_async_output(
+    return get_async_output(
         client=client,
         jid=jid,
         device_guids=device_guids,
@@ -176,12 +176,15 @@ def execute_async(client, device_guids, device_dict, command, timeout):
 
 
 def get_async_output(client, jid, device_guids, device_dict, timeout):
+    """Stream each device's output as it arrives and return all outputs by GUID."""
     max_retries = 3
     remaining_devices = device_guids.copy()
+    outputs = {}
     for _ in range(max_retries):
         wait_result = client.fetch_cmd_result(
             jid=jid, device_ids=remaining_devices, timeout=timeout
         )
+        outputs.update(wait_result)
         remaining_devices = print_response(
             result=wait_result, device_guids=remaining_devices, device_dict=device_dict
         )
@@ -192,6 +195,8 @@ def get_async_output(client, jid, device_guids, device_dict, timeout):
 
     if remaining_devices:
         print_no_output_error(remaining_devices)
+
+    return outputs
 
 
 def print_response(result, device_guids, device_dict):
