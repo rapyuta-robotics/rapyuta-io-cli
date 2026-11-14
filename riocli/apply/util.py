@@ -32,6 +32,7 @@ from riocli.database.model import Database
 from riocli.database.restore.model import Restore
 from riocli.deployment.model import Deployment
 from riocli.device.model import Device
+from riocli.devicepool.model import DevicePool
 from riocli.disk.model import Disk
 from riocli.network.model import Network
 from riocli.organization.model import Organization
@@ -50,6 +51,7 @@ KIND_TO_CLASS = {
     "restore": Restore,
     "deployment": Deployment,
     "device": Device,
+    "devicepool": DevicePool,
     "disk": Disk,
     "network": Network,
     "organization": Organization,
