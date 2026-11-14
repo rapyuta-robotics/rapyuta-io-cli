@@ -127,6 +127,30 @@ class Revision:
 
         self._data[key] = data
 
+    def store_secret_ref(
+        self: Revision,
+        key: str,
+        secret_name: str,
+        secret_key: str,
+        metadata: dict | None = None,
+    ) -> None:
+        # The server (and, for device deployments, the owning device) resolves
+        # secret_name/secret_key into the real value on read -- this key never
+        # carries literal data, a checksum, or a content type.
+        data = {
+            "valueFrom": {
+                "secretKeyRef": {
+                    "name": secret_name,
+                    "key": secret_key,
+                }
+            }
+        }
+
+        if metadata is not None:
+            data["metadata"] = metadata
+
+        self._data[key] = data
+
     def store_file(
         self: Revision,
         key: str,
