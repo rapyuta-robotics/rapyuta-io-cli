@@ -8,3 +8,9 @@ metadata:
 spec:
   sourceIPRange:
   - 10.0.0.0/8
+  # Optional: HTTP/HTTPS requests per client IP, per Traefik instance.
+  # rateLimit:
+  #   average: 100
+  #   period: 1m
+  #   burst: 20
+  # Omit rateLimit or set it to null to disable limiting.
