@@ -84,6 +84,7 @@ Rapyuta CLI has commands for all rapyuta.io resources. You can read more about t
    Package <package>
    Parameter <parameter>
    Project <project>
+   Role <role>
    Secret <secret>
    Static Route <static_route>
    User Group <usergroup>
