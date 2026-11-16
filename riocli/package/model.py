@@ -18,6 +18,7 @@ from rapyuta_io_sdk_v2 import Package as PackageModel
 from typing_extensions import override
 
 from riocli.model import Model
+from riocli.model.base import secret_ref_keys
 
 
 class Package(Model):
@@ -42,4 +43,12 @@ class Package(Model):
 
     @override
     def list_dependencies(self) -> list[str] | None:
-        return self._obj.list_dependencies()
+        dependencies = self._obj.list_dependencies() or []
+
+        # The SDK only reports the Docker pullSecret. Add the Secrets that
+        # environment variables read through valueFrom.secretKeyRef.
+        for key in secret_ref_keys(self._obj.spec.environmentVars):
+            if key not in dependencies:
+                dependencies.append(key)
+
+        return dependencies or None

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any
 
 from munch import Munch
@@ -49,6 +49,24 @@ def package_key(name: str, version: str) -> str:
     models in rapyuta-io-sdk-v2.
     """
     return f"package:{name}:{version}"
+
+
+def secret_ref_keys(env: Iterable[Any] | None) -> list[str]:
+    """Return the "secret:<name>" keys of Secrets read through secretKeyRef.
+
+    Packages (environmentVars) and Deployments (envArgs) can read a value
+    from a Secret with ``valueFrom.secretKeyRef``. The SDK does not report
+    these as dependencies, so the models add them to make the Applier
+    create the Secret first and delete it last.
+    """
+    keys: list[str] = []
+    for e in env or []:
+        value_from = getattr(e, "valueFrom", None)
+        ref = getattr(value_from, "secret_key_ref", None)
+        name = getattr(ref, "name", None)
+        if name and f"secret:{name}" not in keys:
+            keys.append(f"secret:{name}")
+    return keys
 
 
 class Model(ABC, Munch):
