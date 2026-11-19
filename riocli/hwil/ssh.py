@@ -13,7 +13,6 @@
 # limitations under the License.
 import os
 import subprocess
-import typing
 
 import click
 from click_help_colors import HelpColorsCommand
@@ -22,10 +21,14 @@ from riocli.config import new_hwil_client
 from riocli.constants import Colors, Symbols
 from riocli.hwil.util import name_to_id
 
-DEFAULT_PUBLIC_KEYS = ("~/.ssh/id_ed25519.pub", "~/.ssh/id_ecdsa.pub", "~/.ssh/id_rsa.pub")
+DEFAULT_PUBLIC_KEYS = (
+    "~/.ssh/id_ed25519.pub",
+    "~/.ssh/id_ecdsa.pub",
+    "~/.ssh/id_rsa.pub",
+)
 
 
-def find_public_key(path: typing.Optional[str] = None) -> str:
+def find_public_key(path: str | None = None) -> str:
     """The public key file to use: the given one, else the first default that exists."""
     candidates = [path] if path else DEFAULT_PUBLIC_KEYS
     for candidate in candidates:
