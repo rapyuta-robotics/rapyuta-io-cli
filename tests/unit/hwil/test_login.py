@@ -27,14 +27,24 @@ def invoke(cmd, args):
     return CliRunner().invoke(cmd, args, obj=Configuration())
 
 
-def test_login_with_token_stores_mode_and_drops_basic_credential(cfg):
-    with patch("riocli.hwil.login.HwilClient") as client:
-        r = invoke(login, ["--token", "eyJ.test.tok"])
+def test_token_is_never_persisted(cfg, monkeypatch):
+    """M1: no --token flag; CI uses RIO_HWIL_TOKEN per invocation and the config never holds a token."""
+    r = invoke(login, ["--token", "eyJ.test.tok"])
+    assert r.exit_code != 0 and "no such option" in r.output.lower()
+    monkeypatch.setenv(entra.TOKEN_ENV, "eyJ.env.tok")
+    assert (
+        Configuration().new_hwil_client()._get_auth_header()["Authorization"]
+        == "Bearer eyJ.env.tok"
+    )
+    assert "eyJ" not in cfg.read_text()
+
+
+def test_az_login_drops_basic_credential(cfg):
+    with patch("riocli.hwil.login.HwilClient"):
+        r = invoke(login, ["--az"])
     assert r.exit_code == 0, r.output
-    assert client.call_args.kwargs["token_provider"]() == "eyJ.test.tok"
     data = json.loads(cfg.read_text())
-    assert data["hwil_auth"] == {"mode": "token", "token": "eyJ.test.tok"}
-    assert "hwil_auth_token" not in data
+    assert data["hwil_auth"] == {"mode": "az"} and "hwil_auth_token" not in data
 
 
 def test_login_with_az(cfg):
@@ -86,7 +96,7 @@ def test_device_code_login_caches_privately_and_refreshes_silently(cfg):
 def test_failed_validation_does_not_save(cfg):
     with patch("riocli.hwil.login.HwilClient") as client:
         client.return_value.list_devices.side_effect = Exception("401")
-        r = invoke(login, ["--token", "bad"])
+        r = invoke(login, ["--az"])
     assert r.exit_code == 1 and "hwil_auth" not in json.loads(cfg.read_text())
 
 

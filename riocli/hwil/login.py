@@ -35,36 +35,25 @@ from riocli.utils.context import get_root_context
     default=False,
     help="Use the token of your logged-in Azure CLI (az login)",
 )
-@click.option(
-    "--token",
-    type=str,
-    default=None,
-    help="A ready HWIL access token (CI). Or set RIO_HWIL_TOKEN instead of logging in",
-)
 @click.pass_context
-def login(ctx: click.Context, use_az: bool = False, token: str = None) -> None:
+def login(ctx: click.Context, use_az: bool = False) -> None:
     """Authenticate with the HWIL API using your company (Microsoft Entra ID) account.
 
     By default this starts a device-code sign-in: open the shown URL, enter
     the code and sign in. The session is refreshed automatically. HWIL no
     longer accepts usernames or passwords.
 
-    In CI, get a token for the scope api://hwil-api/HWIL.Access (for example
-    via GitHub OIDC and az) and pass it with --token, or export RIO_HWIL_TOKEN.
+    In CI, do not log in: export RIO_HWIL_TOKEN with an access token for the
+    scope api://hwil-api/HWIL.Access (for example via GitHub OIDC and az).
+    It is used per invocation and never written to the rio config.
     """
     ctx = get_root_context(ctx)
-    if use_az and token:
-        click.secho(f"{Symbols.ERROR} Use either --az or --token", fg=Colors.RED)
-        raise SystemExit(1)
-
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
     cache = entra.cache_path(ctx.obj.filepath)
     try:
-        if token:
-            auth = {"mode": "token", "token": token.strip()}
-        elif use_az:
+        if use_az:
             auth = {"mode": "az"}
         else:
             account = entra.device_code_login(

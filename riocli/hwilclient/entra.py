@@ -18,7 +18,8 @@ HWIL accepts only Entra tokens (no username/password). There are three ways to g
 - ``device_code``: MSAL device-code sign-in with the public "HWIL CLI" app. The MSAL token cache (refresh token)
   is stored next to the rio config, mode 0600, and refreshed silently.
 - ``az``: ``az account get-access-token`` for a logged-in Azure CLI. az refreshes the token itself.
-- ``token``: a ready access token, for CI (``rio hwil login --token``), or the ``RIO_HWIL_TOKEN`` env var.
+- CI: the ``RIO_HWIL_TOKEN`` env var, read per invocation and never written to the config (the config file is
+  exactly what was stolen in the 2026-11 incident).
 """
 
 from __future__ import annotations
@@ -135,7 +136,4 @@ def token_provider(auth: dict | None, config_filepath: str) -> typing.Callable[[
         return lambda: device_code_token(path, auth.get("account"))
     if mode == "az":
         return az_token
-    if mode == "token" and auth.get("token"):
-        token = auth["token"]
-        return lambda: token
     raise HwilAuthError(f"unknown HWIL login mode {mode!r}; please login again")

@@ -261,7 +261,9 @@ def hwil_login(cli_runner):
     if not hwil_token:
         pytest.skip("HWIL_TOKEN not found in .password file or RIO_HWIL_TOKEN")
 
-    result = cli_runner.invoke(cli, ["hwil", "login", "--token", hwil_token])
+    # never persisted: the token is read from the env on every invocation
+    os.environ["RIO_HWIL_TOKEN"] = hwil_token
+    result = cli_runner.invoke(cli, ["hwil", "list"])
 
     if result.exit_code != 0:
         pytest.skip(f"HWIL login failed: {result.output}")
