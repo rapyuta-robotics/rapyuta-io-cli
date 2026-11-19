@@ -140,6 +140,25 @@ class Client:
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
 
+    def add_ssh_key(self: Client, device_id: int, public_key: str) -> Munch:
+        """Add the caller's own public key to a HWIL VM's user (key-only VMs)."""
+        url = f"{self._host}/device/{device_id}/ssh_key/"
+        headers = self._get_auth_header()
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(headers)
+            .execute(payload={"public_key": public_key})
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            raise Exception(f"hwil: {response.text}")
+
+        return munchify(data)
+
     def get_device(self: Client, device_id: int) -> Munch:
         """Fetch a HWIL device."""
         url = f"{self._host}/device/{device_id}"
