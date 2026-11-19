@@ -15,11 +15,17 @@ import os
 import subprocess
 
 import click
+import requests
 from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_hwil_client
 from riocli.constants import Colors, Symbols
 from riocli.hwil.util import name_to_id
+
+# Sources HWIL's NSG always allows (HWIL_SSH_ALLOWED_SOURCES defaults). From anywhere else,
+# `rio hwil ssh` opens just-in-time access for the caller's public IP first.
+OFFICE_SOURCES = ("121.2.38.2", "14.195.117.58", "111.93.196.126")
+PUBLIC_IP_URL = "https://api.ipify.org"
 
 DEFAULT_PUBLIC_KEYS = (
     "~/.ssh/id_ed25519.pub",
@@ -41,6 +47,13 @@ def find_public_key(path: str | None = None) -> str:
     )
 
 
+def detect_public_ip() -> str:
+    try:
+        return requests.get(PUBLIC_IP_URL, timeout=10).text.strip()
+    except requests.RequestException as e:
+        raise Exception(f"could not detect your public IP ({e}); pass --source-ip") from e
+
+
 @click.command(
     "ssh",
     cls=HelpColorsCommand,
@@ -54,14 +67,35 @@ def find_public_key(path: str | None = None) -> str:
     default=None,
     help="Your ssh public key file. Default: ~/.ssh/id_ed25519.pub, id_ecdsa.pub or id_rsa.pub",
 )
+@click.option(
+    "--source-ip",
+    type=str,
+    default=None,
+    help="Your public IPv4. Default: detected via " + PUBLIC_IP_URL,
+)
+@click.option(
+    "--duration",
+    type=int,
+    default=None,
+    help="Minutes of ssh access from outside the office (default 120, max 480)",
+)
 @click.argument("device-name", required=True, type=str)
 @name_to_id
-def ssh(device_name: str, device_id: str, key_path: str = None, spinner=None) -> None:
+def ssh(
+    device_name: str,
+    device_id: str,
+    key_path: str = None,
+    source_ip: str = None,
+    duration: int = None,
+    spinner=None,
+) -> None:
     """SSH into a hardware-in-the-loop device.
 
-    HWIL VMs are key-only. This command adds your own public key to the
-    device (once; adding it again is a no-op) and then runs ``ssh`` with
-    the matching private key. No password is involved.
+    HWIL VMs are key-only and port 22 is open only to the offices. From
+    anywhere else this command first opens just-in-time access for your
+    public IP (it expires; re-running extends it). It then adds your own
+    public key to the device (adding it again is a no-op) and runs ``ssh``
+    with the matching private key. No password is involved.
     """
     try:
         client = new_hwil_client()
@@ -73,6 +107,14 @@ def ssh(device_name: str, device_id: str, key_path: str = None, spinner=None) ->
                 fg=Colors.RED,
             )
             raise SystemExit(1)
+
+        ip = source_ip or detect_public_ip()
+        if ip not in OFFICE_SOURCES:
+            access = client.grant_ssh_access(device_id, ip, duration)
+            click.secho(
+                f"{Symbols.INFO} ssh access from {ip} to {device.name} until {access.expires_at}",
+                fg=Colors.BRIGHT_CYAN,
+            )
 
         public_key = find_public_key(key_path)
         with open(public_key) as f:

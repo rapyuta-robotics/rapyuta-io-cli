@@ -28,7 +28,9 @@ def test_find_public_key_explains_when_missing(tmp_path, monkeypatch):
         find_public_key()
 
 
-def test_ssh_uploads_key_then_runs_ssh_with_it(tmp_path, monkeypatch):
+def test_ssh_uploads_key_then_runs_ssh_with_it(
+    tmp_path, monkeypatch
+):  # from an office IP
     home = _home(tmp_path, "id_ed25519.pub", "id_ed25519")
     monkeypatch.setenv("HOME", str(home))
     client = MagicMock()
@@ -44,7 +46,7 @@ def test_ssh_uploads_key_then_runs_ssh_with_it(tmp_path, monkeypatch):
         patch("riocli.hwil.util.find_device_id", return_value=7),
         patch("riocli.hwil.ssh.subprocess.call", return_value=0) as call,
     ):
-        result = CliRunner().invoke(ssh, ["vm-1"])
+        result = CliRunner().invoke(ssh, ["vm-1", "--source-ip", "121.2.38.2"])
     assert result.exit_code == 0, result.output
     assert client.add_ssh_key.call_args.args == (
         7,
@@ -59,3 +61,45 @@ def test_ssh_uploads_key_then_runs_ssh_with_it(tmp_path, monkeypatch):
         "rr@20.0.0.1",
     ]
     assert "password" not in result.output.lower()
+
+
+def _client():
+    client = MagicMock()
+    client.get_device.return_value = munchify(
+        {"id": 7, "name": "vm-1", "username": "rr", "ip_address": "20.0.0.1"}
+    )
+    client.add_ssh_key.return_value = munchify(
+        {"fingerprint": "SHA256:abc", "username": "rr"}
+    )
+    client.grant_ssh_access.return_value = munchify(
+        {"expires_at": "2026-11-19T12:00:00Z"}
+    )
+    return client
+
+
+def _run(client, args):
+    with (
+        patch("riocli.hwil.ssh.new_hwil_client", return_value=client),
+        patch("riocli.hwil.util.new_hwil_client", return_value=client),
+        patch("riocli.hwil.util.find_device_id", return_value=7),
+        patch("riocli.hwil.ssh.subprocess.call", return_value=0),
+    ):
+        return CliRunner().invoke(ssh, args)
+
+
+def test_outside_office_opens_jit_access_first(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(_home(tmp_path, "id_ed25519.pub")))
+    client = _client()
+    with patch("riocli.hwil.ssh.detect_public_ip", return_value="52.10.20.30"):
+        r = _run(client, ["vm-1", "--duration", "60"])
+    assert r.exit_code == 0, r.output
+    client.grant_ssh_access.assert_called_once_with(7, "52.10.20.30", 60)
+    assert "2026-11-19T12:00:00Z" in r.output
+
+
+def test_office_ip_needs_no_jit(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(_home(tmp_path, "id_ed25519.pub")))
+    client = _client()
+    r = _run(client, ["vm-1", "--source-ip", "121.2.38.2"])
+    assert r.exit_code == 0, r.output
+    assert not client.grant_ssh_access.called and client.add_ssh_key.called

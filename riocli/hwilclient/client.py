@@ -162,6 +162,29 @@ class Client:
 
         return munchify(data)
 
+    def grant_ssh_access(
+        self: Client, device_id: int, source_ip: str, duration_minutes: int = None
+    ) -> Munch:
+        """Open port 22 of a HWIL VM to one public IPv4 for a while (just-in-time access)."""
+        url = f"{self._host}/device/{device_id}/ssh_access/"
+        payload = {"source_ip": source_ip}
+        if duration_minutes:
+            payload["duration_minutes"] = duration_minutes
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(self._get_auth_header())
+            .execute(payload=payload)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            raise Exception(f"hwil: {response.text}")
+
+        return munchify(data)
+
     def get_device(self: Client, device_id: int) -> Munch:
         """Fetch a HWIL device."""
         url = f"{self._host}/device/{device_id}"
