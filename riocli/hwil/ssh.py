@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 import subprocess
 
 import click
@@ -35,12 +36,18 @@ DEFAULT_PUBLIC_KEYS = (
 
 
 KNOWN_HOSTS = "~/.config/rio-cli/hwil_known_hosts"
+_DEVICE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}")  # same rule as HWIL
 
 
 def pin_host_key(device_name: str, host_key: str, path: str = KNOWN_HOSTS) -> str:
     """Write `<device_name> <ssh-ed25519 key>` into rio's own known_hosts, replacing any older entry for that
     device. ssh then checks the VM against the key HWIL recorded at first boot (HostKeyAlias=<device_name>), not
     against whatever answers on a reused IP. Returns the file path."""
+    # the name becomes a known_hosts host pattern: refuse wildcards, negation, lists, markers and whitespace
+    if not _DEVICE_NAME.fullmatch(device_name or ""):
+        raise ValueError(
+            f"refusing to pin a host key for unexpected device name {device_name!r}"
+        )
     parts = (host_key or "").split()
     if len(parts) < 2 or parts[0] != "ssh-ed25519":
         raise ValueError(f"HWIL returned no valid host key for {device_name}")

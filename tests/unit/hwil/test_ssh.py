@@ -150,3 +150,13 @@ def test_pin_refuses_a_non_ed25519_key(tmp_path):
 
     with pytest.raises(ValueError):
         pin_host_key("vm-1", "ssh-rsa AAAA", str(tmp_path / "kh"))
+
+
+@pytest.mark.parametrize(
+    "name", ["vm*", "vm?", "a,b", "!vm", "has space", "@cert-authority", "#x", "", "a\nb"]
+)
+def test_pin_refuses_names_that_are_known_hosts_patterns(tmp_path, name):
+    from riocli.hwil.ssh import pin_host_key
+
+    with pytest.raises(ValueError):
+        pin_host_key(name, "ssh-ed25519 AAAA", str(tmp_path / "kh"))
