@@ -17,8 +17,6 @@ def test_delete_names_the_other_devices_of_the_project():
     with patch("riocli.hwil.delete.new_hwil_client", return_value=client):
         r = CliRunner().invoke(delete_device, ["a", "--force"])
     assert r.exit_code == 0, r.output
-    assert (
-        "b" in r.output.split("deleted too:")[1]
-        and "c" not in r.output.split("deleted too:")[1]
-    )
+    warning = r.output.split("deleted too:")[1].splitlines()[0].strip()
+    assert warning == "b"
     client.delete_device.assert_called_once_with(1)
