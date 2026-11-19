@@ -63,7 +63,10 @@ def login(ctx: click.Context, use_az: bool = False) -> None:
             )
             auth = {"mode": "device_code", "account": account}
 
-        client = HwilClient(token_provider=entra.token_provider(auth, ctx.obj.filepath))
+        client = HwilClient(
+            token_provider=entra.token_provider(auth, ctx.obj.filepath),
+            hwil_host=ctx.obj.data.get("hwil_host"),
+        )
         client.list_devices()
     except Exception as e:
         click.secho(f"{Symbols.ERROR} Failed to login to HWIL: {e}", fg=Colors.RED)

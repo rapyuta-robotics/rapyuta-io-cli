@@ -144,7 +144,11 @@ class Configuration:
 
         provider = hwil_entra.token_provider(self.data.get("hwil_auth"), self.filepath)
 
-        return HwilClient(token_provider=provider, email_id=self.data.get("email_id"))
+        return HwilClient(
+            token_provider=provider,
+            email_id=self.data.get("email_id"),
+            hwil_host=self.data.get("hwil_host"),
+        )
 
     def get_auth_header(self: Configuration) -> dict:
         if not ("auth_token" in self.data and "project_id" in self.data):

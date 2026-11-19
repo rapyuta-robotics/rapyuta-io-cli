@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import http
 import json
+import re
 import time
 from typing import TYPE_CHECKING
 
@@ -29,6 +30,20 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     import requests
+
+
+_LOCAL_HOST = re.compile(r"http://(localhost|127\.0\.0\.1)(:[0-9]{1,5})?/?")
+_RAPYUTA_HOST = re.compile(r"https://([a-z0-9-]+\.)+rapyuta\.io(:[0-9]{1,5})?/?")
+
+
+def check_hwil_host(host: str) -> str:
+    """The HWIL API gets the user's Entra access token: refuse any host but localhost or https://*.rapyuta.io."""
+    if not (_LOCAL_HOST.fullmatch(host) or _RAPYUTA_HOST.fullmatch(host)):
+        raise ValueError(
+            f"refusing hwil_host {host!r}: only http://localhost[:port], "
+            "http://127.0.0.1[:port] or https://<host>.rapyuta.io receive your HWIL token"
+        )
+    return host
 
 
 def handle_server_errors(response: requests.Response):
@@ -84,11 +99,19 @@ class Client:
         },
     }
 
-    def __init__(self, token_provider: Callable[[], str], email_id: str = None):
+    def __init__(
+        self,
+        token_provider: Callable[[], str],
+        email_id: str = None,
+        hwil_host: str = None,
+    ):
         # returns a valid Entra access token for each request (refreshed as needed)
         self._token_provider = token_provider
         self._email_id = email_id
-        self._host = self.HWIL_URL
+        # hwil_host comes from the CLI configuration and points at a non-production HWIL server (e.g. a local one);
+        # production is the default. The Entra token is sent there, so only trusted hosts are accepted.
+        # rstrip so a trailing slash does not produce "//device/" in every request URL.
+        self._host = check_hwil_host(hwil_host or self.HWIL_URL).rstrip("/")
 
     def create_device(
         self: Client,
