@@ -33,6 +33,7 @@ from riocli.exceptions import (
     NoProjectSelected,
 )
 from riocli.hwilclient import Client as HwilClient
+from riocli.hwilclient import entra as hwil_entra
 
 
 class Configuration:
@@ -134,15 +135,16 @@ class Configuration:
         return v2Client(config=v2Config(**config_kwargs))
 
     def new_hwil_client(self: Configuration) -> HwilClient:
-        if "hwil_auth_token" not in self.data:
+        # Entra ID only. A legacy "hwil_auth_token" (basic auth) no longer works: log in again.
+        if "hwil_auth" not in self.data and not os.environ.get(hwil_entra.TOKEN_ENV):
             raise HwilLoggedOut
 
         if "environment" in self.data:
             os.environ["RIO_CONFIG"] = self.filepath
 
-        token = self.data.get("hwil_auth_token", None)
+        provider = hwil_entra.token_provider(self.data.get("hwil_auth"), self.filepath)
 
-        return HwilClient(auth_token=token, email_id=self.data.get("email_id"))
+        return HwilClient(token_provider=provider, email_id=self.data.get("email_id"))
 
     def get_auth_header(self: Configuration) -> dict:
         if not ("auth_token" in self.data and "project_id" in self.data):

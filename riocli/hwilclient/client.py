@@ -26,6 +26,8 @@ from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import requests
 
 
@@ -82,8 +84,9 @@ class Client:
         },
     }
 
-    def __init__(self, auth_token: str, email_id: str = None):
-        self._token = auth_token
+    def __init__(self, token_provider: Callable[[], str], email_id: str = None):
+        # returns a valid Entra access token for each request (refreshed as needed)
+        self._token_provider = token_provider
         self._email_id = email_id
         self._host = self.HWIL_URL
 
@@ -259,7 +262,7 @@ class Client:
         return munchify(data)
 
     def _get_auth_header(self: Client) -> dict:
-        header = dict(Authorization=f"Basic {self._token}")
+        header = dict(Authorization=f"Bearer {self._token_provider()}")
 
         if self._email_id is not None:
             header["X-Email-ID"] = self._email_id

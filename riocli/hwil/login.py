@@ -11,22 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import os
-from base64 import b64encode
 
 import click
 from click_help_colors import HelpColorsCommand
-from rapyuta_io.utils import UnauthorizedError
 
 from riocli.constants import Colors, Symbols
 from riocli.hwilclient import Client as HwilClient
+from riocli.hwilclient import entra
 from riocli.utils.context import get_root_context
-from riocli.utils.spinner import with_spinner
-
-HWIL_LOGIN_SUCCESS = click.style(
-    f"{Symbols.SUCCESS} Successfully logged into HWIL!", fg=Colors.GREEN
-)
 
 
 @click.command(
@@ -35,82 +28,75 @@ HWIL_LOGIN_SUCCESS = click.style(
     help_headers_color=Colors.YELLOW,
     help_options_color=Colors.GREEN,
 )
-@click.option("--username", help="Username for HWIL API")
-@click.option("--password", help="Password for HWIL API")
 @click.option(
-    "--interactive/--no-interactive",
+    "--az",
+    "use_az",
     is_flag=True,
-    type=bool,
-    default=True,
-    help="Make login interactive",
+    default=False,
+    help="Use the token of your logged-in Azure CLI (az login)",
 )
 @click.option(
-    "--silent",
-    is_flag=True,
-    type=bool,
-    default=False,
-    help="Make login non-interactive",
+    "--token",
+    type=str,
+    default=None,
+    help="A ready HWIL access token (CI). Or set RIO_HWIL_TOKEN instead of logging in",
 )
 @click.pass_context
-def login(
-    ctx: click.Context,
-    username: str,
-    password: str,
-    interactive: bool = True,
-    silent: bool = False,
-) -> None:
-    """Authenticate with HWIL API.
+def login(ctx: click.Context, use_az: bool = False, token: str = None) -> None:
+    """Authenticate with the HWIL API using your company (Microsoft Entra ID) account.
 
-    This is mandatory to use the HWIL commands and also
-    to create virtual devices with the device manifest.
+    By default this starts a device-code sign-in: open the shown URL, enter
+    the code and sign in. The session is refreshed automatically. HWIL no
+    longer accepts usernames or passwords.
 
-    You can choose to login non-interactively by providing
-    --username and --password flags or interactively by
-    not providing any flags.
+    In CI, get a token for the scope api://hwil-api/HWIL.Access (for example
+    via GitHub OIDC and az) and pass it with --token, or export RIO_HWIL_TOKEN.
     """
     ctx = get_root_context(ctx)
-    interactive = interactive or not silent
-
-    if interactive:
-        username = username or click.prompt("Username")
-        password = password or click.prompt("Password", hide_input=True)
-
-    if not username:
-        click.secho(f"{Symbols.ERROR} Username not specified", fg=Colors.RED)
+    if use_az and token:
+        click.secho(f"{Symbols.ERROR} Use either --az or --token", fg=Colors.RED)
         raise SystemExit(1)
 
-    if not password:
-        click.secho(f"{Symbols.ERROR} Password not specified", fg=Colors.RED)
-        raise SystemExit(1)
-
-    try:
-        validate_and_set_hwil_token(ctx, username, password)
-    except Exception as e:
-        raise SystemExit(1) from e
-
-
-@with_spinner(text="Validating credentials...")
-def validate_and_set_hwil_token(
-    ctx: click.Context, username: str, password: str, spinner=None
-) -> None:
-    """Validates an auth token."""
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
-    token = b64encode(f"{username}:{password}".encode()).decode("ascii")
-    client = HwilClient(auth_token=token, email_id=ctx.obj.data.get("email_id"))
-
+    cache = entra.cache_path(ctx.obj.filepath)
     try:
+        if token:
+            auth = {"mode": "token", "token": token.strip()}
+        elif use_az:
+            auth = {"mode": "az"}
+        else:
+            account = entra.device_code_login(
+                cache, lambda m: click.secho(m, fg=Colors.BRIGHT_CYAN)
+            )
+            auth = {"mode": "device_code", "account": account}
+
+        client = HwilClient(token_provider=entra.token_provider(auth, ctx.obj.filepath))
         client.list_devices()
-        ctx.obj.data["hwil_auth_token"] = token
-        ctx.obj.save()
-        spinner.text = click.style("Successfully logged in.", fg=Colors.GREEN)
-        spinner.green.ok(Symbols.SUCCESS)
-    except UnauthorizedError as e:
-        spinner.red.text = click.style("Incorrect credentials.", fg=Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise e
     except Exception as e:
-        spinner.text = click.style(f"Failed to login: {str(e)}", fg=Colors.RED)
-        spinner.red.fail(Symbols.ERROR)
-        raise e
+        click.secho(f"{Symbols.ERROR} Failed to login to HWIL: {e}", fg=Colors.RED)
+        raise SystemExit(1) from e
+
+    ctx.obj.data["hwil_auth"] = auth
+    ctx.obj.data.pop("hwil_auth_token", None)  # legacy basic-auth credential
+    ctx.obj.save()
+    who = f" as {auth['account']}" if auth.get("account") else ""
+    click.secho(f"{Symbols.SUCCESS} Successfully logged into HWIL{who}!", fg=Colors.GREEN)
+
+
+@click.command(
+    "logout",
+    cls=HelpColorsCommand,
+    help_headers_color=Colors.YELLOW,
+    help_options_color=Colors.GREEN,
+)
+@click.pass_context
+def logout(ctx: click.Context) -> None:
+    """Forget the HWIL session (token cache and login mode)."""
+    ctx = get_root_context(ctx)
+    entra.logout(entra.cache_path(ctx.obj.filepath))
+    ctx.obj.data.pop("hwil_auth", None)
+    ctx.obj.data.pop("hwil_auth_token", None)
+    ctx.obj.save()
+    click.secho(f"{Symbols.SUCCESS} Logged out of HWIL.", fg=Colors.GREEN)
