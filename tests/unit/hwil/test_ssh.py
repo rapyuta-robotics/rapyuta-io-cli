@@ -103,3 +103,50 @@ def test_office_ip_needs_no_jit(tmp_path, monkeypatch):
     r = _run(client, ["vm-1", "--source-ip", "121.2.38.2"])
     assert r.exit_code == 0, r.output
     assert not client.grant_ssh_access.called and client.add_ssh_key.called
+
+
+def test_pinned_host_key_is_used_with_strict_checking(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(_home(tmp_path, "id_ed25519.pub", "id_ed25519")))
+    client = _client()
+    client.get_device.return_value = munchify(
+        {
+            "id": 7,
+            "name": "vm-1",
+            "username": "rr",
+            "ip_address": "20.0.0.1",
+            "ssh_host_key": "ssh-ed25519 AAAAC3NzaPINNED",
+        }
+    )
+    with (
+        patch("riocli.hwil.ssh.new_hwil_client", return_value=client),
+        patch("riocli.hwil.util.new_hwil_client", return_value=client),
+        patch("riocli.hwil.util.find_device_id", return_value=7),
+        patch("riocli.hwil.ssh.subprocess.call", return_value=0) as call,
+    ):
+        r = CliRunner().invoke(ssh, ["vm-1", "--source-ip", "121.2.38.2"])
+    assert r.exit_code == 0, r.output
+    cmd = call.call_args.args[0]
+    known = str(tmp_path / ".config/rio-cli/hwil_known_hosts")
+    assert "HostKeyAlias=vm-1" in cmd and f"UserKnownHostsFile={known}" in cmd
+    assert "StrictHostKeyChecking=yes" in cmd and "HostKeyAlgorithms=ssh-ed25519" in cmd
+    assert open(known).read() == "vm-1 ssh-ed25519 AAAAC3NzaPINNED\n"
+
+
+def test_pin_replaces_only_that_devices_entry(tmp_path):
+    from riocli.hwil.ssh import pin_host_key
+
+    path = str(tmp_path / "kh")
+    pin_host_key("vm-1", "ssh-ed25519 OLD", path)
+    pin_host_key("vm-2", "ssh-ed25519 OTHER", path)
+    pin_host_key("vm-1", "ssh-ed25519 NEW", path)
+    assert sorted(open(path).read().splitlines()) == [
+        "vm-1 ssh-ed25519 NEW",
+        "vm-2 ssh-ed25519 OTHER",
+    ]
+
+
+def test_pin_refuses_a_non_ed25519_key(tmp_path):
+    from riocli.hwil.ssh import pin_host_key
+
+    with pytest.raises(ValueError):
+        pin_host_key("vm-1", "ssh-rsa AAAA", str(tmp_path / "kh"))

@@ -34,6 +34,28 @@ DEFAULT_PUBLIC_KEYS = (
 )
 
 
+KNOWN_HOSTS = "~/.config/rio-cli/hwil_known_hosts"
+
+
+def pin_host_key(device_name: str, host_key: str, path: str = KNOWN_HOSTS) -> str:
+    """Write `<device_name> <ssh-ed25519 key>` into rio's own known_hosts, replacing any older entry for that
+    device. ssh then checks the VM against the key HWIL recorded at first boot (HostKeyAlias=<device_name>), not
+    against whatever answers on a reused IP. Returns the file path."""
+    parts = (host_key or "").split()
+    if len(parts) < 2 or parts[0] != "ssh-ed25519":
+        raise ValueError(f"HWIL returned no valid host key for {device_name}")
+    full = os.path.expanduser(path)
+    os.makedirs(os.path.dirname(full), mode=0o700, exist_ok=True)
+    lines = []
+    if os.path.isfile(full):
+        with open(full) as f:
+            lines = [ln for ln in f if ln.split(" ", 1)[0] != device_name]
+    lines.append(f"{device_name} {parts[0]} {parts[1]}\n")
+    with open(full, "w") as f:
+        f.writelines(lines)
+    return full
+
+
 def find_public_key(path: str | None = None) -> str:
     """The public key file to use: the given one, else the first default that exists."""
     candidates = [path] if path else DEFAULT_PUBLIC_KEYS
@@ -125,6 +147,26 @@ def ssh(
         )
 
         cmd = ["ssh", "-o", "IdentitiesOnly=yes"]
+        if device.get("ssh_host_key"):
+            # pinned: only the host key HWIL recorded at first boot is accepted (no trust-on-first-use, and no
+            # known_hosts clash when Azure hands a VM's IP to another VM)
+            known = pin_host_key(device.name, device.ssh_host_key)
+            cmd += [
+                "-o",
+                f"HostKeyAlias={device.name}",
+                "-o",
+                f"UserKnownHostsFile={known}",
+                "-o",
+                "StrictHostKeyChecking=yes",
+                "-o",
+                "HostKeyAlgorithms=ssh-ed25519",
+            ]
+        else:
+            click.secho(
+                f"{Symbols.WARNING} HWIL has no host key for {device.name} (created before host-key pinning); "
+                "ssh will ask you to verify it",
+                fg=Colors.YELLOW,
+            )
         private_key = public_key[: -len(".pub")] if public_key.endswith(".pub") else None
         if private_key and os.path.isfile(private_key):
             cmd += ["-i", private_key]
