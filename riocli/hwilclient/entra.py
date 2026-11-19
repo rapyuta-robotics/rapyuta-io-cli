@@ -13,10 +13,13 @@
 # limitations under the License.
 """Microsoft Entra ID access tokens for the HWIL API.
 
-HWIL accepts only Entra tokens (no username/password). There are three ways to get one:
+HWIL accepts only Entra tokens (no username/password). Ways to get one:
 
-- ``device_code``: MSAL device-code sign-in with the public "HWIL CLI" app. The MSAL token cache (refresh token)
-  is stored next to the rio config, mode 0600, and refreshed silently.
+- ``browser`` (default): MSAL interactive sign-in with the public "HWIL CLI" app: authorization code + PKCE, the
+  browser returns to a loopback ``http://localhost:<random port>``. The MSAL token cache (refresh token) is stored
+  next to the rio config, mode 0600, and refreshed silently.
+- ``device_code`` (opt-in): same app and cache, for boxes without a browser. The Rapyuta tenant's Conditional
+  Access blocks this flow (it is the phishable one), so there it fails with a clear message; use ``az`` instead.
 - ``az``: ``az account get-access-token`` for a logged-in Azure CLI. az refreshes the token itself.
 - CI: the ``RIO_HWIL_TOKEN`` env var, read per invocation and never written to the config (the config file is
   exactly what was stolen in the 2026-11 incident).
@@ -72,8 +75,31 @@ def _app(cache):
     )
 
 
+DEVICE_CODE_BLOCKED = (
+    "device-code sign-in is blocked by tenant policy (Conditional Access); "
+    "use the default browser login (`rio hwil login`) or `rio hwil login --az`"
+)
+
+
+def _account(result: dict) -> str:
+    return (result.get("id_token_claims") or {}).get("preferred_username", "")
+
+
+def browser_login(path: str) -> str:
+    """Interactive browser sign-in (auth code + PKCE, loopback redirect). Returns the signed-in account (UPN)."""
+    cache = _load_cache(path)
+    app = _app(cache)
+    result = app.acquire_token_interactive(scopes=[SCOPE], prompt="select_account")
+    if "access_token" not in result:
+        raise HwilAuthError(
+            f"sign-in failed: {result.get('error_description', result.get('error'))}"
+        )
+    _save_cache(cache, path)
+    return _account(result)
+
+
 def device_code_login(path: str, echo: typing.Callable[[str], None]) -> str:
-    """Interactive device-code sign-in. Returns the signed-in account (UPN)."""
+    """Device-code sign-in (opt-in, for boxes without a browser). Returns the signed-in account (UPN)."""
     cache = _load_cache(path)
     app = _app(cache)
     flow = app.initiate_device_flow(scopes=[SCOPE])
@@ -84,14 +110,19 @@ def device_code_login(path: str, echo: typing.Callable[[str], None]) -> str:
     echo(flow["message"])
     result = app.acquire_token_by_device_flow(flow)
     if "access_token" not in result:
+        # AADSTS53003: blocked by Conditional Access
+        if 53003 in (result.get("error_codes") or []) or "AADSTS53003" in str(
+            result.get("error_description")
+        ):
+            raise HwilAuthError(DEVICE_CODE_BLOCKED)
         raise HwilAuthError(
             f"sign-in failed: {result.get('error_description', result.get('error'))}"
         )
     _save_cache(cache, path)
-    return result.get("id_token_claims", {}).get("preferred_username", "")
+    return _account(result)
 
 
-def device_code_token(path: str, account: str | None = None) -> str:
+def cached_token(path: str, account: str | None = None) -> str:
     """A valid access token from the cache, refreshed silently when it has expired."""
     cache = _load_cache(path)
     app = _app(cache)
@@ -131,9 +162,9 @@ def token_provider(auth: dict | None, config_filepath: str) -> typing.Callable[[
     if not auth:
         raise HwilAuthError("not logged in to HWIL")
     mode = auth.get("mode")
-    if mode == "device_code":
+    if mode in ("browser", "device_code"):  # same MSAL cache, refreshed silently
         path = cache_path(config_filepath)
-        return lambda: device_code_token(path, auth.get("account"))
+        return lambda: cached_token(path, auth.get("account"))
     if mode == "az":
         return az_token
     raise HwilAuthError(f"unknown HWIL login mode {mode!r}; please login again")

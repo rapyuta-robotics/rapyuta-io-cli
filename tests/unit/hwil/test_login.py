@@ -80,7 +80,7 @@ def test_device_code_login_caches_privately_and_refreshes_silently(cfg):
         patch("riocli.hwilclient.entra._load_cache", return_value=cache),
         patch("riocli.hwil.login.HwilClient") as client,
     ):
-        r = invoke(login, [])
+        r = invoke(login, ["--device-code"])
         assert r.exit_code == 0, r.output
         assert "devicelogin" in r.output and "a@x.com" in r.output
         assert client.call_args.kwargs["token_provider"]() == "t2"
@@ -122,3 +122,48 @@ def test_logout_removes_cache_and_login(cfg):
     assert "hwil_auth" not in json.loads(
         cfg.read_text()
     ) and "hwil_auth_token" not in json.loads(cfg.read_text())
+
+
+def test_default_login_is_the_browser_and_is_cached(cfg):
+    app = MagicMock()
+    app.acquire_token_interactive.return_value = {
+        "access_token": "t1",
+        "id_token_claims": {"preferred_username": "a@x.com"},
+    }
+    app.get_accounts.return_value = [{"username": "a@x.com"}]
+    app.acquire_token_silent.return_value = {"access_token": "t2"}
+    cache = MagicMock()
+    cache.has_state_changed = True
+    cache.serialize.return_value = "{}"
+    with (
+        patch("riocli.hwilclient.entra._app", return_value=app),
+        patch("riocli.hwilclient.entra._load_cache", return_value=cache),
+        patch("riocli.hwil.login.HwilClient") as client,
+    ):
+        r = invoke(login, [])
+        assert r.exit_code == 0, r.output
+        assert client.call_args.kwargs["token_provider"]() == "t2"
+    assert app.acquire_token_interactive.call_args.kwargs["scopes"] == [entra.SCOPE]
+    assert not app.initiate_device_flow.called
+    assert json.loads(cfg.read_text())["hwil_auth"] == {
+        "mode": "browser",
+        "account": "a@x.com",
+    }
+
+
+def test_device_code_blocked_by_conditional_access_says_so(cfg):
+    app = MagicMock()
+    app.initiate_device_flow.return_value = {"user_code": "X", "message": "go"}
+    app.acquire_token_by_device_flow.return_value = {
+        "error": "access_denied",
+        "error_codes": [53003],
+        "error_description": "AADSTS53003: Access has been blocked by Conditional Access policies.",
+    }
+    with (
+        patch("riocli.hwilclient.entra._app", return_value=app),
+        patch("riocli.hwilclient.entra._load_cache", return_value=MagicMock()),
+    ):
+        r = invoke(login, ["--device-code"])
+    assert r.exit_code == 1
+    assert "blocked by tenant policy" in r.output and "--az" in r.output
+    assert "hwil_auth" not in json.loads(cfg.read_text())

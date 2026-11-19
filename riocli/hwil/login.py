@@ -33,15 +33,26 @@ from riocli.utils.context import get_root_context
     "use_az",
     is_flag=True,
     default=False,
-    help="Use the token of your logged-in Azure CLI (az login)",
+    help="Use the token of your logged-in Azure CLI (az login). For boxes without a browser",
+)
+@click.option(
+    "--device-code",
+    "use_device_code",
+    is_flag=True,
+    default=False,
+    help="Device-code sign-in (blocked by Rapyuta's tenant policy; prefer --az without a browser)",
 )
 @click.pass_context
-def login(ctx: click.Context, use_az: bool = False) -> None:
+def login(
+    ctx: click.Context, use_az: bool = False, use_device_code: bool = False
+) -> None:
     """Authenticate with the HWIL API using your company (Microsoft Entra ID) account.
 
-    By default this starts a device-code sign-in: open the shown URL, enter
-    the code and sign in. The session is refreshed automatically. HWIL no
+    By default this opens your browser to sign in (if you are already signed
+    in, usually one click). The session is refreshed automatically. HWIL no
     longer accepts usernames or passwords.
+
+    On a machine without a browser, run `az login` there and use `--az`.
 
     In CI, do not log in: export RIO_HWIL_TOKEN. For the HWIL CI service
     principal (GitHub OIDC + az), get it with
@@ -53,10 +64,16 @@ def login(ctx: click.Context, use_az: bool = False) -> None:
     if "environment" in ctx.obj.data:
         os.environ["RIO_CONFIG"] = ctx.obj.filepath
 
+    if use_az and use_device_code:
+        click.secho(f"{Symbols.ERROR} Use either --az or --device-code", fg=Colors.RED)
+        raise SystemExit(1)
+
     cache = entra.cache_path(ctx.obj.filepath)
     try:
         if use_az:
             auth = {"mode": "az"}
+        elif not use_device_code:
+            auth = {"mode": "browser", "account": entra.browser_login(cache)}
         else:
             account = entra.device_code_login(
                 cache, lambda m: click.secho(m, fg=Colors.BRIGHT_CYAN)
