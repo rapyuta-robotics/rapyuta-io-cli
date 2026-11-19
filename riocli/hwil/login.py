@@ -43,9 +43,11 @@ def login(ctx: click.Context, use_az: bool = False) -> None:
     the code and sign in. The session is refreshed automatically. HWIL no
     longer accepts usernames or passwords.
 
-    In CI, do not log in: export RIO_HWIL_TOKEN with an access token for the
-    scope api://hwil-api/HWIL.Access (for example via GitHub OIDC and az).
-    It is used per invocation and never written to the rio config.
+    In CI, do not log in: export RIO_HWIL_TOKEN. For the HWIL CI service
+    principal (GitHub OIDC + az), get it with
+    `az account get-access-token --scope api://hwil-api/.default`
+    (an app token can't request the HWIL.Access scope). It is read per
+    invocation and never written to the rio config.
     """
     ctx = get_root_context(ctx)
     if "environment" in ctx.obj.data:
