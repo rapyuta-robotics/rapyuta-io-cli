@@ -88,6 +88,24 @@ def delete_device(
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
 
+    # deleting a HWIL VM deletes its project's whole resource group: name every other VM that goes with it
+    targets = {d["id"] for d in fetched if d["id"] in final}
+    projects = {
+        (d.get("labels") or {}).get("project") for d in fetched if d["id"] in targets
+    } - {None}
+    collateral = sorted(
+        d["name"]
+        for d in fetched
+        if d["id"] not in targets and (d.get("labels") or {}).get("project") in projects
+    )
+    if collateral:
+        with spinner.hidden():
+            click.secho(
+                f"{Symbols.WARNING} Deleting removes the whole project resource group: "
+                f"these devices will be deleted too: {', '.join(collateral)}",
+                fg=Colors.YELLOW,
+            )
+
     with spinner.hidden():
         if not force:
             click.confirm(

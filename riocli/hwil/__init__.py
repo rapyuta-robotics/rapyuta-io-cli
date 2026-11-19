@@ -19,7 +19,7 @@ from riocli.hwil.delete import delete_device
 from riocli.hwil.execute import execute
 from riocli.hwil.inspect import inspect_device
 from riocli.hwil.list import list_devices
-from riocli.hwil.login import login
+from riocli.hwil.login import login, logout
 from riocli.hwil.ssh import ssh
 from riocli.utils import AliasedGroup
 
@@ -42,6 +42,7 @@ def hwildevice():
 
 
 hwildevice.add_command(login)
+hwildevice.add_command(logout)
 hwildevice.add_command(create_device)
 hwildevice.add_command(list_devices)
 hwildevice.add_command(delete_device)
