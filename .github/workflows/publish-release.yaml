@@ -11,6 +11,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish-release:
@@ -21,11 +22,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate AppImage upload secrets
+      - name: Validate AppImage upload settings
         shell: bash
         env:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+          AZURE_CLIENT_ID_PUBLISH: ${{ vars.AZURE_CLIENT_ID_PUBLISH }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
         run: |
           set -euo pipefail
 
@@ -33,10 +35,18 @@ jobs:
             echo "AZURE_STORAGE_ACCOUNT must be set for release AppImage publishing." >&2
             exit 1
           fi
-          if [[ -z "$AZURE_SAS_TOKEN" ]]; then
-            echo "AZURE_SAS_TOKEN must be set for release AppImage publishing." >&2
+          if [[ -z "$AZURE_CLIENT_ID_PUBLISH" || -z "$AZURE_TENANT_ID" ]]; then
+            echo "vars.AZURE_CLIENT_ID_PUBLISH and vars.AZURE_TENANT_ID must be set for release AppImage publishing." >&2
             exit 1
           fi
+
+      # Fail before the GitHub release is created if the OIDC login is broken.
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_PUBLISH }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
       
       - name: Create GitHub App token
         id: app-token
@@ -77,7 +87,7 @@ jobs:
         env:
           CHANNEL: release
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+          AZCOPY_AUTO_LOGIN_TYPE: AZCLI
         run: ./scripts/publish-rio-appimage.sh
 
       - name: Resolve AppImage asset
