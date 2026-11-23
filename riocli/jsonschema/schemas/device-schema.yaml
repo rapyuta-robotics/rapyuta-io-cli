@@ -99,7 +99,7 @@ definitions:
                 default: False
               expireAfter:
                 type: string
-                format: duration
+                pattern: "^[1-9][0-9]*[smhd]$"
                 default: 12h
               vm:
                 type: boolean
