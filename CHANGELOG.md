@@ -5,6 +5,13 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.13.1] - 2026-11-24
+
+### 🐛 Bug Fixes
+
+- *(release)* Report version 10.13.1
+
+
 ## [10.13.0] - 2026-11-24
 
 ### ✨ Features
