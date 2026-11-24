@@ -5,6 +5,32 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
+## [10.12.1] - 2026-11-24
+
+### ✨ Features
+
+- *(hwil)* Ssh with your own key; never print a device password
+- *(hwil)* Entra ID login; never a username or password
+- *(hwil)* Open just-in-time ssh access from outside the office
+- *(hwil)* Hwil_host config override with a trusted-host guard
+- *(hwil)* Browser sign-in by default; device code is opt-in
+- *(hwil)* Pin the VM host key in rio hwil ssh
+
+### 🐛 Bug Fixes
+
+- *(hwil)* Never persist a HWIL token; warn what a delete takes with it
+- *(hwil)* Refuse device names that are known_hosts patterns
+- *(hwil)* Address review on Entra login and key-only ssh
+
+### 📚 Documentation
+
+- *(hwil)* CI tokens use api://hwil-api/.default (service principal)
+
+### 🚨 Testing
+
+- *(hwil)* Check the delete warning line exactly
+
+
 ## [10.12.0] - 2026-10-28
 
 ### ✨ Features
