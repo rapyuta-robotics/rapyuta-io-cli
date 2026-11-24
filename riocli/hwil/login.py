@@ -81,7 +81,8 @@ def login(
             auth = {"mode": "device_code", "account": account}
 
         client = HwilClient(
-            token_provider=entra.token_provider(auth, ctx.obj.filepath),
+            # validate the mode being saved, not a RIO_HWIL_TOKEN that happens to be exported
+            token_provider=entra.token_provider(auth, ctx.obj.filepath, use_env=False),
             hwil_host=ctx.obj.data.get("hwil_host"),
         )
         client.list_devices()

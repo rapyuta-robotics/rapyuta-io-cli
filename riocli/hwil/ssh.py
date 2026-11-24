@@ -14,6 +14,7 @@
 import os
 import re
 import subprocess
+import tempfile
 
 import click
 import requests
@@ -21,7 +22,7 @@ from click_help_colors import HelpColorsCommand
 
 from riocli.config import new_hwil_client
 from riocli.constants import Colors, Symbols
-from riocli.hwil.util import name_to_id
+from riocli.hwil.util import is_azure_vm, name_to_id
 
 # Sources HWIL's NSG always allows (HWIL_SSH_ALLOWED_SOURCES defaults). From anywhere else,
 # `rio hwil ssh` opens just-in-time access for the caller's public IP first.
@@ -61,6 +62,20 @@ def pin_host_key(device_name: str, host_key: str, path: str = KNOWN_HOSTS) -> st
     with open(full, "w") as f:
         f.writelines(lines)
     return full
+
+
+def pinned_known_hosts(device_name: str, host_key: str, path: str = KNOWN_HOSTS) -> str:
+    """A private known_hosts file holding only this device's pinned key, next to rio's known_hosts. The caller
+    deletes it when ssh exits."""
+    directory = os.path.dirname(os.path.expanduser(path))
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix="hwil_known_hosts.", dir=directory)
+    os.close(fd)
+    try:
+        return pin_host_key(device_name, host_key, tmp)
+    except BaseException:
+        os.unlink(tmp)
+        raise
 
 
 def find_public_key(path: str | None = None) -> str:
@@ -130,6 +145,15 @@ def ssh(
         client = new_hwil_client()
         device = client.get_device(device_id)
 
+        if not is_azure_vm(device):
+            click.secho(
+                f"{Symbols.ERROR} {device.name} is not an HWIL Azure VM: `rio hwil ssh` works only for HWIL VMs "
+                "(devices created with the `vm` label, e.g. by the CI/SaaS provisioning). "
+                "Devices from `rio hwil create` are Sysbox containers without ssh access from outside the cluster.",
+                fg=Colors.RED,
+            )
+            raise SystemExit(1)
+
         if not device.get("ip_address"):
             click.secho(
                 f"{Symbols.ERROR} Device does not have a static IP address",
@@ -154,15 +178,25 @@ def ssh(
         )
 
         cmd = ["ssh", "-o", "IdentitiesOnly=yes"]
+        known = None
         if device.get("ssh_host_key"):
             # pinned: only the host key HWIL recorded at first boot is accepted (no trust-on-first-use, and no
             # known_hosts clash when Azure hands a VM's IP to another VM)
-            known = pin_host_key(device.name, device.ssh_host_key)
+            # a private known_hosts for this ssh process only: parallel invocations can't overwrite each other's pin
+            known = pinned_known_hosts(device.name, device.ssh_host_key)
             cmd += [
                 "-o",
                 f"HostKeyAlias={device.name}",
                 "-o",
                 f"UserKnownHostsFile={known}",
+                # only the pinned key counts: no system-wide known_hosts and no KnownHostsCommand
+                "-o",
+                "GlobalKnownHostsFile=none",
+                # KnownHostsCommand exists since OpenSSH 8.5 (Ubuntu 20.04 has 8.2): let older clients skip it
+                "-o",
+                "IgnoreUnknown=KnownHostsCommand",
+                "-o",
+                "KnownHostsCommand=none",
                 "-o",
                 "StrictHostKeyChecking=yes",
                 "-o",
@@ -178,7 +212,12 @@ def ssh(
         if private_key and os.path.isfile(private_key):
             cmd += ["-i", private_key]
         cmd.append(f"{device.username}@{device['ip_address']}")
-        raise SystemExit(subprocess.call(cmd))
+        try:
+            rc = subprocess.call(cmd)
+        finally:
+            if known and os.path.exists(known):
+                os.unlink(known)
+        raise SystemExit(rc)
     except Exception as e:
         click.secho(str(e), fg=Colors.RED)
         raise SystemExit(1)

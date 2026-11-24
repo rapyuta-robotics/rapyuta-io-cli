@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import tempfile
 import typing
 
 TENANT_ID = "10b7a253-2177-47d2-bd54-ad3233604067"
@@ -45,7 +46,10 @@ class HwilAuthError(Exception):
 
 
 def cache_path(config_filepath: str) -> str:
-    return os.path.join(os.path.dirname(os.path.abspath(config_filepath)), CACHE_FILE)
+    """One token cache per rio config file: two RIO_CONFIG files in one directory must not share (or log out)
+    each other's session."""
+    full = os.path.abspath(config_filepath)
+    return os.path.join(os.path.dirname(full), f"{os.path.basename(full)}.{CACHE_FILE}")
 
 
 def _load_cache(path: str):
@@ -61,10 +65,20 @@ def _load_cache(path: str):
 def _save_cache(cache, path: str) -> None:
     if not cache.has_state_changed:
         return
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-    with os.fdopen(fd, "w") as f:
-        f.write(cache.serialize())
-    os.chmod(path, 0o600)
+    # a fresh profile has no config directory yet (sign-in runs before the config is saved)
+    directory = os.path.dirname(os.path.abspath(path))
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    # write a private temp file and swap it in, so a concurrent reader never sees a truncated cache
+    fd, tmp = tempfile.mkstemp(prefix=".hwil_token_cache.", dir=directory)
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(cache.serialize())
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
 
 
 def _app(cache):
@@ -154,9 +168,14 @@ def logout(path: str) -> None:
         os.remove(path)
 
 
-def token_provider(auth: dict | None, config_filepath: str) -> typing.Callable[[], str]:
-    """Function returning a fresh access token for each request, per the stored login mode."""
-    env_token = os.environ.get(TOKEN_ENV)
+def token_provider(
+    auth: dict | None, config_filepath: str, use_env: bool = True
+) -> typing.Callable[[], str]:
+    """Function returning a fresh access token for each request, per the stored login mode.
+
+    RIO_HWIL_TOKEN overrides the stored mode for ordinary commands; login passes use_env=False so it validates the
+    mode it is about to save."""
+    env_token = os.environ.get(TOKEN_ENV) if use_env else None
     if env_token:
         return lambda: env_token
     if not auth:

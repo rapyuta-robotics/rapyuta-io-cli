@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import http
 import json
+import os
 import re
 import time
 from typing import TYPE_CHECKING
@@ -44,6 +45,17 @@ def check_hwil_host(host: str) -> str:
             "http://127.0.0.1[:port] or https://<host>.rapyuta.io receive your HWIL token"
         )
     return host
+
+
+def _bypass_proxy_for_loopback() -> None:
+    """Requests honours HTTP(S)_PROXY from the environment; a plain-HTTP loopback HWIL must never go through a
+    proxy, or the bearer token travels to it in cleartext. Add the loopback names to NO_PROXY for this process."""
+    for var in ("NO_PROXY", "no_proxy"):
+        entries = [e.strip() for e in os.environ.get(var, "").split(",") if e.strip()]
+        for host in ("localhost", "127.0.0.1"):
+            if host not in entries:
+                entries.append(host)
+        os.environ[var] = ",".join(entries)
 
 
 def handle_server_errors(response: requests.Response):
@@ -112,6 +124,8 @@ class Client:
         # production is the default. The Entra token is sent there, so only trusted hosts are accepted.
         # rstrip so a trailing slash does not produce "//device/" in every request URL.
         self._host = check_hwil_host(hwil_host or self.HWIL_URL).rstrip("/")
+        if _LOCAL_HOST.fullmatch(self._host):
+            _bypass_proxy_for_loopback()
 
     def create_device(
         self: Client,
@@ -165,6 +179,11 @@ class Client:
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
+        if not response.ok:
+            # e.g. 403 for a CI-owned device: never report a refused delete as success
+            raise Exception(
+                f"hwil: deleting device {device_id} failed ({response.status_code}): {response.text}"
+            )
 
     def add_ssh_key(self: Client, device_id: int, public_key: str) -> Munch:
         """Add the caller's own public key to a HWIL VM's user (key-only VMs)."""
