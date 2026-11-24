@@ -7,7 +7,11 @@ on:
 
 jobs:
   upload-appimage:
-    runs-on: aks-spot-4cpu
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -35,13 +39,26 @@ jobs:
         env:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
 
+      # OIDC login: PR builds use the identity that can only write the dev
+      # container, devel pushes the one scoped to devel/release. Azure only
+      # accepts each identity for its federated subject (pull_request vs
+      # refs/heads/devel). Fork PRs get no OIDC token, so the upload is skipped.
+      - name: Azure login (OIDC)
+        id: azure-login
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: azure/login@v2
+        with:
+          client-id: ${{ github.event_name == 'pull_request' && vars.AZURE_CLIENT_ID_PR || vars.AZURE_CLIENT_ID_PUBLISH }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - name: Publish AppImage to Azure Blob
         run: ./scripts/publish-rio-appimage.sh
         shell: bash
         env:
           CHANNEL: ${{ steps.meta.outputs.channel }}
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-          AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+          AZCOPY_AUTO_LOGIN_TYPE: ${{ steps.azure-login.outcome == 'success' && 'AZCLI' || '' }}
 
       - name: Install GitHub CLI
         run: |

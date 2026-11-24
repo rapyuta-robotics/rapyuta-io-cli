@@ -2,9 +2,11 @@
 
 # CI only: upload the AppImage built by build-rio-appimage.sh to its channel's
 # Azure Blob container. Downloads are anonymous (public-read); uploads
-# authenticate with a write-scoped SAS token.
+# authenticate with Entra ID via GitHub OIDC: the workflow runs azure/login with
+# a managed identity scoped to the channel's container, and azcopy reuses that
+# Azure CLI session (AZCOPY_AUTO_LOGIN_TYPE=AZCLI). No storage key or SAS.
 #
-# Required env: CHANNEL, AZURE_STORAGE_ACCOUNT, AZURE_SAS_TOKEN.
+# Required env: CHANNEL, AZURE_STORAGE_ACCOUNT, AZCOPY_AUTO_LOGIN_TYPE.
 #
 #   dev builds           -> dev/<branch-slug>/<file>, no manifest (dev is not
 #                           an update channel)
@@ -15,8 +17,8 @@ set -uxe
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHANNEL="${CHANNEL:?CHANNEL must be set (release|devel|dev)}"
 
-if [[ -z "${AZURE_STORAGE_ACCOUNT:-}" || -z "${AZURE_SAS_TOKEN:-}" ]]; then
-  echo "AZURE_STORAGE_ACCOUNT / AZURE_SAS_TOKEN not set — skipping blob upload"
+if [[ -z "${AZURE_STORAGE_ACCOUNT:-}" || -z "${AZCOPY_AUTO_LOGIN_TYPE:-}" ]]; then
+  echo "AZURE_STORAGE_ACCOUNT / AZCOPY_AUTO_LOGIN_TYPE not set (no Azure login, e.g. fork PR) — skipping blob upload"
   exit 0
 fi
 
@@ -33,12 +35,10 @@ export PATH="$PWD:$PATH"
 
 BASE="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net"
 
-# silence trace: the SAS token is part of the destination URL
-set +x
 if [[ "$CHANNEL" == "dev" ]]; then
   SLUG=$("$REPO_ROOT/scripts/branch-slug.sh")
   azcopy copy "${APPIMAGE_FILE}" \
-    "${BASE}/dev/${SLUG}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}" --overwrite=true
+    "${BASE}/dev/${SLUG}/${APPIMAGE_FILE}" --overwrite=true
 else
   SHA256=$(sha256sum "${APPIMAGE_FILE}" | cut -d' ' -f1)
   # The stamped __version__ the AppImage reports at runtime. Distinct from the
@@ -49,8 +49,7 @@ else
 {"version": "${MANIFEST_VERSION}", "file": "${APPIMAGE_FILE}", "sha256": "${SHA256}"}
 JSON
   azcopy copy "${APPIMAGE_FILE}" \
-    "${BASE}/${CHANNEL}/${APPIMAGE_FILE}?${AZURE_SAS_TOKEN}" --overwrite=true
+    "${BASE}/${CHANNEL}/${APPIMAGE_FILE}" --overwrite=true
   azcopy copy "latest.json" \
-    "${BASE}/${CHANNEL}/latest.json?${AZURE_SAS_TOKEN}" --overwrite=true
+    "${BASE}/${CHANNEL}/latest.json" --overwrite=true
 fi
-set -x
