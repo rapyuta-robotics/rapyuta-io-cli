@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Resolve build metadata
         id: meta
@@ -46,7 +46,7 @@ jobs:
       - name: Azure login (OIDC)
         id: azure-login
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ github.event_name == 'pull_request' && vars.AZURE_CLIENT_ID_PR || vars.AZURE_CLIENT_ID_PUBLISH }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
