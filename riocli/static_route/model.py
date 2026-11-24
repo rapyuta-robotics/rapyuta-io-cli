@@ -31,8 +31,15 @@ class StaticRoute(Model):
         return v2_client.create_staticroute(self._obj)
 
     @override
-    def update_object(self, v2_client: Client, *args, **kwargs) -> Munch | None:
-        return v2_client.update_staticroute(name=self._obj.metadata.name, body=self._obj)
+    def update_object(
+        self, v2_client: Client, config: Configuration, *args, **kwargs
+    ) -> Munch | None:
+        # The server stores the route as "<name>-<org short id>" (see delete_object);
+        # updating "<name>" hit no row and the change was silently lost.
+        return v2_client.update_staticroute(
+            name=f"{self._obj.metadata.name}-{config.organization_short_id}",
+            body=self._obj,
+        )
 
     @override
     def delete_object(
