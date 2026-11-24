@@ -5,7 +5,7 @@ using [git-cliff](https://git-cliff.org/).
 
 <!-- git-cliff: end of header -->
 
-## [10.12.1] - 2026-11-24
+## [10.13.0] - 2026-11-24
 
 ### ✨ Features
 
