@@ -18,6 +18,7 @@ from yaspin.api import Yaspin
 
 from riocli.config import new_hwil_client
 from riocli.constants import Colors, Symbols
+from riocli.hwil.util import is_azure_vm
 from riocli.utils.spinner import with_spinner
 
 
@@ -87,6 +88,29 @@ def delete_device(
         )
         spinner.red.fail(Symbols.ERROR)
         raise SystemExit(1)
+
+    # deleting a HWIL Azure VM deletes its project's whole resource group: name every other Azure VM that goes with
+    # it. Sysbox devices are deleted on their own and neither trigger nor suffer the resource-group deletion.
+    targets = {d["id"] for d in fetched if d["id"] in final}
+    projects = {
+        (d.get("labels") or {}).get("project")
+        for d in fetched
+        if d["id"] in targets and is_azure_vm(d)
+    } - {None}
+    collateral = sorted(
+        d["name"]
+        for d in fetched
+        if d["id"] not in targets
+        and is_azure_vm(d)
+        and (d.get("labels") or {}).get("project") in projects
+    )
+    if collateral:
+        with spinner.hidden():
+            click.secho(
+                f"{Symbols.WARNING} Deleting removes the whole project resource group: "
+                f"these devices will be deleted too: {', '.join(collateral)}",
+                fg=Colors.YELLOW,
+            )
 
     with spinner.hidden():
         if not force:

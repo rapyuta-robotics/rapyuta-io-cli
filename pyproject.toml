@@ -59,6 +59,7 @@ dependencies = [
     "cryptography>=40.0.0",
     "typing-extensions>=4.15.0",
     "python-benedict==0.30",
+    "msal>=1.28",
 ]
 
 [dependency-groups]

@@ -90,3 +90,11 @@ def execute_command(client: Client, device_id: int, command: str) -> tuple[int, 
     o = response.result.output.pop()
 
     return o.get("rc"), o.get("stdout"), o.get("stderr")
+
+
+def is_azure_vm(device) -> bool:
+    """Mirror of HWIL's is_azure_vm: only Azure VMs (label vm=true) accept ssh keys and just-in-time access."""
+    vm = (device.get("labels") or {}).get("vm", False)
+    if isinstance(vm, str):
+        vm = vm.strip().lower() == "true"
+    return vm in (True, 1)

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import http
 import json
+import os
+import re
 import time
 from typing import TYPE_CHECKING
 
@@ -26,7 +28,34 @@ from riocli.exceptions import DeviceNotFound
 from riocli.utils import generate_short_guid, sanitize_label
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import requests
+
+
+_LOCAL_HOST = re.compile(r"http://(localhost|127\.0\.0\.1)(:[0-9]{1,5})?/?")
+_RAPYUTA_HOST = re.compile(r"https://([a-z0-9-]+\.)+rapyuta\.io(:[0-9]{1,5})?/?")
+
+
+def check_hwil_host(host: str) -> str:
+    """The HWIL API gets the user's Entra access token: refuse any host but localhost or https://*.rapyuta.io."""
+    if not (_LOCAL_HOST.fullmatch(host) or _RAPYUTA_HOST.fullmatch(host)):
+        raise ValueError(
+            f"refusing hwil_host {host!r}: only http://localhost[:port], "
+            "http://127.0.0.1[:port] or https://<host>.rapyuta.io receive your HWIL token"
+        )
+    return host
+
+
+def _bypass_proxy_for_loopback() -> None:
+    """Requests honours HTTP(S)_PROXY from the environment; a plain-HTTP loopback HWIL must never go through a
+    proxy, or the bearer token travels to it in cleartext. Add the loopback names to NO_PROXY for this process."""
+    for var in ("NO_PROXY", "no_proxy"):
+        entries = [e.strip() for e in os.environ.get(var, "").split(",") if e.strip()]
+        for host in ("localhost", "127.0.0.1"):
+            if host not in entries:
+                entries.append(host)
+        os.environ[var] = ",".join(entries)
 
 
 def handle_server_errors(response: requests.Response):
@@ -82,10 +111,21 @@ class Client:
         },
     }
 
-    def __init__(self, auth_token: str, email_id: str = None):
-        self._token = auth_token
+    def __init__(
+        self,
+        token_provider: Callable[[], str],
+        email_id: str = None,
+        hwil_host: str = None,
+    ):
+        # returns a valid Entra access token for each request (refreshed as needed)
+        self._token_provider = token_provider
         self._email_id = email_id
-        self._host = self.HWIL_URL
+        # hwil_host comes from the CLI configuration and points at a non-production HWIL server (e.g. a local one);
+        # production is the default. The Entra token is sent there, so only trusted hosts are accepted.
+        # rstrip so a trailing slash does not produce "//device/" in every request URL.
+        self._host = check_hwil_host(hwil_host or self.HWIL_URL).rstrip("/")
+        if _LOCAL_HOST.fullmatch(self._host):
+            _bypass_proxy_for_loopback()
 
     def create_device(
         self: Client,
@@ -139,6 +179,53 @@ class Client:
         headers = self._get_auth_header()
         response = RestClient(url).method(HttpMethod.DELETE).headers(headers).execute()
         handle_server_errors(response)
+        if not response.ok:
+            # e.g. 403 for a CI-owned device: never report a refused delete as success
+            raise Exception(
+                f"hwil: deleting device {device_id} failed ({response.status_code}): {response.text}"
+            )
+
+    def add_ssh_key(self: Client, device_id: int, public_key: str) -> Munch:
+        """Add the caller's own public key to a HWIL VM's user (key-only VMs)."""
+        url = f"{self._host}/device/{device_id}/ssh_key/"
+        headers = self._get_auth_header()
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(headers)
+            .execute(payload={"public_key": public_key})
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            raise Exception(f"hwil: {response.text}")
+
+        return munchify(data)
+
+    def grant_ssh_access(
+        self: Client, device_id: int, source_ip: str, duration_minutes: int = None
+    ) -> Munch:
+        """Open port 22 of a HWIL VM to one public IPv4 for a while (just-in-time access)."""
+        url = f"{self._host}/device/{device_id}/ssh_access/"
+        payload = {"source_ip": source_ip}
+        if duration_minutes:
+            payload["duration_minutes"] = duration_minutes
+        response = (
+            RestClient(url)
+            .method(HttpMethod.POST)
+            .headers(self._get_auth_header())
+            .execute(payload=payload)
+        )
+
+        handle_server_errors(response)
+
+        data = json.loads(response.text)
+        if not response.ok:
+            raise Exception(f"hwil: {response.text}")
+
+        return munchify(data)
 
     def get_device(self: Client, device_id: int) -> Munch:
         """Fetch a HWIL device."""
@@ -240,7 +327,7 @@ class Client:
         return munchify(data)
 
     def _get_auth_header(self: Client) -> dict:
-        header = dict(Authorization=f"Basic {self._token}")
+        header = dict(Authorization=f"Bearer {self._token_provider()}")
 
         if self._email_id is not None:
             header["X-Email-ID"] = self._email_id
