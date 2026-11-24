@@ -61,8 +61,7 @@ This file contains passwords for test user accounts and is **not** committed to 
 **Format**: Key-value pairs (one per line)
 ```
 DEFAULT_PASSWORD=your-default-password
-HWIL_USERNAME=your-hwil-username
-HWIL_PASSWORD=your-hwil-password
+HWIL_TOKEN=<output of: az account get-access-token --scope api://hwil-api/HWIL.Access --query accessToken -o tsv>
 ```
 
 **Setup**: Create this file from the example template:
@@ -82,7 +81,7 @@ The test suite uses the following user accounts:
 | `cli.superuser@rapyuta-robotics.com` | Super user with full permissions | `DEFAULT_PASSWORD` |
 | `cli.test1@rapyuta-robotics.com` | Test user with limited permissions | `DEFAULT_PASSWORD` |
 | `cli.test2@rapyuta-robotics.com` | Test user with different permissions | `DEFAULT_PASSWORD` |
-| HWIL User | Hardware-in-the-Loop virtual device creation | `HWIL_USERNAME` + `HWIL_PASSWORD` |
+| HWIL User | Hardware-in-the-Loop virtual device creation | `HWIL_TOKEN` (Entra access token, ~1 h) |
 
 **Organization**: All test users belong to the `CliTest` organization.
 
@@ -97,7 +96,7 @@ Tests use the following projects (must exist in your organization):
 ⚠️ **Important**: File upload tests require HWIL (Hardware-in-the-Loop) access to create virtual devices.
 
 **Prerequisites**:
-- Valid HWIL credentials (`HWIL_USERNAME` and `HWIL_PASSWORD` in `.password` file)
+- A HWIL Entra access token (`HWIL_TOKEN` in `.password` file, or `RIO_HWIL_TOKEN`)
 - HWIL auth token in `.test.config.json`
 - Access to HWIL service for virtual device creation
 

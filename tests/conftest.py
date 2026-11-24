@@ -250,26 +250,20 @@ def device_file_factory(cli_runner):
 
 @pytest.fixture(scope="module")
 def hwil_login(cli_runner):
-    """Login to HWIL for virtual device operations"""
+    """Login to HWIL (Entra ID) for virtual device operations.
+
+    HWIL_TOKEN in the .password file or RIO_HWIL_TOKEN in env: an access token for
+    api://hwil-api/HWIL.Access, e.g. `az account get-access-token --scope api://hwil-api/HWIL.Access`.
+    """
     passwords = load_password_config()
-    hwil_username = passwords.get("HWIL_USERNAME")
-    hwil_password = passwords.get("HWIL_PASSWORD")
+    hwil_token = passwords.get("HWIL_TOKEN") or os.environ.get("RIO_HWIL_TOKEN")
 
-    if not hwil_username or not hwil_password:
-        pytest.skip("HWIL credentials not found in .password file")
+    if not hwil_token:
+        pytest.skip("HWIL_TOKEN not found in .password file or RIO_HWIL_TOKEN")
 
-    result = cli_runner.invoke(
-        cli,
-        [
-            "hwil",
-            "login",
-            "--username",
-            hwil_username,
-            "--password",
-            hwil_password,
-            "--no-interactive",
-        ],
-    )
+    # never persisted: the token is read from the env on every invocation
+    os.environ["RIO_HWIL_TOKEN"] = hwil_token
+    result = cli_runner.invoke(cli, ["hwil", "list"])
 
     if result.exit_code != 0:
         pytest.skip(f"HWIL login failed: {result.output}")
