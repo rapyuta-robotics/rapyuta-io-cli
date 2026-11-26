@@ -41,10 +41,12 @@ The package name depends on the distribution release:
 | Ubuntu 22.04 and earlier, Debian 12 | `sudo apt-get install libfuse2`    |
 | Fedora / RHEL                       | `sudo dnf install fuse-libs`       |
 
-On Ubuntu 24.04 and later, `libfuse2` has no install candidate, because the
-library was renamed to `libfuse2t64` in the 64-bit `time_t` transition. Do not
-install the `fuse` package instead: it conflicts with `fuse3` and can remove
-desktop packages.
+On Ubuntu 24.04 and later the library was renamed to `libfuse2t64` in the
+64-bit `time_t` transition. `apt-get install libfuse2` still works there, because
+apt installs `libfuse2t64` in its place, but `apt-cache` and package searches
+show no `libfuse2` package. On Ubuntu 24.04 and earlier, do not install the
+`fuse` package to get the library: it is FUSE 2 there, and apt removes `fuse3`
+(and packages that depend on it) to install it.
 
 Where FUSE is not available at all (for example inside a Docker container),
 run `rio` without mounting the image:

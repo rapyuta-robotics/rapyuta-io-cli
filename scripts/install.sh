@@ -115,8 +115,10 @@ sudo install -C -m 755 "$TEMP_PATH" /usr/local/bin/rio
 ### package name changed with the 64-bit time_t transition:
 ###   Ubuntu 22.04 / Debian 12 and older:  libfuse2
 ###   Ubuntu 24.04+ / Debian 13+:          libfuse2t64
-### Do not install the "fuse" package instead: it conflicts with fuse3 and can
-### remove desktop packages.
+### ("apt-get install libfuse2" also resolves to libfuse2t64 there, but
+### apt-cache reports no candidate for libfuse2, so ask for libfuse2t64 first.)
+### Do not install the "fuse" package instead: on Ubuntu 24.04 and older it is
+### FUSE 2 and apt removes fuse3 to install it.
 
 # Succeed if the dynamic loader can find libfuse.so.2. grep reads the whole
 # list (no -q) so that pipefail does not see a SIGPIPE from ldconfig.
@@ -145,7 +147,7 @@ print_fuse_help() {
   echo -e "\033[1;33m   Ubuntu 24.04+ / Debian 13+:        sudo apt-get install libfuse2t64\033[0m"
   echo -e "\033[1;33m   Ubuntu 22.04 / Debian 12 or older: sudo apt-get install libfuse2\033[0m"
   echo -e "\033[1;33m   Fedora / RHEL:                     sudo dnf install fuse-libs\033[0m"
-  echo -e "\033[1;33m   Do not install the 'fuse' package: it conflicts with fuse3.\033[0m"
+  echo -e "\033[1;33m   Do not install the 'fuse' package for this: on Ubuntu 24.04 and older it removes fuse3.\033[0m"
   echo -e "\033[1;33m   Without FUSE (for example in a container), run rio with APPIMAGE_EXTRACT_AND_RUN=1\033[0m"
   echo -e "\033[1;33m   (minimal images also need libmagic1).\033[0m"
 }
