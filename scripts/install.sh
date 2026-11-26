@@ -123,7 +123,7 @@ sudo install -C -m 755 "$TEMP_PATH" /usr/local/bin/rio
 has_libfuse2() {
   local ldconfig_bin
   ldconfig_bin=$(command -v ldconfig || echo /sbin/ldconfig)
-  "$ldconfig_bin" -p 2>/dev/null | grep 'libfuse\.so\.2' >/dev/null
+  "$ldconfig_bin" -p 2>/dev/null | grep -E 'libfuse\.so\.2[[:space:]]+\([^)]*x86-64[^)]*\)' >/dev/null
 }
 
 # Print the first FUSE 2 package that apt can install on this system.
