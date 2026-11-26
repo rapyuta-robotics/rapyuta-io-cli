@@ -21,6 +21,42 @@ curl -fSsL https://cli.rapyuta.io/install.sh | bash
 > Note: The `AppImage` is a self-contained executable that can be run on any Linux distribution.
 However, it is not supported for non-Linux systems.
 
+#### FUSE requirement
+
+The `AppImage` needs the FUSE 2 library (`libfuse.so.2`). On apt-based systems
+the install script installs it for you if it is missing. Set
+`RIO_SKIP_FUSE_INSTALL=1` to only print instructions instead. Without it, `rio`
+fails with:
+
+```
+dlopen(): error loading libfuse.so.2
+AppImages require FUSE to run.
+```
+
+The package name depends on the distribution release:
+
+| Distribution                        | Command                            |
+| ----------------------------------- | ---------------------------------- |
+| Ubuntu 24.04 and later, Debian 13   | `sudo apt-get install libfuse2t64` |
+| Ubuntu 22.04 and earlier, Debian 12 | `sudo apt-get install libfuse2`    |
+| Fedora / RHEL                       | `sudo dnf install fuse-libs`       |
+
+On Ubuntu 24.04 and later, `libfuse2` has no install candidate, because the
+library was renamed to `libfuse2t64` in the 64-bit `time_t` transition. Do not
+install the `fuse` package instead: it conflicts with `fuse3` and can remove
+desktop packages.
+
+Where FUSE is not available at all (for example inside a Docker container),
+run `rio` without mounting the image:
+
+```bash
+APPIMAGE_EXTRACT_AND_RUN=1 rio auth login
+```
+
+Minimal container images also lack `libmagic`, which `rio` loads at start-up.
+Install it first (`apt-get install libmagic1` on Ubuntu/Debian), or `rio` stops
+with `ImportError: failed to find libmagic`.
+
 ### Installing via `pip`
 
 ```bash
