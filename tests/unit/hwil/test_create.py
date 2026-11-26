@@ -23,7 +23,20 @@ from riocli.hwil.create import create_device
 from riocli.jsonschema.validate import load_schema
 
 VALID = ["12h", "1d", "600s", "10m"]
-INVALID = ["invalid", "12", "h", "0h", "-1h", "1.5h", "12H", "1w", "P1D", " 12h", ""]
+INVALID = [
+    "invalid",
+    "12",
+    "h",
+    "0h",
+    "-1h",
+    "1.5h",
+    "12H",
+    "1w",
+    "P1D",
+    " 12h",
+    "12h\n",
+    "",
+]
 
 
 @pytest.fixture
