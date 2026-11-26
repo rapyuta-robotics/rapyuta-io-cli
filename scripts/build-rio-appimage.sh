@@ -8,8 +8,11 @@ set -uxe
 # AppRun runs Python with -I and cannot see them at runtime.
 export PYTHONNOUSERSITE=1
 
-# Downloading Python AppImage and appImage tool databases
-BLOB_BASE="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net"
+# Downloading Python AppImage and appImage tool databases. The mirror is
+# public-read, and fork PRs get no secrets, so fall back to the public account
+# that scripts/install.sh also downloads from. The checksums below still pin
+# the files.
+BLOB_BASE="https://${AZURE_STORAGE_ACCOUNT:-riocliartifacts}.blob.core.windows.net"
 BLOB_PATH="mirror/appimages"
 
 wget --output-document="scripts/appimagetool-x86_64.AppImage" "$BLOB_BASE/$BLOB_PATH/appimagetool-x86_64.AppImage"
