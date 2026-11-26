@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 import click
 from click_help_colors import HelpColorsCommand
 from yaspin.api import Yaspin
@@ -19,6 +21,18 @@ from yaspin.api import Yaspin
 from riocli.config import new_hwil_client
 from riocli.constants import Colors, Symbols
 from riocli.utils.spinner import with_spinner
+
+
+def validate_expire_after(
+    _ctx: click.Context, _param: click.Parameter, value: str
+) -> str:
+    """Fail fast on a malformed duration instead of creating a device with it."""
+    if not re.fullmatch(r"[1-9][0-9]*[smhd]", value):
+        raise click.BadParameter(
+            f"'{value}' is not a valid duration. Use a positive number "
+            "followed by s, m, h or d. Example: 12h, 1d, 600s, 10m"
+        )
+    return value
 
 
 @click.command(
@@ -54,6 +68,7 @@ from riocli.utils.spinner import with_spinner
     help="Duration after which the device will expire. Example: 12h, 1d, 600s, 10m",
     type=str,
     default="12h",
+    callback=validate_expire_after,
 )
 @click.argument("device-name", type=str)
 @with_spinner(text="Creating device...")
