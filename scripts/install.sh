@@ -130,7 +130,8 @@ has_libfuse2() {
 apt_libfuse2_package() {
   local pkg candidate
   for pkg in libfuse2t64 libfuse2; do
-    candidate=$(apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')
+    # LC_ALL=C: apt localizes the "Candidate:" label and "(none)".
+    candidate=$(LC_ALL=C apt-cache policy "$pkg" 2>/dev/null | awk '/Candidate:/ {print $2}')
     if [ -n "$candidate" ] && [ "$candidate" != "(none)" ]; then
       echo "$pkg"
       return 0
