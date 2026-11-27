@@ -18,6 +18,36 @@ You can install the latest ``AppImage`` on your Linux systems using the followin
 
     curl -fSsL https://cli.rapyuta.io/install.sh | bash
 
+Installing with ``uv``
+~~~~~~~~~~~~~~~~~~~~~~
+
+`uv <https://docs.astral.sh/uv/>`_ installs ``rio`` into its own isolated
+environment, with a Python it downloads itself. Unlike the ``AppImage``, it
+does not need FUSE.
+
+.. code:: bash
+
+    sudo apt-get install libmagic1                    # Ubuntu/Debian; see below
+    curl -LsSf https://astral.sh/uv/install.sh | sh   # skip if uv is installed
+    uv tool install --python 3.13 rapyuta-io-cli
+
+* ``rio`` needs the ``libmagic`` system library at start-up. Without it, every
+  command fails with ``ImportError: failed to find libmagic``. Desktop Ubuntu
+  usually has it already; minimal and server images do not. On Fedora/RHEL
+  install ``file-libs``, on macOS ``brew install libmagic``.
+* ``--python 3.13`` keeps ``rio`` on a Python version that CI tests (3.10 to
+  3.13). Without it, uv picks the newest Python it can find.
+* uv puts ``rio`` in ``~/.local/bin`` (``uv tool dir --bin``). If an
+  ``AppImage`` is still installed at ``/usr/local/bin/rio``, check which one
+  runs with ``type -a rio``.
+
+To upgrade or remove it later:
+
+.. code:: bash
+
+    uv tool upgrade rapyuta-io-cli
+    uv tool uninstall rapyuta-io-cli
+
 Installing via ``pip``
 ~~~~~~~~~~~~~~~~~~~~~~
 
